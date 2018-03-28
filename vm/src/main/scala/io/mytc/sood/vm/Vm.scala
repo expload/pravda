@@ -1,4 +1,4 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
@@ -131,4 +131,3 @@ object Vm {
     word(2) << 8  |
     word(3) & 0x000000FF
 }
-
