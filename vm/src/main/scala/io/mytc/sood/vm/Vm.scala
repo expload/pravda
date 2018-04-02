@@ -9,27 +9,28 @@ object Vm {
 
   type Word = Array[Byte]
 
+  // FIXME for bytes > 128 it will not work
   // Control
-  final val STOP = 0x00.toByte
-  final val JUMP = 0x01.toByte
-  final val JUMPI = 0x02.toByte
+  final val STOP = 0x00
+  final val JUMP = 0x01
+  final val JUMPI = 0x02
   //final val RUN = 0x03.toByte
 
   // Stack
-  final val POP = 0x10.toByte
-  final val PUSHX = 0x11.toByte
-  final val DUP = 0x12.toByte
-  final val SWAP = 0x23.toByte
+  final val POP = 0x10
+  final val PUSHX = 0x11
+  final val DUP = 0x12
+  final val SWAP = 0x23
 
   // Heap
-  final val MPUT = 0x40.toByte
-  final val MGET = 0x41.toByte
+  final val MPUT = 0x40
+  final val MGET = 0x41
 
   // Int32 operations
-  final val I32ADD = 0x60.toByte
-  final val I32MUL = 0x61.toByte
-  final val I32DIV = 0x62.toByte
-  final val I32MOD = 0x63.toByte
+  final val I32ADD = 0x60
+  final val I32MUL = 0x61
+  final val I32DIV = 0x62
+  final val I32MOD = 0x63
 
   def run(programm: ByteBuffer, enclosingStack: Option[ArrayBuffer[Word]]): Seq[Word] = {
     val stack = enclosingStack.getOrElse(new ArrayBuffer[Word](1024))
@@ -42,7 +43,7 @@ object Vm {
       stack += x
 
     def aux(): Unit = if (programm.hasRemaining) {
-      (programm.get(): @switch) match {
+      (programm.get() & 0xff: @switch) match {
         case JUMP =>
           programm.position(wordToInt32(pop()))
           aux()
