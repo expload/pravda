@@ -46,9 +46,10 @@ lazy val forth = (project in file("forth")).
   ).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
+  settings( mainClass in Compile := Some("io.mytc.sood.forth.Application") ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi"    %% "fastparse-utils"  % "1.0.0",
-      "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
+      "com.lihaoyi"    %% "fastparse"  % "1.0.0",
+      "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
     )
   )
