@@ -20,5 +20,16 @@ case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Word]
     copy(bytes :+ cmd.toByte)
   }
   def withStack(stack: Word*): Program = copy(stack = stack.to[Vector])
+
+  def length: Int = bytes.length
+  def + (p: Program): Program = copy(bytes = bytes ++ p.bytes, stack = stack ++ p.stack)
+
+  override def toString: String = {
+    s"""
+       |program: ${hex(bytes)}
+       |init stack:
+       |  ${stack.reverse.map(x => hex(x)).mkString("\n\t")}
+     """.stripMargin
+  }
 }
 

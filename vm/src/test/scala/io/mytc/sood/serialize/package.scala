@@ -36,6 +36,19 @@ package object serialize {
     w
   }
 
+  def hex(b: Byte): String = {
+    val s = (b & 0xFF).toHexString
+    if(s.length < 2){
+      s"0$s"
+    } else {
+      s
+    }
+  }
+
+  def hex(bs: Seq[Byte]): String = {
+    bs.map(hex).mkString(" ")
+  }
+
   def clearLength(w: Word): Word = {
     val res = w.clone()
     res(0) = (res(0) & 0x3F).toByte
