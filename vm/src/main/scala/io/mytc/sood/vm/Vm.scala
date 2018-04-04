@@ -9,7 +9,6 @@ object Vm {
 
   type Word = Array[Byte]
 
-  // FIXME for bytes > 128 it will not work
   // Control
   final val STOP = 0x00
   final val JUMP = 0x01
@@ -50,6 +49,7 @@ object Vm {
         case JUMPI =>
           if (pop().sum > 0)
             programm.position(wordToInt32(pop()))
+          else pop()
           aux()
         case PUSHX =>
           push(readWord(programm))
@@ -102,33 +102,32 @@ object Vm {
 
   def readWord(source: ByteBuffer): Word = {
     val firstByte = source.get()
-    val len = (firstByte & 0xC0) >> 6
-    val word = new Array[Byte](len)
-    if (len > 0) {
-      @tailrec def aux(i: Int): Unit = {
-        if (i <= len) {
-          word(i) = source.get()
-          aux(i + 1)
-        }
+    val len = ((firstByte & 0xC0) >> 6) + 1
+    val word = new Array[Byte](len + 1)
+    @tailrec def aux(i: Int): Unit = {
+      if (i <= len) {
+        word(i) = source.get()
+        aux(i + 1)
       }
-      word(0) = firstByte
-      aux(1)
     }
+    word(0) = (firstByte & 0x3F).toByte
+    aux(1)
     word
   }
 
   def int32ToWord(int32: Int): Word = {
-    val w = new Array[Byte](4)
-    w(0) = (int32 >> 24).toByte
-    w(1) = (int32 >> 16 & 0xFF).toByte
-    w(2) = (int32 >> 8 & 0xFF).toByte
-    w(3) = (int32 & 0xFF).toByte
+    val w = new Array[Byte](5)
+    w(0) = 0
+    w(1) = (int32 >> 24).toByte
+    w(2) = (int32 >> 16 & 0xFF).toByte
+    w(3) = (int32 >> 8 & 0xFF).toByte
+    w(4) = (int32 & 0xFF).toByte
     w
   }
 
   def wordToInt32(word: Word): Int =
-    word(0) << 24 |
-    word(1) << 16 |
-    word(2) << 8  |
-    word(3) & 0x000000FF
+      (word(1) & 0xFF) << 24 |
+      (word(2) & 0xFF) << 16 |
+      (word(3) & 0xFF) << 8 |
+      (word(4) & 0xFF)
 }
