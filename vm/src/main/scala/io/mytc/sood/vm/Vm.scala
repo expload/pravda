@@ -126,7 +126,7 @@ object Vm {
   }
 
   def wordToInt32(word: Word): Int =
-      (word(1) & 0xFF) << 24 |
+      word(1) << 24 |
       (word(2) & 0xFF) << 16 |
       (word(3) & 0xFF) << 8 |
       (word(4) & 0xFF)
