@@ -39,11 +39,29 @@ lazy val vm = (project in file("vm")).
   aggregate(vmApi).
   dependsOn(vmApi)
 
+lazy val asm = (project in file("asm")).
+  dependsOn(vm).
+  dependsOn(vmApi).
+  settings(
+    normalizedName := "asm",
+    version := "0.0.1"
+  ).
+  enablePlugins(JavaAppPackaging).
+  settings( commonSettings: _* ).
+  settings( mainClass in Compile := Some("io.mytc.sood.asm.Application") ).
+  settings(
+    libraryDependencies ++= Seq (
+      "com.lihaoyi"    %% "fastparse"  % "1.0.0",
+      "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
+    )
+  )
+
 lazy val forth = (project in file("forth")).
   settings(
     normalizedName := "forth",
     version := "0.0.1"
   ).
+  dependsOn(asm).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("io.mytc.sood.forth.Application") ).
