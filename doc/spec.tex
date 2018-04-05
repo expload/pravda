@@ -61,6 +61,11 @@ Word is represented by 2 bits of word length and $6+8*(l+1)$ bits of data where 
 0x02 & JUMPI & $2$ & $0$ & If value in head of stack greater than 0 then alters program execution counter to value second item in stack.  \\
 \hline
 0x03 & RUN & $1$ & $0$ & Launches smart-contract from address given in the first item of the stack.  \\
+\hline
+0x04 & CALL & $1$ & $0$ & Firstly, it pushes current program counter to the separate stack (so called \emph{call stack}). Then it alters program execution counter to the value of the first item of the stack.  \\
+\hline
+0x05 & RET & $0$ & $0$ & Alters program execution counter to the value of the first item of the call stack (see CALL opcode).  \\
+
 \end{tabularx}
 
 \subsection{Stack}

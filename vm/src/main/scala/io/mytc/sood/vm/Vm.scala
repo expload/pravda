@@ -14,6 +14,8 @@ object Vm {
   final val JUMP = 0x01
   final val JUMPI = 0x02
   //final val RUN = 0x03.toByte
+  final val CALL = 0x04
+  final val RET = 0x05
 
   // Stack
   final val POP = 0x10
@@ -31,9 +33,21 @@ object Vm {
   final val I32DIV = 0x62
   final val I32MOD = 0x63
 
+  // Procedure call
+
+
   def run(programm: ByteBuffer, enclosingStack: Option[ArrayBuffer[Word]]): Seq[Word] = {
+    val callStack = new ArrayBuffer[Int](1024)
     val stack = enclosingStack.getOrElse(new ArrayBuffer[Word](1024))
     val heap = new ArrayBuffer[Word](1024)
+
+    def callPop(): Int = {
+      callStack.remove(callStack.length - 1)
+    }
+
+    def callPush(pos: Int): Unit = {
+      callStack += pos
+    }
 
     def pop() =
       stack.remove(stack.length - 1)
@@ -43,6 +57,13 @@ object Vm {
 
     def aux(): Unit = if (programm.hasRemaining) {
       (programm.get() & 0xff: @switch) match {
+        case CALL =>
+          callPush(programm.position())
+          programm.position(wordToInt32(pop()))
+          aux()
+        case RET =>
+          programm.position(callPop())
+          aux()
         case JUMP =>
           programm.position(wordToInt32(pop()))
           aux()
