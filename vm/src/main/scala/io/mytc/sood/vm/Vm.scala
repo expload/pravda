@@ -14,6 +14,8 @@ object Vm {
   final val JUMP = 0x01
   final val JUMPI = 0x02
   //final val RUN = 0x03.toByte
+  final val CALL = 0x04
+  final val RET = 0x05
 
   // Stack
   final val POP = 0x10
@@ -32,8 +34,6 @@ object Vm {
   final val I32MOD = 0x63
 
   // Procedure call
-  final val CALL = 0x80
-  final val RET = 0x81
 
 
   def run(programm: ByteBuffer, enclosingStack: Option[ArrayBuffer[Word]]): Seq[Word] = {
