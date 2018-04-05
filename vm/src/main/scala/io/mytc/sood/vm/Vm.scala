@@ -3,7 +3,7 @@ package io.mytc.sood.vm
 import java.nio.ByteBuffer
 
 import scala.annotation.{switch, tailrec}
-import scala.collection.mutable.{ArrayBuffer}
+import scala.collection.mutable.ArrayBuffer
 
 object Vm {
 
@@ -37,19 +37,16 @@ object Vm {
 
 
   def run(programm: ByteBuffer, enclosingStack: Option[ArrayBuffer[Word]]): Seq[Word] = {
-    var callStack = List.empty[Int]
-
+    val callStack = new ArrayBuffer[Int](1024)
     val stack = enclosingStack.getOrElse(new ArrayBuffer[Word](1024))
     val heap = new ArrayBuffer[Word](1024)
 
     def callPop(): Int = {
-      val retPos = callStack.head
-      callStack = callStack.tail
-      retPos
+      callStack.remove(callStack.length - 1)
     }
 
     def callPush(pos: Int): Unit = {
-      callStack = pos :: callStack
+      callStack += pos
     }
 
     def pop() =
