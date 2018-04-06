@@ -2,7 +2,7 @@ package io.mytc.sood
 package opcode
 
 import serialize._
-import vm.Vm._
+import vm.Opcodes.int._
 import org.scalatest.{FlatSpec, Matchers}
 
 

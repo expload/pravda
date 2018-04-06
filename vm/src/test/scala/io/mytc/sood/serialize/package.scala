@@ -1,6 +1,6 @@
 package io.mytc.sood
 
-import io.mytc.sood.vm.Vm
+import io.mytc.sood.vm._
 import io.mytc.sood.vm.Vm.Word
 
 package object serialize {
@@ -26,7 +26,7 @@ package object serialize {
   }
 
   def pureWord(i: Int): Word = {
-    Vm.int32ToWord(i)
+    int32ToWord(i)
   }
 
   def pureWord(b: Byte): Word = {

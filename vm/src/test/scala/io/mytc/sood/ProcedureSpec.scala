@@ -1,7 +1,7 @@
 package io.mytc.sood
 
 import serialize._
-import vm.Vm._
+import vm.Opcodes.int._
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProcedureSpec extends FlatSpec with Matchers {

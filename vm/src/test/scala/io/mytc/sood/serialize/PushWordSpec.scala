@@ -4,7 +4,7 @@ package serialize
 import java.nio.ByteBuffer
 
 import io.mytc.sood.vm.Vm
-import io.mytc.sood.vm.Vm.PUSHX
+import io.mytc.sood.vm.Opcodes.int.PUSHX
 import org.scalatest.{FlatSpec, Matchers}
 
 class PushWordSpec extends FlatSpec with Matchers {

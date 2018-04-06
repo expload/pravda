@@ -9,29 +9,7 @@ object Vm {
 
   type Word = Array[Byte]
 
-  // Control
-  final val STOP = 0x00
-  final val JUMP = 0x01
-  final val JUMPI = 0x02
-  //final val RUN = 0x03.toByte
-  final val CALL = 0x04
-  final val RET = 0x05
-
-  // Stack
-  final val POP = 0x10
-  final val PUSHX = 0x11
-  final val DUP = 0x12
-  final val SWAP = 0x23
-
-  // Heap
-  final val MPUT = 0x40
-  final val MGET = 0x41
-
-  // Int32 operations
-  final val I32ADD = 0x60
-  final val I32MUL = 0x61
-  final val I32DIV = 0x62
-  final val I32MOD = 0x63
+  import Opcodes.int._
 
   // Procedure call
 
@@ -73,7 +51,22 @@ object Vm {
           else pop()
           aux()
         case PUSHX =>
-          push(readWord(programm))
+          push(readXWord(programm))
+          aux()
+        case PUSH1 =>
+          push(readWord(programm, 1))
+          aux()
+        case PUSH2 =>
+          push(readWord(programm, 2))
+          aux()
+        case PUSH4 =>
+          push(readWord(programm, 4))
+          aux()
+        case PUSH8 =>
+          push(readWord(programm, 8))
+          aux()
+        case PUSH32 =>
+          push(readWord(programm, 32))
           aux()
         case POP =>
           pop()
@@ -121,7 +114,7 @@ object Vm {
     stack
   }
 
-  def readWord(source: ByteBuffer): Word = {
+  def readXWord(source: ByteBuffer): Word = {
     val firstByte = source.get()
     val len = ((firstByte & 0xC0) >> 6) + 1
     val word = new Array[Byte](len + 1)
@@ -136,19 +129,4 @@ object Vm {
     word
   }
 
-  def int32ToWord(int32: Int): Word = {
-    val w = new Array[Byte](5)
-    w(0) = 0
-    w(1) = (int32 >> 24).toByte
-    w(2) = (int32 >> 16 & 0xFF).toByte
-    w(3) = (int32 >> 8 & 0xFF).toByte
-    w(4) = (int32 & 0xFF).toByte
-    w
-  }
-
-  def wordToInt32(word: Word): Int =
-      word(1) << 24 |
-      (word(2) & 0xFF) << 16 |
-      (word(3) & 0xFF) << 8 |
-      (word(4) & 0xFF)
 }
