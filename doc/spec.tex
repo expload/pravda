@@ -78,15 +78,25 @@ Word is represented by 2 bits of word length and $6+8*(l+1)$ bits of data where 
 \hline
 0x11 & PUSHX & $0$ & $1$ & Pushes the word following the opcode to the stack. \\
 \hline
-0x12 & DUP1 & $1$ & $2$ & Duplicates first item of the stack. \\
-\vdots & \vdots & \vdots & \vdots \\
-0x21 & DUP16 & $1$ & $2$ & Duplicates first item of the stack. \\
+0x12 & PUSH1 & $0$ & $1$ & Pushes 1 byte, which follow the opcode, to the stack. \\
 \hline
-0x22 & DUPN & $1$ & $n$ & Duplicates $n-1$ item of the stack where $n$ is first item in stack. \\
+0x13 & PUSH2 & $0$ & $1$ & Pushes 2 bytes, which follow the opcode, to the stack. \\
 \hline
-0x23 & SWAP1 & $2$ & $2$ & Swaps two first items in the stack. \\
+0x14 & PUSH4 & $0$ & $1$ & Pushes 4 bytes, which follow the opcode, to the stack. \\
+\hline
+0x15 & PUSH8 & $0$ & $1$ & Pushes 8 bytes, which follow the opcode, to the stack. \\
+\hline
+0x17 & PUSH32 & $0$ & $1$ & Pushes 32 bytes, which follow the opcode, to the stack. \\
+\hline
+0x22 & DUP1 & $1$ & $2$ & Duplicates first item of the stack. \\
 \vdots & \vdots & \vdots & \vdots \\
-0x32 & SWAP16 & $2$ & $2$ & Swaps first and sixteenth items in the stack. \\
+0x31 & DUP16 & $1$ & $2$ & Duplicates first item of the stack. \\
+\hline
+0x32 & DUPN & $1$ & $n$ & Duplicates $n-1$ item of the stack where $n$ is first item in stack. \\
+\hline
+0x33 & SWAP1 & $2$ & $2$ & Swaps two first items in the stack. \\
+\vdots & \vdots & \vdots & \vdots \\
+0x42 & SWAP16 & $2$ & $2$ & Swaps first and sixteenth items in the stack. \\
 \hline
 \end{tabularx}
 
@@ -94,9 +104,9 @@ Word is represented by 2 bits of word length and $6+8*(l+1)$ bits of data where 
 \begin{tabularx}{\textwidth}{ c l c c p{7cm} }
 \textbf{Code} & \textbf{Mnemonic} & \textbf{$\Uparrow$} & \textbf{$\Downarrow$} & \textbf{Description} \\
 \hline
-0x40 & MPUT & $1$ & $1$ & Saves first item in stack to the heap. Pushes address of the item in the heap. \\
+0x43 & MPUT & $1$ & $1$ & Saves first item in stack to the heap. Pushes address of the item in the heap. \\
 \hline
-0x41 & MGET & $1$ & $1$ & Pushes an item saved in heap corresponding to address given in first item of the stack.  \\
+0x44 & MGET & $1$ & $1$ & Pushes an item saved in heap corresponding to address given in first item of the stack.  \\
 \hline
 \end{tabularx}
 

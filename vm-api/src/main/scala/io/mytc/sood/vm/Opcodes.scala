@@ -51,8 +51,8 @@ object Opcodes {
     final val SWAP = 0x33
 
     // Heap
-    final val MPUT = 0x40
-    final val MGET = 0x41
+    final val MPUT = 0x43
+    final val MGET = 0x44
 
     // Int32 operations
     final val I32ADD = 0x60
