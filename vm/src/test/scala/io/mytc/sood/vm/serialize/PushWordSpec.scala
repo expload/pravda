@@ -1,13 +1,18 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 package serialize
 
 import java.nio.ByteBuffer
 
-import io.mytc.sood.vm.Vm
-import io.mytc.sood.vm.Opcodes.int.PUSHX
+import Opcodes.int.PUSHX
 import org.scalatest.{FlatSpec, Matchers}
 
 class PushWordSpec extends FlatSpec with Matchers {
+
+  final val LEN4 = 0xC0.toByte
+  final val LEN3 = 0x80.toByte
+  final val LEN2 = 0x40.toByte
+  final val LEN1 = 0x00.toByte
+  final val ZERO = 0x00.toByte
 
 
   "One-byte word" should "be converted to 1 Byte and 6 bits" in {

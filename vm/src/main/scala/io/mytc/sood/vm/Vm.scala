@@ -11,9 +11,6 @@ object Vm {
 
   import Opcodes.int._
 
-  // Procedure call
-
-
   def run(programm: ByteBuffer, enclosingStack: Option[ArrayBuffer[Word]]): Seq[Word] = {
     val callStack = new ArrayBuffer[Int](1024)
     val stack = enclosingStack.getOrElse(new ArrayBuffer[Word](1024))

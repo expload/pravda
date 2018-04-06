@@ -1,14 +1,14 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 
-import serialize._
-import vm.Opcodes.int._
+import VmUtils._
+import Opcodes.int._
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProcedureSpec extends FlatSpec with Matchers {
 
   def skip(p: Program): Program = prog
     .withStack(
-      pureWord(p.length + 1)
+      int32ToWord(p.length + 1)
     )
     .opcode(JUMP) +
     p
@@ -22,9 +22,9 @@ class ProcedureSpec extends FlatSpec with Matchers {
   implicit class ProgramWithProcedures(p: Program) {
     def call(procPosition: Int): Program = {
       p
-        .opcode(PUSHX)
-        .put(p.length + 13) // 13 - is the length of this program
-        .opcode(PUSHX)
+        .opcode(PUSH4)
+        .put(p.length + 11) // 11 - is the length of this program
+        .opcode(PUSH4)
         .put(procPosition)
         .opcode(JUMP)
     }
@@ -34,13 +34,13 @@ class ProcedureSpec extends FlatSpec with Matchers {
     // A simple procedure that gets nothing and returns contant number
     val proc = procedure {
       prog
-        .opcode(PUSHX).put(123) // result
+        .opcode(PUSH4).put(123) // result
     }
     val program = skip(proc)
 
     exec(program) shouldBe empty
-    exec(program.call(1)) shouldBe stack(pureWord(123))
-    exec(program.call(1).call(1)) shouldBe stack(pureWord(123), pureWord(123))
+    exec(program.call(1)) shouldBe stack(int32ToWord(123))
+    exec(program.call(1).call(1)) shouldBe stack(int32ToWord(123), int32ToWord(123))
 
   }
 }

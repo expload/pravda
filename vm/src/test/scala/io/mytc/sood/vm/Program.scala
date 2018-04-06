@@ -1,9 +1,9 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 
-import serialize._
 import java.nio.ByteBuffer
 
-import io.mytc.sood.vm.Vm.Word
+import Vm.Word
+import VmUtils._
 
 case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Word] = Vector.empty[Word]) {
   def buffer: ByteBuffer = ByteBuffer.wrap(bytes.toArray)
@@ -11,13 +11,16 @@ case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Word]
     copy(bytes ++ w)
   }
   def put(i: Int): Program = {
-    copy(bytes ++ word(i))
+    copy(bytes ++ int32ToWord(i))
   }
   def put(b: Byte): Program = {
-    copy(bytes ++ word(b))
+    copy(bytes :+ b)
   }
   def opcode(cmd: Int): Program = {
     copy(bytes :+ cmd.toByte)
+  }
+  def opcode(cmd: Byte): Program = {
+    copy(bytes :+ cmd)
   }
   def withStack(stack: Word*): Program = copy(stack = stack.to[Vector])
 
