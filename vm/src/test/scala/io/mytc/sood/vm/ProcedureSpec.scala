@@ -1,14 +1,14 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 
-import serialize._
-import vm.Vm._
+import VmUtils._
+import Opcodes.int._
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProcedureSpec extends FlatSpec with Matchers {
 
   def skip(p: Program): Program = prog
     .withStack(
-      pureWord(p.length + 1)
+      data(p.length + 1)
     )
     .opcode(JUMP) +
     p
@@ -39,8 +39,8 @@ class ProcedureSpec extends FlatSpec with Matchers {
     val program = skip(proc)
 
     exec(program) shouldBe empty
-    exec(program.call(1)) shouldBe stack(pureWord(123))
-    exec(program.call(1).call(1)) shouldBe stack(pureWord(123), pureWord(123))
+    exec(program.call(1)) shouldBe stack(data(123))
+    exec(program.call(1).call(1)) shouldBe stack(data(123), data(123))
 
   }
 }
