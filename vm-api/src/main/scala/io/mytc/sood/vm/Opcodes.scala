@@ -11,11 +11,6 @@ object Opcodes {
   // Stack
   final val POP = int.POP.toByte
   final val PUSHX = int.PUSHX.toByte
-  final val PUSH1 = int.PUSH1.toByte
-  final val PUSH2 = int.PUSH2.toByte
-  final val PUSH4 = int.PUSH4.toByte
-  final val PUSH8 = int.PUSH8.toByte
-  final val PUSH32 = int.PUSH32.toByte
 
   final val DUP = int.DUP.toByte
   final val SWAP = int.SWAP.toByte
@@ -41,11 +36,6 @@ object Opcodes {
     // Stack
     final val POP = 0x10
     final val PUSHX = 0x11
-    final val PUSH1 = 0x12
-    final val PUSH2 = 0x13
-    final val PUSH4 = 0x14
-    final val PUSH8 = 0x15
-    final val PUSH32 = 0x17
 
     final val DUP = 0x22
     final val SWAP = 0x33

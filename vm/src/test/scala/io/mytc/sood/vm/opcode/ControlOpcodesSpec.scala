@@ -8,78 +8,77 @@ import org.scalatest.{FlatSpec, Matchers}
 class ControlOpcodesSpec extends FlatSpec with Matchers {
 
   "CALL and RET opcodes" should "jump, remember where we have been before the jump and move there" in {
-    val program = prog.withStack(int32ToWord(7))
+    val program = prog.withStack(data(8))
       .opcode(JUMP) // jump over the procedure
-      .opcode(PUSH4).put(325).opcode(RET) // procedure
+      .opcode(PUSHX).put(325).opcode(RET) // procedure
     val program1 = program
-      .opcode(PUSH4).put(1).opcode(CALL) // call procedure
+      .opcode(PUSHX).put(1).opcode(CALL) // call procedure
     val program2 = program
-      .opcode(PUSH4).put(1).opcode(CALL) // call 1
-      .opcode(PUSH4).put(1).opcode(CALL) // call 2
+      .opcode(PUSHX).put(1).opcode(CALL) // call 1
+      .opcode(PUSHX).put(1).opcode(CALL) // call 2
 
     exec(program) shouldBe empty
-    exec(program1) shouldBe stack(int32ToWord(325))
-    exec(program2) shouldBe stack(int32ToWord(325), int32ToWord(325))
+    exec(program1) shouldBe stack(data(325))
+    exec(program2) shouldBe stack(data(325), data(325))
   }
 
   "STOP opcode" should "stop the program" in {
     val regularProgram = prog
-      .opcode(PUSH4).put(31)
-      .opcode(PUSH4).put(54)
-    exec(regularProgram) shouldBe stack(int32ToWord(31), int32ToWord(54))
+      .opcode(PUSHX).put(31)
+      .opcode(PUSHX).put(54)
+    exec(regularProgram) shouldBe stack(data(31), data(54))
 
     val programWithDeadCode = prog
-      .opcode(PUSH4).put(31)
+      .opcode(PUSHX).put(31)
       .opcode(STOP)
-      .opcode(PUSH4).put(54) // DEAD code
-    exec(programWithDeadCode) shouldBe stack(int32ToWord(31))
+      .opcode(PUSHX).put(54) // DEAD code
+    exec(programWithDeadCode) shouldBe stack(data(31))
   }
 
   "JUMP opcode" should "do a jump" in {
     val regularProgram = prog
-      .opcode(PUSH4).put(31)
-      .opcode(PUSH4).put(54)
-    exec(regularProgram) shouldBe stack(int32ToWord(31), int32ToWord(54))
+      .opcode(PUSHX).put(31)
+      .opcode(PUSHX).put(54)
+    exec(regularProgram) shouldBe stack(data(31), data(54))
 
     val programWithJump = prog
-        .opcode(PUSH4) // 0
-        .put(11) // 1
-        .opcode(JUMP) // 5
-        .opcode(PUSH4).put(31) // 6, 7
-        .opcode(PUSH4).put(54) // 11, 12
-    exec(programWithJump) shouldBe stack(int32ToWord(54))
+        .opcode(PUSHX) // 0
+        .put(13) // 1
+        .opcode(JUMP) // 6
+        .opcode(PUSHX).put(31) // 7, 8
+        .opcode(PUSHX).put(54) // 13, 14
+    exec(programWithJump) shouldBe stack(data(54))
   }
 
   "JUMPI opcode" should "do a conditional jump" in {
     def iprogram(i: Int) = prog
-      .opcode(PUSH4) // 0
-      .put(16) // 1
-      .opcode(PUSH4) // 5
-      .put(i) // 6
-      .opcode(JUMPI) // 10
-      .opcode(PUSH4).put(31) // 11, 12
-      .opcode(PUSH4).put(54) // 16, 17
+      .opcode(PUSHX) // 0
+      .put(19) // 1
+      .opcode(PUSHX) // 6
+      .put(i) // 7
+      .opcode(JUMPI) // 12
+      .opcode(PUSHX).put(31) // 13, 14
+      .opcode(PUSHX).put(54) // 19, 20
 
     def bprogram(b: Byte) = prog
-      .opcode(PUSH4) // 0
-      .put(13) // 1
-      .opcode(PUSH1) // 5
-      .put(b) // 6
-      .opcode(JUMPI) // 7
-      .opcode(PUSH4).put(31) // 8, 9
-      .opcode(PUSH4).put(54) // 13, 14
+      .opcode(PUSHX) // 0
+      .put(15) // 1
+      .opcode(PUSHX) // 6
+      .put(b) // 7
+      .opcode(JUMPI) // 8
+      .opcode(PUSHX).put(31) // 9, 10
+      .opcode(PUSHX).put(54) // 15, 16
 
 
-    exec(iprogram(1)) shouldBe stack(int32ToWord(54))
-    exec(iprogram(2)) shouldBe stack(int32ToWord(54))
-    exec(iprogram(0)) shouldBe stack(int32ToWord(31), int32ToWord(54))
-    exec(iprogram(-1)) shouldBe stack(int32ToWord(31), int32ToWord(54))
+    exec(iprogram(1)) shouldBe stack(data(54))
+    exec(iprogram(2)) shouldBe stack(data(54))
+    exec(iprogram(0)) shouldBe stack(data(31), data(54))
+    exec(iprogram(-1)) shouldBe stack(data(31), data(54))
 
 
-    exec(bprogram(1)) shouldBe stack(int32ToWord(54))
-    exec(bprogram(2)) shouldBe stack(int32ToWord(54))
-    exec(bprogram(0)) shouldBe stack(int32ToWord(31), int32ToWord(54))
-    exec(bprogram(-1)) shouldBe stack(int32ToWord(31), int32ToWord(54))
+    exec(bprogram(1)) shouldBe stack(data(54))
+    exec(bprogram(2)) shouldBe stack(data(54))
+    exec(bprogram(0)) shouldBe stack(data(31), data(54))
 
   }
 
