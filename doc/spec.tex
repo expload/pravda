@@ -78,16 +78,6 @@ Word is represented by 2 bits of word length and $6+8*(l+1)$ bits of data where 
 \hline
 0x11 & PUSHX & $0$ & $1$ & Pushes the word following the opcode to the stack. \\
 \hline
-0x12 & PUSH1 & $0$ & $1$ & Pushes 1 byte, which follow the opcode, to the stack. \\
-\hline
-0x13 & PUSH2 & $0$ & $1$ & Pushes 2 bytes, which follow the opcode, to the stack. \\
-\hline
-0x14 & PUSH4 & $0$ & $1$ & Pushes 4 bytes, which follow the opcode, to the stack. \\
-\hline
-0x15 & PUSH8 & $0$ & $1$ & Pushes 8 bytes, which follow the opcode, to the stack. \\
-\hline
-0x17 & PUSH32 & $0$ & $1$ & Pushes 32 bytes, which follow the opcode, to the stack. \\
-\hline
 0x22 & DUP1 & $1$ & $2$ & Duplicates first item of the stack. \\
 \vdots & \vdots & \vdots & \vdots \\
 0x31 & DUP16 & $1$ & $2$ & Duplicates first item of the stack. \\
