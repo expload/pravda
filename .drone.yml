@@ -1,0 +1,5 @@
+pipeline:
+  tests:
+    image: gcr.io/time-coin/sbt:latest
+    commands:
+      - sbt test
