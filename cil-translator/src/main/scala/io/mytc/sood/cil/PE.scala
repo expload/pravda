@@ -1,11 +1,7 @@
 package io.mytc.sood.cil
 
 import fastparse.byte.all._
-import BE._
-import fastparse.byte.all
-import fastparse.core
-
-import scala.collection.mutable.ArrayBuffer
+import LE._
 
 // See
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
@@ -39,7 +35,7 @@ object PE {
                       peHeaderStandardFields: PeHeaderStandardFields,
                       ntSpecificFields: NtSpecificFields,
                       peHeaderDataDirectories: PeHeaderDataDirectories,
-                      sectionHeaders: SectionHeaders)
+                      sectionHeaders: Seq[SectionHeaders])
 
   val msDosHeader: P[Long] = {
     val lfanew = UInt32
@@ -62,7 +58,7 @@ object PE {
     val entryRva = UInt32
     val codeBase = UInt32
     val dataBase = UInt32
-    P(BS(0x0B, 0x10) ~ AnyBytes(2) ~ codeSize ~ initDataSize ~ uninitDataSize ~ entryRva ~ codeBase ~ dataBase)
+    P(BS(0x0B, 0x01) ~ AnyBytes(2) ~ codeSize ~ initDataSize ~ uninitDataSize ~ entryRva ~ codeBase ~ dataBase)
       .map(PeHeaderStandardFields.tupled)
   }
 
@@ -72,7 +68,7 @@ object PE {
     val imageSize = UInt32
     val headerSize = UInt32
 
-    P(imageBase ~ sectionAligment ~ AnyByte(20) ~ imageSize ~ headerSize ~ AnyByte(32)).map(NtSpecificFields.tupled)
+    P(imageBase ~ sectionAligment ~ AnyBytes(20) ~ imageSize ~ headerSize ~ AnyBytes(32)).map(NtSpecificFields.tupled)
   }
 
   val peHeaderDataDirectories: P[PeHeaderDataDirectories] = {
@@ -93,12 +89,16 @@ object PE {
         AnyBytes(48) ~
         importAddressTableBase ~ importAddressTableSize ~
         AnyBytes(8) ~
-        cliHeaderBase ~ cliHeaderSize
+        cliHeaderBase ~ cliHeaderSize ~
+        AnyBytes(8)
     ).map(PeHeaderDataDirectories.tupled)
   }
 
   val sectionHeaders: P[SectionHeaders] = {
-    val name = Word32.!.map(bs => new String(bs.takeWhile(_ != 0).toArray))
+    val name = Word64.!.map(bs => {
+      println(bs)
+      new String(bs.takeWhile(_ != 0).toArray)
+    })
     val virtualSize = UInt32
     val virtualAddress = UInt32
     val sizeOfRawData = UInt32
@@ -110,11 +110,12 @@ object PE {
   }
 
   val peHeader: P[PeHeader] = {
-    msDosHeader.flatMap(
-      offset =>
-        P(AnyBytes((offset - 128).toInt /* 2GB for .exe file should be enough*/ )
-          ~ peFileHeader ~ peHeaderStandardFields ~ ntSpecificFields ~ peHeaderDataDirectories ~ sectionHeaders)
-          .map(PeHeader.tupled))
+    for {
+      offset <- msDosHeader
+      fileHeader <- P(AnyBytes((offset - 128).toInt)/* 2GB for .exe file should be enough*/ ~ peFileHeader)
+      (sFields, ntFields, dataDirs) <- P(peHeaderStandardFields ~ ntSpecificFields ~ peHeaderDataDirectories)
+      sections <- P(sectionHeaders.rep(exactly = fileHeader.sectionNumber))
+    } yield PeHeader(fileHeader, sFields, ntFields, dataDirs, sections)
   }
 
 }
