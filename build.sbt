@@ -12,10 +12,11 @@ val commonSettings = Seq(
   )
 )
 
-lazy val vm = (project in file("vm")).
+lazy val vmVersion = "0.0.1"
+lazy val vmApi = (project in file("vm-api")).
   settings(
-    normalizedName := "sood",
-    version := "0.0.1"
+    normalizedName := "sood-api",
+    version := vmVersion
   ).
   settings( commonSettings: _* ).
   settings(
@@ -23,6 +24,20 @@ lazy val vm = (project in file("vm")).
       "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
     )
   )
+
+lazy val vm = (project in file("vm")).
+  settings(
+    normalizedName := "sood",
+    version := vmVersion
+  ).
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
+      "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
+    )
+  ).
+  aggregate(vmApi).
+  dependsOn(vmApi)
 
 lazy val forth = (project in file("forth")).
   settings(

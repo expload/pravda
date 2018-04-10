@@ -1,10 +1,9 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 package opcode
 
-import serialize._
-import vm.Vm._
 import org.scalatest.{FlatSpec, Matchers}
-
+import VmUtils._
+import Opcodes.int._
 
 class HeapOpcodesSpec extends FlatSpec with Matchers {
 
@@ -13,8 +12,8 @@ class HeapOpcodesSpec extends FlatSpec with Matchers {
       .opcode(PUSHX).put(24)
       .opcode(MPUT)
     exec(program) should have length 1
-    exec(program) should not be stack(pureWord(24))
-    exec(program.opcode(MGET)) shouldBe stack(pureWord(24))
+    exec(program) should not be stack(data(24))
+    exec(program.opcode(MGET)) shouldBe stack(data(24))
   }
 
 }
