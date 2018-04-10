@@ -3,19 +3,32 @@ package io.mytc.sood.forth
 
 object Application {
 
-  def main(args: Array[String]): Unit = {
+  def compile(filename: String): Either[String, Array[Byte]] = {
+    import scala.io.Source
+    val compiler = Compiler()
+    val code = Source.fromFile(filename).getLines.toList.reduce(_ + "\n" + _)
+    val bcode = compiler.compile(code)
+    bcode
+  }
 
-    def test(code: String): Unit = Parser().parse(code) match {
-      case Right(res)     ⇒ println(res)
-      case Left(errorMsg) ⇒ println("failed: " + errorMsg)
+  def main(argv: Array[String]): Unit = {
+
+    import java.io.FileOutputStream
+    import java.io.BufferedOutputStream
+
+    if (argv.size < 1) {
+      println("Specify filename")
+      System.exit(1)
     }
 
-    test(":booka boo 3 *;")
-    test("2   5 + a234@#$ 0< if boo goo doo then:booka print print 2 *;")
-    test("abc")
-    test("<0")
-    test(">0<")
-    test(">0")
+    compile(argv(0)) match {
+      case Right(code) ⇒ {
+        val out = new BufferedOutputStream(new FileOutputStream("a.out"))
+        out.write(code)
+        out.close()
+      }
+      case Left(err) ⇒ System.err.println(err)
+    }
 
   }
 

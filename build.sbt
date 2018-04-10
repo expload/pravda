@@ -40,7 +40,6 @@ lazy val vm = (project in file("vm")).
   dependsOn(vmApi)
 
 lazy val asm = (project in file("asm")).
-  dependsOn(vm).
   dependsOn(vmApi).
   settings(
     normalizedName := "asm",
@@ -68,6 +67,21 @@ lazy val forth = (project in file("forth")).
   settings(
     libraryDependencies ++= Seq (
       "com.lihaoyi"    %% "fastparse"  % "1.0.0",
+      "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
+    )
+  )
+
+lazy val tests = (project in file("tests")).
+  dependsOn(vm).
+  dependsOn(asm).
+  dependsOn(forth).
+  settings(
+    normalizedName := "tests",
+    version := "0.0.1"
+  ).
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
       "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
     )
   )

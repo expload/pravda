@@ -4,7 +4,7 @@ package io.mytc.sood.forth
 class Parser {
   object grammar {
     import fastparse.all._
-    val alpha = P( CharIn("!@#$%^&*-_+=.<>/\\|~':;") | CharIn('a' to 'z') | CharIn('A' to 'Z') )
+    val alpha = P( CharIn("!@#$%^&*-_+=.<>/\\|~'") | CharIn('a' to 'z') | CharIn('A' to 'Z') )
     val digit = P( CharIn('0' to '9') )
     val aldig = P( alpha | digit )
     val delim = P( CharIn(" \t\r\n").rep(1) )
@@ -16,13 +16,16 @@ class Parser {
     val numbrStmt = P( nSgnPart.? ~ nIntPart ~ nFrcPart.? ~ nExpPart.? )
     val identStmt = P( (digit.rep ~ alpha ~ aldig.rep) | (aldig.rep ~ alpha ~ aldig.rep) )
 
-    val blockStmt: P[Seq[Statement]] = P( (
-      identStmt.!.map(v ⇒ Statement.Ident(v))           |
-      integStmt.!.map(v ⇒ Statement.Integ(v.toLong))    |
-      numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble))
-    ).rep(sep = delim) )
+    val dwordStmt = P(":" ~ delim ~ identStmt.! ~ delim ~ blockStmt ~ delim ~ ";")
 
-    val forthUnit = P(Start ~ delim.rep ~ blockStmt ~ End)
+    val blockStmt: P[Seq[Statement]] = P(
+      dwordStmt.map{case (n, b) ⇒ Statement.Dword(n, b)} |
+      identStmt.!.map(v ⇒ Statement.Ident(v))            |
+      integStmt.!.map(v ⇒ Statement.Integ(v.toInt))      |
+      numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble))
+    ).rep(sep = delim)
+
+    val forthUnit = P(Start ~ delim.rep ~ blockStmt ~ delim.rep ~ End)
   }
 
   def parse(code: String): Either[String, Seq[Statement]] = grammar.forthUnit.parse(code) match {

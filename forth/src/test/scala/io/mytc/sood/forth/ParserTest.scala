@@ -14,6 +14,9 @@ class ParserTest extends FlatSpec with Matchers {
     assert( p.parse("5 6 < if print then do other") == Right(Seq(
       Integ(5), Integ(6), Ident("<"), Ident("if"), Ident("print"), Ident("then"), Ident("do"), Ident("other")
     )))
+    assert( p.parse(": boo pop pop ;") == Right(Seq(
+      Dword("boo", Seq( Ident("pop"), Ident("pop") ) )
+    )))
   }
 
 }

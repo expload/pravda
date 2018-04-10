@@ -3,11 +3,39 @@ package io.mytc.sood.forth
 
 class Translator {
 
-  import io.mytc.sood.asm
+  import io.mytc.sood.asm.Op
 
-  def translate(unit: Seq[Statement]): Seq[asm.Op] = {
-    val ipack = unit.collect{ case s: Statement.Ident ⇒ s }.distinct.sortBy(_.v).zipWithIndex
-    Seq()
+  // TODO: name mangling
+  def mangle(name: String): String = name
+
+  def stmts(unit: Seq[Statement]): Seq[Statement] = {
+    unit.filter(!_.isInstanceOf[Statement.Dword])
   }
 
+  def words(unit: Seq[Statement]): Seq[Statement.Dword] = {
+    unit.collect{ case v: Statement.Dword ⇒ v.copy(name = mangle(v.name)) }
+  }
+
+  def translateStmts(stmts: Seq[Statement]): Seq[Op] = {
+    stmts.map{ w ⇒ w match {
+      case Statement.Ident(n) ⇒ Op.Call(mangle(n))
+      case Statement.Integ(v) ⇒ Op.Push(v)
+      case _                  ⇒ Op.Nop
+    } }
+  }
+
+  def translateWords(words: Seq[Statement.Dword]): Seq[Op] = {
+    words.map{ w ⇒
+      Op.Label(name = w.name) +: translateStmts(w.block) :+ Op.Ret
+    }.flatten
+  }
+
+  def translate(unit: Seq[Statement]): Seq[Op] = {
+    translateStmts(stmts(unit)) ++ Seq(Op.Stop) ++ translateWords(words(unit))
+  }
+
+}
+
+object Translator {
+  def apply(): Translator = new Translator
 }

@@ -10,6 +10,12 @@ class Parser {
     val hexw  = P( "0x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).! ).map(x ⇒ java.lang.Integer.valueOf(x, 16))
     val word  = P( CharIn('0' to '9').rep(1) ).!.map(x ⇒ java.lang.Integer.valueOf(x, 16))
 
+    val alpha = P( CharIn('a' to 'z') | CharIn('A' to 'Z') | CharIn("_") )
+    val digit = P( CharIn('0' to '9') )
+    val ident = P( alpha ~ ( alpha | digit ).rep )
+
+    val label = P( "@" ~ ident.! ~ ":" )
+
     val stop  = P( IgnoreCase("stp") )
     val jump  = P( IgnoreCase("jmp") )
     val jumpi = P( IgnoreCase("jmpi") )
@@ -19,7 +25,7 @@ class Parser {
     val dup   = P( IgnoreCase("dup") )
     val swap  = P( IgnoreCase("swp") )
 
-    val call  = P( IgnoreCase("call") )
+    val call  = P( IgnoreCase("call") ~ delim ~ "@" ~ ident.! )
     val ret   = P( IgnoreCase("ret") )
 
     val mput  = P( IgnoreCase("mput") )
@@ -31,24 +37,25 @@ class Parser {
     val mod   = P( IgnoreCase("mod") )
 
     val opseq: P[Seq[Op]] = P( (
-      stop  .!.map(_ ⇒ Op.Stop)    |
-      jump  .!.map(_ ⇒ Op.Jump)    |
-      jumpi .!.map(_ ⇒ Op.JumpI)   |
+      label   .map(n ⇒ Op.Label(n)) |
+      stop  .!.map(_ ⇒ Op.Stop)     |
+      jump  .!.map(_ ⇒ Op.Jump)     |
+      jumpi .!.map(_ ⇒ Op.JumpI)    |
 
-      pop   .!.map(_ ⇒ Op.Pop)     |
-      push    .map(x ⇒ Op.Push(x)) |
-      dup     .map(_ ⇒ Op.Dup)     |
-      swap    .map(_ ⇒ Op.Swap)    |
+      pop   .!.map(_ ⇒ Op.Pop)      |
+      push    .map(x ⇒ Op.Push(x))  |
+      dup     .map(_ ⇒ Op.Dup)      |
+      swap    .map(_ ⇒ Op.Swap)     |
 
-      call  .!.map(_ ⇒ Op.Call)    |
-      ret   .!.map(_ ⇒ Op.Ret)     |
+      call    .map(n ⇒ Op.Call(n))  |
+      ret   .!.map(_ ⇒ Op.Ret)      |
 
-      mput  .!.map(_ ⇒ Op.MPut)    |
-      mget  .!.map(_ ⇒ Op.MGet)    |
+      mput  .!.map(_ ⇒ Op.MPut)     |
+      mget  .!.map(_ ⇒ Op.MGet)     |
 
-      add   .!.map(_ ⇒ Op.I32Add)  |
-      mul   .!.map(_ ⇒ Op.I32Mul)  |
-      div   .!.map(_ ⇒ Op.I32Div)  |
+      add   .!.map(_ ⇒ Op.I32Add)   |
+      mul   .!.map(_ ⇒ Op.I32Mul)   |
+      div   .!.map(_ ⇒ Op.I32Div)   |
       mod   .!.map(_ ⇒ Op.I32Mod)
     ).rep(sep = delim) )
 
