@@ -46,7 +46,11 @@ As noted above persistence is an integral part of BSCE. Executions can read and 
 
 BVM executes bytecode in the format described below. Every program is a linear sequence of \textit{opcodes}. Any opcode is represented by one byte. Exception is "PUSHX" opcode which is represented by one byte for opcode itself and a word to represent a constant.
 
-Word is represented by 2 bits of word length and $6+8*(l+1)$ bits of data where $l$ is the number encoded in the first two bits.
+First 3 bits of the word encode length. This is the length of the length of the encoded data. For example, $256$ bytes of the data are encoded by the word of $258$ bytes , which are
+
+$$\underbrace{010}_{3~bits}\underbrace{00001~00000000}_{5~bits~+~1~byte} \underbrace{\cdots}_{256~bytes} $$
+
+If the length of the length is 0 the data is encoded by the rest $5$ bits of the byte.
 
 \subsection{Control}
 \begin{tabularx}{\textwidth}{ c l c c p{7cm} }
