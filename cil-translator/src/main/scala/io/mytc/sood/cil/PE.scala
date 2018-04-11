@@ -2,6 +2,7 @@ package io.mytc.sood.cil
 
 import fastparse.byte.all._
 import LE._
+import fastparse.core.Parsed._
 
 // See
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
@@ -13,29 +14,53 @@ object PE {
                                     initDataSize: Long,
                                     uninitDataSize: Long,
                                     entryRva: Long,
-                                    codeBase: Long,
-                                    dataBase: Long)
+                                    codeRva: Long,
+                                    dataRva: Long)
   case class NtSpecificFields(imageBase: Long, sectionAligment: Long, imageSize: Long, headerSize: Long)
-  case class PeHeaderDataDirectories(importTableBase: Long,
+  case class PeHeaderDataDirectories(importTableRva: Long,
                                      importTableSize: Long,
-                                     baseRelocationTableBase: Long,
+                                     baseRelocationTableRva: Long,
                                      baseRelocationBaseSize: Long,
-                                     importAddressTableBase: Long,
+                                     importAddressTableRva: Long,
                                      importAddressTableSize: Long,
-                                     cliHeaderBase: Long,
+                                     cliHeaderRva: Long,
                                      cliHeaderSize: Long)
-  case class SectionHeaders(name: String,
-                            virtualSize: Long,
-                            virtualAddress: Long,
-                            sizeOfRawData: Long,
-                            pointerToRawData: Long,
-                            characteristics: Int)
+  case class SectionHeader(name: String,
+                           virtualSize: Long,
+                           virtualAddress: Long,
+                           sizeOfRawData: Long,
+                           pointerToRawData: Long,
+                           characteristics: Int)
+
+  case class CliHeader(cb: Long,
+                       majorRuntimeVersion: Int,
+                       minorRuntimeVersion: Int,
+                       metadataRva: Long,
+                       metadataSize: Long,
+                       flags: Int,
+                       entryPointToken: Int,
+                       resourcesRva: Long,
+                       resourcesSize: Long,
+                       strongNameSignatureRva: Long,
+                       strongNameSignatureSize: Long,
+                       vTableFixupsRva: Long,
+                       vTableFixupsSize: Long)
+
+  case class StreamHeader(offset: Long, size: Long, name: String)
+
+  case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
 
   case class PeHeader(peFileHeader: PeFileHeader,
                       peHeaderStandardFields: PeHeaderStandardFields,
                       ntSpecificFields: NtSpecificFields,
                       peHeaderDataDirectories: PeHeaderDataDirectories,
-                      sectionHeaders: Seq[SectionHeaders])
+                      sectionHeaders: Seq[SectionHeader])
+
+  private def nullTerminatedString(len: Int): P[String] =
+    AnyBytes(len).!.map(bs => new String(bs.takeWhile(_ != 0).toArray))
+
+  private val nullTerminatedString: P[String] =
+    P(BytesWhile(_ != 0, min = 0).! ~ BS(0)).map(bs => new String(bs.toArray))
 
   val msDosHeader: P[Long] = {
     val lfanew = UInt32
@@ -56,9 +81,9 @@ object PE {
     val initDataSize = UInt32
     val uninitDataSize = UInt32
     val entryRva = UInt32
-    val codeBase = UInt32
-    val dataBase = UInt32
-    P(BS(0x0B, 0x01) ~ AnyBytes(2) ~ codeSize ~ initDataSize ~ uninitDataSize ~ entryRva ~ codeBase ~ dataBase)
+    val codeRva = UInt32
+    val dataRva = UInt32
+    P(BS(0x0B, 0x01) ~ AnyBytes(2) ~ codeSize ~ initDataSize ~ uninitDataSize ~ entryRva ~ codeRva ~ dataRva)
       .map(PeHeaderStandardFields.tupled)
   }
 
@@ -72,33 +97,30 @@ object PE {
   }
 
   val peHeaderDataDirectories: P[PeHeaderDataDirectories] = {
-    val importTableBase = UInt32
+    val importTableRva = UInt32
     val importTableSize = UInt32
-    val baseRelocationTableBase = UInt32
+    val baseRelocationTableRva = UInt32
     val baseRelocationTableSize = UInt32
-    val importAddressTableBase = UInt32
+    val importAddressTableRva = UInt32
     val importAddressTableSize = UInt32
-    val cliHeaderBase = UInt32
+    val cliHeaderRva = UInt32
     val cliHeaderSize = UInt32
 
     P(
       AnyBytes(8) ~
-        importTableBase ~ importTableSize ~
+        importTableRva ~ importTableSize ~
         AnyBytes(24) ~
-        baseRelocationTableBase ~ baseRelocationTableSize ~
+        baseRelocationTableRva ~ baseRelocationTableSize ~
         AnyBytes(48) ~
-        importAddressTableBase ~ importAddressTableSize ~
+        importAddressTableRva ~ importAddressTableSize ~
         AnyBytes(8) ~
-        cliHeaderBase ~ cliHeaderSize ~
+        cliHeaderRva ~ cliHeaderSize ~
         AnyBytes(8)
     ).map(PeHeaderDataDirectories.tupled)
   }
 
-  val sectionHeaders: P[SectionHeaders] = {
-    val name = Word64.!.map(bs => {
-      println(bs)
-      new String(bs.takeWhile(_ != 0).toArray)
-    })
+  val sectionHeader: P[SectionHeader] = {
+    val name = nullTerminatedString(8)
     val virtualSize = UInt32
     val virtualAddress = UInt32
     val sizeOfRawData = UInt32
@@ -106,16 +128,91 @@ object PE {
     val characteristics = Int32
 
     P(name ~ virtualSize ~ virtualAddress ~ sizeOfRawData ~ pointerToRawData ~ AnyBytes(12) ~ characteristics)
-      .map(SectionHeaders.tupled)
+      .map(SectionHeader.tupled)
+  }
+
+  val cliHeader: P[CliHeader] = {
+    val cb = UInt32
+    val majorRuntimeVersion = UInt16
+    val minorRuntimeVersion = UInt16
+    val metadataRva = UInt32
+    val metadataSize = UInt32
+    val flags = Int32
+    val entryPointToken = Int32
+    val resourcesRva = UInt32
+    val resourcesSize = UInt32
+    val strongNameSignatureRva = UInt32
+    val strongNameSignatureSize = UInt32
+    val vTableFixupsRva = UInt32
+    val vTableFixupsSize = UInt32
+
+    P(
+      cb ~
+        majorRuntimeVersion ~ minorRuntimeVersion ~
+        metadataRva ~ metadataSize ~
+        flags ~
+        entryPointToken ~
+        resourcesRva ~ resourcesSize ~
+        strongNameSignatureRva ~ strongNameSignatureSize ~
+        AnyBytes(8) ~
+        vTableFixupsRva ~ vTableFixupsSize ~
+        AnyBytes(16)).map(CliHeader.tupled)
+  }
+
+  val streamHeader: P[StreamHeader] = {
+    val offset = UInt32
+    val size = UInt32
+    val name = for {
+      s <- nullTerminatedString
+      padding <- if ((s.length + 1) % 4 == 0) Pass else AnyBytes(4 - (s.length + 1) % 4)
+    } yield s
+
+    P(offset ~ size ~ name).map(StreamHeader.tupled)
+  }
+
+  val metadataRoot: P[MetadataRoot] = {
+    val length = Int32
+    val version = length.flatMap(l => nullTerminatedString((l + 3) / 4 * 4))
+    val streamsNumber = UInt16
+    val streamHeaders = streamsNumber.flatMap(l => streamHeader.rep(exactly = l))
+    P(BS(0x42, 0x53, 0x4a, 0x42) ~ AnyBytes(8) ~ version ~ AnyBytes(2) ~ streamHeaders).map(MetadataRoot.tupled)
   }
 
   val peHeader: P[PeHeader] = {
     for {
       offset <- msDosHeader
-      fileHeader <- P(AnyBytes((offset - 128).toInt)/* 2GB for .exe file should be enough*/ ~ peFileHeader)
+      fileHeader <- P(AnyBytes((offset - 128).toInt) /* 2GB for .exe file should be enough*/ ~ peFileHeader)
       (sFields, ntFields, dataDirs) <- P(peHeaderStandardFields ~ ntSpecificFields ~ peHeaderDataDirectories)
-      sections <- P(sectionHeaders.rep(exactly = fileHeader.sectionNumber))
+      sections <- P(sectionHeader.rep(exactly = fileHeader.sectionNumber))
     } yield PeHeader(fileHeader, sFields, ntFields, dataDirs, sections)
   }
 
+  def bytesFromCva(file: Bytes, sections: Seq[SectionHeader], cva: Long): Bytes = {
+    val rvaSection = sections.find(s => cva >= s.virtualAddress && cva <= s.virtualAddress + s.virtualSize)
+    rvaSection match {
+      case Some(s) => {
+        val start = s.pointerToRawData + cva - s.virtualAddress
+        val finish = s.pointerToRawData + s.sizeOfRawData
+        file.slice(start, finish) // probably should be padded with zeros to virtualSize
+      }
+      case None => Bytes.empty
+    }
+  }
+
+  def parse(file: Bytes): Either[String, MetadataRoot] = {
+    def toEither[T](p: Parsed[T]): Either[String, T] = p match {
+      case Success(t, _)        => Right(t)
+      case f @ Failure(_, _, _) => Left(f.msg)
+    }
+
+    for {
+      header <- toEither(peHeader.parse(file))
+      cliHeader <- toEither(
+        cliHeader.parse(bytesFromCva(file, header.sectionHeaders, header.peHeaderDataDirectories.cliHeaderRva))
+      )
+      metadata <- toEither(
+        metadataRoot.parse(bytesFromCva(file, header.sectionHeaders, cliHeader.metadataRva))
+      )
+    } yield metadata
+  }
 }
