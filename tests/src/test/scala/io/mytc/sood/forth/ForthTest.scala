@@ -10,16 +10,45 @@ class ForthTest extends FlatSpec with Matchers {
   import java.nio.ByteBuffer
   import scala.collection.mutable.ArrayBuffer
 
-  "A forth compiler" must "correctly compile code" in {
-    val compiler = Compiler()
-    val res = compiler.compile( """
-      : seq5 1 2 3 4 5 ;
-    """ )
-
-    res match {
-      case Left(err)   ⇒ throw new RuntimeException(err)
-      case Right(code) ⇒ Vm.run(ByteBuffer.wrap(code), Option.empty[ArrayBuffer[Array[Byte]]])
+  def run(code: String): Either[String, List[Int]] = {
+    Compiler().compile(code, useStdLib=true) match {
+      case Left(err)   ⇒ Left(err)
+      case Right(code) ⇒ {
+        val stack = ArrayBuffer.empty[Array[Byte]]
+        Vm.run(ByteBuffer.wrap(code), Some(stack))
+        Right(stack.map(_.foldLeft(0){ case (s, i) => s + i }).toList)
+      }
     }
+  }
+
+  "A forth compiler" must "correctly define and run word" in {
+
+    assert( run( """
+      : seq5 1 2 3 ;
+      seq5
+    """ ) == Right(
+      List(1, 2, 3)
+    ))
+
+  }
+
+  "A forth standard library" must "define +" in {
+
+    assert( run( """
+      1 2 3 +
+    """ ) == Right(
+      List(3)
+    ))
+
+  }
+
+  "A forth standard library" must "define *" in {
+
+    assert( run( """
+      1 2 3 *
+    """ ) == Right(
+      List(1, 2, 3)
+    ))
 
   }
 

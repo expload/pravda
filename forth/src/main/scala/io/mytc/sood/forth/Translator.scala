@@ -30,8 +30,13 @@ class Translator {
     }.flatten
   }
 
-  def translate(unit: Seq[Statement]): Seq[Op] = {
-    translateStmts(stmts(unit)) ++ Seq(Op.Stop) ++ translateWords(words(unit))
+  def translate(unit: Seq[Statement], useStdLib: Boolean = false): Seq[Op] = {
+    val mainUnit = translateStmts(stmts(unit)) ++ Seq(Op.Stop) ++ translateWords(words(unit))
+    if (useStdLib) {
+      mainUnit ++ StdLib.words
+    } else {
+      mainUnit
+    }
   }
 
 }

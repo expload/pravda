@@ -33,4 +33,32 @@ class ParserTest extends FlatSpec with Matchers {
 
   }
 
+  "A parser" must "correctly parse labels" in {
+    val p = Parser()
+
+    assert(
+      p.parse( """
+        @+:
+      """ ) == Right(Seq(
+        Op.Label("+")
+      ))
+    )
+
+    assert(
+      p.parse( """
+        @%:
+      """ ) == Right(Seq(
+        Op.Label("%")
+      ))
+    )
+
+    assert(
+      p.parse( """
+        @@:
+      """ ) == Right(Seq(
+        Op.Label("@")
+      ))
+    )
+
+  }
 }
