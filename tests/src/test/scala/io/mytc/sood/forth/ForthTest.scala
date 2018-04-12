@@ -32,12 +32,34 @@ class ForthTest extends FlatSpec with Matchers {
 
   }
 
+  "A forth program " must " be able to push to the stack" in {
+
+    assert( run( """
+      1
+    """ ) == Right(
+      List(1)
+    ))
+
+    assert( run( """
+      1 2
+    """ ) == Right(
+      List(1, 2)
+    ))
+
+    assert( run( """
+      1 2 3
+    """ ) == Right(
+      List(1, 2, 3)
+    ))
+
+  }
+
   "A forth standard library" must "define +" in {
 
     assert( run( """
-      1 2 3 +
+      3 5 add
     """ ) == Right(
-      List(3)
+      List(8)
     ))
 
   }
@@ -47,7 +69,7 @@ class ForthTest extends FlatSpec with Matchers {
     assert( run( """
       1 2 3 *
     """ ) == Right(
-      List(1, 2, 3)
+      List(1, 6)
     ))
 
   }

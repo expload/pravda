@@ -17,22 +17,26 @@ object StdLib {
 
   val add: Seq[Op] = Seq(
     Op.Label("add"),
-    Op.I32Add
+    Op.I32Add,
+    Op.Ret
   )
 
   val mul: Seq[Op] = Seq(
     Op.Label("mul"),
-    Op.I32Mul
+    Op.I32Mul,
+    Op.Ret
   )
 
   val div: Seq[Op] = Seq(
     Op.Label("div"),
-    Op.I32Div
+    Op.I32Div,
+    Op.Ret
   )
 
   val mod: Seq[Op] = Seq(
     Op.Label("mod"),
-    Op.I32Mod
+    Op.I32Mod,
+    Op.Ret
   )
 
 }

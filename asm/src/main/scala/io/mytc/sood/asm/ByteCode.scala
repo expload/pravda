@@ -1,7 +1,7 @@
 package io.mytc.sood.asm
 
 
-class BCGen {
+class ByteCode {
 
   import io.mytc.sood.vm
   import vm.{ Opcodes ⇒ VM }
@@ -153,8 +153,40 @@ class BCGen {
     code.toArray
   }
 
+  def ungen(unit: Array[Byte]): Seq[(Int, Op)] = {
+
+    import java.nio.ByteBuffer
+    import vm.wordToBytes
+
+    val ubuf = ByteBuffer.wrap(unit)
+    val obuf = new ArrayBuffer[(Int, Op)]()
+
+    while (ubuf.remaining > 0) {
+      val pos = ubuf.position
+      ubuf.get() & 0xFF match {
+        case VM.PUSHX    ⇒ obuf += ((pos, Op.Push(wordToBytes(ubuf).sum.toInt)))
+        case VM.CALL     ⇒ obuf += ((pos, Op.Call("")))
+        case VM.STOP     ⇒ obuf += ((pos, Op.Stop    ))
+        case VM.JUMP     ⇒ obuf += ((pos, Op.Jump    ))
+        case VM.JUMPI    ⇒ obuf += ((pos, Op.JumpI   ))
+        case VM.POP      ⇒ obuf += ((pos, Op.Pop     ))
+        case VM.DUP      ⇒ obuf += ((pos, Op.Dup     ))
+        case VM.SWAP     ⇒ obuf += ((pos, Op.Swap    ))
+        case VM.RET      ⇒ obuf += ((pos, Op.Ret     ))
+        case VM.MPUT     ⇒ obuf += ((pos, Op.MPut    ))
+        case VM.MGET     ⇒ obuf += ((pos, Op.MGet    ))
+        case VM.I32ADD   ⇒ obuf += ((pos, Op.I32Add  ))
+        case VM.I32MUL   ⇒ obuf += ((pos, Op.I32Mul  ))
+        case VM.I32DIV   ⇒ obuf += ((pos, Op.I32Div  ))
+        case VM.I32MOD   ⇒ obuf += ((pos, Op.I32Mod  ))
+      }
+    }
+
+    obuf.toSeq
+  }
+
 }
 
-object BCGen {
-  def apply(): BCGen = new BCGen
+object ByteCode {
+  def apply(): ByteCode = new ByteCode
 }
