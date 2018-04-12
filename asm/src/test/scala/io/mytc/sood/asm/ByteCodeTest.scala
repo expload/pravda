@@ -9,7 +9,11 @@ class ByteCodeTest extends FlatSpec with Matchers {
     val bc = ByteCode()
     val prog = Array(0x11, 0x24, 0x00, 0x00, 0x00, 0x03, 0x11, 0x24, 0x00, 0x00, 0x00, 0x05, 0x60).map(_.toByte)
     val unit = bc.ungen(prog)
-    assert(unit == Seq(Op.Push(3), Op.Push(5), Op.I32Add))
+    assert(unit == Seq(
+      (0, Op.Push(3)),
+      (6, Op.Push(5)),
+      (12, Op.I32Add)
+    ))
   }
 
 }
