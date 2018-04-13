@@ -2,7 +2,6 @@ package io.mytc.sood.cil
 
 import fastparse.byte.all._
 import LE._
-import fastparse.byte.all
 
 object CIL {
   type Token = Int
@@ -358,7 +357,7 @@ object CIL {
     0x42 -> opCodeWithInt32(BgtUn),
     0x43 -> opCodeWithInt32(BleUn),
     0x44 -> opCodeWithInt32(BltUn),
-    0x45 -> /*switch*/PassWith(Nop),
+    0x45 -> /*switch*/PassWith(Nop), // FIXME !!!
     0x46 -> PassWith(LdIndI1),
     0x47 -> PassWith(LdIndU1),
     0x48 -> PassWith(LdIndI2),
@@ -545,4 +544,15 @@ object CIL {
     0x1D -> PassWith(RefAnyType),
     0x1E -> PassWith(Readonly)
   )
+
+  val code: P[Seq[OpCode]] = {
+    val oneByte = P( AnyByte.! ).flatMap(
+      b => parsers1Byte(b.head & 0xff)
+    )
+    val twoBytes = P( BS(0xFE) ~ AnyByte.! ).flatMap(
+      b => parsersAfterFE(b.head & 0xff)
+    )
+
+    P( (twoBytes | oneByte).rep )
+  }
 }

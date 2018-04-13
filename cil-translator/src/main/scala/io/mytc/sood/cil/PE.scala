@@ -48,6 +48,8 @@ object PE {
 
   case class StreamHeader(offset: Long, size: Long, name: String)
 
+  case class TildeStream(heapSizes: Byte, valid: Long, sorted: Long, tables: Seq[Seq[Tables.Info.TableRowInfo]])
+
   case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
 
   case class PeHeader(peFileHeader: PeFileHeader,
@@ -55,6 +57,8 @@ object PE {
                       ntSpecificFields: NtSpecificFields,
                       peHeaderDataDirectories: PeHeaderDataDirectories,
                       sectionHeaders: Seq[SectionHeader])
+
+  case class Pe(peHeader: PeHeader, cliHeader: CliHeader, metadataRoot: MetadataRoot, tildeStream: TildeStream)
 
   private def nullTerminatedString(len: Int): P[String] =
     AnyBytes(len).!.map(bs => new String(bs.takeWhile(_ != 0).toArray))
@@ -170,6 +174,33 @@ object PE {
     P(offset ~ size ~ name).map(StreamHeader.tupled)
   }
 
+  val tildeStream: P[TildeStream] = {
+    def bitsCount(x: Long): Int = {
+      var i = 0
+      var cnt = 0
+      while (i < 64) {
+        cnt += (if ((x & (1L << i)) != 0) 1 else 0)
+        i += 1
+      }
+      cnt
+    }
+
+    val heapSizes = Int8
+    val valid = Int64
+    val sorted = Int64
+
+    for {
+      _ <- AnyBytes(6)
+      hs <- heapSizes
+      _ <- AnyByte
+      v <- valid
+      s <- sorted
+      n = bitsCount(v)
+      rows <- P(UInt32.rep(exactly = n))
+      tables <- Tables.Info.tables(hs, v, rows)
+    } yield TildeStream(hs, v, s, tables)
+  }
+
   val metadataRoot: P[MetadataRoot] = {
     val length = Int32
     val version = length.flatMap(l => nullTerminatedString((l + 3) / 4 * 4))
@@ -187,11 +218,11 @@ object PE {
     } yield PeHeader(fileHeader, sFields, ntFields, dataDirs, sections)
   }
 
-  def bytesFromCva(file: Bytes, sections: Seq[SectionHeader], cva: Long): Bytes = {
-    val rvaSection = sections.find(s => cva >= s.virtualAddress && cva <= s.virtualAddress + s.virtualSize)
+  def bytesFromRva(file: Bytes, sections: Seq[SectionHeader], rva: Long): Bytes = {
+    val rvaSection = sections.find(s => rva >= s.virtualAddress && rva <= s.virtualAddress + s.virtualSize)
     rvaSection match {
       case Some(s) => {
-        val start = s.pointerToRawData + cva - s.virtualAddress
+        val start = s.pointerToRawData + rva - s.virtualAddress
         val finish = s.pointerToRawData + s.sizeOfRawData
         file.slice(start, finish) // probably should be padded with zeros to virtualSize
       }
@@ -199,7 +230,15 @@ object PE {
     }
   }
 
-  def parse(file: Bytes): Either[String, MetadataRoot] = {
+  def streamHeaderBytes(file: Bytes,
+                        sections: Seq[SectionHeader],
+                        metadataRva: Long,
+                        streamHeader: StreamHeader): Bytes = {
+    val rva = metadataRva + streamHeader.offset
+    bytesFromRva(file, sections, rva).take(streamHeader.size)
+  }
+
+  def parse(file: Bytes): Either[String, Pe] = {
     def toEither[T](p: Parsed[T]): Either[String, T] = p match {
       case Success(t, _)        => Right(t)
       case f @ Failure(_, _, _) => Left(f.msg)
@@ -208,11 +247,15 @@ object PE {
     for {
       header <- toEither(peHeader.parse(file))
       cliHeader <- toEither(
-        cliHeader.parse(bytesFromCva(file, header.sectionHeaders, header.peHeaderDataDirectories.cliHeaderRva))
+        cliHeader.parse(bytesFromRva(file, header.sectionHeaders, header.peHeaderDataDirectories.cliHeaderRva))
       )
       metadata <- toEither(
-        metadataRoot.parse(bytesFromCva(file, header.sectionHeaders, cliHeader.metadataRva))
+        metadataRoot.parse(bytesFromRva(file, header.sectionHeaders, cliHeader.metadataRva))
       )
-    } yield metadata
+      tildeHeader <- metadata.streamHeaders.find(_.name == "#~").map(Right(_)).getOrElse(Left("#~ stream not found"))
+      tildeStream <- toEither(
+        tildeStream.parse(streamHeaderBytes(file, header.sectionHeaders, cliHeader.metadataRva, tildeHeader))
+      )
+    } yield Pe(header, cliHeader, metadata, tildeStream)
   }
 }
