@@ -2,7 +2,7 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
-import Vm.Data
+import state.Data
 import VmUtils._
 
 case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Word] = Vector.empty[Word]) {

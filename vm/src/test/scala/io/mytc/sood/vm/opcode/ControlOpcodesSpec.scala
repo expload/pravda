@@ -8,14 +8,15 @@ import org.scalatest.{FlatSpec, Matchers}
 class ControlOpcodesSpec extends FlatSpec with Matchers {
 
   "CALL and RET opcodes" should "jump, remember where we have been before the jump and move there" in {
-    val program = prog.withStack(data(8))
+    val program = prog
+      .opcode(PUSHX).put(14)
       .opcode(JUMP) // jump over the procedure
       .opcode(PUSHX).put(325).opcode(RET) // procedure
     val program1 = program
-      .opcode(PUSHX).put(1).opcode(CALL) // call procedure
+      .opcode(PUSHX).put(7).opcode(CALL) // call procedure
     val program2 = program
-      .opcode(PUSHX).put(1).opcode(CALL) // call 1
-      .opcode(PUSHX).put(1).opcode(CALL) // call 2
+      .opcode(PUSHX).put(7).opcode(CALL) // call 1
+      .opcode(PUSHX).put(7).opcode(CALL) // call 2
 
     exec(program) shouldBe empty
     exec(program1) shouldBe stack(data(325))
