@@ -67,6 +67,8 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 0x04 & CALL & $1$ & $0$ & Firstly, it pushes current program counter to the separate stack (so called \emph{call stack}). Then it alters program execution counter to the value of the first item of the stack.  \\
 \hline
 0x05 & RET & $0$ & $0$ & Alters program execution counter to the value of the first item of the call stack (see CALL opcode).  \\
+\hline
+0x06 & PCALL & $1$ & $0$ & Executes a smart contract with the address corresponding to the top value of the stack.  \\
 
 \end{tabularx}
 
