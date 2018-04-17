@@ -2,20 +2,49 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
-import scala.annotation.switch
+import scala.annotation.{switch, tailrec}
 import scala.collection.mutable.ArrayBuffer
+import state.{Address, Memory, WorldState, Storage}
+
+import serialization._
 
 object Vm {
 
 
   import Opcodes.int._
 
-  type Data = Array[Byte]
+  def runTransaction(
+                      program: ByteBuffer,
+                      worldState: WorldState): Memory = {
 
-  def run(programm: ByteBuffer, enclosingStack: Option[ArrayBuffer[Data]]): Seq[Data] = {
+    val initMemory = Memory.empty
+    run(program, worldState, initMemory, None, 0)
+
+  }
+
+  def runProgram(
+                  programAddress: Address,
+                  initMemory: Memory = Memory.empty,
+                  worldState: WorldState,
+                  depth: Int = 0): Memory = {
+
+    val account = worldState.get(programAddress)
+    run(account.program, worldState, initMemory, Some(account.storage), depth + 1)
+
+  }
+
+  private def run(
+                   program: ByteBuffer,
+                   worldState: WorldState,
+                   initMemory: Memory,
+                   progStorage: Option[Storage],
+                   depth: Int): Memory = {
+
+    var mem = initMemory
+
+    lazy val storage = progStorage.get
+
     val callStack = new ArrayBuffer[Int](1024)
-    val stack = enclosingStack.getOrElse(new ArrayBuffer[Data](1024))
-    val heap = new ArrayBuffer[Data](1024)
 
     def callPop(): Int = {
       callStack.remove(callStack.length - 1)
@@ -25,90 +54,85 @@ object Vm {
       callStack += pos
     }
 
-    def pop() =
-      stack.remove(stack.length - 1)
-
-    def push(x: Data) =
-      stack += x
-
-    def aux(): Unit = if (programm.hasRemaining) {
-      (programm.get() & 0xff: @switch) match {
+    @tailrec def aux(): Unit = if (program.hasRemaining) {
+      (program.get() & 0xff: @switch) match {
         case CALL =>
-          callPush(programm.position())
-          programm.position(dataToInt32(pop()))
+          callPush(program.position())
+          program.position(dataToInt32(mem.pop()))
           aux()
         case RET =>
-          programm.position(callPop())
-          aux()
+          if(callStack.nonEmpty) {
+            program.position(callPop())
+            aux()
+          }
+        case PCALL =>
+          val address = mem.pop()
+          mem = runProgram(address, mem, worldState, depth)
         case JUMP =>
-          programm.position(dataToInt32(pop()))
+          program.position(dataToInt32(mem.pop()))
           aux()
         case JUMPI =>
-          if (pop().sum > 0)
-            programm.position(dataToInt32(pop()))
-          else pop()
+          if (mem.pop().sum > 0)
+            program.position(dataToInt32(mem.pop()))
+          else mem.pop()
           aux()
         case PUSHX =>
-          push(dataFromWord(programm))
+          mem.push(wordToData(program))
           aux()
         case POP =>
-          pop()
+          mem.pop()
           aux()
         case DUP =>
-          val x = pop()
-          push(x)
-          push(x)
+          val x = mem.pop()
+          mem.push(x)
+          mem.push(x)
           aux()
         case SWAP =>
-          val fsti = stack.length - 1
+          val fsti = mem.stack.length - 1
           val sndi = fsti - 1
-          val fst = stack(fsti)
-          val snd = stack(sndi)
-          stack(fsti) = snd
-          stack(sndi) = fst
+          val fst = mem.stack(fsti)
+          val snd = mem.stack(sndi)
+          mem.stack(fsti) = snd
+          mem.stack(sndi) = fst
           aux()
         case MPUT =>
-          val i = heap.length
-          heap += pop()
-          push(int32ToData(i))
+          val i = mem.heap.length
+          mem.heap += mem.pop()
+          mem.push(int32ToData(i))
           aux()
         case MGET =>
-          val i = dataToInt32(pop())
-          push(heap(i))
+          val i = dataToInt32(mem.pop())
+          mem.push(mem.heap(i))
+          aux()
+        case SPUT =>
+          val value = mem.pop()
+          val key = mem.pop()
+          storage.put(key, value)
+          aux()
+        case SGET =>
+          mem.push(storage.get(mem.pop()).get)
+          aux()
+        case SDROP =>
+          storage.delete(mem.pop())
           aux()
         case I32ADD =>
-          push(int32ToData(dataToInt32(pop()) + dataToInt32(pop())))
+          mem.push(int32ToData(dataToInt32(mem.pop()) + dataToInt32(mem.pop())))
           aux()
         case I32MUL =>
-          push(int32ToData(dataToInt32(pop()) * dataToInt32(pop())))
+          mem.push(int32ToData(dataToInt32(mem.pop()) * dataToInt32(mem.pop())))
           aux()
         case I32DIV =>
-          push(int32ToData(dataToInt32(pop()) / dataToInt32(pop())))
+          mem.push(int32ToData(dataToInt32(mem.pop()) / dataToInt32(mem.pop())))
           aux()
         case I32MOD =>
-          push(int32ToData(dataToInt32(pop()) % dataToInt32(pop())))
+          mem.push(int32ToData(dataToInt32(mem.pop()) % dataToInt32(mem.pop())))
           aux()
         case STOP => ()
       }
     }
-    programm.rewind()
+    program.rewind()
     aux()
-    // Return stack
-    stack
-  }
-
-  def dataToInt32(data: Data): Int = {
-    ByteBuffer.wrap(data).getInt
-  }
-
-  def int32ToData(i: Int): Data = {
-    val buf = ByteBuffer.allocate(4)
-    buf.putInt(i)
-    buf.array()
-  }
-
-  def dataFromWord(source: ByteBuffer): Data = {
-    wordToBytes(source)
+    mem
   }
 
 }
