@@ -68,6 +68,7 @@ object Vm {
         case PCALL =>
           val address = mem.pop()
           mem = runProgram(address, mem, worldState, depth)
+          aux()
         case JUMP =>
           program.position(dataToInt32(mem.pop()))
           aux()

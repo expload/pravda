@@ -5,8 +5,9 @@ import java.nio.ByteBuffer
 import state.Data
 import VmUtils._
 
-case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Word] = Vector.empty[Word]) {
-  def buffer: ByteBuffer = ByteBuffer.wrap(bytes.toArray)
+case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
+  def buffer: ByteBuffer =
+    ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w)).toArray ++ bytes)
 
   def put(i: Int): Program = {
     copy(bytes ++ int32ToWord(i))

@@ -1,7 +1,5 @@
 package io.mytc.sood.vm
 
-import java.nio.ByteBuffer
-
 import io.mytc.sood.vm.state.{AccountState, Address, Data, WorldState}
 import serialization._
 
@@ -12,8 +10,11 @@ object VmUtils {
   }
 
   def exec(p: Program): Array[Data] = {
-    val program = p.stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w)).toArray ++ p.bytes
-    Vm.runTransaction(ByteBuffer.wrap(program), emptyState).stack.toArray
+    Vm.runTransaction(p.buffer, emptyState).stack.toArray
+  }
+
+  def exec(p: Program, worldState: WorldState): Array[Data] = {
+    Vm.runTransaction(p.buffer, worldState).stack.toArray
   }
 
   def stack(item: Data*): Array[Data] =  item.toArray
