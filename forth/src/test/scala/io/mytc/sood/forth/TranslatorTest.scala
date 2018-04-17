@@ -37,4 +37,45 @@ class TranslatorTest extends FlatSpec with Matchers {
     )
   }
 
+  it must "translate push" in {
+    val t = Translator()
+    assert(
+      t.translate(Seq(
+        Integ(1)
+      )) ==
+      Seq(
+        Op.Push(1),
+        Op.Stop
+      )
+    )
+  }
+
+  it must "translate push large number for int32" in {
+    val t = Translator()
+    assert(
+      t.translate(Seq(
+        Integ(0xFFFFFFFF)
+      )) ==
+      Seq(
+        Op.Push(0xFFFFFFFF),
+        Op.Stop
+      )
+    )
+  }
+
+  it must "translate labels" in {
+    val t = Translator()
+    assert(
+      t.translate(Seq(
+        Dword("seq", Seq(Ident("nop")))
+      )) ==
+      Seq(
+        Op.Stop,
+        Op.Label("seq"),
+        Op.Call("nop"),
+        Op.Ret
+      )
+    )
+  }
+
 }
