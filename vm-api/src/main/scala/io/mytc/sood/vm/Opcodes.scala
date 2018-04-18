@@ -32,6 +32,15 @@ object Opcodes {
   final val I32DIV = int.I32DIV.toByte
   final val I32MOD = int.I32MUL.toByte
 
+  // Boolean operations
+  final val NOT = int.NOT.toByte
+  final val AND = int.AND.toByte
+  final val OR = int.OR.toByte
+  final val XOR = int.XOR.toByte
+  final val EQ = int.EQ.toByte
+  final val I32LT = int.I32LT.toByte
+  final val I32GT = int.I32GT.toByte
+
   object int {
     // Control
     final val STOP = 0x00
@@ -63,5 +72,15 @@ object Opcodes {
     final val I32MUL = 0x61
     final val I32DIV = 0x62
     final val I32MOD = 0x63
+
+    // Boolean operations
+    final val NOT = 0x80
+    final val AND = 0x81
+    final val OR = 0x82
+    final val XOR = 0x83
+    final val EQ = 0x84
+    final val I32LT = 0x85
+    final val I32GT = 0x86
+
   }
 }
