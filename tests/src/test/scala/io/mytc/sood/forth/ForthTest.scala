@@ -1,5 +1,6 @@
 package io.mytc.sood.forth
 
+import io.mytc.sood.vm.state.{AccountState, Address, WorldState}
 import org.scalatest._
 
 
@@ -8,14 +9,15 @@ class ForthTest extends FlatSpec with Matchers {
   import io.mytc.sood.vm.Vm
   import io.mytc.sood.forth.Compiler
   import java.nio.ByteBuffer
-  import scala.collection.mutable.ArrayBuffer
 
   def run(code: String): Either[String, List[Int]] = {
     Compiler().compile(code, useStdLib=true) match {
       case Left(err)   ⇒ Left(err)
       case Right(code) ⇒ {
-        val stack = ArrayBuffer.empty[Array[Byte]]
-        Vm.run(ByteBuffer.wrap(code), Some(stack))
+        val emptyState = new WorldState {
+          override def get(address: Address): AccountState = ???
+        }
+        val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
         Right(stack.map(_.foldLeft(0){ case (s, i) => s + i }).toList)
       }
     }
