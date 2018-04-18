@@ -34,9 +34,9 @@ Persistence is an integral part of BSCE which is a representation of a global st
 Code can be executed.
 \subsection{Execution scopes}
 
-Launched code is named execution. There are two execution scopes: transaction and smart-contract. If launched code is placed in a transaction it has \textit{transaction scope}. Similarly if launched code is placed in a smart-contract it has \textit{smart-contract scope}. Every execution has its own heap. 
+Launched code is named execution. There are two execution scopes: transaction and smart-contract. If launched code is placed in a transaction it has \textit{transaction scope}. Similarly if launched code is placed in a smart-contract it has \textit{smart-contract scope}.
 
-Execution in transactions scope has not persistent storage but has its own stack. Execution in smart-contacts scope inherits a stack from an execution which launches it. Also it has persistent storage shared between all the executions of the smart-contract.
+Execution in transactions scope has not persistent storage but has its own stack and heap. Execution in smart-contacts scope inherits both stack and heap from the execution which launches it. Also it has persistent storage shared between all the executions of the smart-contract.
 
 \subsection{Transaction isolation}
 
