@@ -72,9 +72,10 @@ object Vm {
           program.position(dataToInt32(mem.pop()))
           aux()
         case JUMPI =>
-          if (mem.pop().exists(_ != 0.toByte))
-            program.position(dataToInt32(mem.pop()))
-          else mem.pop()
+          val condition = mem.pop()
+          val position = mem.pop()
+          if (dataToBool(condition))
+            program.position(dataToInt32(position))
           aux()
         case PUSHX =>
           mem.push(wordToData(program))
@@ -128,21 +129,27 @@ object Vm {
           mem.push(int32ToData(dataToInt32(mem.pop()) % dataToInt32(mem.pop())))
           aux()
         case NOT =>
-          mem.push(bytewise(mem.pop())(~ _))
+          mem.push(boolToData(!dataToBool(mem.pop())))
           aux()
         case AND =>
+          val left = mem.pop()
+          val right = mem.pop()
           mem.push(
-            bytewise(mem.pop(), mem.pop())(_ & _)(0.toByte)
+            boolToData(dataToBool(left) && dataToBool(right))
           )
           aux()
         case OR =>
+          val left = mem.pop()
+          val right = mem.pop()
           mem.push(
-            bytewise(mem.pop(), mem.pop())(_ | _)(0xFF.toByte)
+            boolToData(dataToBool(left) || dataToBool(right))
           )
           aux()
         case XOR =>
+          val left = mem.pop()
+          val right = mem.pop()
           mem.push(
-            bytewise(mem.pop(), mem.pop())(_ ^ _)(0.toByte)
+            boolToData(dataToBool(left) ^ dataToBool(right))
           )
           aux()
         case EQ =>
@@ -164,21 +171,4 @@ object Vm {
     mem
   }
 
-  val FALSE: Data = Array(0.toByte)
-  val TRUE: Data = Array(1.toByte)
-
-  def boolToData(b: Boolean): Data = {
-    if(b) TRUE else FALSE
-  }
-
-  def bytewise(d: Data)(f: (Byte) => Int): Data = {
-    d.map(f(_).toByte)
-  }
-
-  def bytewise(d1: Data, d2: Data)(f: (Byte, Byte) => Int)(neutral: Byte): Data = {
-    val len = math.max(d1.length, d2.length)
-    d1.reverseIterator.zipAll(d2.reverseIterator, neutral, neutral).map{
-      case (b1, b2) => f(b1, b2).toByte
-    }.toArray.reverse
-  }
 }

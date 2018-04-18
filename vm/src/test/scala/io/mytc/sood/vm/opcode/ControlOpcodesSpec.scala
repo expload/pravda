@@ -74,7 +74,7 @@ class ControlOpcodesSpec extends FlatSpec with Matchers {
     exec(iprogram(1)) shouldBe stack(data(54))
     exec(iprogram(2)) shouldBe stack(data(54))
     exec(iprogram(0)) shouldBe stack(data(31), data(54))
-    exec(iprogram(-1)) shouldBe stack(data(31), data(54))
+    exec(iprogram(-1)) shouldBe stack(data(54))
 
 
     exec(bprogram(1)) shouldBe stack(data(54))

@@ -38,6 +38,10 @@ object VmUtils {
     int32ToData(i)
   }
 
+  def data(b: Byte): Data = {
+    Array(b)
+  }
+
   def int(d: Data): Int = {
     dataToInt32(d)
   }
