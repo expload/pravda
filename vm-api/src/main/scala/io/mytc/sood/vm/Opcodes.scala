@@ -72,6 +72,8 @@ object Opcodes {
     final val I32MUL = 0x61
     final val I32DIV = 0x62
     final val I32MOD = 0x63
+    final val I32LT = 0x67
+    final val I32GT = 0x68
 
     // Boolean operations
     final val NOT = 0x80
@@ -79,8 +81,6 @@ object Opcodes {
     final val OR = 0x82
     final val XOR = 0x83
     final val EQ = 0x84
-    final val I32LT = 0x85
-    final val I32GT = 0x86
 
   }
 }

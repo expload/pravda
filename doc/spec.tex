@@ -126,7 +126,30 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \hline
 0x63 & I32MOD & $2$ & $1$ & Finds the remainder after division of two int32 from the stack. \\
 \hline
+0x67 & I32GT & $2$ & $1$ & Defines whether the top element of the stack is greater than the second. \\
+\hline
+0x68 & I32LT & $2$ & $1$ & Defines whether the top element of the stack is less than the second. \\
+\hline
+
 \end{tabularx}
+
+\subsection{Logical operations}
+\begin{tabularx}{\textwidth}{ c l c c p{7cm} }
+\textbf{Code} & \textbf{Mnemonic} & \textbf{$\Uparrow$} & \textbf{$\Downarrow$} & \textbf{Description} \\
+\hline
+0x80 & NOT & $1$ & $1$ & Negates the top element of the stack. \\
+\hline
+0x81 & AND & $2$ & $1$ & Calculates "logical and" operation for top two elements. \\
+\hline
+0x82 & OR & $2$ & $1$ & Calculates "logical or" operation for top two elements. \\
+\hline
+0x83 & XOR & $2$ & $1$ & Calculates "logical xor" operation for top two elements. \\
+\hline
+0x84 & EQ & $2$ & $1$ & Defines whether the top element is equal to the second. \\
+\hline
+
+\end{tabularx}
+
 
 \begin{thebibliography}{9}
 
