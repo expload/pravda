@@ -1,6 +1,5 @@
 package io.mytc.sood.forth
 
-
 object Application {
 
   def compile(filename: String): Either[String, Array[Byte]] = {

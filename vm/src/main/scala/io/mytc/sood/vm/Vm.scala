@@ -7,7 +7,6 @@ import scala.collection.mutable.ArrayBuffer
 
 object Vm {
 
-
   import Opcodes.int._
 
   type Data = Array[Byte]
