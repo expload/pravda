@@ -4,7 +4,11 @@ import fastparse.byte.all._
 import LE._
 
 object CIL {
-  type Token = Int
+  sealed trait Token
+
+  case object Ignored extends Token
+  final case class Str(str: String) extends Token
+  final case class Method()
 
   sealed trait OpCode
 

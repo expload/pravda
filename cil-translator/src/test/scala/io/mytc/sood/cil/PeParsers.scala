@@ -1,21 +1,21 @@
 package io.mytc.sood.cil
 
-import org.scalatest.{FlatSpec, Matchers}
 import java.nio.file.{Files, Paths}
 
 import fastparse.byte.all._
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
 class PeParsers extends FlatSpec with Matchers {
   "hello_world.exe" should "be parsed correctly" in {
-    import PE._
-    import Tables.Info._
+    import PE.Info._
+    import TablesInfo._
+
     val helloWorldExe = Files.readAllBytes(Paths.get(this.getClass.getResource("/hello_world.exe").getPath))
-    val ans = PE.parse(Bytes(helloWorldExe))
+    val ans = PE.parseInfo(Bytes(helloWorldExe))
 
     helloWorldExe.length shouldBe 3072
-
     ans shouldBe Right(
       Pe(
         PeHeader(
@@ -38,10 +38,17 @@ class PeParsers extends FlatSpec with Matchers {
                       StreamHeader(504, 16, "#GUID"),
                       StreamHeader(520, 56, "#Blob"))
         ),
-        TildeStream(
-          0,
-          38654711111L,
-          24190111578624L,
+        PeData(
+          hex"""0x003c4d6f64756c653e0054657374006172677300436f6e
+                736f6c650053797374656d0057726974654c696e65004f62
+                6a656374002e63746f72004d61696e00746d700052756e74
+                696d65436f6d7061746962696c6974794174747269627574
+                650053797374656d2e52756e74696d652e436f6d70696c65
+                725365727669636573006d73636f726c696200746d702e65
+                7865000000""",
+          hex"""0x00040001010e03200001050001011d0e1e010001005402
+               16577261704e6f6e457863657074696f6e5468726f7773010
+               8b77a5c561934e089""",
           List(
             ArrayBuffer(ModuleRow),
             ArrayBuffer(TypeRefRow, TypeRefRow, TypeRefRow),
@@ -53,7 +60,12 @@ class PeParsers extends FlatSpec with Matchers {
             ArrayBuffer(AssemblyRow),
             ArrayBuffer(AssemblyRefRow)
           )
+        ),
+        Seq(
+          TinyMethodHeader(hex"0x02280200000a2a"),
+          TinyMethodHeader(hex"0x7201000070280100000a2a")
         )
-      ))
+      )
+    )
   }
 }

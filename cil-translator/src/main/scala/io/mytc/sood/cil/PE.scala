@@ -8,63 +8,75 @@ import fastparse.core.Parsed._
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
 //   page 303
 object PE {
+  object Info {
+    case class PeFileHeader(sectionNumber: Int,
+                            optionHeaderSize: Int /*probably non necessary*/,
+                            characteristics: Short)
+    case class PeHeaderStandardFields(codeSize: Long,
+                                      initDataSize: Long,
+                                      uninitDataSize: Long,
+                                      entryRva: Long,
+                                      codeRva: Long,
+                                      dataRva: Long)
+    case class NtSpecificFields(imageBase: Long, sectionAligment: Long, imageSize: Long, headerSize: Long)
+    case class PeHeaderDataDirectories(importTableRva: Long,
+                                       importTableSize: Long,
+                                       baseRelocationTableRva: Long,
+                                       baseRelocationBaseSize: Long,
+                                       importAddressTableRva: Long,
+                                       importAddressTableSize: Long,
+                                       cliHeaderRva: Long,
+                                       cliHeaderSize: Long)
+    case class SectionHeader(name: String,
+                             virtualSize: Long,
+                             virtualAddress: Long,
+                             sizeOfRawData: Long,
+                             pointerToRawData: Long,
+                             characteristics: Int)
 
-  case class PeFileHeader(sectionNumber: Int, optionHeaderSize: Int /*probably non necessary*/, characteristics: Short)
-  case class PeHeaderStandardFields(codeSize: Long,
-                                    initDataSize: Long,
-                                    uninitDataSize: Long,
-                                    entryRva: Long,
-                                    codeRva: Long,
-                                    dataRva: Long)
-  case class NtSpecificFields(imageBase: Long, sectionAligment: Long, imageSize: Long, headerSize: Long)
-  case class PeHeaderDataDirectories(importTableRva: Long,
-                                     importTableSize: Long,
-                                     baseRelocationTableRva: Long,
-                                     baseRelocationBaseSize: Long,
-                                     importAddressTableRva: Long,
-                                     importAddressTableSize: Long,
-                                     cliHeaderRva: Long,
-                                     cliHeaderSize: Long)
-  case class SectionHeader(name: String,
-                           virtualSize: Long,
-                           virtualAddress: Long,
-                           sizeOfRawData: Long,
-                           pointerToRawData: Long,
-                           characteristics: Int)
+    case class CliHeader(cb: Long,
+                         majorRuntimeVersion: Int,
+                         minorRuntimeVersion: Int,
+                         metadataRva: Long,
+                         metadataSize: Long,
+                         flags: Int,
+                         entryPointToken: Int,
+                         resourcesRva: Long,
+                         resourcesSize: Long,
+                         strongNameSignatureRva: Long,
+                         strongNameSignatureSize: Long,
+                         vTableFixupsRva: Long,
+                         vTableFixupsSize: Long)
 
-  case class CliHeader(cb: Long,
-                       majorRuntimeVersion: Int,
-                       minorRuntimeVersion: Int,
-                       metadataRva: Long,
-                       metadataSize: Long,
-                       flags: Int,
-                       entryPointToken: Int,
-                       resourcesRva: Long,
-                       resourcesSize: Long,
-                       strongNameSignatureRva: Long,
-                       strongNameSignatureSize: Long,
-                       vTableFixupsRva: Long,
-                       vTableFixupsSize: Long)
+    case class StreamHeader(offset: Long, size: Long, name: String)
 
-  case class StreamHeader(offset: Long, size: Long, name: String)
+    case class TildeStream(heapSizes: Byte, valid: Long, sorted: Long, tables: Seq[Seq[Tables.Info.TableRowInfo]])
 
-  case class TildeStream(heapSizes: Byte, valid: Long, sorted: Long, tables: Seq[Seq[Tables.Info.TableRowInfo]])
+    case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
 
-  case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
+    case class PeHeader(peFileHeader: PeFileHeader,
+                        peHeaderStandardFields: PeHeaderStandardFields,
+                        ntSpecificFields: NtSpecificFields,
+                        peHeaderDataDirectories: PeHeaderDataDirectories,
+                        sectionHeaders: Seq[SectionHeader])
 
-  case class PeHeader(peFileHeader: PeFileHeader,
-                      peHeaderStandardFields: PeHeaderStandardFields,
-                      ntSpecificFields: NtSpecificFields,
-                      peHeaderDataDirectories: PeHeaderDataDirectories,
-                      sectionHeaders: Seq[SectionHeader])
+    sealed trait MethodHeader {
+      val codeBytes: Bytes
+    }
+    case class TinyMethodHeader(codeBytes: Bytes) extends MethodHeader
+    case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Int, codeBytes: Bytes)
+        extends MethodHeader
 
-  case class Pe(peHeader: PeHeader, cliHeader: CliHeader, metadataRoot: MetadataRoot, tildeStream: TildeStream)
+    case class PeData(stringHeap: Bytes, blobHeap: Bytes, tables: Seq[Seq[Tables.Info.TableRowInfo]])
 
-  private def nullTerminatedString(len: Int): P[String] =
-    AnyBytes(len).!.map(bs => new String(bs.takeWhile(_ != 0).toArray))
+    case class Pe(peHeader: PeHeader,
+                  cliHeader: CliHeader,
+                  metadataRoot: MetadataRoot,
+                  peData: PeData,
+                  methods: Seq[MethodHeader])
+  }
 
-  private val nullTerminatedString: P[String] =
-    P(BytesWhile(_ != 0, min = 0).! ~ BS(0)).map(bs => new String(bs.toArray))
+  import Info._
 
   val msDosHeader: P[Long] = {
     val lfanew = UInt32
@@ -124,7 +136,7 @@ object PE {
   }
 
   val sectionHeader: P[SectionHeader] = {
-    val name = nullTerminatedString(8)
+    val name = utils.nullTerminatedString(8)
     val virtualSize = UInt32
     val virtualAddress = UInt32
     val sizeOfRawData = UInt32
@@ -167,7 +179,7 @@ object PE {
     val offset = UInt32
     val size = UInt32
     val name = for {
-      s <- nullTerminatedString
+      s <- utils.nullTerminatedString
       padding <- if ((s.length + 1) % 4 == 0) Pass else AnyBytes(4 - (s.length + 1) % 4)
     } yield s
 
@@ -209,6 +221,28 @@ object PE {
     P(BS(0x42, 0x53, 0x4a, 0x42) ~ AnyBytes(8) ~ version ~ AnyBytes(2) ~ streamHeaders).map(MetadataRoot.tupled)
   }
 
+  val method: P[MethodHeader] = {
+    P(Int8)
+      .flatMap(
+        b => {
+          (b & 0x3) /*method flags*/ match {
+            case 0x2 => AnyBytes(b.toInt >> 2).!.map(TinyMethodHeader)
+            case 0x3 =>
+              val flagsAndSize =
+                P(Int8).map(b2 => (b.toInt + ((b2 & 0xf) << 8) /*flags*/, (b2 & 0x0f) >> 4) /*size*/ )
+              val maxStack = UInt16
+              val codeSize = UInt32
+              val localVarSigTok = Int32
+
+              P(flagsAndSize ~ maxStack ~ codeSize ~ localVarSigTok).flatMap {
+                case (f, s, ms, cs, lTok) =>
+                  AnyBytes(cs.toInt /* only 2GB again */ ).!.map(bs => FatMethodHeader(f, s, ms, lTok, bs))
+              }
+          }
+        }
+      )
+  }
+
   val peHeader: P[PeHeader] = {
     for {
       offset <- msDosHeader
@@ -221,11 +255,10 @@ object PE {
   def bytesFromRva(file: Bytes, sections: Seq[SectionHeader], rva: Long): Bytes = {
     val rvaSection = sections.find(s => rva >= s.virtualAddress && rva <= s.virtualAddress + s.virtualSize)
     rvaSection match {
-      case Some(s) => {
+      case Some(s) =>
         val start = s.pointerToRawData + rva - s.virtualAddress
         val finish = s.pointerToRawData + s.sizeOfRawData
         file.slice(start, finish) // probably should be padded with zeros to virtualSize
-      }
       case None => Bytes.empty
     }
   }
@@ -238,24 +271,39 @@ object PE {
     bytesFromRva(file, sections, rva).take(streamHeader.size)
   }
 
-  def parse(file: Bytes): Either[String, Pe] = {
-    def toEither[T](p: Parsed[T]): Either[String, T] = p match {
-      case Success(t, _)        => Right(t)
-      case f @ Failure(_, _, _) => Left(f.msg)
-    }
-
+  def parseInfo(file: Bytes): Either[String, Pe] = {
     for {
-      header <- toEither(peHeader.parse(file))
-      cliHeader <- toEither(
-        cliHeader.parse(bytesFromRva(file, header.sectionHeaders, header.peHeaderDataDirectories.cliHeaderRva))
+      header <- utils.toEither(peHeader.parse(file))
+      sections = header.sectionHeaders
+
+      fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
+
+      cliHeader <- utils.toEither(cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)))
+      metadataRva = cliHeader.metadataRva
+
+      metadata <- utils.toEither(metadataRoot.parse(fileBytesFromRva(metadataRva)))
+      streamHeaders = metadata.streamHeaders
+
+      retrieveStream = (name: String) =>
+        streamHeaders
+          .find(_.name == name)
+          .map(h => Right(streamHeaderBytes(file, sections, metadataRva, h)))
+          .getOrElse(Left(s"$name heap not found"))
+
+      tildeStreamBytes <- retrieveStream("#~")
+      stringHeap <- retrieveStream("#Strings")
+      blobHeap <- retrieveStream("#Blob")
+
+      tildeStream <- utils.toEither(tildeStream.parse(tildeStreamBytes))
+
+      methods <- utils.sequenceEither(
+        tildeStream.tables.flatMap(_.collect {
+          case TablesInfo.MethodDefRow(rva, _, _, _, _, _) =>
+            utils.toEither(method.parse(fileBytesFromRva(rva)))
+        })
       )
-      metadata <- toEither(
-        metadataRoot.parse(bytesFromRva(file, header.sectionHeaders, cliHeader.metadataRva))
-      )
-      tildeHeader <- metadata.streamHeaders.find(_.name == "#~").map(Right(_)).getOrElse(Left("#~ stream not found"))
-      tildeStream <- toEither(
-        tildeStream.parse(streamHeaderBytes(file, header.sectionHeaders, cliHeader.metadataRva, tildeHeader))
-      )
-    } yield Pe(header, cliHeader, metadata, tildeStream)
+    } yield Pe(header, cliHeader, metadata, PeData(stringHeap, blobHeap, tildeStream.tables), methods)
   }
+
+
 }
