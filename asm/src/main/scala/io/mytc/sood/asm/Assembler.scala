@@ -1,6 +1,5 @@
 package io.mytc.sood.asm
 
-
 class Assembler {
 
   def decompile(bcode: Array[Byte]): Seq[(Int, Op)] = {
@@ -13,7 +12,7 @@ class Assembler {
     val bc = ByteCode()
     parser.parse(code) match {
       case Right(ast) ⇒ Right(bc.gen(ast))
-      case Left(err) ⇒ Left(err)
+      case Left(err)  ⇒ Left(err)
     }
   }
 

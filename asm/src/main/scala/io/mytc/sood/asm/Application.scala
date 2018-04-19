@@ -1,6 +1,5 @@
 package io.mytc.sood.asm
 
-
 class Application {
 
   def compile(filename: String): Either[String, Array[Byte]] = {
