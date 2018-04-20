@@ -2,8 +2,7 @@ package io.mytc.sood.cil
 
 import fastparse.byte.all._
 import LE._
-
-import scala.collection.mutable.ArrayBuffer
+import io.mytc.sood.cil.utils._
 
 object TablesInfo {
 
@@ -253,19 +252,10 @@ object TablesInfo {
     44 -> genericParamConstraintRow
   )
 
-  private def validToParsers(valid: Long): Seq[TableIndexes => P[TableRowInfo]] = {
-    val parsers = ArrayBuffer[TableIndexes => P[TableRowInfo]]()
-    var i = 0
-    while (i < 64) {
-      if ((valid & (1L << i)) != 0) {
-        numToParser.get(i).foreach(parsers.+=)
-      }
-      i += 1
-    }
-    parsers
-  }
+  def validToActualTableNumbers(valid: Long): Seq[Int] =
+    valid.toBinaryString.reverse.zipWithIndex.filter(_._1 == '1').map(_._2)
 
-  private def tableIndexes(heapSizes: Byte, valid: Long, rows: Seq[Long]): TableIndexes = {
+  private def tableIndexes(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): TableIndexes = {
     TableIndexes(
       ShortIndex,
       ShortIndex,
@@ -295,24 +285,29 @@ object TablesInfo {
     ) // FIXME
   }
 
-  def tables(heapSizes: Byte, valid: Long, rows: Seq[Long]): P[Seq[Seq[TableRowInfo]]] = {
-    val indexes = tableIndexes(heapSizes, valid, rows)
-    val parsers = validToParsers(valid)
+  def tables(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): P[Validated[Seq[Seq[TableRowInfo]]]] = {
+    val indexes = tableIndexes(heapSizes, tableNumbers, rows)
+    val parsers = tableNumbers.map(numToParser.get)
 
-    if (parsers.length != rows.length) {
-      Fail
+    if (parsers.exists(_.isEmpty)) {
+      PassWith(validationError("Non valid tables numbers"))
     } else {
-      parsers
-        .zip(rows)
-        .map {
-          case (p, size) => p(indexes).rep(exactly = size.toInt /* should be enough, probably... */ )
-        }
-        .foldLeft[P[Seq[Seq[TableRowInfo]]]](PassWith(Seq.empty[Seq[TableRowInfo]])) {
-          case (p, nextP) =>
-            (p ~ nextP).map {
-              case (tables, newTable) => tables :+ newTable
-            }
-        }
+      if (parsers.length != rows.length) {
+        PassWith(validationError("Inconsistent number of tables"))
+      } else {
+        parsers.flatten
+          .zip(rows)
+          .map {
+            case (p, size) => p(indexes).rep(exactly = size.toInt /* should be enough, probably... */ )
+          }
+          .foldLeft[P[Seq[Seq[TableRowInfo]]]](PassWith(Seq.empty[Seq[TableRowInfo]])) {
+            case (p, nextP) =>
+              (p ~ nextP).map {
+                case (tables, newTable) => tables :+ newTable
+              }
+          }
+          .map(validated)
+      }
     }
   }
 

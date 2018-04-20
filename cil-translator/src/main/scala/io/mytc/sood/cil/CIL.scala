@@ -2,13 +2,21 @@ package io.mytc.sood.cil
 
 import fastparse.byte.all._
 import LE._
+import io.mytc.sood.cil.utils._
 
 object CIL {
-  sealed trait Token
+  final case class CilData(stringHeap: Bytes,
+                           userStringHeap: Bytes,
+                           blobHeap: Bytes,
+                           tableNumbers: Seq[Int],
+                           tables: Seq[Seq[TablesData.TableRowData]])
 
-  case object Ignored extends Token
-  final case class Str(str: String) extends Token
-  final case class Method()
+  def fromPeData(peData: PE.Info.PeData): Validated[CilData] =
+    TablesData
+      .fromInfo(peData)
+      .map(tables => CilData(peData.stringHeap, peData.userStringHeap, peData.blobHeap, peData.tableNumbers, tables))
+
+  type Token = TablesData.TableRowData
 
   sealed trait OpCode
 
@@ -251,7 +259,7 @@ object CIL {
   final case class LdObj(typeToken: Token) extends OpCode
   final case class LdSFld(field: Token) extends OpCode
   final case class LdSFldA(field: Token) extends OpCode
-  final case class LdStr(string: Token) extends OpCode
+  final case class LdStr(string: String) extends OpCode
   final case class LdToken(token: Token) extends OpCode
   final case class LdVirtFtn(method: Token) extends OpCode
 
@@ -260,10 +268,10 @@ object CIL {
   final case class NewObj(ctor: Token) extends OpCode
 
   case object RefAnyType extends OpCode
-  case object RefAnyVal extends OpCode
+  final case class RefAnyVal(typeToken: Token) extends OpCode
 
   case object ReThrow extends OpCode
-  case object SizeOf extends OpCode
+  final case class SizeOf(typeToken: Token) extends OpCode
 
   final case class StElem(typeToken: Token) extends OpCode
   case object StElemI1 extends OpCode
@@ -283,62 +291,82 @@ object CIL {
   final case class Unbox(valueType: Token) extends OpCode
   final case class UnboxAny(typeToken: Token) extends OpCode
 
-  private def opCodeWithUInt8[T](convert: Short => T): P[T] = P(UInt8).map(convert)
-  private def opCodeWithInt8[T](convert: Byte => T): P[T] = P(Int8).map(convert)
-  private def opCodeWithInt32[T](convert: Int => T): P[T] = P(Int32).map(convert)
-  private def opCodeWithToken[T](convert: Token => T): P[T] = P(Int32).map(convert)
+  private def opCode[T](t: T): P[Validated[T]] = PassWith(validated(t))
+  private def opCodeWithUInt8[T](convert: Short => T): P[Validated[T]] = P(UInt8).map(convert.andThen(validated))
+  private def opCodeWithInt8[T](convert: Byte => T): P[Validated[T]] = P(Int8).map(convert.andThen(validated))
+  private def opCodeWithInt32[T](convert: Int => T): P[Validated[T]] = P(Int32).map(convert.andThen(validated))
+  private def opCodeWithToken[T](convert: Token => T, cilData: CilData): P[Validated[T]] = P(Int32).map(
+    t => {
+      val tableIdx = t >> 24
+      val tableActualIdx = cilData.tableNumbers.indexOf(tableIdx)
+      if (tableActualIdx == -1) {
+        validationError(s"unknown table: $tableActualIdx")
+      } else {
+        val idx = t & 0x00ffffff
+        validated(convert(cilData.tables(tableActualIdx)(idx - 1)))
+      }
+    }
+  )
+  private def opCodeWithString[T](convert: String => T, cilData: CilData): P[Validated[T]] = P(Int32).map(
+    t => {
+      if ((t >> 24) == 0x07) {
+        validationError(s"wrong token first byte: ${(t >> 24).toHexString}")
+      } else {
+        val idx = t & 0x00ffffff
+        Heaps.userString(cilData.userStringHeap, idx.toLong).map(convert)
+      }
+    }
+  )
 
-  val parsers1Byte: Map[Int, P[OpCode]] = Map(
-    0x00 -> PassWith(Nop),
-    0x01 -> PassWith(Break),
-    0x02 -> PassWith(LdArg0),
-    0x03 -> PassWith(LdArg1),
-    0x04 -> PassWith(LdArg2),
-    0x05 -> PassWith(LdArg3),
-    0x06 -> PassWith(LdLoc0),
-    0x07 -> PassWith(LdLoc1),
-    0x08 -> PassWith(LdLoc2),
-    0x09 -> PassWith(LdLoc3),
-    0x0A -> PassWith(StLoc0),
-    0x0B -> PassWith(StLoc1),
-    0x0C -> PassWith(StLoc2),
-    0x0D -> PassWith(StLoc3),
+  def parsers1Byte(cilData: CilData): Map[Int, P[Validated[OpCode]]] = Map(
+    0x00 -> opCode(Nop),
+    0x01 -> opCode(Break),
+    0x02 -> opCode(LdArg0),
+    0x03 -> opCode(LdArg1),
+    0x04 -> opCode(LdArg2),
+    0x05 -> opCode(LdArg3),
+    0x06 -> opCode(LdLoc0),
+    0x07 -> opCode(LdLoc1),
+    0x08 -> opCode(LdLoc2),
+    0x09 -> opCode(LdLoc3),
+    0x0A -> opCode(StLoc0),
+    0x0B -> opCode(StLoc1),
+    0x0C -> opCode(StLoc2),
+    0x0D -> opCode(StLoc3),
     0x0E -> opCodeWithUInt8(LdArgS),
     0x0F -> opCodeWithUInt8(LdArgAS),
-
     0x10 -> opCodeWithUInt8(StArgS),
     0x11 -> opCodeWithUInt8(LdLocS),
     0x12 -> opCodeWithUInt8(LdLocAS),
     0x13 -> opCodeWithUInt8(StLocS),
-    0x14 -> PassWith(LdNull),
-    0x15 -> PassWith(LdcI4M1),
-    0x16 -> PassWith(LdcI40),
-    0x17 -> PassWith(LdcI41),
-    0x18 -> PassWith(LdcI42),
-    0x19 -> PassWith(LdcI43),
-    0x1A -> PassWith(LdcI44),
-    0x1B -> PassWith(LdcI45),
-    0x1C -> PassWith(LdcI46),
-    0x1D -> PassWith(LdcI47),
-    0x1E -> PassWith(LdcI48),
+    0x14 -> opCode(LdNull),
+    0x15 -> opCode(LdcI4M1),
+    0x16 -> opCode(LdcI40),
+    0x17 -> opCode(LdcI41),
+    0x18 -> opCode(LdcI42),
+    0x19 -> opCode(LdcI43),
+    0x1A -> opCode(LdcI44),
+    0x1B -> opCode(LdcI45),
+    0x1C -> opCode(LdcI46),
+    0x1D -> opCode(LdcI47),
+    0x1E -> opCode(LdcI48),
     0x1F -> opCodeWithInt8(LdcI4S),
-
     0x20 -> opCodeWithInt32(LdcI4),
-    0x21 -> P(Int64).map(LdcI8),
-    0x22 -> P(Float32).map(LdcR4),
-    0x23 -> P(Float64).map(LdcR8),
+    0x21 -> P(Int64).map(LdcI8.andThen(validated)),
+    0x22 -> P(Float32).map(LdcR4.andThen(validated)),
+    0x23 -> P(Float64).map(LdcR8.andThen(validated)),
     // 0x24
-    0x26 -> PassWith(Pop),
-    0x27 -> opCodeWithToken(Jmp),
-    0x28 -> opCodeWithToken(Call),
-    0x29 -> opCodeWithToken(CallI),
-    0x2A -> PassWith(Ret),
+    0x25 -> opCode(Dup),
+    0x26 -> opCode(Pop),
+    0x27 -> opCodeWithToken(Jmp, cilData),
+    0x28 -> opCodeWithToken(Call, cilData),
+    0x29 -> opCodeWithToken(CallI, cilData),
+    0x2A -> opCode(Ret),
     0x2B -> opCodeWithInt8(BrS),
     0x2C -> opCodeWithInt8(BrFalseS),
     0x2D -> opCodeWithInt8(BrTrueS),
     0x2E -> opCodeWithInt8(BeqS),
     0x2F -> opCodeWithInt8(BgeS),
-
     0x30 -> opCodeWithInt8(BgtS),
     0x31 -> opCodeWithInt8(BleS),
     0x32 -> opCodeWithInt8(BltS),
@@ -355,175 +383,161 @@ object CIL {
     0x3D -> opCodeWithInt32(Bgt),
     0x3E -> opCodeWithInt32(Ble),
     0x3F -> opCodeWithInt32(Blt),
-
     0x40 -> opCodeWithInt32(BneUn),
     0x41 -> opCodeWithInt32(BgeUn),
     0x42 -> opCodeWithInt32(BgtUn),
     0x43 -> opCodeWithInt32(BleUn),
     0x44 -> opCodeWithInt32(BltUn),
-    0x45 -> /*switch*/PassWith(Nop), // FIXME !!!
-    0x46 -> PassWith(LdIndI1),
-    0x47 -> PassWith(LdIndU1),
-    0x48 -> PassWith(LdIndI2),
-    0x49 -> PassWith(LdIndU2),
-    0x4A -> PassWith(LdIndI4),
-    0x4B -> PassWith(LdIndU4),
-    0x4C -> PassWith(LdIndI8),
-    0x4D -> PassWith(LdIndI),
-    0x4E -> PassWith(LdIndR4),
-    0x4F -> PassWith(LdIndR8),
-
-    0x50 -> PassWith(LdIndRef),
-    0x51 -> PassWith(StIndRef),
-    0x52 -> PassWith(StIndI1),
-    0x53 -> PassWith(StIndI2),
-    0x54 -> PassWith(StIndI4),
-    0x55 -> PassWith(StIndI8),
-    0x56 -> PassWith(StIndR4),
-    0x57 -> PassWith(StIndR8),
-    0x58 -> PassWith(Add),
-    0x59 -> PassWith(Sub),
-    0x5A -> PassWith(Mull),
-    0x5B -> PassWith(Div),
-    0x5C -> PassWith(DivUn),
-    0x5D -> PassWith(Rem),
-    0x5E -> PassWith(RemUn),
-    0x5F -> PassWith(And),
-
-    0x60 -> PassWith(Or),
-    0x61 -> PassWith(Xor),
-    0x62 -> PassWith(Shl),
-    0x63 -> PassWith(Shr),
-    0x64 -> PassWith(ShrUn),
-    0x65 -> PassWith(Neg),
-    0x66 -> PassWith(Not),
-    0x67 -> PassWith(ConvI1),
-    0x68 -> PassWith(ConvI2),
-    0x69 -> PassWith(ConvI4),
-    0x6A -> PassWith(ConvI8),
-    0x6B -> PassWith(ConvR4),
-    0x6C -> PassWith(ConvR8),
-    0x6D -> PassWith(ConvU4),
-    0x6E -> PassWith(ConvU8),
-    0x6F -> opCodeWithToken(CallVirt),
-
-    0x60 -> PassWith(Or),
-    0x61 -> PassWith(Xor),
-    0x62 -> PassWith(Shl),
-    0x63 -> PassWith(Shr),
-    0x64 -> PassWith(ShrUn),
-    0x65 -> PassWith(Neg),
-    0x66 -> PassWith(Not),
-    0x67 -> PassWith(ConvI1),
-    0x68 -> PassWith(ConvI2),
-    0x69 -> PassWith(ConvI4),
-    0x6A -> PassWith(ConvI8),
-    0x6B -> PassWith(ConvR4),
-    0x6C -> PassWith(ConvR8),
-    0x6D -> PassWith(ConvU4),
-    0x6E -> PassWith(ConvU8),
-    0x6F -> opCodeWithToken(CallVirt),
-
-    0x70 -> opCodeWithToken(CpObj),
-    0x71 -> opCodeWithToken(LdObj),
-    0x72 -> opCodeWithToken(LdStr),
-    0x73 -> opCodeWithToken(NewObj),
-    0x74 -> opCodeWithToken(CastClass),
-    0x75 -> opCodeWithToken(IsInst),
-    0x76 -> PassWith(ConvRUn),
-    // 0x77
-    // 0x78
-    0x79 -> opCodeWithToken(Unbox),
-    0x7A -> PassWith(Throw),
-    0x7B -> opCodeWithToken(LdFld),
-    0x7C -> opCodeWithToken(LdFldA),
-    0x7D -> opCodeWithToken(StFld),
-    0x7E -> opCodeWithToken(LdSFld),
-    0x7F -> opCodeWithToken(LdSFldA),
-
-    0x80 -> opCodeWithToken(StSFld),
-    0x81 -> opCodeWithToken(StObj),
-    0x82 -> PassWith(ConvOvfI1Un),
-    0x83 -> PassWith(ConvOvfI2Un),
-    0x84 -> PassWith(ConvOvfI4Un),
-    0x85 -> PassWith(ConvOvfI8Un),
-    0x86 -> PassWith(ConvOvfU1Un),
-    0x87 -> PassWith(ConvOvfU2Un),
-    0x88 -> PassWith(ConvOvfU4Un),
-    0x89 -> PassWith(ConvOvfU8Un),
-    0x8A -> PassWith(ConvOvfIUn),
-    0x8B -> PassWith(ConvOvfUUn),
-    0x8C -> opCodeWithToken(Box),
-    0x8D -> opCodeWithToken(NewArr),
-    0x8E -> PassWith(LdLen),
-    0x8F -> opCodeWithToken(LdElemA),
-
-    0x90 -> PassWith(LdElemI1),
-    0x91 -> PassWith(LdElemU1),
-    0x92 -> PassWith(LdElemI2),
-    0x93 -> PassWith(LdElemU2),
-    0x94 -> PassWith(LdElemI4),
-    0x95 -> PassWith(LdElemU4),
-    0x96 -> PassWith(LdElemI8),
-    0x97 -> PassWith(LdElemI),
-    0x98 -> PassWith(LdElemR4),
-    0x99 -> PassWith(LdElemR8),
-    0x9A -> PassWith(LdElemRef),
-    0x9B -> PassWith(StElemI),
-    0x9C -> PassWith(StElemI1),
-    0x9D -> PassWith(StElemI2),
-    0x9E -> PassWith(StElemI4),
-    0x9F -> PassWith(StElemI8),
-
-    0xA0 -> PassWith(StElemR4),
-    0xA1 -> PassWith(StElemR8),
-    0xA2 -> PassWith(StElemRef),
-    0xA3 -> opCodeWithToken(LdElem),
-    0xA4 -> opCodeWithToken(StElem),
-    0xA5 -> opCodeWithToken(UnboxAny),
-
-    0xB3 -> PassWith(ConvOvfI1),
-    0xB4 -> PassWith(ConvOvfU1),
-    0xB5 -> PassWith(ConvOvfI2),
-    0xB6 -> PassWith(ConvOvfU2),
-    0xB7 -> PassWith(ConvOvfI4),
-    0xB8 -> PassWith(ConvOvfU4),
-    0xB9 -> PassWith(ConvOvfI8),
-    0xBA -> PassWith(ConvOvfU8),
-
-    0xC2 -> PassWith(RefAnyVal),
-    0xC3 -> PassWith(CkFinite),
-    0xC6 -> opCodeWithToken(MkRefAny),
-
-    0xD0 -> opCodeWithToken(LdToken),
-    0xD1 -> PassWith(ConvU2),
-    0xD2 -> PassWith(ConvU1),
-    0xD3 -> PassWith(ConvI),
-    0xD4 -> PassWith(ConvOvfI),
-    0xD5 -> PassWith(ConvOvfU),
-    0xD6 -> PassWith(AddOvf),
-    0xD7 -> PassWith(AddOvfUn),
-    0xD8 -> PassWith(MullOvf),
-    0xD9 -> PassWith(MullOvfUn),
-    0xDA -> PassWith(SubOvf),
-    0xDB -> PassWith(SubOvfUn),
-    0xDC -> PassWith(EndFinaly),
+    0x45 -> /*switch*/ opCode(Nop), // FIXME !,
+    0x46 -> opCode(LdIndI1),
+    0x47 -> opCode(LdIndU1),
+    0x48 -> opCode(LdIndI2),
+    0x49 -> opCode(LdIndU2),
+    0x4A -> opCode(LdIndI4),
+    0x4B -> opCode(LdIndU4),
+    0x4C -> opCode(LdIndI8),
+    0x4D -> opCode(LdIndI),
+    0x4E -> opCode(LdIndR4),
+    0x4F -> opCode(LdIndR8),
+    0x50 -> opCode(LdIndRef),
+    0x51 -> opCode(StIndRef),
+    0x52 -> opCode(StIndI1),
+    0x53 -> opCode(StIndI2),
+    0x54 -> opCode(StIndI4),
+    0x55 -> opCode(StIndI8),
+    0x56 -> opCode(StIndR4),
+    0x57 -> opCode(StIndR8),
+    0x58 -> opCode(Add),
+    0x59 -> opCode(Sub),
+    0x5A -> opCode(Mull),
+    0x5B -> opCode(Div),
+    0x5C -> opCode(DivUn),
+    0x5D -> opCode(Rem),
+    0x5E -> opCode(RemUn),
+    0x5F -> opCode(And),
+    0x60 -> opCode(Or),
+    0x61 -> opCode(Xor),
+    0x62 -> opCode(Shl),
+    0x63 -> opCode(Shr),
+    0x64 -> opCode(ShrUn),
+    0x65 -> opCode(Neg),
+    0x66 -> opCode(Not),
+    0x67 -> opCode(ConvI1),
+    0x68 -> opCode(ConvI2),
+    0x69 -> opCode(ConvI4),
+    0x6A -> opCode(ConvI8),
+    0x6B -> opCode(ConvR4),
+    0x6C -> opCode(ConvR8),
+    0x6D -> opCode(ConvU4),
+    0x6E -> opCode(ConvU8),
+    0x6F -> opCodeWithToken(CallVirt, cilData),
+    0x60 -> opCode(Or),
+    0x61 -> opCode(Xor),
+    0x62 -> opCode(Shl),
+    0x63 -> opCode(Shr),
+    0x64 -> opCode(ShrUn),
+    0x65 -> opCode(Neg),
+    0x66 -> opCode(Not),
+    0x67 -> opCode(ConvI1),
+    0x68 -> opCode(ConvI2),
+    0x69 -> opCode(ConvI4),
+    0x6A -> opCode(ConvI8),
+    0x6B -> opCode(ConvR4),
+    0x6C -> opCode(ConvR8),
+    0x6D -> opCode(ConvU4),
+    0x6E -> opCode(ConvU8),
+    0x6F -> opCodeWithToken(CallVirt, cilData),
+    0x70 -> opCodeWithToken(CpObj, cilData),
+    0x71 -> opCodeWithToken(LdObj, cilData),
+    0x72 -> opCodeWithString(LdStr, cilData),
+    0x73 -> opCodeWithToken(NewObj, cilData),
+    0x74 -> opCodeWithToken(CastClass, cilData),
+    0x75 -> opCodeWithToken(IsInst, cilData),
+    0x76 -> opCode(ConvRUn),
+    // 0x77_    // 0x78_    0x79 -> opCodeWithToken(Unbox, peData),
+    0x7A -> opCode(Throw),
+    0x7B -> opCodeWithToken(LdFld, cilData),
+    0x7C -> opCodeWithToken(LdFldA, cilData),
+    0x7D -> opCodeWithToken(StFld, cilData),
+    0x7E -> opCodeWithToken(LdSFld, cilData),
+    0x7F -> opCodeWithToken(LdSFldA, cilData),
+    0x80 -> opCodeWithToken(StSFld, cilData),
+    0x81 -> opCodeWithToken(StObj, cilData),
+    0x82 -> opCode(ConvOvfI1Un),
+    0x83 -> opCode(ConvOvfI2Un),
+    0x84 -> opCode(ConvOvfI4Un),
+    0x85 -> opCode(ConvOvfI8Un),
+    0x86 -> opCode(ConvOvfU1Un),
+    0x87 -> opCode(ConvOvfU2Un),
+    0x88 -> opCode(ConvOvfU4Un),
+    0x89 -> opCode(ConvOvfU8Un),
+    0x8A -> opCode(ConvOvfIUn),
+    0x8B -> opCode(ConvOvfUUn),
+    0x8C -> opCodeWithToken(Box, cilData),
+    0x8D -> opCodeWithToken(NewArr, cilData),
+    0x8E -> opCode(LdLen),
+    0x8F -> opCodeWithToken(LdElemA, cilData),
+    0x90 -> opCode(LdElemI1),
+    0x91 -> opCode(LdElemU1),
+    0x92 -> opCode(LdElemI2),
+    0x93 -> opCode(LdElemU2),
+    0x94 -> opCode(LdElemI4),
+    0x95 -> opCode(LdElemU4),
+    0x96 -> opCode(LdElemI8),
+    0x97 -> opCode(LdElemI),
+    0x98 -> opCode(LdElemR4),
+    0x99 -> opCode(LdElemR8),
+    0x9A -> opCode(LdElemRef),
+    0x9B -> opCode(StElemI),
+    0x9C -> opCode(StElemI1),
+    0x9D -> opCode(StElemI2),
+    0x9E -> opCode(StElemI4),
+    0x9F -> opCode(StElemI8),
+    0xA0 -> opCode(StElemR4),
+    0xA1 -> opCode(StElemR8),
+    0xA2 -> opCode(StElemRef),
+    0xA3 -> opCodeWithToken(LdElem, cilData),
+    0xA4 -> opCodeWithToken(StElem, cilData),
+    0xA5 -> opCodeWithToken(UnboxAny, cilData),
+    0xB3 -> opCode(ConvOvfI1),
+    0xB4 -> opCode(ConvOvfU1),
+    0xB5 -> opCode(ConvOvfI2),
+    0xB6 -> opCode(ConvOvfU2),
+    0xB7 -> opCode(ConvOvfI4),
+    0xB8 -> opCode(ConvOvfU4),
+    0xB9 -> opCode(ConvOvfI8),
+    0xBA -> opCode(ConvOvfU8),
+    0xC2 -> opCodeWithToken(RefAnyVal, cilData),
+    0xC3 -> opCode(CkFinite),
+    0xC6 -> opCodeWithToken(MkRefAny, cilData),
+    0xD0 -> opCodeWithToken(LdToken, cilData),
+    0xD1 -> opCode(ConvU2),
+    0xD2 -> opCode(ConvU1),
+    0xD3 -> opCode(ConvI),
+    0xD4 -> opCode(ConvOvfI),
+    0xD5 -> opCode(ConvOvfU),
+    0xD6 -> opCode(AddOvf),
+    0xD7 -> opCode(AddOvfUn),
+    0xD8 -> opCode(MullOvf),
+    0xD9 -> opCode(MullOvfUn),
+    0xDA -> opCode(SubOvf),
+    0xDB -> opCode(SubOvfUn),
+    0xDC -> opCode(EndFinaly),
     0xDD -> opCodeWithInt32(Leave),
     0xDE -> opCodeWithInt8(LeaveS),
-    0xDF -> PassWith(StIndI),
-
-    0xE0 -> PassWith(ConvU)
+    0xDF -> opCode(StIndI),
+    0xE0 -> opCode(ConvU)
   )
 
-  val parsersAfterFE: Map[Int, P[OpCode]] = Map(
-    0x00 -> PassWith(ArgList),
-    0x01 -> PassWith(Ceq),
-    0x02 -> PassWith(Cgt),
-    0x03 -> PassWith(CgtUn),
-    0x04 -> PassWith(Clt),
-    0x05 -> PassWith(CltUn),
-    0x06 -> opCodeWithToken(LdFtn),
-    0x07 -> opCodeWithToken(LdVirtFtn),
+  def parsersAfterFE(cilData: CilData): Map[Int, P[Validated[OpCode]]] = Map(
+    0x00 -> opCode(ArgList),
+    0x01 -> opCode(Ceq),
+    0x02 -> opCode(Cgt),
+    0x03 -> opCode(CgtUn),
+    0x04 -> opCode(Clt),
+    0x05 -> opCode(CltUn),
+    0x06 -> opCodeWithToken(LdFtn, cilData),
+    0x07 -> opCodeWithToken(LdVirtFtn, cilData),
     //0x08
     0x09 -> opCodeWithInt32(LdArg),
     0x0A -> opCodeWithInt32(LdArgA),
@@ -531,32 +545,34 @@ object CIL {
     0x0C -> opCodeWithInt32(LdLoc),
     0x0D -> opCodeWithInt32(LdLocA),
     0x0E -> opCodeWithInt32(StLoc),
-    0x0F -> PassWith(LocAlloc),
-
-    0x11 -> PassWith(EndFilter),
+    0x0F -> opCode(LocAlloc),
+    0x11 -> opCode(EndFilter),
     0x12 -> opCodeWithInt8(Unaligned),
-    0x13 -> PassWith(Volatile),
-    0x14 -> PassWith(Tail),
-    0x15 -> PassWith(LdcI4M1),
-    0x16 -> opCodeWithToken(InitObj),
-    0x17 -> opCodeWithToken(Constrained),
-    0x18 -> PassWith(CpBlk),
-    0x19 -> PassWith(InitBlk),
+    0x13 -> opCode(Volatile),
+    0x14 -> opCode(Tail),
+    0x15 -> opCode(LdcI4M1),
+    0x16 -> opCodeWithToken(InitObj, cilData),
+    0x17 -> opCodeWithToken(Constrained, cilData),
+    0x18 -> opCode(CpBlk),
+    0x19 -> opCode(InitBlk),
     0x1A -> opCodeWithInt8(No),
-    0x1B -> PassWith(ReThrow),
-    0x1C -> PassWith(SizeOf),
-    0x1D -> PassWith(RefAnyType),
-    0x1E -> PassWith(Readonly)
+    0x1B -> opCode(ReThrow),
+    0x1C -> opCodeWithToken(SizeOf, cilData),
+    0x1D -> opCode(RefAnyType),
+    0x1E -> opCode(Readonly)
   )
 
-  val code: P[Seq[OpCode]] = {
-    val oneByte = P( AnyByte.! ).flatMap(
-      b => parsers1Byte(b.head & 0xff)
+  def code(cilData: CilData): P[Validated[Seq[OpCode]]] = {
+    val p1 = parsers1Byte(cilData)
+    val p2 = parsersAfterFE(cilData)
+
+    val oneByte = P(AnyByte.!).flatMap(
+      b => p1(b.head & 0xff)
     )
-    val twoBytes = P( BS(0xFE) ~ AnyByte.! ).flatMap(
-      b => parsersAfterFE(b.head & 0xff)
+    val twoBytes = P(BS(0xFE) ~ AnyByte.!).flatMap(
+      b => p2(b.head & 0xff)
     )
 
-    P( (twoBytes | oneByte).rep )
+    P((twoBytes | oneByte).rep).map(_.sequence)
   }
 }

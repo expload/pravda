@@ -2,7 +2,7 @@ package io.mytc.sood.cil
 
 import fastparse.byte.all._
 import LE._
-import fastparse.core.Parsed._
+import io.mytc.sood.cil.utils._
 
 // See
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
@@ -50,7 +50,10 @@ object PE {
 
     case class StreamHeader(offset: Long, size: Long, name: String)
 
-    case class TildeStream(heapSizes: Byte, valid: Long, sorted: Long, tables: Seq[Seq[Tables.Info.TableRowInfo]])
+    case class TildeStream(heapSizes: Byte,
+                           tableNumbers: Seq[Int],
+                           sorted: Long,
+                           tables: Seq[Seq[TablesInfo.TableRowInfo]])
 
     case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
 
@@ -67,7 +70,11 @@ object PE {
     case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Int, codeBytes: Bytes)
         extends MethodHeader
 
-    case class PeData(stringHeap: Bytes, blobHeap: Bytes, tables: Seq[Seq[Tables.Info.TableRowInfo]])
+    case class PeData(stringHeap: Bytes,
+                      userStringHeap: Bytes,
+                      blobHeap: Bytes,
+                      tableNumbers: Seq[Int],
+                      tables: Seq[Seq[TablesInfo.TableRowInfo]])
 
     case class Pe(peHeader: PeHeader,
                   cliHeader: CliHeader,
@@ -186,17 +193,7 @@ object PE {
     P(offset ~ size ~ name).map(StreamHeader.tupled)
   }
 
-  val tildeStream: P[TildeStream] = {
-    def bitsCount(x: Long): Int = {
-      var i = 0
-      var cnt = 0
-      while (i < 64) {
-        cnt += (if ((x & (1L << i)) != 0) 1 else 0)
-        i += 1
-      }
-      cnt
-    }
-
+  val tildeStream: P[Validated[TildeStream]] = {
     val heapSizes = Int8
     val valid = Int64
     val sorted = Int64
@@ -207,15 +204,15 @@ object PE {
       _ <- AnyByte
       v <- valid
       s <- sorted
-      n = bitsCount(v)
-      rows <- P(UInt32.rep(exactly = n))
-      tables <- Tables.Info.tables(hs, v, rows)
-    } yield TildeStream(hs, v, s, tables)
+      tableNumbers = TablesInfo.validToActualTableNumbers(v)
+      rows <- P(UInt32.rep(exactly = tableNumbers.length))
+      tables <- TablesInfo.tables(hs, tableNumbers, rows)
+    } yield tables.map(ts => TildeStream(hs, tableNumbers, s, ts))
   }
 
   val metadataRoot: P[MetadataRoot] = {
     val length = Int32
-    val version = length.flatMap(l => nullTerminatedString((l + 3) / 4 * 4))
+    val version = length.flatMap(l => utils.nullTerminatedString((l + 3) / 4 * 4))
     val streamsNumber = UInt16
     val streamHeaders = streamsNumber.flatMap(l => streamHeader.rep(exactly = l))
     P(BS(0x42, 0x53, 0x4a, 0x42) ~ AnyBytes(8) ~ version ~ AnyBytes(2) ~ streamHeaders).map(MetadataRoot.tupled)
@@ -271,17 +268,17 @@ object PE {
     bytesFromRva(file, sections, rva).take(streamHeader.size)
   }
 
-  def parseInfo(file: Bytes): Either[String, Pe] = {
+  def parseInfo(file: Bytes): Validated[Pe] = {
     for {
-      header <- utils.toEither(peHeader.parse(file))
+      header <- peHeader.parse(file).toValidated
       sections = header.sectionHeaders
 
       fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
 
-      cliHeader <- utils.toEither(cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)))
+      cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toValidated
       metadataRva = cliHeader.metadataRva
 
-      metadata <- utils.toEither(metadataRoot.parse(fileBytesFromRva(metadataRva)))
+      metadata <- metadataRoot.parse(fileBytesFromRva(metadataRva)).toValidated
       streamHeaders = metadata.streamHeaders
 
       retrieveStream = (name: String) =>
@@ -292,18 +289,23 @@ object PE {
 
       tildeStreamBytes <- retrieveStream("#~")
       stringHeap <- retrieveStream("#Strings")
+      userStringHeap <- retrieveStream("#US")
       blobHeap <- retrieveStream("#Blob")
 
-      tildeStream <- utils.toEither(tildeStream.parse(tildeStreamBytes))
+      tildeStream <- tildeStream.parse(tildeStreamBytes).toValidated.joinRight
 
-      methods <- utils.sequenceEither(
-        tildeStream.tables.flatMap(_.collect {
+      methods <- tildeStream.tables
+        .flatMap(_.collect {
           case TablesInfo.MethodDefRow(rva, _, _, _, _, _) =>
-            utils.toEither(method.parse(fileBytesFromRva(rva)))
+            method.parse(fileBytesFromRva(rva)).toValidated
         })
-      )
-    } yield Pe(header, cliHeader, metadata, PeData(stringHeap, blobHeap, tildeStream.tables), methods)
+        .sequence
+    } yield
+      Pe(header,
+         cliHeader,
+         metadata,
+         PeData(stringHeap, userStringHeap, blobHeap, tildeStream.tableNumbers, tildeStream.tables),
+         methods)
   }
-
 
 }

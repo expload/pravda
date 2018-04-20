@@ -4,6 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import fastparse.byte.all._
 import org.scalatest.{FlatSpec, Matchers}
+import utils._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -11,6 +12,8 @@ class PeParsers extends FlatSpec with Matchers {
   "hello_world.exe" should "be parsed correctly" in {
     import PE.Info._
     import TablesInfo._
+    import CIL._
+    import TablesData._
 
     val helloWorldExe = Files.readAllBytes(Paths.get(this.getClass.getResource("/hello_world.exe").getPath))
     val ans = PE.parseInfo(Bytes(helloWorldExe))
@@ -46,10 +49,13 @@ class PeParsers extends FlatSpec with Matchers {
                 650053797374656d2e52756e74696d652e436f6d70696c65
                 725365727669636573006d73636f726c696200746d702e65
                 7865000000""",
+          hex"""0x0019480065006c006c006f00200057006f0072006c0064
+                0021000000""",
           hex"""0x00040001010e03200001050001011d0e1e010001005402
-               16577261704e6f6e457863657074696f6e5468726f7773010
-               8b77a5c561934e089""",
-          List(
+                16577261704e6f6e457863657074696f6e5468726f777301
+                08b77a5c561934e089""",
+          Seq(0, 1, 2, 6, 8, 10, 12, 32, 35),
+          Seq(
             ArrayBuffer(ModuleRow),
             ArrayBuffer(TypeRefRow, TypeRefRow, TypeRefRow),
             ArrayBuffer(TypeDefRow, TypeDefRow),
@@ -65,6 +71,20 @@ class PeParsers extends FlatSpec with Matchers {
           TinyMethodHeader(hex"0x02280200000a2a"),
           TinyMethodHeader(hex"0x7201000070280100000a2a")
         )
+      )
+    )
+
+    val opCodes = for {
+      pe <- ans
+      cilData <- CIL.fromPeData(pe.peData)
+      codeParser = CIL.code(cilData)
+      ops <- pe.methods.map(m => codeParser.parse(m.codeBytes).toValidated.joinRight).sequence
+    } yield ops
+
+    opCodes shouldBe Right(
+      Seq(
+        Seq(LdArg0, Call(Ignored), Ret),
+        Seq(LdStr("Hello World!"), Call(Ignored), Ret)
       )
     )
   }
