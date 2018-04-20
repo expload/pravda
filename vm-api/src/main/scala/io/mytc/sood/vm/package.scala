@@ -9,6 +9,17 @@ package object vm {
 
   type Word = Array[Byte]
 
+  def doubleToWord(value: Double): Word = {
+    val buf = ByteBuffer.allocate(8)
+    buf.putDouble(value)
+    buf.array()
+  }
+
+  def wordToDouble(word: ByteBuffer): Double = {
+    assert(word.get() == 0x24.toByte)
+    word.getDouble()
+  }
+
   def int32ToWord(int32: Int): Word = {
     val buf = ByteBuffer.allocate(5)
     buf.put(0x24.toByte)

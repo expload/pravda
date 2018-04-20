@@ -2,7 +2,7 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
-import scala.annotation.{switch, tailrec}
+import scala.annotation.{switch, tailrec, strictfp}
 import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
@@ -53,7 +53,9 @@ object Vm {
       callStack += pos
     }
 
-    @tailrec def aux(): Unit = if (program.hasRemaining) {
+    @tailrec
+    @strictfp
+    def aux(): Unit = if (program.hasRemaining) {
       (program.get() & 0xff: @switch) match {
         case CALL =>
           callPush(program.position())
@@ -127,6 +129,18 @@ object Vm {
           aux()
         case I32MOD =>
           mem.push(int32ToData(dataToInt32(mem.pop()) % dataToInt32(mem.pop())))
+          aux()
+        case FADD =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) + dataToDouble(mem.pop())))
+          aux()
+        case FMUL =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) * dataToDouble(mem.pop())))
+          aux()
+        case FDIV =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) / dataToDouble(mem.pop())))
+          aux()
+        case FMOD =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) % dataToDouble(mem.pop())))
           aux()
         case NOT =>
           mem.push(boolToData(!dataToBool(mem.pop())))

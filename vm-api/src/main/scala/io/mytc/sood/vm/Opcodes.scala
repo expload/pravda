@@ -32,6 +32,12 @@ object Opcodes {
   final val I32DIV = int.I32DIV.toByte
   final val I32MOD = int.I32MUL.toByte
 
+  // Strict float operations
+  final val FADD = int.FADD.toByte
+  final val FMUL = int.FMUL.toByte
+  final val FDIV = int.FDIV.toByte
+  final val FMOD = int.FMUL.toByte
+
   // Boolean operations
   final val NOT = int.NOT.toByte
   final val AND = int.AND.toByte
@@ -74,6 +80,12 @@ object Opcodes {
     final val I32MOD = 0x63
     final val I32LT = 0x67
     final val I32GT = 0x68
+
+    // Double precision numbers operations
+    final val FADD = 0x70
+    final val FMUL = 0x71
+    final val FDIV = 0x72
+    final val FMOD = 0x73
 
     // Boolean operations
     final val NOT = 0x80

@@ -5,6 +5,11 @@ class Parser {
   object grammar {
     import fastparse.all._
 
+    val nSgnPart = P( CharIn("+-") )
+    val nIntPart = P( "0" | CharIn('1' to '9') ~ digit.rep )
+    val nFrcPart = P( "." ~ digit.rep )
+    val nExpPart = P( CharIn("eE") ~ CharIn("+-").? ~ digit.rep )
+
     val alpha = P( CharIn("!@#$%^&*-_+=.<>/\\|~'") | CharIn('a' to 'z') | CharIn('A' to 'Z') )
     val digit = P( CharIn('0' to '9') )
     val aldig = P( alpha | digit )
@@ -14,6 +19,9 @@ class Parser {
 
     val hexw  = P( "0x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).! ).map(x ⇒ java.lang.Integer.valueOf(x, 16))
     val word  = P( CharIn('0' to '9').rep(1) ).!.map(x ⇒ java.lang.Integer.valueOf(x, 16))
+
+    val integ = P( hexw | word ).map(x ⇒ Datum.Integral(x))
+    val numbr = P( nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.? ).!.map(x ⇒ Datum.Floating(java.lang.Double.valueOf(x)))
 
     // val alpha = P( CharIn('a' to 'z') | CharIn('A' to 'Z') | CharIn("_") )
     // val digit = P( CharIn('0' to '9') )
@@ -26,7 +34,7 @@ class Parser {
     val jumpi = P( IgnoreCase("jmpi") )
 
     val pop   = P( IgnoreCase("pop") )
-    val push  = P( IgnoreCase("push") ~ delim ~ ( hexw | word ) )
+    val push  = P( IgnoreCase("push") ~ delim ~ ( integ | numbr ) )
     val dup   = P( IgnoreCase("dup") )
     val swap  = P( IgnoreCase("swp") )
 
@@ -40,6 +48,11 @@ class Parser {
     val mul   = P( IgnoreCase("mul") )
     val div   = P( IgnoreCase("div") )
     val mod   = P( IgnoreCase("mod") )
+
+    val fadd   = P( IgnoreCase("fadd") )
+    val fmul   = P( IgnoreCase("fmul") )
+    val fdiv   = P( IgnoreCase("fdiv") )
+    val fmod   = P( IgnoreCase("fmod") )
 
     val opseq: P[Seq[Op]] = P( (
       label   .map(n ⇒ Op.Label(n)) |
@@ -61,7 +74,12 @@ class Parser {
       add   .!.map(_ ⇒ Op.I32Add)   |
       mul   .!.map(_ ⇒ Op.I32Mul)   |
       div   .!.map(_ ⇒ Op.I32Div)   |
-      mod   .!.map(_ ⇒ Op.I32Mod)
+      mod   .!.map(_ ⇒ Op.I32Mod)   |
+
+      fadd  .!.map(_ ⇒ Op.FAdd)     |
+      fmul  .!.map(_ ⇒ Op.FMul)     |
+      fdiv  .!.map(_ ⇒ Op.FDiv)     |
+      fmod  .!.map(_ ⇒ Op.FMod)
     ).rep(sep = delim) )
 
     val unit = P(Start ~ delim.rep ~ opseq ~ delim.rep ~ End)

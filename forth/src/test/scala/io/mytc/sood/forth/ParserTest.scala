@@ -19,4 +19,9 @@ class ParserTest extends FlatSpec with Matchers {
     )))
   }
 
+  "A parser" must "correctly parse floats" in {
+    val p = Parser()
+    assert( p.parse("1.0 2.0 3.0") == Right(Seq( Float(1.0), Float(2.0), Float(3.0) )))
+  }
+
 }

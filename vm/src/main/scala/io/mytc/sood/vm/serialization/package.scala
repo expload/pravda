@@ -10,9 +10,19 @@ package object serialization {
     ByteBuffer.wrap(data).getInt
   }
 
+  def dataToDouble(data: Data): Double = {
+    ByteBuffer.wrap(data).getDouble
+  }
+
   def int32ToData(i: Int): Data = {
     val buf = ByteBuffer.allocate(4)
     buf.putInt(i)
+    buf.array()
+  }
+
+  def doubleToData(v: Double): Data = {
+    val buf = ByteBuffer.allocate(8)
+    buf.putDouble(v)
     buf.array()
   }
 

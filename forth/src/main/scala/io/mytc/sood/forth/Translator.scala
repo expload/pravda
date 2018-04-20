@@ -4,6 +4,7 @@ package io.mytc.sood.forth
 class Translator {
 
   import io.mytc.sood.asm.Op
+  import io.mytc.sood.asm.Datum
 
   // TODO: name mangling
   def mangle(name: String): String = name
@@ -19,7 +20,8 @@ class Translator {
   def translateStmts(stmts: Seq[Statement]): Seq[Op] = {
     stmts.map{ w ⇒ w match {
       case Statement.Ident(n) ⇒ Op.Call(mangle(n))
-      case Statement.Integ(v) ⇒ Op.Push(v)
+      case Statement.Integ(v) ⇒ Op.Push(Datum.Integral(v))
+      case Statement.Float(v) ⇒ Op.Push(Datum.Floating(v))
       case _                  ⇒ Op.Nop
     } }
   }
