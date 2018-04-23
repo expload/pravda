@@ -4,30 +4,33 @@ import state.Memory
 
 package object lib {
 
-  type Func = (Memory) => Unit
+  type Func = (Memory) => Memory
 
   type FuncTable = Map[Byte, Func]
   type LibTable = Map[Byte, FuncTable]
 
 
   object libTable {
-    def apply(pair: (Int, FuncTable)*): LibTable = {
-      Map(pair.map{case (k, v) => (k.toByte, v)}:_*)
+    def apply(pair: (Byte, FuncTable)*): LibTable = {
+      Map(pair:_*)
     }
   }
 
   object funcTable {
-    def apply(pair: (Int, Func)*): FuncTable = {
-      Map(pair.map{case (k, v) => (k.toByte, v)}:_*)
+    def apply(pair: (std.StdFunc, Func)*): FuncTable = {
+      Map(pair.map{case (f, v) => (f.fcode, v)}:_*)
     }
   }
 
   trait Lib {
+    val code: Byte
     val table: FuncTable
+    val lib: (Byte, FuncTable) = code -> table
   }
 
   val StdLib = libTable(
-    0 -> Math.table,
-    1 -> Hash.table
+    Math.lib,
+    Hash.lib
   )
+
 }
