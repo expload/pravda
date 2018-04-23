@@ -76,7 +76,7 @@ object TablesInfo {
   case object InterfaceImplRow extends TableRowInfo
 
   case object ManifestResourceRow extends TableRowInfo
-  case object MemberRefRow extends TableRowInfo
+  final case class MemberRefRow(cls: Long, name: Long, signature: Long) extends TableRowInfo
   final case class MethodDefRow(rva: Long,
                                 implFlags: Short,
                                 flags: Short,
@@ -158,9 +158,8 @@ object TablesInfo {
 
   def manifestResourceRow(indexes: TableIndexes): P[ManifestResourceRow.type] =
     P(AnyBytes(4 + 4 + indexes.stringHeap.size + indexes.implementation.size)).map(_ => ManifestResourceRow)
-  def memberRefRow(indexes: TableIndexes): P[MemberRefRow.type] =
-    P(AnyBytes(indexes.memberRefParent.size + indexes.stringHeap.size + indexes.blobHeap.size))
-      .map(_ => MemberRefRow)
+  def memberRefRow(indexes: TableIndexes): P[MemberRefRow] =
+    P(indexes.memberRefParent.parser ~ indexes.stringHeap.parser ~ indexes.blobHeap.parser).map(MemberRefRow.tupled)
   def methodDefRow(indexes: TableIndexes): P[MethodDefRow] = {
     val rva = UInt32
     val implFlags = Int16

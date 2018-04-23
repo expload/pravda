@@ -61,7 +61,7 @@ class PeParsers extends FlatSpec with Matchers {
             ArrayBuffer(TypeDefRow, TypeDefRow),
             ArrayBuffer(MethodDefRow(8272, 0, 6278, 52, 6, 1), MethodDefRow(8280, 0, 150, 58, 10, 1)),
             ArrayBuffer(ParamRow),
-            ArrayBuffer(MemberRefRow, MemberRefRow, MemberRefRow),
+            ArrayBuffer(MemberRefRow(9, 35, 1), MemberRefRow(17, 52, 6), MemberRefRow(25, 52, 6)),
             ArrayBuffer(CustomAttributeRow),
             ArrayBuffer(AssemblyRow),
             ArrayBuffer(AssemblyRefRow)
@@ -74,18 +74,31 @@ class PeParsers extends FlatSpec with Matchers {
       )
     )
 
-    val opCodes = for {
+    val Right((cilData, opCodes)) = for {
       pe <- ans
       cilData <- CIL.fromPeData(pe.peData)
       codeParser = CIL.code(cilData)
       ops <- pe.methods.map(m => codeParser.parse(m.codeBytes).toValidated.joinRight).sequence
-    } yield ops
+    } yield (cilData, ops)
 
-    opCodes shouldBe Right(
-      Seq(
-        Seq(LdArg0, Call(Ignored), Ret),
-        Seq(LdStr("Hello World!"), Call(Ignored), Ret)
-      )
+    cilData.tables shouldBe Seq(
+      Seq(Ignored),
+      Seq(Ignored, Ignored, Ignored),
+      Seq(Ignored, Ignored),
+      Seq(MethodDefData(".ctor"), MethodDefData("Main")),
+      Seq(Ignored),
+      Seq(MemberRefData(9, "WriteLine", hex"0x0001010e"),
+          MemberRefData(17, ".ctor", hex"0x200001"),
+          MemberRefData(25, ".ctor", hex"0x200001")),
+      Seq(Ignored),
+      Seq(Ignored),
+      Seq(Ignored)
     )
+
+    opCodes shouldBe
+      Seq(
+        Seq(LdArg0, Call(MemberRefData(17, ".ctor", hex"0x200001")), Ret),
+        Seq(LdStr("Hello World!"), Call(MemberRefData(9, "WriteLine", hex"0x0001010e")), Ret)
+      )
   }
 }
