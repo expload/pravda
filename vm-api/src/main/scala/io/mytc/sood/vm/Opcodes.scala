@@ -9,6 +9,7 @@ object Opcodes {
   final val RET = int.RET.toByte
 
   final val PCALL = int.PCALL.toByte
+  final val DCALL = int.DCALL.toByte
 
   // Stack
   final val POP = int.POP.toByte
@@ -56,6 +57,7 @@ object Opcodes {
     final val RET = 0x05
 
     final val PCALL = 0x06
+    final val DCALL = 0x07
 
     // Stack
     final val POP = 0x10
