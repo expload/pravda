@@ -388,7 +388,7 @@ object CIL {
     0x42 -> opCodeWithInt32(BgtUn),
     0x43 -> opCodeWithInt32(BleUn),
     0x44 -> opCodeWithInt32(BltUn),
-    0x45 -> /*switch*/ opCode(Nop), // FIXME !,
+    0x45 -> P(UInt32).flatMap(l => Int32.rep(exactly = l.toInt).map(Switch.andThen(validated))),
     0x46 -> opCode(LdIndI1),
     0x47 -> opCode(LdIndU1),
     0x48 -> opCode(LdIndI2),
@@ -454,7 +454,9 @@ object CIL {
     0x74 -> opCodeWithToken(CastClass, cilData),
     0x75 -> opCodeWithToken(IsInst, cilData),
     0x76 -> opCode(ConvRUn),
-    // 0x77_    // 0x78_    0x79 -> opCodeWithToken(Unbox, peData),
+    // 0x77_
+    // 0x78_
+    0x79 -> opCodeWithToken(Unbox, cilData),
     0x7A -> opCode(Throw),
     0x7B -> opCodeWithToken(LdFld, cilData),
     0x7C -> opCodeWithToken(LdFldA, cilData),
