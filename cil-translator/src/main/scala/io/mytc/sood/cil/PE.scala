@@ -66,8 +66,11 @@ object PE {
     sealed trait MethodHeader {
       val codeBytes: Bytes
     }
-    case class TinyMethodHeader(codeBytes: Bytes) extends MethodHeader
-    case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Int, codeBytes: Bytes)
+    case object EmptyHeader extends MethodHeader {
+      override val codeBytes: Bytes = Bytes.empty
+    }
+    final case class TinyMethodHeader(codeBytes: Bytes) extends MethodHeader
+    final case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Int, codeBytes: Bytes)
         extends MethodHeader
 
     case class PeData(stringHeap: Bytes,
@@ -273,6 +276,7 @@ object PE {
       header <- peHeader.parse(file).toValidated
       sections = header.sectionHeaders
 
+
       fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
 
       cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toValidated
@@ -297,7 +301,11 @@ object PE {
       methods <- tildeStream.tables
         .flatMap(_.collect {
           case TablesInfo.MethodDefRow(rva, _, _, _, _, _) =>
-            method.parse(fileBytesFromRva(rva)).toValidated
+            if (rva > 0) {
+              method.parse(fileBytesFromRva(rva)).toValidated
+            } else {
+              validated(EmptyHeader)
+            }
         })
         .sequence
     } yield

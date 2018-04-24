@@ -208,7 +208,7 @@ object TablesInfo {
     1 -> typeRefRow,
     2 -> typeDefRow,
     // 3
-    4 -> fileRow,
+    4 -> fieldRow,
     // 5
     6 -> methodDefRow,
     // 7

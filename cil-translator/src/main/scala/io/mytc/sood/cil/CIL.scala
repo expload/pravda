@@ -225,7 +225,7 @@ object CIL {
   case object SubOvf extends OpCode
   case object SubOvfUn extends OpCode
 
-  final case class Switch(targets: Seq[Int])
+  final case class Switch(targets: Seq[Int]) extends OpCode
 
   case object Xor extends OpCode
 

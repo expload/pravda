@@ -22,8 +22,9 @@ object Heaps {
     }
   })
 
-  def blob(blobHeap: Bytes, idx: Long): Validated[Bytes] =
+  def blob(blobHeap: Bytes, idx: Long): Validated[Bytes] = {
     blobBytes.parse(blobHeap, idx.toInt).toValidated
+  }
 
   def string(stringHeap: Bytes, idx: Long): Validated[String] =
     nullTerminatedString.parse(stringHeap, idx.toInt).toValidated
