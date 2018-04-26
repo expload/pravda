@@ -189,7 +189,7 @@ class PeParsersSpec extends FlatSpec with Matchers {
       Seq(Ignored),
       Seq(Ignored, Ignored, Ignored, Ignored, Ignored),
       Seq(Ignored, Ignored),
-      Seq(Ignored),
+      Seq(FieldData(22, "val", hex"0x0608")),
       Seq(MethodDefData("B"), MethodDefData("Main"), MethodDefData(".ctor"), MethodDefData(".cctor")),
       Seq(
         MemberRefData(9, ".ctor", hex"0x20010108"),
@@ -204,7 +204,7 @@ class PeParsersSpec extends FlatSpec with Matchers {
     )
 
     opCodes shouldBe Seq(
-      Seq(Nop, LdSFld(Ignored), StLoc0, BrS(0), LdLoc0, Ret),
+      Seq(Nop, LdSFld(FieldData(22, "val", hex"0x0608")), StLoc0, BrS(0), LdLoc0, Ret),
       Seq(Nop,
           LdcI42,
           StLoc0,
@@ -224,7 +224,7 @@ class PeParsersSpec extends FlatSpec with Matchers {
           StLocS(4),
           Ret),
       Seq(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
-      Seq(LdcI4S(42), StSFld(Ignored), Ret)
+      Seq(LdcI4S(42), StSFld(FieldData(22, "val", hex"0x0608")), Ret)
     )
   }
 
@@ -235,7 +235,7 @@ class PeParsersSpec extends FlatSpec with Matchers {
       Seq(Ignored),
       Seq(Ignored, Ignored, Ignored, Ignored, Ignored),
       Seq(Ignored, Ignored),
-      Seq(Ignored),
+      Seq(FieldData(22, "x", hex"0x0608")),
       Seq(MethodDefData("Main"), MethodDefData(".ctor"), MethodDefData(".cctor")),
       Seq(
         MemberRefData(9, ".ctor", hex"0x20010108"),
@@ -252,19 +252,19 @@ class PeParsersSpec extends FlatSpec with Matchers {
     opCodes shouldBe List(
       List(
         Nop,
-        LdSFld(Ignored),
+        LdSFld(FieldData(22, "x", hex"0x0608")),
         LdcI42,
         Add,
         StLoc0,
-        LdSFld(Ignored),
+        LdSFld(FieldData(22, "x", hex"0x0608")),
         LdcI42,
         Mull,
         StLoc1,
-        LdSFld(Ignored),
+        LdSFld(FieldData(22, "x", hex"0x0608")),
         LdcI42,
         Div,
         StLoc2,
-        LdSFld(Ignored),
+        LdSFld(FieldData(22, "x", hex"0x0608")),
         LdcI42,
         Rem,
         StLoc3,
@@ -283,7 +283,7 @@ class PeParsersSpec extends FlatSpec with Matchers {
         Ret
       ),
       List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
-      List(LdcI4S(10), StSFld(Ignored), Ret)
+      List(LdcI4S(10), StSFld(FieldData(22, "x", hex"0x0608")), Ret)
     )
   }
 
@@ -343,6 +343,208 @@ class PeParsersSpec extends FlatSpec with Matchers {
         Ret
       ),
       List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
+    )
+  }
+
+  "objects" should "be parsed correctly" in {
+    val Right((_, cilData, opCodes)) = parsePe("objects.exe")
+
+    cilData.tables shouldBe List(
+      List(Ignored),
+      List(Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(Ignored, Ignored, Ignored, Ignored),
+      List(FieldData(1, "a", hex"0x0608"), FieldData(1, "b", hex"0x0608")),
+      List(MethodDefData(".ctor"),
+           MethodDefData("answerA"),
+           MethodDefData(".ctor"),
+           MethodDefData("answerB"),
+           MethodDefData("Main"),
+           MethodDefData(".ctor")),
+      List(Ignored, Ignored),
+      List(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001")
+      ),
+      List(Ignored, Ignored, Ignored),
+      List(Ignored, Ignored),
+      List(Ignored),
+      List(Ignored)
+    )
+
+    opCodes shouldBe List(
+      List(LdArg0,
+           Call(MemberRefData(41, ".ctor", hex"0x200001")),
+           Nop,
+           Nop,
+           LdArg0,
+           LdArg1,
+           StFld(FieldData(1, "a", hex"0x0608")),
+           Ret),
+      List(Nop, LdArg0, LdFld(FieldData(1, "a", hex"0x0608")), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
+      List(LdArg0,
+           Call(MemberRefData(41, ".ctor", hex"0x200001")),
+           Nop,
+           Nop,
+           LdArg0,
+           LdArg1,
+           StFld(FieldData(1, "b", hex"0x0608")),
+           Ret),
+      List(Nop, LdArg0, LdFld(FieldData(1, "b", hex"0x0608")), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
+      List(
+        Nop,
+        LdcI4S(-42),
+        NewObj(MethodDefData(".ctor")),
+        StLoc0,
+        LdcI40,
+        NewObj(MethodDefData(".ctor")),
+        StLoc1,
+        LdLoc0,
+        CallVirt(MethodDefData("answerA")),
+        LdLoc1,
+        CallVirt(MethodDefData("answerB")),
+        Add,
+        StLoc2,
+        Ret
+      ),
+      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
+    )
+  }
+
+  "loop" should "be parsed correctly" in {
+    val Right((_, cilData, opCodes)) = parsePe("loop.exe")
+
+    cilData.tables shouldBe List(
+      List(Ignored),
+      List(Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(Ignored, Ignored),
+      List(MethodDefData("Main"), MethodDefData(".ctor")),
+      List(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001")
+      ),
+      List(Ignored, Ignored, Ignored),
+      List(Ignored),
+      List(Ignored),
+      List(Ignored)
+    )
+    opCodes shouldBe List(
+      List(
+        Nop,
+        LdcI40,
+        StLoc0,
+        LdcI40,
+        StLoc1,
+        BrS(10),
+        Nop,
+        LdLoc0,
+        LdcI42,
+        Add,
+        StLoc0,
+        Nop,
+        LdLoc1,
+        LdcI41,
+        Add,
+        StLoc1,
+        LdLoc1,
+        LdcI4S(10),
+        Clt,
+        StLoc2,
+        LdLoc2,
+        BrTrueS(-19),
+        BrS(6),
+        Nop,
+        LdLoc0,
+        LdcI42,
+        Mull,
+        StLoc0,
+        Nop,
+        LdLoc0,
+        LdcI4(10000),
+        Clt,
+        StLoc3,
+        LdLoc3,
+        BrTrueS(-18),
+        Ret
+      ),
+      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
+    )
+  }
+
+  "if" should "be parsed correctly" in {
+    val Right((_, cilData, opCodes)) = parsePe("if.exe")
+
+    cilData.tables shouldBe List(
+      List(Ignored),
+      List(Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(Ignored, Ignored),
+      List(FieldData(22, "x", hex"0x0608")),
+      List(MethodDefData("Main"), MethodDefData(".ctor"), MethodDefData(".cctor")),
+      List(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001")
+      ),
+      List(Ignored, Ignored, Ignored),
+      List(Ignored),
+      List(Ignored),
+      List(Ignored)
+    )
+
+    opCodes shouldBe List(
+      List(
+        Nop,
+        LdSFld(FieldData(22, "x", hex"0x0608")),
+        LdcI41,
+        Clt,
+        StLoc0,
+        LdLoc0,
+        BrFalseS(8),
+        Nop,
+        LdcI44,
+        StSFld(FieldData(22, "x", hex"0x0608")),
+        Nop,
+        LdSFld(FieldData(22, "x", hex"0x0608")),
+        LdcI45,
+        Cgt,
+        StLoc1,
+        LdLoc1,
+        BrFalseS(22),
+        Nop,
+        LdSFld(FieldData(22, "x", hex"0x0608")),
+        LdcI46,
+        Cgt,
+        StLoc2,
+        LdLoc2,
+        BrFalseS(8),
+        Nop,
+        LdcI47,
+        StSFld(FieldData(22, "x", hex"0x0608")),
+        Nop,
+        Nop,
+        LdSFld(FieldData(22, "x", hex"0x0608")),
+        LdcI40,
+        Cgt,
+        StLoc3,
+        LdLoc3,
+        BrFalseS(10),
+        Nop,
+        LdcI44,
+        StSFld(FieldData(22, "x", hex"0x0608")),
+        Nop,
+        BrS(8),
+        Nop,
+        LdcI45,
+        StSFld(FieldData(22, "x", hex"0x0608")),
+        Nop,
+        Ret
+      ),
+      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
+      List(LdcI41, StSFld(FieldData(22, "x", hex"0x0608")), Ret)
     )
   }
 }

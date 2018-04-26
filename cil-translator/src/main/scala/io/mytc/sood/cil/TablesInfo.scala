@@ -63,7 +63,7 @@ object TablesInfo {
   case object EventRow extends TableRowInfo
   case object ExportedTypeRow extends TableRowInfo
 
-  case object FieldRow extends TableRowInfo
+  final case class FieldRow(flags: Short, nameIdx: Long, signatureIdx: Long) extends TableRowInfo
   case object FieldLayoutRow extends TableRowInfo
   case object FieldMarshalRow extends TableRowInfo
   case object FieldRVARow extends TableRowInfo
@@ -76,7 +76,7 @@ object TablesInfo {
   case object InterfaceImplRow extends TableRowInfo
 
   case object ManifestResourceRow extends TableRowInfo
-  final case class MemberRefRow(cls: Long, name: Long, signature: Long) extends TableRowInfo
+  final case class MemberRefRow(cls: Long, nameIdx: Long, signatureIdx: Long) extends TableRowInfo
   final case class MethodDefRow(rva: Long,
                                 implFlags: Short,
                                 flags: Short,
@@ -134,8 +134,8 @@ object TablesInfo {
     P(AnyBytes(4 + 4 + indexes.stringHeap.size + indexes.stringHeap.size + indexes.implementation.size))
       .map(_ => ExportedTypeRow)
 
-  def fieldRow(indexes: TableIndexes): P[FieldRow.type] =
-    P(AnyBytes(2 + indexes.stringHeap.size + indexes.blobHeap.size)).map(_ => FieldRow)
+  def fieldRow(indexes: TableIndexes): P[FieldRow] =
+    P(Int16 ~ indexes.stringHeap.parser ~ indexes.blobHeap.parser).map(FieldRow.tupled)
   def fieldLayoutRow(indexes: TableIndexes): P[FieldLayoutRow.type] =
     P(AnyBytes(4 + indexes.field.size)).map(_ => FieldLayoutRow)
   def fieldMarshalRow(indexes: TableIndexes): P[FieldMarshalRow.type] =
