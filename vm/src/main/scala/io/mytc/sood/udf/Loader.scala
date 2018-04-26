@@ -1,5 +1,5 @@
 package io.mytc.sood
-package libs
+package udf
 
 import java.nio.ByteBuffer
 
@@ -20,13 +20,16 @@ object Loader extends Loader {
 
   override def lib(address: Array[Byte], worldState: WorldState): Option[Library] = {
     val program = worldState.get(address).program
+    program.rewind()
+
     if(program.get() == Opcodes.FTBL) {
       val table: ExternalTable = readExternalTable(program)
       val lib  = new Library {
         override def func(name: Array[Byte]): Option[Function] = {
-          table.get(name).map(i =>
-            LibFunction(code = program.position(i).asInstanceOf[ByteBuffer])
-          )
+          table.get(name).map { i =>
+            program.position(i)
+            LibFunction(program)
+          }
         }
       }
       Some(lib)

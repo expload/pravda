@@ -13,11 +13,14 @@ object Vm {
 
   import Opcodes.int._
 
+  val loader: Loader = DefaultLoader
+
   def runTransaction(
                       program: ByteBuffer,
                       worldState: WorldState): Memory = {
 
     val initMemory = Memory.empty
+    program.rewind()
     run(program, worldState, initMemory, None, 0, isLibrary = false)
 
   }
@@ -29,26 +32,24 @@ object Vm {
                   depth: Int = 0): Memory = {
 
     val account = worldState.get(programAddress)
-    run(account.program, worldState, initMemory, Some(account.storage), depth, isLibrary = false)
+    val program = account.program
+    program.rewind()
+    run(program, worldState, initMemory, Some(account.storage), depth, isLibrary = false)
 
   }
 
   private def run(
                    program: ByteBuffer,
                    worldState: WorldState,
-                   initMemory: Memory,
+                   memory: Memory,
                    progStorage: Option[Storage],
                    depth: Int,
                    isLibrary: Boolean
                  ): Memory = {
 
-    var mem = initMemory
-
     lazy val storage = progStorage.get
 
     val callStack = new ArrayBuffer[Int](1024)
-
-    val loader: Loader = DefaultLoader
 
     def callPop(): Int = {
       callStack.remove(callStack.length - 1)
@@ -64,7 +65,7 @@ object Vm {
       (program.get() & 0xff: @switch) match {
         case CALL =>
           callPush(program.position())
-          program.position(dataToInt32(mem.pop()))
+          program.position(dataToInt32(memory.pop()))
           aux()
         case RET =>
           if(callStack.nonEmpty) {
@@ -75,134 +76,133 @@ object Vm {
           if(!isLibrary) { // TODO: it should be exeption here in case of library
             val address = wordToData(program)
             val num = wordToInt32(program)
-            mem ++= runProgram(address, mem.top(num), worldState, depth + 1)
+            memory ++= runProgram(address, memory.top(num), worldState, depth + 1)
           }
           aux()
         case LCALL =>
           val address = wordToData(program)
           val func = wordToData(program)
           val num = wordToInt32(program)
-          val callData = mem.top(num)
+          val callData = memory.top(num)
           loader.lib(address, worldState).flatMap(
             _.func(func).map{
               case f:StdFunction => f(callData)
               case LibFunction(function) => run(function, worldState, callData, None, depth + 1, isLibrary = true)
             }
-          ).foreach(mem ++= _)
+          ).foreach(memory ++= _)
           aux()
         case JUMP =>
-          program.position(dataToInt32(mem.pop()))
+          program.position(dataToInt32(memory.pop()))
           aux()
         case JUMPI =>
-          val condition = mem.pop()
-          val position = mem.pop()
+          val condition = memory.pop()
+          val position = memory.pop()
           if (dataToBool(condition))
             program.position(dataToInt32(position))
           aux()
         case PUSHX =>
-          mem.push(wordToData(program))
+          memory.push(wordToData(program))
           aux()
         case POP =>
-          mem.pop()
+          memory.pop()
           aux()
         case DUP =>
-          val x = mem.pop()
-          mem.push(x)
-          mem.push(x)
+          val x = memory.pop()
+          memory.push(x)
+          memory.push(x)
           aux()
         case SWAP =>
-          val fsti = mem.stack.length - 1
+          val fsti = memory.stack.length - 1
           val sndi = fsti - 1
-          val fst = mem.stack(fsti)
-          val snd = mem.stack(sndi)
-          mem.stack(fsti) = snd
-          mem.stack(sndi) = fst
+          val fst = memory.stack(fsti)
+          val snd = memory.stack(sndi)
+          memory.stack(fsti) = snd
+          memory.stack(sndi) = fst
           aux()
         case MPUT =>
-          val i = mem.heap.length
-          mem.heap += mem.pop()
-          mem.push(int32ToData(i))
+          val i = memory.heap.length
+          memory.heap += memory.pop()
+          memory.push(int32ToData(i))
           aux()
         case MGET =>
-          val i = dataToInt32(mem.pop())
-          mem.push(mem.heap(i))
+          val i = dataToInt32(memory.pop())
+          memory.push(memory.heap(i))
           aux()
         case SPUT =>
-          val value = mem.pop()
-          val key = mem.pop()
+          val value = memory.pop()
+          val key = memory.pop()
           storage.put(key, value)
           aux()
         case SGET =>
-          mem.push(storage.get(mem.pop()).get)
+          memory.push(storage.get(memory.pop()).get)
           aux()
         case SDROP =>
-          storage.delete(mem.pop())
+          storage.delete(memory.pop())
           aux()
         case I32ADD =>
-          mem.push(int32ToData(dataToInt32(mem.pop()) + dataToInt32(mem.pop())))
+          memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))
           aux()
         case I32MUL =>
-          mem.push(int32ToData(dataToInt32(mem.pop()) * dataToInt32(mem.pop())))
+          memory.push(int32ToData(dataToInt32(memory.pop()) * dataToInt32(memory.pop())))
           aux()
         case I32DIV =>
-          mem.push(int32ToData(dataToInt32(mem.pop()) / dataToInt32(mem.pop())))
+          memory.push(int32ToData(dataToInt32(memory.pop()) / dataToInt32(memory.pop())))
           aux()
         case I32MOD =>
-          mem.push(int32ToData(dataToInt32(mem.pop()) % dataToInt32(mem.pop())))
+          memory.push(int32ToData(dataToInt32(memory.pop()) % dataToInt32(memory.pop())))
           aux()
         case FADD =>
-          mem.push(doubleToData(dataToDouble(mem.pop()) + dataToDouble(mem.pop())))
+          memory.push(doubleToData(dataToDouble(memory.pop()) + dataToDouble(memory.pop())))
           aux()
         case FMUL =>
-          mem.push(doubleToData(dataToDouble(mem.pop()) * dataToDouble(mem.pop())))
+          memory.push(doubleToData(dataToDouble(memory.pop()) * dataToDouble(memory.pop())))
           aux()
         case FDIV =>
-          mem.push(doubleToData(dataToDouble(mem.pop()) / dataToDouble(mem.pop())))
+          memory.push(doubleToData(dataToDouble(memory.pop()) / dataToDouble(memory.pop())))
           aux()
         case FMOD =>
-          mem.push(doubleToData(dataToDouble(mem.pop()) % dataToDouble(mem.pop())))
+          memory.push(doubleToData(dataToDouble(memory.pop()) % dataToDouble(memory.pop())))
           aux()
         case NOT =>
-          mem.push(boolToData(!dataToBool(mem.pop())))
+          memory.push(boolToData(!dataToBool(memory.pop())))
           aux()
         case AND =>
-          val left = mem.pop()
-          val right = mem.pop()
-          mem.push(
+          val left = memory.pop()
+          val right = memory.pop()
+          memory.push(
             boolToData(dataToBool(left) && dataToBool(right))
           )
           aux()
         case OR =>
-          val left = mem.pop()
-          val right = mem.pop()
-          mem.push(
+          val left = memory.pop()
+          val right = memory.pop()
+          memory.push(
             boolToData(dataToBool(left) || dataToBool(right))
           )
           aux()
         case XOR =>
-          val left = mem.pop()
-          val right = mem.pop()
-          mem.push(
+          val left = memory.pop()
+          val right = memory.pop()
+          memory.push(
             boolToData(dataToBool(left) ^ dataToBool(right))
           )
           aux()
         case EQ =>
-          mem.push(boolToData(mem.pop().sameElements(mem.pop())))
+          memory.push(boolToData(memory.pop().sameElements(memory.pop())))
           aux()
         case I32LT =>
-          val d1 = dataToInt32(mem.pop())
-          val d2 = dataToInt32(mem.pop())
-          mem.push(boolToData(d1 < d2))
+          val d1 = dataToInt32(memory.pop())
+          val d2 = dataToInt32(memory.pop())
+          memory.push(boolToData(d1 < d2))
         case I32GT =>
-          val d1 = dataToInt32(mem.pop())
-          val d2 = dataToInt32(mem.pop())
-          mem.push(boolToData(d1 > d2))
+          val d1 = dataToInt32(memory.pop())
+          val d2 = dataToInt32(memory.pop())
+          memory.push(boolToData(d1 > d2))
         case STOP => ()
       }
     }
-    program.rewind()
     aux()
-    mem
+    memory
   }
 
 }

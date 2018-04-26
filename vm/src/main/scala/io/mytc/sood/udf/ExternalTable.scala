@@ -1,11 +1,11 @@
-package io.mytc.sood.libs
+package io.mytc.sood.udf
 
 import scodec.bits.ByteVector
 
-import scala.collection.mutable.Map
+import scala.collection.mutable
 
 case class ExternalTable() {
-  private val table = Map.empty[ByteVector, Int]
+  private val table = mutable.Map.empty[ByteVector, Int]
 
   def put(name: Array[Byte], pos: Int): Unit = {
     table += (ByteVector(name) -> pos)
