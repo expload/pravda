@@ -33,6 +33,7 @@ lazy val vm = (project in file("vm")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
+      "org.scodec" %% "scodec-bits" % "1.1.5",
       "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
     )
   ).

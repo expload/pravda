@@ -1,7 +1,7 @@
 package io.mytc.sood
 package std
 
-trait Func extends Function {
+trait Func extends StdFunction {
   val name: String
 }
 

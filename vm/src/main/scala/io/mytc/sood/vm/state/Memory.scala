@@ -13,6 +13,16 @@ case class Memory(
   def push(x: Data): stack.type =
     stack += x
 
+  def top(num: Int): Memory = {
+    val topStack = stack.takeRight(num)
+    stack.remove(stack.length - num, num)
+    Memory(topStack, heap.clone())
+  }
+
+  def ++=(other: Memory): Unit = {
+    stack ++= other.stack
+    heap ++= other.heap.drop(heap.length)
+  }
 }
 
 object Memory {

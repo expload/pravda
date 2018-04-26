@@ -18,7 +18,7 @@ object Vm {
                       worldState: WorldState): Memory = {
 
     val initMemory = Memory.empty
-    run(program, worldState, initMemory, None, 0)
+    run(program, worldState, initMemory, None, 0, isLibrary = false)
 
   }
 
@@ -29,7 +29,7 @@ object Vm {
                   depth: Int = 0): Memory = {
 
     val account = worldState.get(programAddress)
-    run(account.program, worldState, initMemory, Some(account.storage), depth + 1)
+    run(account.program, worldState, initMemory, Some(account.storage), depth, isLibrary = false)
 
   }
 
@@ -38,7 +38,9 @@ object Vm {
                    worldState: WorldState,
                    initMemory: Memory,
                    progStorage: Option[Storage],
-                   depth: Int): Memory = {
+                   depth: Int,
+                   isLibrary: Boolean
+                 ): Memory = {
 
     var mem = initMemory
 
@@ -46,7 +48,7 @@ object Vm {
 
     val callStack = new ArrayBuffer[Int](1024)
 
-    val loader: Loader = std.Libs
+    val loader: Loader = DefaultLoader
 
     def callPop(): Int = {
       callStack.remove(callStack.length - 1)
@@ -70,13 +72,23 @@ object Vm {
             aux()
           }
         case PCALL =>
-          val address = wordToData(program)
-          runProgram(address, mem, worldState, depth)
+          if(!isLibrary) { // TODO: it should be exeption here in case of library
+            val address = wordToData(program)
+            val num = wordToInt32(program)
+            mem ++= runProgram(address, mem.top(num), worldState, depth + 1)
+          }
           aux()
-        case DCALL =>
+        case LCALL =>
           val address = wordToData(program)
           val func = wordToData(program)
-          loader.lib(address).flatMap(_.func(func).map(_.apply(mem)))
+          val num = wordToInt32(program)
+          val callData = mem.top(num)
+          loader.lib(address, worldState).flatMap(
+            _.func(func).map{
+              case f:StdFunction => f(callData)
+              case LibFunction(function) => run(function, worldState, callData, None, depth + 1, isLibrary = true)
+            }
+          ).foreach(mem ++= _)
           aux()
         case JUMP =>
           program.position(dataToInt32(mem.pop()))
