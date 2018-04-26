@@ -1,4 +1,5 @@
-package io.mytc.sood.vm
+package io.mytc.sood
+package vm
 
 import java.nio.ByteBuffer
 
@@ -45,7 +46,7 @@ object Vm {
 
     val callStack = new ArrayBuffer[Int](1024)
 
-    val dynamicTable = lib.StdLib
+    val loader: Loader = std.Libs
 
     def callPop(): Int = {
       callStack.remove(callStack.length - 1)
@@ -70,13 +71,13 @@ object Vm {
           }
         case PCALL =>
           val address = mem.pop()
-          mem = runProgram(address, mem, worldState, depth)
+          runProgram(address, mem, worldState, depth)
           aux()
         case DCALL =>
-          val bytes = mem.pop()
-          val b1 = bytes(0)
-          val b2 = bytes(1)
-          dynamicTable(b1)(b2)(mem)
+          val address = mem.pop()
+          val func = mem.pop()
+          loader.lib(address).flatMap(_.func(func).map(_.apply(mem)))
+          aux()
         case JUMP =>
           program.position(dataToInt32(mem.pop()))
           aux()
