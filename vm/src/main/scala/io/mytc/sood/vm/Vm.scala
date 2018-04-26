@@ -70,12 +70,12 @@ object Vm {
             aux()
           }
         case PCALL =>
-          val address = mem.pop()
+          val address = wordToData(program)
           runProgram(address, mem, worldState, depth)
           aux()
         case DCALL =>
-          val address = mem.pop()
-          val func = mem.pop()
+          val address = wordToData(program)
+          val func = wordToData(program)
           loader.lib(address).flatMap(_.func(func).map(_.apply(mem)))
           aux()
         case JUMP =>
