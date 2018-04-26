@@ -203,28 +203,134 @@ class PeParsersSpec extends FlatSpec with Matchers {
       Seq(Ignored)
     )
 
+    opCodes shouldBe Seq(
+      Seq(Nop, LdSFld(Ignored), StLoc0, BrS(0), LdLoc0, Ret),
+      Seq(Nop,
+          LdcI42,
+          StLoc0,
+          Call(MethodDefData("B")),
+          StLoc1,
+          LdLoc0,
+          LdLoc1,
+          Add,
+          StLoc2,
+          LdLoc0,
+          LdLoc1,
+          Mull,
+          StLoc3,
+          LdLoc0,
+          LdLoc1,
+          Div,
+          StLocS(4),
+          Ret),
+      Seq(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
+      Seq(LdcI4S(42), StSFld(Ignored), Ret)
+    )
+  }
+
+  "arithmetic operations" should "be parsed correctly" in {
+    val Right((_, cilData, opCodes)) = parsePe("arithmetics.exe")
+
+    cilData.tables shouldBe Seq(
+      Seq(Ignored),
+      Seq(Ignored, Ignored, Ignored, Ignored, Ignored),
+      Seq(Ignored, Ignored),
+      Seq(MethodDefData("Main"), MethodDefData(".ctor")),
+      Seq(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001")
+      ),
+      Seq(Ignored, Ignored, Ignored),
+      Seq(Ignored),
+      Seq(Ignored),
+      Seq(Ignored)
+    )
+
     opCodes shouldBe List(
-      List(Nop, LdSFld(Ignored), StLoc0, BrS(0), LdLoc0, Ret),
       List(Nop,
-           LdcI42,
+           LdcI46,
            StLoc0,
-           Call(MethodDefData("B")),
+           LdcI48,
            StLoc1,
-           LdLoc0,
-           LdLoc1,
-           Add,
+           LdcI42,
            StLoc2,
-           LdLoc0,
-           LdLoc1,
-           Mull,
+           LdcI40,
            StLoc3,
            LdLoc0,
            LdLoc1,
+           Add,
+           LdcI4S(42),
+           Add,
+           LdLoc2,
+           Mull,
+           LdLoc3,
+           Add,
+           LdcI4(1337),
            Div,
            StLocS(4),
            Ret),
-      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
-      List(LdcI4S(42), StSFld(Ignored), Ret)
+      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
+    )
+  }
+
+  "method calling" should "be parsed correctly" in {
+    val Right((_, cilData, opCodes)) = parsePe("method_calling.exe")
+
+    cilData.tables shouldBe List(
+      List(Ignored),
+      List(Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(Ignored, Ignored),
+      List(
+        MethodDefData("answer"),
+        MethodDefData("secretAnswer"),
+        MethodDefData("sum"),
+        MethodDefData("personalAnswer"),
+        MethodDefData("personalSecretAnswer"),
+        MethodDefData("Main"),
+        MethodDefData(".ctor")
+      ),
+      List(Ignored, Ignored),
+      List(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001")
+      ),
+      List(Ignored, Ignored, Ignored),
+      List(Ignored, Ignored),
+      List(Ignored),
+      List(Ignored)
+    )
+
+    opCodes shouldBe List(
+      List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
+      List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
+      List(Nop, LdArg0, LdArg1, Add, StLoc0, BrS(0), LdLoc0, Ret),
+      List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
+      List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
+      List(
+        Nop,
+        Call(MethodDefData("answer")),
+        StLoc0,
+        Call(MethodDefData("secretAnswer")),
+        StLoc1,
+        LdLoc0,
+        LdLoc1,
+        Call(MethodDefData("sum")),
+        StLoc2,
+        NewObj(MethodDefData(".ctor")),
+        StLoc3,
+        LdLoc3,
+        CallVirt(MethodDefData("personalAnswer")),
+        StLocS(4),
+        LdLoc3,
+        CallVirt(MethodDefData("personalSecretAnswer")),
+        StLocS(5),
+        Ret
+      ),
+      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
     )
   }
 }
