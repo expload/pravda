@@ -93,14 +93,4 @@ class ForthTest extends FlatSpec with Matchers {
 
   }
 
-  "A forth standard library" must "define fadd" in {
-
-    assert( run[Float]( """
-      1.0 2.0 fadd
-    """ ) == Right(
-      List(3.0)
-    ))
-
-  }
-
 }
