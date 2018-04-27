@@ -1,6 +1,9 @@
 package io.mytc.sood.vm
 
-import io.mytc.sood.vm.state.{AccountState, Address, Data, WorldState}
+import java.nio.ByteBuffer
+import java.util
+
+import io.mytc.sood.vm.state._
 import serialization._
 
 object VmUtils {
@@ -49,4 +52,20 @@ object VmUtils {
   def int(d: Data): Int = {
     dataToInt32(d)
   }
+
+
+  def worldState(accs: (Address, Program)*) = new WorldState {
+
+    def account(prog: Program): AccountState = new AccountState {
+      override def program: ByteBuffer = prog.buffer
+      override def storage: Storage = null
+    }
+
+    override def get(address: Address): AccountState = {
+      accs.find{case (addr, _) => util.Arrays.equals(addr, address)}.map{
+        case (addr, prog) => account(prog)
+      }.get
+    }
+  }
+
 }

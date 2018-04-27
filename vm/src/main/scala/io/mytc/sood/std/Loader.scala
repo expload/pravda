@@ -12,7 +12,6 @@ object Loader extends Loader {
   )
 
   private lazy val libsTable = libraries.map(l => l.address -> l).toMap
-  private def lib(address: String): Option[Lib] = libsTable.get(address)
 
   override def lib(address: Array[Byte], worldState: WorldState): Option[Lib] =
     libsTable.get(new String(address, StandardCharsets.UTF_8))

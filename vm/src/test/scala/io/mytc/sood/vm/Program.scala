@@ -1,6 +1,7 @@
 package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import state.Data
 import VmUtils._
@@ -17,6 +18,9 @@ case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data]
   }
   def put(bs: Array[Byte]): Program = {
     copy(bytes ++ bytesToWord(bs))
+  }
+  def put(bs: String): Program = {
+    copy(bytes ++ bytesToWord(bs.getBytes(StandardCharsets.UTF_8)))
   }
 
   def opcode(cmd: Int): Program = {
