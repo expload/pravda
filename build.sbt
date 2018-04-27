@@ -85,3 +85,16 @@ lazy val tests = (project in file("tests")).
       "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
     )
   )
+
+lazy val cil = (project in file("cil-translator")).
+  settings(
+    normalizedName := "cil-translator",
+    version := "0.0.1"
+  ).
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
+      "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
+      "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
+    )
+  )
