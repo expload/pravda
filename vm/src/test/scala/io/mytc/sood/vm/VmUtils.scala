@@ -1,13 +1,20 @@
 package io.mytc.sood.vm
 
-import io.mytc.sood.vm.Vm._
-
-import scala.collection.mutable.ArrayBuffer
+import io.mytc.sood.vm.state.{AccountState, Address, Data, WorldState}
+import serialization._
 
 object VmUtils {
 
+  val emptyState = new WorldState {
+    override def get(address: Address): AccountState = ???
+  }
+
   def exec(p: Program): Array[Data] = {
-    Vm.run(p.buffer, Option(p.stack.to[ArrayBuffer])).toArray
+    Vm.runTransaction(p.buffer, emptyState).stack.toArray
+  }
+
+  def exec(p: Program, worldState: WorldState): Array[Data] = {
+    Vm.runTransaction(p.buffer, worldState).stack.toArray
   }
 
   def stack(item: Data*): Array[Data] =  item.toArray

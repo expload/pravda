@@ -8,6 +8,8 @@ object Opcodes {
   final val CALL = int.CALL.toByte
   final val RET = int.RET.toByte
 
+  final val PCALL = int.PCALL.toByte
+
   // Stack
   final val POP = int.POP.toByte
   final val PUSHX = int.PUSHX.toByte
@@ -18,6 +20,11 @@ object Opcodes {
   // Heap
   final val MPUT = int.MPUT.toByte
   final val MGET = int.MGET.toByte
+
+  // Storage
+  final val SPUT = int.SPUT.toByte
+  final val SGET = int.SGET.toByte
+  final val SDROP = int.SDROP.toByte
 
   // Int32 operations
   final val I32ADD = int.I32ADD.toByte
@@ -33,6 +40,8 @@ object Opcodes {
     final val CALL = 0x04
     final val RET = 0x05
 
+    final val PCALL = 0x06
+
     // Stack
     final val POP = 0x10
     final val PUSHX = 0x11
@@ -43,6 +52,11 @@ object Opcodes {
     // Heap
     final val MPUT = 0x43
     final val MGET = 0x44
+
+    // Storage
+    final val SPUT = 0x50
+    final val SGET = 0x51
+    final val SDROP = 0x52
 
     // Int32 operations
     final val I32ADD = 0x60

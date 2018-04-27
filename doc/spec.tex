@@ -34,9 +34,9 @@ Persistence is an integral part of BSCE which is a representation of a global st
 Code can be executed.
 \subsection{Execution scopes}
 
-Launched code is named execution. There are two execution scopes: transaction and smart-contract. If launched code is placed in a transaction it has \textit{transaction scope}. Similarly if launched code is placed in a smart-contract it has \textit{smart-contract scope}. Every execution has its own heap. 
+Launched code is named execution. There are two execution scopes: transaction and smart-contract. If launched code is placed in a transaction it has \textit{transaction scope}. Similarly if launched code is placed in a smart-contract it has \textit{smart-contract scope}.
 
-Execution in transactions scope has not persistent storage but has its own stack. Execution in smart-contacts scope inherits a stack from an execution which launches it. Also it has persistent storage shared between all the executions of the smart-contract.
+Execution in transactions scope has not persistent storage but has its own stack and heap. Execution in smart-contacts scope inherits both stack and heap from the execution which launches it. Also it has persistent storage shared between all the executions of the smart-contract.
 
 \subsection{Transaction isolation}
 
@@ -67,6 +67,8 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 0x04 & CALL & $1$ & $0$ & Firstly, it pushes current program counter to the separate stack (so called \emph{call stack}). Then it alters program execution counter to the value of the first item of the stack.  \\
 \hline
 0x05 & RET & $0$ & $0$ & Alters program execution counter to the value of the first item of the call stack (see CALL opcode).  \\
+\hline
+0x06 & PCALL & $1$ & $0$ & Executes a smart contract with the address corresponding to the top value of the stack.  \\
 
 \end{tabularx}
 
@@ -104,11 +106,11 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \begin{tabularx}{\textwidth}{ c l c c p{7cm} }
 \textbf{Code} & \textbf{Mnemonic} & \textbf{$\Uparrow$} & \textbf{$\Downarrow$} & \textbf{Description} \\
 \hline
-0x50 & SPUT & $1$ & $1$ & Saves first item in the stack to the persistent storage. Pushes address of the item to the heap. \\
+0x50 & SPUT & $2$ & $0$ & Saves the first item in the stack to the persistent storage using the second item of the stack as the address.  \\
 \hline
 0x51 & SGET & $1$ & $1$ & Pushes an item saved in persistent storage corresponding to address given in a first item of the stack.  \\
 \hline
-0x52 & SDROP & $1$ & $1$ & Removes item corresponding to address given in a first item of the stack from the persistent storage.  \\
+0x52 & SDROP & $1$ & $0$ & Removes item corresponding to address given in a first item of the stack from the persistent storage.  \\
 \hline
 \end{tabularx}
 
