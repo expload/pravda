@@ -19,8 +19,8 @@ class ParserTest extends FlatSpec with Matchers {
         pop
         ret
       """ ) == Right(Seq(
-        Op.Push(3),
-        Op.Push(255),
+        Op.Push(Datum.Integral(3)),
+        Op.Push(Datum.Integral(255)),
         Op.Pop,
         Op.Dup,
         Op.Call("boo"),

@@ -34,8 +34,16 @@ object VmUtils {
     bs.map(hex).mkString(" ")
   }
 
+  def data(v: Double): Data = {
+    doubleToData(v)
+  }
+
   def data(i: Int): Data = {
     int32ToData(i)
+  }
+
+  def data(b: Byte): Data = {
+    Array(b)
   }
 
   def int(d: Data): Int = {

@@ -2,10 +2,9 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
-import scala.annotation.{switch, tailrec}
+import scala.annotation.{switch, tailrec, strictfp}
 import scala.collection.mutable.ArrayBuffer
-import state.{Address, Memory, WorldState, Storage}
-
+import state._
 import serialization._
 
 object Vm {
@@ -54,7 +53,9 @@ object Vm {
       callStack += pos
     }
 
-    @tailrec def aux(): Unit = if (program.hasRemaining) {
+    @tailrec
+    @strictfp
+    def aux(): Unit = if (program.hasRemaining) {
       (program.get() & 0xff: @switch) match {
         case CALL =>
           callPush(program.position())
@@ -73,9 +74,10 @@ object Vm {
           program.position(dataToInt32(mem.pop()))
           aux()
         case JUMPI =>
-          if (mem.pop().sum > 0)
-            program.position(dataToInt32(mem.pop()))
-          else mem.pop()
+          val condition = mem.pop()
+          val position = mem.pop()
+          if (dataToBool(condition))
+            program.position(dataToInt32(position))
           aux()
         case PUSHX =>
           mem.push(wordToData(program))
@@ -128,6 +130,53 @@ object Vm {
         case I32MOD =>
           mem.push(int32ToData(dataToInt32(mem.pop()) % dataToInt32(mem.pop())))
           aux()
+        case FADD =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) + dataToDouble(mem.pop())))
+          aux()
+        case FMUL =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) * dataToDouble(mem.pop())))
+          aux()
+        case FDIV =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) / dataToDouble(mem.pop())))
+          aux()
+        case FMOD =>
+          mem.push(doubleToData(dataToDouble(mem.pop()) % dataToDouble(mem.pop())))
+          aux()
+        case NOT =>
+          mem.push(boolToData(!dataToBool(mem.pop())))
+          aux()
+        case AND =>
+          val left = mem.pop()
+          val right = mem.pop()
+          mem.push(
+            boolToData(dataToBool(left) && dataToBool(right))
+          )
+          aux()
+        case OR =>
+          val left = mem.pop()
+          val right = mem.pop()
+          mem.push(
+            boolToData(dataToBool(left) || dataToBool(right))
+          )
+          aux()
+        case XOR =>
+          val left = mem.pop()
+          val right = mem.pop()
+          mem.push(
+            boolToData(dataToBool(left) ^ dataToBool(right))
+          )
+          aux()
+        case EQ =>
+          mem.push(boolToData(mem.pop().sameElements(mem.pop())))
+          aux()
+        case I32LT =>
+          val d1 = dataToInt32(mem.pop())
+          val d2 = dataToInt32(mem.pop())
+          mem.push(boolToData(d1 < d2))
+        case I32GT =>
+          val d1 = dataToInt32(mem.pop())
+          val d2 = dataToInt32(mem.pop())
+          mem.push(boolToData(d1 > d2))
         case STOP => ()
       }
     }

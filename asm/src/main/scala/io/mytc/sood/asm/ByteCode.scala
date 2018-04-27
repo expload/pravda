@@ -10,11 +10,15 @@ class ByteCode {
   def offsets(unit: Seq[Op]): Map[String, Int] = {
     val code = new ArrayBuffer[Byte](unit.size)
     val omap = unit.map{
-      case Op.Push(x)  ⇒ {
+      case Op.Push(d)  ⇒ {
                          val offset = code.size
                          code += VM.PUSHX
-                         code ++= vm.int32ToWord(x)
-                         (Op.Push(x), offset)
+                         d match {
+                           case v: Datum.Integral ⇒ code ++= vm.int32ToWord(v.value)
+                           case v: Datum.Floating ⇒ code ++= vm.doubleToWord(v.value)
+                           case v: Datum.Rawbytes ⇒ code ++= vm.bytesToWord(v.value)
+                         }
+                         (Op.Push(d), offset)
                          }
 
       case Op.Call(n)  ⇒ {
@@ -103,6 +107,30 @@ class ByteCode {
                          (Op.I32Mod, offset)
                          }
 
+      case Op.FAdd   ⇒ {
+                         val offset = code.size
+                         code += VM.FADD
+                         (Op.FAdd, offset)
+                         }
+
+      case Op.FMul   ⇒ {
+                         val offset = code.size
+                         code += VM.FMUL
+                         (Op.FMul, offset)
+                         }
+
+      case Op.FDiv   ⇒ {
+                         val offset = code.size
+                         code += VM.FDIV
+                         (Op.FDiv, offset)
+                         }
+
+      case Op.FMod   ⇒ {
+                         val offset = code.size
+                         code += VM.FMOD
+                         (Op.FMod, offset)
+                         }
+
       case Op.Label(n) ⇒ {
                          val offset = code.size
                          (Op.Label(n), offset)
@@ -122,9 +150,13 @@ class ByteCode {
     val code = new ArrayBuffer[Byte](unit.size)
 
     unit.foreach{
-      case Op.Push(x)  ⇒ {
-                         code += VM.PUSHX
-                         code ++= vm.int32ToWord(x)
+      case Op.Push(d)  ⇒ {
+                           code += VM.PUSHX
+                           d match {
+                             case d: Datum.Integral ⇒ code ++= vm.int32ToWord(d.value)
+                             case d: Datum.Floating ⇒ code ++= vm.doubleToWord(d.value)
+                             case d: Datum.Rawbytes ⇒ code ++= vm.bytesToWord(d.value)
+                           }
                          }
 
       case Op.Call(n)  ⇒ {
@@ -147,6 +179,10 @@ class ByteCode {
       case Op.I32Mul   ⇒ code += VM.I32MUL
       case Op.I32Div   ⇒ code += VM.I32DIV
       case Op.I32Mod   ⇒ code += VM.I32MOD
+      case Op.FAdd     ⇒ code += VM.FADD
+      case Op.FMul     ⇒ code += VM.FMUL
+      case Op.FDiv     ⇒ code += VM.FDIV
+      case Op.FMod     ⇒ code += VM.FMOD
       case Op.Nop      ⇒ code += VM.I32MOD
     }
 
@@ -164,7 +200,7 @@ class ByteCode {
     while (ubuf.remaining > 0) {
       val pos = ubuf.position
       ubuf.get() & 0xFF match {
-        case VM.PUSHX    ⇒ obuf += ((pos, Op.Push(wordToBytes(ubuf).sum.toInt)))
+        case VM.PUSHX    ⇒ obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
         case VM.CALL     ⇒ obuf += ((pos, Op.Call("")))
         case VM.STOP     ⇒ obuf += ((pos, Op.Stop    ))
         case VM.JUMP     ⇒ obuf += ((pos, Op.Jump    ))
@@ -179,6 +215,10 @@ class ByteCode {
         case VM.I32MUL   ⇒ obuf += ((pos, Op.I32Mul  ))
         case VM.I32DIV   ⇒ obuf += ((pos, Op.I32Div  ))
         case VM.I32MOD   ⇒ obuf += ((pos, Op.I32Mod  ))
+        case VM.FADD     ⇒ obuf += ((pos, Op.FAdd    ))
+        case VM.FMUL     ⇒ obuf += ((pos, Op.FMul    ))
+        case VM.FDIV     ⇒ obuf += ((pos, Op.FDiv    ))
+        case VM.FMOD     ⇒ obuf += ((pos, Op.FMod    ))
       }
     }
 

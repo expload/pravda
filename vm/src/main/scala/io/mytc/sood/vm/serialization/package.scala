@@ -10,14 +10,35 @@ package object serialization {
     ByteBuffer.wrap(data).getInt
   }
 
+  def dataToDouble(data: Data): Double = {
+    ByteBuffer.wrap(data).getDouble
+  }
+
   def int32ToData(i: Int): Data = {
     val buf = ByteBuffer.allocate(4)
     buf.putInt(i)
     buf.array()
   }
 
+  def doubleToData(v: Double): Data = {
+    val buf = ByteBuffer.allocate(8)
+    buf.putDouble(v)
+    buf.array()
+  }
+
   def wordToData(source: ByteBuffer): Data = {
     wordToBytes(source)
+  }
+
+  val FALSE: Data = bytes(0)
+  val TRUE: Data = bytes(1)
+
+  def boolToData(b: Boolean): Data = {
+    if(b) TRUE else FALSE
+  }
+
+  def dataToBool(d: Data): Boolean = {
+    d.reverseIterator.exists(_ != 0.toByte)
   }
 
 }
