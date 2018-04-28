@@ -547,4 +547,97 @@ class PeParsersSpec extends FlatSpec with Matchers {
       List(LdcI41, StSFld(FieldData(22, "x", hex"0x0608")), Ret)
     )
   }
+
+  "smart program" should "be parsed correctly" in {
+    val Right((_, cilData, opCodes)) = parsePe("smart_program.exe")
+
+    cilData.tables shouldBe List(
+      List(Ignored),
+      List(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(Ignored, Ignored, Ignored),
+      List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608"), FieldData(6, "fb", hex"0x0608")),
+      List(
+        MethodDefData(".ctor"),
+        MethodDefData("doSmth"),
+        MethodDefData("receive"),
+        MethodDefData("otherFunc"),
+        MethodDefData("Main"),
+        MethodDefData(".ctor"),
+        MethodDefData(".cctor")
+      ),
+      List(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001"),
+        MemberRefData(49, ".ctor", hex"0x200001")
+      ),
+      List(Ignored, Ignored, Ignored, Ignored),
+      List(Ignored),
+      List(Ignored),
+      List(Ignored)
+    )
+
+    opCodes shouldBe List(
+      List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
+      List(Nop, LdArg0, LdArg1, Add, StLoc0, BrS(0), LdLoc0, Ret),
+      List(
+        Nop,
+        LdArg1,
+        StLoc0,
+        LdLoc0,
+        LdcI41,
+        Sub,
+        Switch(ArrayBuffer(2, 13, 24, 40)),
+        BrS(66),
+        LdArg0,
+        LdArg2,
+        LdArg3,
+        Add,
+        StFld(FieldData(6, "fa", hex"0x0608")),
+        BrS(55),
+        LdArg0,
+        LdArg2,
+        LdArg3,
+        Add,
+        StFld(FieldData(6, "fb", hex"0x0608")),
+        BrS(44),
+        LdArg0,
+        LdArg2,
+        StFld(FieldData(6, "fa", hex"0x0608")),
+        LdArg0,
+        LdArg3,
+        StFld(FieldData(6, "fb", hex"0x0608")),
+        BrS(28),
+        LdArg0,
+        LdArg2,
+        LdArg3,
+        Call(MethodDefData("doSmth")),
+        StFld(FieldData(6, "fa", hex"0x0608")),
+        LdArg0,
+        LdArg2,
+        LdArg3,
+        Call(MethodDefData("doSmth")),
+        StFld(FieldData(6, "fb", hex"0x0608")),
+        BrS(0),
+        Ret
+      ),
+      List(Nop, Ret),
+      List(Nop, Ret),
+      List(
+        LdArg0,
+        LdcI40,
+        StFld(FieldData(6, "fa", hex"0x0608")),
+        LdArg0,
+        LdcI40,
+        StFld(FieldData(6, "fb", hex"0x0608")),
+        LdArg0,
+        Call(MemberRefData(49, ".ctor", hex"0x200001")),
+        Nop,
+        Ret
+      ),
+      List(LdcI40, StSFld(FieldData(22, "counter", hex"0x0608")), Ret)
+    )
+  }
 }
