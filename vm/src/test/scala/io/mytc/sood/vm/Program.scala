@@ -8,7 +8,7 @@ import VmUtils._
 import scodec.bits.ByteVector
 
 case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
-  def buffer: ByteBuffer =
+  lazy val buffer: ByteBuffer =
     ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toArray)).toArray ++ bytes)
 
   def put(i: Int): Program = {

@@ -32,8 +32,9 @@ object Loader extends Loader {
       val lib  = new Library {
         override def func(name: ByteVector): Option[Function] = {
           table.get(name).map { i =>
-            program.position(i)
-            UserDefinedFunction(program)
+            val prog = program.duplicate()
+            prog.position(i)
+            UserDefinedFunction(prog)
           }
         }
       }

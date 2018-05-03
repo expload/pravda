@@ -3,7 +3,7 @@ package std.libs
 
 import serialization._
 
-object Math extends io.mytc.sood.vm.std.Lib {
+object Math extends std.Lib {
 
   private val sum = std.Func("sum",
     mem =>  {

@@ -61,4 +61,28 @@ class LibrarySpec extends FlatSpec with Matchers {
     exec(mult1, wState) shouldBe stack(data(56))
 
   }
+
+  it should "be callable from the same library" in {
+    val plusLen = prog.put("plus").length
+    val funcLen = prog.put("func").length
+
+    val address = fromBytes(4, 5, 66, 78)
+
+    val udflib = prog.opcode(FTBL)
+      .put(2)
+      .put("plus").put(1 + 5 + plusLen + 5 + funcLen + 5)
+      .put("func").put(1 + 5 + plusLen + 5 + funcLen + 5 + 1 + 1)
+      .opcode(I32ADD).opcode(RET)
+      .opcode(DUP).opcode(LCALL).put(address).put("plus").put(2).opcode(PUSHX).put(1).opcode(I32ADD).opcode(RET)
+
+    val wState = worldState(address -> udflib)
+
+    val double = prog
+      .opcode(PUSHX).put(7)
+      .opcode(LCALL).put(address).put("func").put(1)
+
+    exec(double, wState) shouldBe stack(data(15))
+
+  }
+
 }
