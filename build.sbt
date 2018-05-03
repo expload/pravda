@@ -88,6 +88,7 @@ lazy val tests = (project in file("tests")).
   )
 
 lazy val cil = (project in file("cil-translator")).
+  dependsOn(asm).
   settings(
     normalizedName := "cil-translator",
     version := "0.0.1"
