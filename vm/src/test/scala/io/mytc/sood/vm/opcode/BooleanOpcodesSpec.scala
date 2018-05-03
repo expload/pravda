@@ -36,11 +36,11 @@ class BooleanOpcodesSpec extends FlatSpec with Matchers {
   }
 
   "AND opcode with other values" should "do the and operation" in {
-    exec(and(bytes(1), bytes(1))) shouldBe stack(bytes(1))
-    exec(and(bytes(1, 0), bytes(1))) shouldBe stack(bytes(1))
-    exec(and(bytes(1, 0, 0), bytes(0, 0))) shouldBe stack(bytes(0))
-    exec(and(bytes(0, 1, 0), bytes(1, 0, 0, 0))) shouldBe stack(bytes(1))
-    exec(and(bytes(0, 0, 0), bytes(0, 0))) shouldBe stack(bytes(0))
+    exec(and(bytes(1), bytes(1))) shouldBe stack(fromBytes(1))
+    exec(and(bytes(1, 0), bytes(1))) shouldBe stack(fromBytes(1))
+    exec(and(bytes(1, 0, 0), bytes(0, 0))) shouldBe stack(fromBytes(0))
+    exec(and(bytes(0, 1, 0), bytes(1, 0, 0, 0))) shouldBe stack(fromBytes(1))
+    exec(and(bytes(0, 0, 0), bytes(0, 0))) shouldBe stack(fromBytes(0))
   }
 
 
@@ -56,20 +56,20 @@ class BooleanOpcodesSpec extends FlatSpec with Matchers {
   }
 
   "OR opcode with other values" should "do the and operation" in {
-    exec(or(bytes(1), bytes(1))) shouldBe stack(bytes(1))
-    exec(or(bytes(1, 0), bytes(1))) shouldBe stack(bytes(1))
-    exec(or(bytes(1, 0, 0), bytes(0, 0))) shouldBe stack(bytes(1))
-    exec(or(bytes(0, 1, 0), bytes(1, 0, 0, 0))) shouldBe stack(bytes(1))
-    exec(or(bytes(0, 0, 0), bytes(0, 0))) shouldBe stack(bytes(0))
+    exec(or(bytes(1), bytes(1))) shouldBe stack(fromBytes(1))
+    exec(or(bytes(1, 0), bytes(1))) shouldBe stack(fromBytes(1))
+    exec(or(bytes(1, 0, 0), bytes(0, 0))) shouldBe stack(fromBytes(1))
+    exec(or(bytes(0, 1, 0), bytes(1, 0, 0, 0))) shouldBe stack(fromBytes(1))
+    exec(or(bytes(0, 0, 0), bytes(0, 0))) shouldBe stack(fromBytes(0))
   }
 
   "XOR opcode" should "do the xor operaiton" in {
-    exec(xor(bytes(1), bytes(1))) shouldBe stack(bytes(0))
-    exec(xor(bytes(1, 0), bytes(1))) shouldBe stack(bytes(0))
-    exec(xor(bytes(1, 0, 0), bytes(0, 0))) shouldBe stack(bytes(1))
-    exec(xor(bytes(0, 0, 0), bytes(0, 1))) shouldBe stack(bytes(1))
-    exec(xor(bytes(0, 1, 0), bytes(1, 0, 0, 0))) shouldBe stack(bytes(0))
-    exec(xor(bytes(0, 0, 0), bytes(0, 0))) shouldBe stack(bytes(0))
+    exec(xor(bytes(1), bytes(1))) shouldBe stack(fromBytes(0))
+    exec(xor(bytes(1, 0), bytes(1))) shouldBe stack(fromBytes(0))
+    exec(xor(bytes(1, 0, 0), bytes(0, 0))) shouldBe stack(fromBytes(1))
+    exec(xor(bytes(0, 0, 0), bytes(0, 1))) shouldBe stack(fromBytes(1))
+    exec(xor(bytes(0, 1, 0), bytes(1, 0, 0, 0))) shouldBe stack(fromBytes(0))
+    exec(xor(bytes(0, 0, 0), bytes(0, 0))) shouldBe stack(fromBytes(0))
   }
 
 }

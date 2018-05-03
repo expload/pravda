@@ -2,6 +2,7 @@ package io.mytc.sood.forth
 
 import io.mytc.sood.vm.state.{AccountState, Address, WorldState}
 import org.scalatest._
+import scodec.bits.ByteVector
 
 
 class ForthTest extends FlatSpec with Matchers {
@@ -11,17 +12,17 @@ class ForthTest extends FlatSpec with Matchers {
   import java.nio.ByteBuffer
 
   trait StackItem[T] {
-    def get(item: Array[Byte]): T
+    def get(item: ByteVector): T
   }
 
   object StackItem {
 
     implicit val intStackItem = new StackItem[Int] {
-      def get(item: Array[Byte]): Int = item.foldLeft(0){ case (s, i) => s + i }
+      def get(item: ByteVector): Int = item.foldLeft(0){ case (s, i) => s + i }
     }
 
     implicit val floatStackItem = new StackItem[Double] {
-      def get(item: Array[Byte]): Double = ByteBuffer.wrap(item).getDouble
+      def get(item: ByteVector): Double = item.toByteBuffer.getDouble
     }
 
   }

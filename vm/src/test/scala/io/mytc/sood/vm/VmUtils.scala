@@ -1,9 +1,9 @@
 package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
-import java.util
 
 import io.mytc.sood.vm.state._
+import scodec.bits.ByteVector
 import serialization._
 
 object VmUtils {
@@ -46,13 +46,16 @@ object VmUtils {
   }
 
   def data(b: Byte): Data = {
-    Array(b)
+    ByteVector(b)
   }
 
   def int(d: Data): Int = {
     dataToInt32(d)
   }
 
+  def fromBytes(b: Int*): Data = {
+    ByteVector(b:_*)
+  }
 
   def worldState(accs: (Address, Program)*) = new WorldState {
 
@@ -62,7 +65,7 @@ object VmUtils {
     }
 
     override def get(address: Address): AccountState = {
-      accs.find{case (addr, _) => util.Arrays.equals(addr, address)}.map{
+      accs.find{_._1 == address}.map{
         case (addr, prog) => account(prog)
       }.get
     }

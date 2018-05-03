@@ -43,8 +43,8 @@ class LibrarySpec extends FlatSpec with Matchers {
       .opcode(RET)
 
 
-    val address1 = bytes(4, 5, 66, 78)
-    val address2 = bytes(4, 6, 66, 78)
+    val address1 = fromBytes(4, 5, 66, 78)
+    val address2 = fromBytes(4, 6, 66, 78)
 
     val wState = worldState(address1 -> udflib1, address2 -> udflib2)
 

@@ -87,7 +87,7 @@ object Vm {
           loader.lib(address, worldState).flatMap(
             _.func(func).map{
               case f:StdFunction => f(callData)
-              case LibFunction(function) => run(function, worldState, callData, None, depth + 1, isLibrary = true)
+              case UserDefinedFunction(function) => run(function, worldState, callData, None, depth + 1, isLibrary = true)
             }
           ).foreach(memory ++= _)
           aux()
@@ -188,7 +188,7 @@ object Vm {
           )
           aux()
         case EQ =>
-          memory.push(boolToData(memory.pop().sameElements(memory.pop())))
+          memory.push(boolToData(memory.pop() == memory.pop()))
           aux()
         case I32LT =>
           val d1 = dataToInt32(memory.pop())

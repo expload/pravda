@@ -1,34 +1,39 @@
-package io.mytc.sood
+package io.mytc.sood.vm
 package udf
 
 import java.nio.ByteBuffer
 
-import vm.state.WorldState
-import vm._
+import scodec.bits.ByteVector
+import state.{Address, WorldState}
+
+import scala.collection.mutable
+
 
 object Loader extends Loader {
-  def readExternalTable(program: ByteBuffer): ExternalTable = {
+  type ExternalTable = mutable.Map[ByteVector, Int]
+
+  private def readExternalTable(program: ByteBuffer): ExternalTable = {
+    val table: ExternalTable = mutable.Map.empty
     val n = wordToInt32(program)
-    val table = ExternalTable()
     for (i <- 1 to n) {
       val address = wordToBytes(program)
       val position = wordToInt32(program)
-      table.put(address, position)
+      table += (ByteVector(address) -> position)
     }
     table
   }
 
-  override def lib(address: Array[Byte], worldState: WorldState): Option[Library] = {
+  override def lib(address: Address, worldState: WorldState): Option[Library] = {
     val program = worldState.get(address).program
     program.rewind()
 
     if(program.get() == Opcodes.FTBL) {
       val table: ExternalTable = readExternalTable(program)
       val lib  = new Library {
-        override def func(name: Array[Byte]): Option[Function] = {
+        override def func(name: ByteVector): Option[Function] = {
           table.get(name).map { i =>
             program.position(i)
-            LibFunction(program)
+            UserDefinedFunction(program)
           }
         }
       }
