@@ -14,6 +14,8 @@ object Opcodes {
   // Stack
   final val POP = int.POP.toByte
   final val PUSHX = int.PUSHX.toByte
+  final val SLICE = int.SLICE.toByte
+  final val CONCAT = int.CONCAT.toByte
 
   final val DUP = int.DUP.toByte
   final val SWAP = int.SWAP.toByte
@@ -64,6 +66,8 @@ object Opcodes {
     // Stack
     final val POP = 0x10
     final val PUSHX = 0x11
+    final val SLICE = 0x12
+    final val CONCAT = 0x13
 
     final val DUP = 0x22
     final val SWAP = 0x33
