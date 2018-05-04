@@ -11,6 +11,10 @@ case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data]
   lazy val buffer: ByteBuffer =
     ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toArray)).toArray ++ bytes)
 
+  def put(d: Double): Program = {
+    copy(bytes ++ doubleToWord(d))
+  }
+
   def put(i: Int): Program = {
     copy(bytes ++ int32ToWord(i))
   }
