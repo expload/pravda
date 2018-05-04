@@ -1,9 +1,12 @@
 package io.mytc.sood
 package std.libs
 
+import java.nio.ByteBuffer
+
 import io.mytc.sood.std.Func
+import io.mytc.sood.vm._
 import io.mytc.sood.vm.state.{Data, Memory}
-import vm.serialization._
+import serialization._
 
 object Typed extends std.Lib {
 
@@ -16,6 +19,9 @@ object Typed extends std.Lib {
       override def apply(m: Memory): Memory = f(m)
     }
 
+  def wordToTyped(typeTag: Byte, word: Word): Word =
+    bytesToWord(typeTag +: wordToBytes(word))
+
   def dataToTyped(typeTag: Byte, data: Data): Data =
     typeTag +: data
 
@@ -23,12 +29,12 @@ object Typed extends std.Lib {
     data(0)
 
   val typedI32: std.Func = createFunc("typedI32", m => {
-    m.stack.map(dataToTyped(Int32Tag, _))
+    m.stack.map(wordToTyped(Int32Tag, _))
     m
   })
 
   val typedR32: std.Func = createFunc("typedR64", m => {
-    m.stack.map(dataToTyped(Float64Tag, _))
+    m.stack.map(wordToTyped(Float64Tag, _))
     m
   })
 
@@ -40,8 +46,8 @@ object Typed extends std.Lib {
     createFunc(
       name,
       m => {
-        val a = m.stack(0)
-        val b = m.stack(1)
+        val a = vm.wordToBytes(ByteBuffer.wrap(m.stack(0)))
+        val b = vm.wordToBytes(ByteBuffer.wrap(m.stack(1)))
         m.stack.clear()
 
         val res = (typedTag(a), typedTag(b)) match {
@@ -68,7 +74,7 @@ object Typed extends std.Lib {
           case (_, _) => int32ToData(0) // FIXME
         }
 
-        m.push(res)
+        m.push(bytesToWord(res))
         m
       }
     )

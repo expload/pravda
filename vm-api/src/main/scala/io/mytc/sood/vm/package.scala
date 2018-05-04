@@ -72,6 +72,10 @@ package object vm {
     ByteBuffer.wrap(longBytes).getLong
   }
 
+  def wordToBytes(word: Word): Array[Byte] = {
+    wordToBytes(ByteBuffer.wrap(word))
+  }
+
   def wordToBytes(source: ByteBuffer): Array[Byte] = {
     val fb = source.get()
     val lenOfLen = fb >>> 5
@@ -86,7 +90,6 @@ package object vm {
       result
     }
   }
-
 
   def bytesFromWord(source: ByteBuffer, len: Int): Array[Byte] = {
     val bs = wordToBytes(source)
