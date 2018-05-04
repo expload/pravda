@@ -2,7 +2,7 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
-import io.mytc.sood.vm.state.Data
+import state.Data
 import scodec.bits.ByteVector
 
 package object serialization {
