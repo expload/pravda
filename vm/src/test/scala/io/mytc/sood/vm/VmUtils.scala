@@ -41,6 +41,10 @@ object VmUtils {
     doubleToData(v)
   }
 
+  def binaryData(i: Int*): Data = {
+    ByteVector(i:_*)
+  }
+
   def data(i: Int): Data = {
     int32ToData(i)
   }
@@ -51,10 +55,6 @@ object VmUtils {
 
   def int(d: Data): Int = {
     dataToInt32(d)
-  }
-
-  def fromBytes(b: Int*): Data = {
-    ByteVector(b:_*)
   }
 
   def worldState(accs: (Address, Program)*) = new WorldState {

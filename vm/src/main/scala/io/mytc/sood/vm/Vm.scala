@@ -104,8 +104,8 @@ object Vm {
           memory.push(wordToData(program))
           aux()
         case SLICE =>
-          val from = wordToInt32(program)
-          val until = wordToInt32(program)
+          val from = wordToInt32(program).toLong
+          val until = wordToInt32(program).toLong
           val word = memory.pop()
           memory.push(word.slice(from, until))
           aux()
