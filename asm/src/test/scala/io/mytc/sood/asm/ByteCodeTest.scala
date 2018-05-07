@@ -8,6 +8,16 @@ class ByteCodeTest extends FlatSpec with Matchers {
   import io.mytc.sood.vm
   import java.nio.ByteBuffer
 
+  def roundTrip(name: String, opcodes: Seq[Op]): Unit = {
+    name should "be converted to byte-code and vice versa correctly" in {
+      val bc = ByteCode()
+      val bytes = bc.gen(opcodes)
+      val opcodes2 = bc.ungen(bytes)
+
+      opcodes2 shouldBe opcodes2
+    }
+  }
+
   def raw(v: Int): Datum = {
     Datum.Rawbytes(vm.wordToBytes(ByteBuffer.wrap(vm.int32ToWord(v))))
   }
@@ -23,4 +33,5 @@ class ByteCodeTest extends FlatSpec with Matchers {
     ))
   }
 
+  roundTrip("LCALL", Seq(Op.LCall("Typed", "typedAdd", 2)))
 }

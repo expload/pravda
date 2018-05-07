@@ -174,7 +174,7 @@ class ByteCode {
                          code += VM.CALL
                          }
       case Op.LCall(adress, func, argsNum) =>
-        code += VM.PUSHX
+        code += VM.LCALL
         code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
         code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
         code ++= vm.int32ToWord(argsNum)
