@@ -1,7 +1,7 @@
 package io.mytc.sood.vm
 package state
 
-import io.mytc.sood.vm.state.Error.StackUnderflow
+import io.mytc.sood.vm.state.VmError.StackUnderflow
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -11,7 +11,7 @@ case class Memory(
 ) {
   def pop(): Data = {
     if (stack.isEmpty) {
-      throw VmError(StackUnderflow)
+      throw VmErrorException(StackUnderflow)
     }
 
     stack.remove(stack.length - 1)
@@ -22,7 +22,7 @@ case class Memory(
 
   def top(num: Int): Memory = {
     if(stack.length < num) {
-      throw VmError(StackUnderflow)
+      throw VmErrorException(StackUnderflow)
     }
 
     val topStack = stack.takeRight(num)

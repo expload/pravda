@@ -7,7 +7,7 @@ import scala.annotation.{switch, tailrec, strictfp}
 import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
-import state.Error._
+import state.VmError._
 
 object Vm {
 
@@ -33,9 +33,11 @@ object Vm {
                   depth: Int = 0): Memory = {
 
     val account = worldState.get(programAddress)
-    val program = account.program
+    if(account.isEmpty) throw VmErrorException(NoSuchProgram)
+
+    val program = account.get.program
     program.rewind()
-    run(program, worldState, initMemory, Some(programAddress), Some(account.storage), depth, isLibrary = false)
+    run(program, worldState, initMemory, Some(programAddress), Some(account.get.storage), depth, isLibrary = false)
 
   }
 
@@ -49,7 +51,10 @@ object Vm {
                    isLibrary: Boolean
                  ): Memory = {
 
-    lazy val storage = progStorage.get
+    lazy val storage = {
+      if(progStorage.isEmpty) throw VmErrorException(OperationDenied)
+      progStorage.get
+    }
 
     val callStack = new ArrayBuffer[Int](1024)
 
@@ -78,7 +83,7 @@ object Vm {
           }
         case PCALL =>
           if(isLibrary) {
-            throw VmError(OperationDenied)
+            throw VmErrorException(OperationDenied)
           }
           val address = wordToData(program)
           val num = wordToInt32(program)
@@ -92,9 +97,9 @@ object Vm {
           val callData = memory.top(num)
 
           loader.lib(address, worldState) match {
-            case None => throw VmError(NoSuchLibrary)
+            case None => throw VmErrorException(NoSuchLibrary)
             case Some(library) => library.func(func) match {
-              case None => throw VmError(NoSuchMethod)
+              case None => throw VmErrorException(NoSuchMethod)
               case Some(function) =>
                 function match  {
                   case f:StdFunction => memory ++= f(callData)
@@ -232,8 +237,9 @@ object Vm {
     try {
       aux()
     } catch {
-      case err: VmError => throw err.appendToTrace(Point(callStack, program.position(), execAddress))
-      case other: Exception => throw VmError(SomethingWrong(other)).appendToTrace(Point(callStack, program.position(), execAddress))
+      case err: VmErrorException => throw err.appendToTrace(Point(callStack, program.position(), execAddress))
+      case other: Exception =>
+        throw VmErrorException(SomethingWrong(other)).appendToTrace(Point(callStack, program.position(), execAddress))
     }
 
   }

@@ -8,8 +8,8 @@ import serialization._
 
 object VmUtils {
 
-  val emptyState = new WorldState {
-    override def get(address: Address): AccountState = ???
+  val emptyState: WorldState = new WorldState {
+    override def get(address: Address): Option[AccountState] = None
   }
 
   def exec(p: Program): Array[Data] = {
@@ -57,17 +57,17 @@ object VmUtils {
     dataToInt32(d)
   }
 
-  def worldState(accs: (Address, Program)*) = new WorldState {
+  def worldState(accs: (Address, Program)*): WorldState = new WorldState {
 
     def account(prog: Program): AccountState = new AccountState {
       override def program: ByteBuffer = prog.buffer
       override def storage: Storage = null
     }
 
-    override def get(address: Address): AccountState = {
-      accs.find{_._1 == address}.map{
+    override def get(address: Address): Option[AccountState] = {
+      accs.find{_._1 == address}.map {
         case (addr, prog) => account(prog)
-      }.get
+      }
     }
   }
 
