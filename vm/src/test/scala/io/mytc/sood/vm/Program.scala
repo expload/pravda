@@ -1,13 +1,15 @@
 package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import state.Data
 import VmUtils._
+import scodec.bits.ByteVector
 
 case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
-  def buffer: ByteBuffer =
-    ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w)).toArray ++ bytes)
+  lazy val buffer: ByteBuffer =
+    ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toArray)).toArray ++ bytes)
 
   def put(i: Int): Program = {
     copy(bytes ++ int32ToWord(i))
@@ -17,6 +19,12 @@ case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data]
   }
   def put(bs: Array[Byte]): Program = {
     copy(bytes ++ bytesToWord(bs))
+  }
+  def put(bs: ByteVector): Program = {
+    copy(bytes ++ bytesToWord(bs.toArray))
+  }
+  def put(bs: String): Program = {
+    copy(bytes ++ bytesToWord(bs.getBytes(StandardCharsets.UTF_8)))
   }
 
   def opcode(cmd: Int): Program = {
@@ -34,7 +42,7 @@ case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data]
     s"""
        |program: ${hex(bytes)}
        |init stack:
-       |  ${stack.reverse.map(x => hex(x)).mkString("\n\t")}
+       |  ${stack.reverse.map(x => x.toHex).mkString("\n\t")}
      """.stripMargin
   }
 }

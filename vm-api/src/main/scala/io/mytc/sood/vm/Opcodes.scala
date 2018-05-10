@@ -9,6 +9,7 @@ object Opcodes {
   final val RET = int.RET.toByte
 
   final val PCALL = int.PCALL.toByte
+  final val LCALL = int.LCALL.toByte
 
   // Stack
   final val POP = int.POP.toByte
@@ -47,6 +48,8 @@ object Opcodes {
   final val I32LT = int.I32LT.toByte
   final val I32GT = int.I32GT.toByte
 
+  final val FTBL = int.FTBL.toByte
+
   object int {
     // Control
     final val STOP = 0x00
@@ -56,6 +59,7 @@ object Opcodes {
     final val RET = 0x05
 
     final val PCALL = 0x06
+    final val LCALL = 0x07
 
     // Stack
     final val POP = 0x10
@@ -93,6 +97,8 @@ object Opcodes {
     final val OR = 0x82
     final val XOR = 0x83
     final val EQ = 0x84
+
+    final val FTBL = 0xfa
 
   }
 }

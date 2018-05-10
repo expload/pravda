@@ -68,7 +68,10 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \hline
 0x05 & RET & $0$ & $0$ & Alters program execution counter to the value of the first item of the call stack (see CALL opcode).  \\
 \hline
-0x06 & PCALL & $1$ & $0$ & Executes a smart contract with the address corresponding to the top value of the stack.  \\
+0x06 & PCALL & $0$ & $0$ & Takes two words by which it is followed. They are address $a$ and the number of parameters $n$, respectively. Then it executes the smart contract with the address $a$ and passes there only $n$ top elements of the stack.  \\
+\hline
+0x07 & LCALL & $0$ & $0$ & Takes three words by which it is followed. They are address $a$, function $f$ and the number of parameters $n$, respectively. Then it executes the function $f$ of the library (which is a special form of smart contract) with the address $a$ and passes there only $n$ top elements of the stack. \\
+\hline
 
 \end{tabularx}
 

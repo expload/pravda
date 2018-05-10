@@ -24,10 +24,10 @@ class StackOpcodesSpec extends FlatSpec with Matchers {
 
     // 1 Byte
     val programm5 = prog.opcode(PUSHX).put(0xAB.toByte)
-    exec(programm5).head shouldBe Array(0xAB.toByte)
+    exec(programm5).head shouldBe fromBytes(0xAB)
 
     val programm6 = prog.opcode(PUSHX).put(0x00.toByte)
-    exec(programm6).head shouldBe Array(0x00.toByte)
+    exec(programm6).head shouldBe fromBytes(0x00)
 
   }
 

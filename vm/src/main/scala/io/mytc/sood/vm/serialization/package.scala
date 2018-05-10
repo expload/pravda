@@ -2,43 +2,43 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
-import io.mytc.sood.vm.state.Data
+import state.Data
+import scodec.bits.ByteVector
 
 package object serialization {
 
   def dataToInt32(data: Data): Int = {
-    ByteBuffer.wrap(data).getInt
+    data.toInt()
   }
 
   def dataToDouble(data: Data): Double = {
-    ByteBuffer.wrap(data).getDouble
+    data.toByteBuffer.getDouble
   }
 
   def int32ToData(i: Int): Data = {
-    val buf = ByteBuffer.allocate(4)
-    buf.putInt(i)
-    buf.array()
+    ByteVector.fromInt(i)
   }
 
   def doubleToData(v: Double): Data = {
     val buf = ByteBuffer.allocate(8)
     buf.putDouble(v)
-    buf.array()
+    buf.rewind()
+    ByteVector(buf)
   }
 
   def wordToData(source: ByteBuffer): Data = {
-    wordToBytes(source)
+    ByteVector(wordToBytes(source))
   }
 
-  val FALSE: Data = bytes(0)
-  val TRUE: Data = bytes(1)
+  val FALSE: Data = ByteVector(0)
+  val TRUE: Data = ByteVector(1)
 
   def boolToData(b: Boolean): Data = {
     if(b) TRUE else FALSE
   }
 
   def dataToBool(d: Data): Boolean = {
-    d.reverseIterator.exists(_ != 0.toByte)
+    d.reverse.toIterable.exists(_ != 0.toByte)
   }
 
 }
