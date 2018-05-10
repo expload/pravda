@@ -43,8 +43,8 @@ class LibrarySpec extends FlatSpec with Matchers {
       .opcode(RET)
 
 
-    val address1 = fromBytes(4, 5, 66, 78)
-    val address2 = fromBytes(4, 6, 66, 78)
+    val address1 = binaryData(4, 5, 66, 78)
+    val address2 = binaryData(4, 6, 66, 78)
 
     val wState = worldState(address1 -> udflib1, address2 -> udflib2)
 
@@ -66,7 +66,7 @@ class LibrarySpec extends FlatSpec with Matchers {
     val plusLen = prog.put("plus").length
     val funcLen = prog.put("func").length
 
-    val address = fromBytes(4, 5, 66, 78)
+    val address = binaryData(4, 5, 66, 78)
 
     val udflib = prog.opcode(FTBL)
       .put(2)

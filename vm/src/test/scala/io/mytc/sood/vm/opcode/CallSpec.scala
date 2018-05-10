@@ -8,9 +8,9 @@ import Opcodes.int._
 
 class CallSpec extends FlatSpec with Matchers {
 
-  val address1 = fromBytes(4, 5, 66, 78)
-  val address2 = fromBytes(43, 15, 66, 78)
-  val address3 = fromBytes(13, 15, 66, 78)
+  val address1 = binaryData(4, 5, 66, 78)
+  val address2 = binaryData(43, 15, 66, 78)
+  val address3 = binaryData(13, 15, 66, 78)
 
 
   "PCALL opcode" should "execute the program with the sepecifiedd address" in {

@@ -83,6 +83,10 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \hline
 0x11 & PUSHX & $0$ & $1$ & Pushes the word following the opcode to the stack. \\
 \hline
+0x12 & SLICE & $1$ & $1$ & Takes two words by which it is followed - $i$ and $j$ parameters. It pushes a part of the top word starting from $i$-th byte and ending with $j$-th byte.   \\
+\hline
+0x13 & CONCAT & $2$ & $1$ & Takes two top words from the stack and pushes their concatenation to the stack \\
+\hline
 0x22 & DUP1 & $1$ & $2$ & Duplicates first item of the stack. \\
 \vdots & \vdots & \vdots & \vdots \\
 0x31 & DUP16 & $1$ & $2$ & Duplicates sixteenth item of the stack. \\

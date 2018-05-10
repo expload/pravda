@@ -24,10 +24,10 @@ class StackOpcodesSpec extends FlatSpec with Matchers {
 
     // 1 Byte
     val programm5 = prog.opcode(PUSHX).put(0xAB.toByte)
-    exec(programm5).head shouldBe fromBytes(0xAB)
+    exec(programm5).head shouldBe binaryData(0xAB)
 
     val programm6 = prog.opcode(PUSHX).put(0x00.toByte)
-    exec(programm6).head shouldBe fromBytes(0x00)
+    exec(programm6).head shouldBe binaryData(0x00)
 
   }
 
@@ -67,4 +67,15 @@ class StackOpcodesSpec extends FlatSpec with Matchers {
     exec(program1.opcode(SWAP)) shouldBe stack(data(55), data(55), data(3), data(2))
 
   }
+
+  "SLICE command" should  "slice top word" in {
+    val program = prog.opcode(PUSHX).put(bytes(13, 17, 43, 53)).opcode(SLICE).put(1).put(3)
+    exec(program) shouldBe stack(binaryData(17, 43))
+  }
+
+  "CONCAT command" should  "concatenate top word" in {
+    val program = prog.opcode(PUSHX).put(bytes(43, 53)).opcode(PUSHX).put(bytes(13, 17)).opcode(CONCAT)
+    exec(program) shouldBe stack(binaryData(13, 17, 43, 53))
+  }
+
 }
