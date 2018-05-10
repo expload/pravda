@@ -56,6 +56,8 @@ object Vm {
       progStorage.get
     }
 
+    var currentPosition = program.position()
+
     val callStack = new ArrayBuffer[Int](1024)
 
     def callPop(): Int = {
@@ -69,6 +71,8 @@ object Vm {
     @tailrec
     @strictfp
     def aux(): Memory = if (program.hasRemaining) {
+      currentPosition = program.position()
+
       (program.get() & 0xff: @switch) match {
         case CALL =>
           callPush(program.position())
@@ -237,9 +241,9 @@ object Vm {
     try {
       aux()
     } catch {
-      case err: VmErrorException => throw err.appendToTrace(Point(callStack, program.position(), execAddress))
+      case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, execAddress))
       case other: Exception =>
-        throw VmErrorException(SomethingWrong(other)).appendToTrace(Point(callStack, program.position(), execAddress))
+        throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), execAddress))
     }
 
   }

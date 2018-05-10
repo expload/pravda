@@ -66,7 +66,19 @@ class ErrorSpec extends FlatSpec with Matchers {
 
   }
 
-  "NoSuchLibrary" should "occur when colling not existent library" in {
+  "Error" should "occur when remote program fails" in {
+    val address = binaryData(13, 15, 66, 78)
+
+    val storedProg = prog.opcode(POP)
+
+    val wState = worldState(address -> storedProg)
+
+    val program1 = prog.opcode(PCALL).put(address).put(0)
+    program1 withState wState shouldOccurError StackUnderflow
+
+  }
+
+    "NoSuchLibrary" should "occur when colling not existent library" in {
     val address = binaryData(13, 15, 66, 78)
     val wrongAddress = binaryData(13, 15, 0, 78)
 

@@ -18,7 +18,7 @@ object VmError {
 }
 
 case class VmErrorException(error: VmError, stackTrace: StackTrace = StackTrace.empty) extends Exception {
-  def appendToTrace(p: Point): VmErrorException = copy(stackTrace = stackTrace + p)
+  def addToTrace(p: Point): VmErrorException = copy(stackTrace = stackTrace + p)
 }
 
 case class StackTrace(stackTrace: Seq[Point]) {
