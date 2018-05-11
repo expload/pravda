@@ -72,13 +72,13 @@ object Opcodes {
     final val CONCAT = 0x13
 
     final val DUP = 0x22
-    final val DUPN = 0x23
+    final val DUPN = 0x32
 
     final val SWAP = 0x33
-    final val SWAPN = 0x34
+    final val SWAPN = 0x43
     // Heap
-    final val MPUT = 0x43
-    final val MGET = 0x44
+    final val MPUT = 0x46
+    final val MGET = 0x47
 
     // Storage
     final val SPUT = 0x50
