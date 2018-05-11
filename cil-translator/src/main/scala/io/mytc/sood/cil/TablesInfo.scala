@@ -314,7 +314,14 @@ object TablesInfo {
         case (row, num) => tableParser(num, row, indexes)
       }
       .foldLeft[P[Validated[TablesInfo]]](PassWith(validated(TablesInfo()))) {
-        case (tablesP, tablesPT) => tablesP.flatMap(tables => tablesPT.map(_.map(t => t(tables))))
+        case (tablesP, tablesPT) =>
+          for {
+            tablesE <- tablesP
+            tablesTE <- tablesPT
+          } yield for {
+            tables <- tablesE
+            tablesT <- tablesTE
+          } yield tablesT(tables)
       }
   }
 }

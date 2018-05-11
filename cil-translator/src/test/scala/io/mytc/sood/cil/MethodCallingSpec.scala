@@ -9,23 +9,40 @@ class MethodCallingSpec extends FlatSpec with Matchers {
   "method calling" should "be parsed correctly" in {
     val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("method_calling.exe")
 
-    cilData.tables shouldBe List(
-      List(Ignored),
-      List(Ignored, Ignored, Ignored, Ignored, Ignored),
-      List(Ignored, Ignored),
-      List(
-      ),
-      List(Ignored, Ignored),
+    cilData.tables shouldBe TablesData(
+      List(),
       List(
         MemberRefData(9, ".ctor", hex"0x20010108"),
         MemberRefData(17, ".ctor", hex"0x200001"),
         MemberRefData(25, ".ctor", hex"0x2001011111"),
         MemberRefData(41, ".ctor", hex"0x200001")
       ),
-      List(Ignored, Ignored, Ignored),
-      List(Ignored, Ignored),
-      List(Ignored),
-      List(Ignored)
+      List(
+        MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
+        MethodDefData(0, 145, "secretAnswer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
+        MethodDefData(0, 150, "sum", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
+        MethodDefData(0, 134, "personalAnswer", hex"0x200008", List()),
+        MethodDefData(0, 129, "personalSecretAnswer", hex"0x200008", List()),
+        MethodDefData(0, 150, "Main", hex"0x000001", List()),
+        MethodDefData(0, 6278, ".ctor", hex"0x200001", List())
+      ),
+      List(ParamData(0, 1, "a"), ParamData(0, 2, "b")),
+      List(
+        TypeDefData(
+          0,
+          "<Module>",
+          "",
+          Ignored,
+          List(),
+          List(MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))),
+        TypeDefData(
+          1048577,
+          "Program",
+          "",
+          Ignored,
+          List(),
+          List(MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))))
+      )
     )
 
     opCodes shouldBe List(
@@ -36,21 +53,21 @@ class MethodCallingSpec extends FlatSpec with Matchers {
       List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
       List(
         Nop,
-        Call(???),
+        Call(MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
         StLoc0,
-        Call(???),
+        Call(MethodDefData(0, 145, "secretAnswer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
         StLoc1,
         LdLoc0,
         LdLoc1,
-        Call(???),
+        Call(MethodDefData(0, 150, "sum", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
         StLoc2,
-        NewObj(???),
+        NewObj(MethodDefData(0, 6278, ".ctor", hex"0x200001", List())),
         StLoc3,
         LdLoc3,
-        CallVirt(???),
+        CallVirt(MethodDefData(0, 134, "personalAnswer", hex"0x200008", List())),
         StLocS(4),
         LdLoc3,
-        CallVirt(???),
+        CallVirt(MethodDefData(0, 129, "personalSecretAnswer", hex"0x200008", List())),
         StLocS(5),
         Ret
       ),

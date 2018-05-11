@@ -10,7 +10,16 @@ final case class TablesData(
     methodDefTable: Seq[TablesData.MethodDefData] = Seq.empty,
     paramTable: Seq[TablesData.ParamData] = Seq.empty,
     typeDefTable: Seq[TablesData.TypeDefData] = Seq.empty
-)
+) {
+  def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
+    case 2 => Some(typeDefTable)
+    case 4 => Some(fieldTable)
+    case 6 => Some(methodDefTable)
+    case 8 => Some(paramTable)
+    case 10 => Some(memberRefTable)
+    case _ => None
+  }
+}
 
 object TablesData {
   import TablesInfo._
@@ -32,6 +41,15 @@ object TablesData {
 
   def fromInfo(peData: PeData): Validated[TablesData] = {
 
+    def generateNextIds(ids: Seq[Long]): Map[Long, Long] =
+      ids match {
+        case rest :+ last =>
+          (for {
+            i <- rest.indices
+          } yield ids(i) -> ids(i + 1)).toMap + (last -> ids.length.toLong)
+        case _ => Map.empty
+      }
+
     val paramListV = peData.tables.paramTable.map {
       case ParamRow(flags, seq, nameIdx) =>
         for {
@@ -39,49 +57,69 @@ object TablesData {
         } yield ParamData(flags, seq, name)
     }.sequence
 
-    val fieldListV = p
+    val fieldListV = peData.tables.fieldTable.map {
+      case FieldRow(flags, nameIdx, signatureIdx) =>
+        for {
+          name <- Heaps.string(peData.stringHeap, nameIdx)
+          signature <- Heaps.blob(peData.blobHeap, signatureIdx)
+        } yield FieldData(flags, name, signature)
+    }.sequence
 
-    for {
+    val memberRefListV = peData.tables.memberRefTable.map {
+      case MemberRefRow(cls, nameIdx, signatureIdx) =>
+        for {
+          name <- Heaps.string(peData.stringHeap, nameIdx)
+          signature <- Heaps.blob(peData.blobHeap, signatureIdx)
+        } yield MemberRefData(cls, name, signature)
+    }.sequence
 
+    def methodListV(paramList: Seq[ParamData]): Validated[Seq[MethodDefData]] = {
+      val paramListNextIdx = generateNextIds(peData.tables.methodDefTable.map(_.paramListIdx))
+
+      peData.tables.methodDefTable.map {
+        case MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx) =>
+          for {
+            name <- Heaps.string(peData.stringHeap, nameIdx)
+            signature <- Heaps.blob(peData.blobHeap, signatureIdx)
+            nextIdx <- paramListNextIdx
+              .get(paramListIdx)
+              .fold[Either[String, Long]](Left("Wrong paramList value"))(Right(_))
+          } yield
+            MethodDefData(implFlags, flags, name, signature, paramList.slice(paramListIdx.toInt - 1, nextIdx.toInt - 1))
+      }.sequence
     }
 
-    val paramListIdxs = peData.tables.methodDefTable.map(_.paramListIdx)
-    val paramListNextIdx = (for {
-      i <- paramListIdxs.indices.dropRight(1)
-    } yield paramListIdxs(i) -> paramListIdxs(i + 1)).toMap
+    def typeDefListV(fieldList: Seq[FieldData], methodList: Seq[MethodDefData]): Validated[Seq[TypeDefData]] = {
+      val fieldListNextIdx = generateNextIds(peData.tables.typeDefTable.map(_.fieldListIdx))
+      val methodListNextIdx = generateNextIds(peData.tables.typeDefTable.map(_.methodListIdx))
 
+      peData.tables.typeDefTable.map {
+        case TypeDefRow(flags, nameIdx, namespaceIdx, parent, fieldListIdx, methodListIdx) =>
+          for {
+            name <- Heaps.string(peData.stringHeap, nameIdx)
+            namespace <- Heaps.string(peData.stringHeap, namespaceIdx)
+            fieldNextIdx <- fieldListNextIdx
+              .get(fieldListIdx)
+              .fold[Either[String, Long]](Left("Wrong fieldList value"))(Right(_))
+            methodNextIdx <- methodListNextIdx
+              .get(methodListIdx)
+              .fold[Either[String, Long]](Left("Wrong methodList value"))(Right(_))
+          } yield
+            TypeDefData(flags,
+                        name,
+                        namespace,
+                        Ignored,
+                        fieldList.slice(fieldListIdx.toInt - 1, fieldNextIdx.toInt - 1),
+                        methodList.slice(methodListIdx.toInt - 1, methodNextIdx.toInt - 1))
+      }.sequence
+    }
 
-
-    peData.tables
-      .map(ts =>
-        ts.map {
-          case MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx) =>
-            for {
-              paramList <- paramListV
-              name <- Heaps.string(peData.stringHeap, nameIdx)
-              signature <- Heaps.blob(peData.blobHeap, signatureIdx)
-              nextIdx <- paramListNextIdx
-                .get(paramListIdx)
-                .fold[Either[String, Long]](Left("Wrong paramList value"))(Right(_))
-            } yield
-              MethodDefData(implFlags,
-                            flags,
-                            name,
-                            signature,
-                            paramList.slice(paramListIdx.toInt - 1, nextIdx.toInt - 1))
-          case MemberRefRow(cls, nameIdx, signatureIdx) =>
-            for {
-              name <- Heaps.string(peData.stringHeap, nameIdx)
-              signature <- Heaps.blob(peData.blobHeap, signatureIdx)
-            } yield MemberRefData(cls, name, signature)
-          case FieldRow(flags, nameIdx, signatureIdx) =>
-            for {
-              name <- Heaps.string(peData.stringHeap, nameIdx)
-              signature <- Heaps.blob(peData.blobHeap, signatureIdx)
-            } yield FieldData(flags, name, signature)
-          case TypeDefRow(flags, nameIdx, namespace, parent, fieldListIdx, methodListIdx) =>
-          case _                                                                          => Right(Ignored)
-        }.sequence)
-      .sequence
+    for {
+      paramList <- paramListV
+      fieldList <- fieldListV
+      memberRefList <- memberRefListV
+      methodList <- methodListV(paramList)
+      typeDefList <- typeDefListV(fieldList, methodList)
+    } yield TablesData(fieldList, memberRefList, methodList, paramList, typeDefList)
   }
 }

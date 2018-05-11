@@ -4,8 +4,6 @@ import fastparse.byte.all._
 import LE._
 import io.mytc.sood.cil.utils._
 
-import scala.reflect.ClassTag
-
 // See
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
 //   page 303

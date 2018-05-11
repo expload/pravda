@@ -9,22 +9,32 @@ class IfSpec extends FlatSpec with Matchers {
   "if" should "be parsed correctly" in {
     val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("if.exe")
 
-    cilData.tables shouldBe List(
-      List(Ignored),
-      List(Ignored, Ignored, Ignored, Ignored, Ignored),
-      List(Ignored, Ignored),
+    cilData.tables shouldBe TablesData(
       List(FieldData(22, "x", hex"0x0608")),
-      List(),
       List(
         MemberRefData(9, ".ctor", hex"0x20010108"),
         MemberRefData(17, ".ctor", hex"0x200001"),
         MemberRefData(25, ".ctor", hex"0x2001011111"),
         MemberRefData(41, ".ctor", hex"0x200001")
       ),
-      List(Ignored, Ignored, Ignored),
-      List(Ignored),
-      List(Ignored),
-      List(Ignored)
+      List(MethodDefData(0, 150, "Main", hex"0x000001", List()),
+           MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
+           MethodDefData(0, 6289, ".cctor", hex"0x000001", List())),
+      List(),
+      List(
+        TypeDefData(0,
+                    "<Module>",
+                    "",
+                    Ignored,
+                    List(FieldData(22, "x", hex"0x0608")),
+                    List(MethodDefData(0, 150, "Main", hex"0x000001", List()))),
+        TypeDefData(1048577,
+                    "Program",
+                    "",
+                    Ignored,
+                    List(FieldData(22, "x", hex"0x0608")),
+                    List(MethodDefData(0, 150, "Main", hex"0x000001", List())))
+      )
     )
 
     opCodes shouldBe List(

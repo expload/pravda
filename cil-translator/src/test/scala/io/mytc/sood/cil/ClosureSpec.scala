@@ -9,13 +9,8 @@ class ClosureSpec extends FlatSpec with Matchers {
   "closures" should "be parsed correctly" in {
     val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("closure.exe")
 
-    cilData.tables shouldBe List(
-      List(Ignored),
-      List(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
-      List(Ignored, Ignored, Ignored),
+    cilData.tables shouldBe TablesData(
       List(FieldData(6, "e", hex"0x0608")),
-      List(),
-      List(Ignored),
       List(
         MemberRefData(9, ".ctor", hex"0x20010108"),
         MemberRefData(17, ".ctor", hex"0x200001"),
@@ -25,24 +20,46 @@ class ClosureSpec extends FlatSpec with Matchers {
         MemberRefData(12, "Invoke", hex"0x200113011300"),
         MemberRefData(41, ".ctor", hex"0x200001")
       ),
-      List(Ignored, Ignored, Ignored, Ignored),
-      List(Ignored),
-      List(Ignored),
-      List(Ignored),
-      List(Ignored),
-      List(Ignored)
+      List(
+        MethodDefData(0, 150, "Main", hex"0x000001", List(ParamData(0, 1, "x"))),
+        MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "x"))),
+        MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "x"))),
+        MethodDefData(0, 131, "<Main>b__0", hex"0x20010808", List(ParamData(0, 1, "x")))
+      ),
+      List(ParamData(0, 1, "x")),
+      List(
+        TypeDefData(
+          0,
+          "<Module>",
+          "",
+          Ignored,
+          List(FieldData(6, "e", hex"0x0608")),
+          List(MethodDefData(0, 150, "Main", hex"0x000001", List(ParamData(0, 1, "x"))),
+               MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "x"))))
+        ),
+        TypeDefData(
+          1048577,
+          "Program",
+          "",
+          Ignored,
+          List(FieldData(6, "e", hex"0x0608")),
+          List(MethodDefData(0, 150, "Main", hex"0x000001", List(ParamData(0, 1, "x"))),
+               MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "x"))))
+        ),
+        TypeDefData(1048835, "<>c__DisplayClass0_0", "", Ignored, List(FieldData(6, "e", hex"0x0608")), List())
+      )
     )
 
     opCodes shouldBe List(
       List(
-        NewObj(???),
+        NewObj(MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "x")))),
         StLoc0,
         Nop,
         LdLoc0,
         LdcI41,
         StFld(FieldData(6, "e", hex"0x0608")),
         LdLoc0,
-        LdFtn(???),
+        LdFtn(MethodDefData(0, 131, "<Main>b__0", hex"0x20010808", List(ParamData(0, 1, "x")))),
         NewObj(MemberRefData(12, ".ctor", hex"0x2002011c18")),
         StLoc1,
         LdLoc1,

@@ -52,39 +52,42 @@ class MicsSpec extends FlatSpec with Matchers {
                e089030000010801000800000000001e01000100540216577261704e6f6
                e457863657074696f6e5468726f77730108010007010000000000""",
         Seq(0, 1, 2, 6, 10, 12, 32, 35),
-        Seq(
-          ArrayBuffer(ModuleRow),
-          ArrayBuffer(TypeRefRow, TypeRefRow, TypeRefRow, TypeRefRow, TypeRefRow, TypeRefRow),
-          ArrayBuffer(TypeDefRow, TypeDefRow),
-          ArrayBuffer(MethodDefRow(8272, 0, 150, 165, 30, 1), MethodDefRow(8286, 0, 6278, 170, 6, 1)),
+        TablesInfo(
+          List(),
           ArrayBuffer(MemberRefRow(9, 170, 1),
                       MemberRefRow(17, 170, 6),
                       MemberRefRow(25, 170, 10),
                       MemberRefRow(49, 50, 16),
                       MemberRefRow(41, 170, 6)),
-          ArrayBuffer(CustomAttributeRow, CustomAttributeRow, CustomAttributeRow),
-          ArrayBuffer(AssemblyRow),
-          ArrayBuffer(AssemblyRefRow)
+          ArrayBuffer(MethodDefRow(8272, 0, 150, 165, 30, 1), MethodDefRow(8286, 0, 6278, 170, 6, 1)),
+          List(),
+          ArrayBuffer(TypeDefRow(0, 1, 0, 0, 1, 1), TypeDefRow(1048577, 19, 0, 21, 1, 1))
         )
       ),
       Seq(TinyMethodHeader(hex"0x007201000070280400000a002a"), TinyMethodHeader(hex"0x02280500000a002a"))
     )
 
-    cilData.tables shouldBe Seq(
-      Seq(Ignored),
-      Seq(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
-      Seq(Ignored, Ignored),
-      Seq(),
-      Seq(
+    cilData.tables shouldBe TablesData(
+      List(),
+      List(
         MemberRefData(9, ".ctor", hex"0x20010108"),
         MemberRefData(17, ".ctor", hex"0x200001"),
         MemberRefData(25, ".ctor", hex"0x2001011111"),
         MemberRefData(49, "WriteLine", hex"0x0001010e"),
         MemberRefData(41, ".ctor", hex"0x200001")
       ),
-      Seq(Ignored, Ignored, Ignored),
-      Seq(Ignored),
-      Seq(Ignored)
+      List(MethodDefData(0, 150, "Main", hex"0x000001", List()),
+           MethodDefData(0, 6278, ".ctor", hex"0x200001", List())),
+      List(),
+      List(
+        TypeDefData(0, "<Module>", "", Ignored, List(), List(MethodDefData(0, 150, "Main", hex"0x000001", List()))),
+        TypeDefData(1048577,
+                    "HelloWorld",
+                    "",
+                    Ignored,
+                    List(),
+                    List(MethodDefData(0, 150, "Main", hex"0x000001", List())))
+      )
     )
 
     opCodes shouldBe
@@ -92,125 +95,5 @@ class MicsSpec extends FlatSpec with Matchers {
         Seq(Nop, LdStr("Hello World!"), Call(MemberRefData(49, "WriteLine", hex"0x0001010e")), Nop, Ret),
         Seq(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
       )
-  }
-
-  "1.exe" should "be parsed correctly" in {
-    val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("1.exe")
-
-    cilData.tables shouldBe Seq(
-      Seq(Ignored),
-      Seq(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
-      Seq(Ignored, Ignored),
-      Seq(),
-      Seq(
-        MemberRefData(9, ".ctor", hex"0x20010108"),
-        MemberRefData(17, ".ctor", hex"0x200001"),
-        MemberRefData(25, ".ctor", hex"0x2001011111"),
-        MemberRefData(49, "WriteLine", hex"0x0001010e"),
-        MemberRefData(49, "ReadLine", hex"0x00000e"),
-        MemberRefData(57, "Parse", hex"0x0001080e"),
-        MemberRefData(65, "Concat", hex"0x00020e1c1c"),
-        MemberRefData(49, "Read", hex"0x000008"),
-        MemberRefData(41, ".ctor", hex"0x200001")
-      ),
-      Seq(Ignored, Ignored, Ignored),
-      Seq(Ignored),
-      Seq(Ignored),
-      Seq(Ignored)
-    )
-
-    opCodes shouldBe
-      Seq(
-        Seq(
-          Nop,
-          LdcI40,
-          StLoc1,
-          LdStr("Enter the Number : "),
-          Call(MemberRefData(49, "WriteLine", hex"0x0001010e")),
-          Nop,
-          Call(MemberRefData(49, "ReadLine", hex"0x00000e")),
-          Call(MemberRefData(57, "Parse", hex"0x0001080e")),
-          StLoc0,
-          LdStr("Number: "),
-          LdLoc0,
-          Box(Ignored),
-          Call(MemberRefData(65, "Concat", hex"0x00020e1c1c")),
-          Call(MemberRefData(49, "WriteLine", hex"0x0001010e")),
-          Nop,
-          BrS(11),
-          Nop,
-          LdLoc1,
-          LdcI41,
-          Add,
-          StLoc1,
-          LdLoc0,
-          LdcI4S(10),
-          Div,
-          StLoc0,
-          Nop,
-          LdLoc0,
-          LdcI40,
-          Cgt,
-          StLoc2,
-          LdLoc2,
-          BrTrueS(-19),
-          LdStr("Magnitude: "),
-          LdLoc1,
-          Box(Ignored),
-          Call(MemberRefData(65, "Concat", hex"0x00020e1c1c")),
-          Call(MemberRefData(49, "WriteLine", hex"0x0001010e")),
-          Nop,
-          Call(MemberRefData(49, "Read", hex"0x000008")),
-          Pop,
-          Ret
-        ),
-        Seq(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
-      )
-  }
-
-  "2.exe" should "be parsed correctly" in {
-    val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("2.exe")
-
-    cilData.tables shouldBe Seq(
-      Seq(Ignored),
-      Seq(Ignored, Ignored, Ignored, Ignored, Ignored),
-      Seq(Ignored, Ignored),
-      Seq(FieldData(22, "val", hex"0x0608")),
-      Seq(),
-      Seq(
-        MemberRefData(9, ".ctor", hex"0x20010108"),
-        MemberRefData(17, ".ctor", hex"0x200001"),
-        MemberRefData(25, ".ctor", hex"0x2001011111"),
-        MemberRefData(41, ".ctor", hex"0x200001")
-      ),
-      Seq(Ignored, Ignored, Ignored),
-      Seq(Ignored, Ignored),
-      Seq(Ignored),
-      Seq(Ignored)
-    )
-
-    opCodes shouldBe Seq(
-      Seq(Nop, LdSFld(FieldData(22, "val", hex"0x0608")), StLoc0, BrS(0), LdLoc0, Ret),
-      Seq(Nop,
-          LdcI42,
-          StLoc0,
-          Call(???),
-          StLoc1,
-          LdLoc0,
-          LdLoc1,
-          Add,
-          StLoc2,
-          LdLoc0,
-          LdLoc1,
-          Mull,
-          StLoc3,
-          LdLoc0,
-          LdLoc1,
-          Div,
-          StLocS(4),
-          Ret),
-      Seq(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
-      Seq(LdcI4S(42), StSFld(FieldData(22, "val", hex"0x0608")), Ret)
-    )
   }
 }

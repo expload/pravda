@@ -9,11 +9,15 @@ class SmartProgramSpec extends FlatSpec with Matchers {
   "smart program" should "be parsed correctly" in {
     val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("smart_program.exe")
 
-    cilData.tables shouldBe List(
-      List(Ignored),
-      List(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
-      List(Ignored, Ignored, Ignored),
+    cilData.tables shouldBe TablesData(
       List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608"), FieldData(6, "fb", hex"0x0608")),
+      List(
+        MemberRefData(9, ".ctor", hex"0x20010108"),
+        MemberRefData(17, ".ctor", hex"0x200001"),
+        MemberRefData(25, ".ctor", hex"0x2001011111"),
+        MemberRefData(41, ".ctor", hex"0x200001"),
+        MemberRefData(49, ".ctor", hex"0x200001")
+      ),
       List(
         MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
         MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
@@ -27,18 +31,39 @@ class SmartProgramSpec extends FlatSpec with Matchers {
         MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
         MethodDefData(0, 6289, ".cctor", hex"0x000001", List())
       ),
-      List(Ignored, Ignored, Ignored, Ignored, Ignored, Ignored, Ignored),
+      List(ParamData(0, 1, "a"),
+           ParamData(0, 2, "b"),
+           ParamData(0, 1, "mode"),
+           ParamData(0, 2, "a"),
+           ParamData(0, 3, "b"),
+           ParamData(0, 1, "arg1"),
+           ParamData(0, 2, "arg2")),
       List(
-        MemberRefData(9, ".ctor", hex"0x20010108"),
-        MemberRefData(17, ".ctor", hex"0x200001"),
-        MemberRefData(25, ".ctor", hex"0x2001011111"),
-        MemberRefData(41, ".ctor", hex"0x200001"),
-        MemberRefData(49, ".ctor", hex"0x200001")
-      ),
-      List(Ignored, Ignored, Ignored, Ignored),
-      List(Ignored),
-      List(Ignored),
-      List(Ignored)
+        TypeDefData(
+          0,
+          "<Module>",
+          "",
+          Ignored,
+          List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608")),
+          List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))
+        ),
+        TypeDefData(
+          1048577,
+          "Program",
+          "",
+          Ignored,
+          List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608")),
+          List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))
+        ),
+        TypeDefData(
+          1048576,
+          "MyProgram",
+          "",
+          Ignored,
+          List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608")),
+          List(MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))
+        )
+      )
     )
 
     opCodes shouldBe List(
@@ -75,12 +100,12 @@ class SmartProgramSpec extends FlatSpec with Matchers {
         LdArg0,
         LdArg2,
         LdArg3,
-        Call(???),
+        Call(MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
         StFld(FieldData(6, "fa", hex"0x0608")),
         LdArg0,
         LdArg2,
         LdArg3,
-        Call(???),
+        Call(MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
         StFld(FieldData(6, "fb", hex"0x0608")),
         BrS(0),
         Ret
