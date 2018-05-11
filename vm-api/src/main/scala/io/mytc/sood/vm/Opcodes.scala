@@ -18,7 +18,9 @@ object Opcodes {
   final val CONCAT = int.CONCAT.toByte
 
   final val DUP = int.DUP.toByte
+  final val DUPN = int.DUPN.toByte
   final val SWAP = int.SWAP.toByte
+  final val SWAPN = int.SWAPN.toByte
 
   // Heap
   final val MPUT = int.MPUT.toByte
@@ -70,8 +72,10 @@ object Opcodes {
     final val CONCAT = 0x13
 
     final val DUP = 0x22
-    final val SWAP = 0x33
+    final val DUPN = 0x23
 
+    final val SWAP = 0x33
+    final val SWAPN = 0x34
     // Heap
     final val MPUT = 0x43
     final val MGET = 0x44
