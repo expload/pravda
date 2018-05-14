@@ -6,14 +6,14 @@ sealed trait VmError {
 
 object VmError {
 
-  case object StackOverflow extends VmError { val code = 100 }
-  case object StackUnderflow extends VmError { val code = 101 }
+  case object StackOverflow   extends VmError { val code = 100 }
+  case object StackUnderflow  extends VmError { val code = 101 }
   case object OperationDenied extends VmError { val code = 200 }
-  case object NoSuchProgram extends VmError { val code = 300 }
-  case object NoSuchLibrary extends VmError { val code = 301 }
-  case object NoSuchMethod extends VmError { val code = 302 }
+  case object NoSuchProgram   extends VmError { val code = 300 }
+  case object NoSuchLibrary   extends VmError { val code = 301 }
+  case object NoSuchMethod    extends VmError { val code = 302 }
 
-  case class SomethingWrong(ex: Exception) extends VmError {val code = 999 }
+  case class SomethingWrong(ex: Exception) extends VmError { val code = 999 }
 
 }
 

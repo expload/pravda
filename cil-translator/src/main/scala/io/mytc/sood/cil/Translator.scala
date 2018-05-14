@@ -16,25 +16,27 @@ object Translator {
     def mkLabel(i: Int): String = i.toString
 
     val labels = ctx.opcodes.zipWithIndex.collect {
-      case (o @ BrS(t)     , i)  if t != 0 => i + t
-      case (o @ BrFalseS(t), i)  if t != 0 => i + t
-      case (o @ BrTrueS(t), i)   if t != 0 => i + t
+      case (o @ BrS(t), i) if t != 0      => i + t
+      case (o @ BrFalseS(t), i) if t != 0 => i + t
+      case (o @ BrTrueS(t), i) if t != 0  => i + t
     }.toSet
 
     val opcodes = ctx.opcodes.zipWithIndex.flatMap {
-      case (BrS(0), i)                            => List( Nop )
-      case (BrTrueS(0), i)                        => List( Nop )
-      case (BrFalseS(0), i)                       => List( Nop )
-      case (BrS(t), i)      if t != 0             => List( Jump(mkLabel(i + t)) )
-      case (BrFalseS(t), i) if t != 0             => List(
-                                                       Not,
-                                                       JumpI(mkLabel(i + t))
-                                                     )
-      case (BrTrueS(t), i) if t != 0              => List(
-                                                       JumpI(mkLabel(i + t))
-                                                     )
-      case (opcode, i)      if labels.contains(i) => List( Label(mkLabel(i)), opcode )
-      case (opcode, i)                            => List( opcode )
+      case (BrS(0), i)           => List(Nop)
+      case (BrTrueS(0), i)       => List(Nop)
+      case (BrFalseS(0), i)      => List(Nop)
+      case (BrS(t), i) if t != 0 => List(Jump(mkLabel(i + t)))
+      case (BrFalseS(t), i) if t != 0 =>
+        List(
+          Not,
+          JumpI(mkLabel(i + t))
+        )
+      case (BrTrueS(t), i) if t != 0 =>
+        List(
+          JumpI(mkLabel(i + t))
+        )
+      case (opcode, i) if labels.contains(i) => List(Label(mkLabel(i)), opcode)
+      case (opcode, i)                       => List(opcode)
     }
 
     ctx.copy(opcodes = opcodes)
@@ -79,24 +81,25 @@ object Translator {
       case Rem       => Seq(Op.LCall("Typed", "typedMod", 2))
       case Clt       => Seq(Op.LCall("Typed", "typedClt", 2))
 
-      case LdSFld(FieldData(_, name, _)) => Seq(
-        // more to come...
-        Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-        Op.LCall("Classes", "loadField", 1)
-      )
+      case LdSFld(FieldData(_, name, _)) =>
+        Seq(
+          // more to come...
+          Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
+          Op.LCall("Classes", "loadField", 1)
+        )
 
-      case StLoc0 => storeLocal(0)
-      case StLoc1 => storeLocal(1)
-      case StLoc2 => storeLocal(2)
-      case StLoc3 => storeLocal(3)
-      case StLoc(num) => storeLocal(num)
+      case StLoc0      => storeLocal(0)
+      case StLoc1      => storeLocal(1)
+      case StLoc2      => storeLocal(2)
+      case StLoc3      => storeLocal(3)
+      case StLoc(num)  => storeLocal(num)
       case StLocS(num) => storeLocal(num.toInt)
 
-      case LdLoc0 => loadLocal(0)
-      case LdLoc1 => loadLocal(1)
-      case LdLoc2 => loadLocal(2)
-      case LdLoc3 => loadLocal(3)
-      case LdLoc(num) => loadLocal(num)
+      case LdLoc0      => loadLocal(0)
+      case LdLoc1      => loadLocal(1)
+      case LdLoc2      => loadLocal(2)
+      case LdLoc3      => loadLocal(3)
+      case LdLoc(num)  => loadLocal(num)
       case LdLocS(num) => loadLocal(num.toInt)
 
       case Nop          => Seq(Op.Nop)

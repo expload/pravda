@@ -54,36 +54,36 @@ object TablesInfo {
                                 resolutionScope: Index)
 
   sealed trait TableRowInfo
-  case object AssemblyRow extends TableRowInfo
-  case object AssemblyOSRow extends TableRowInfo
-  case object AssemblyProcessorRow extends TableRowInfo
-  case object AssemblyRefRow extends TableRowInfo
-  case object AssemblyRefOSRow extends TableRowInfo
+  case object AssemblyRow             extends TableRowInfo
+  case object AssemblyOSRow           extends TableRowInfo
+  case object AssemblyProcessorRow    extends TableRowInfo
+  case object AssemblyRefRow          extends TableRowInfo
+  case object AssemblyRefOSRow        extends TableRowInfo
   case object AssemblyRefProcessorRow extends TableRowInfo
 
-  case object ClassLayoutRow extends TableRowInfo
-  case object ConstantRow extends TableRowInfo
+  case object ClassLayoutRow     extends TableRowInfo
+  case object ConstantRow        extends TableRowInfo
   case object CustomAttributeRow extends TableRowInfo
 
   case object DeclSecurityRow extends TableRowInfo
 
-  case object EventMapRow extends TableRowInfo
-  case object EventRow extends TableRowInfo
+  case object EventMapRow     extends TableRowInfo
+  case object EventRow        extends TableRowInfo
   case object ExportedTypeRow extends TableRowInfo
 
   final case class FieldRow(flags: Short, nameIdx: Long, signatureIdx: Long) extends TableRowInfo
-  case object FieldLayoutRow extends TableRowInfo
-  case object FieldMarshalRow extends TableRowInfo
-  case object FieldRVARow extends TableRowInfo
-  case object FileRow extends TableRowInfo
+  case object FieldLayoutRow                                                 extends TableRowInfo
+  case object FieldMarshalRow                                                extends TableRowInfo
+  case object FieldRVARow                                                    extends TableRowInfo
+  case object FileRow                                                        extends TableRowInfo
 
-  case object GenericParamRow extends TableRowInfo
+  case object GenericParamRow           extends TableRowInfo
   case object GenericParamConstraintRow extends TableRowInfo
 
-  case object ImplMapRow extends TableRowInfo
+  case object ImplMapRow       extends TableRowInfo
   case object InterfaceImplRow extends TableRowInfo
 
-  case object ManifestResourceRow extends TableRowInfo
+  case object ManifestResourceRow                                             extends TableRowInfo
   final case class MemberRefRow(cls: Long, nameIdx: Long, signatureIdx: Long) extends TableRowInfo
   final case class MethodDefRow(rva: Long,
                                 implFlags: Short,
@@ -92,17 +92,17 @@ object TablesInfo {
                                 signatureIdx: Long,
                                 paramListIdx: Long)
       extends TableRowInfo
-  case object MethodImplRow extends TableRowInfo
+  case object MethodImplRow      extends TableRowInfo
   case object MethodSemanticsRow extends TableRowInfo
-  case object MethodSpecRow extends TableRowInfo
-  case object ModuleRow extends TableRowInfo
-  case object ModuleRefRow extends TableRowInfo
+  case object MethodSpecRow      extends TableRowInfo
+  case object ModuleRow          extends TableRowInfo
+  case object ModuleRefRow       extends TableRowInfo
 
   case object NestedClassRow extends TableRowInfo
 
   final case class ParamRow(flags: Short, seq: Int, nameIdx: Long) extends TableRowInfo
-  case object PropertyRow extends TableRowInfo
-  case object PropertyMapRow extends TableRowInfo
+  case object PropertyRow                                          extends TableRowInfo
+  case object PropertyMapRow                                       extends TableRowInfo
 
   case object StandAloneSigRow extends TableRowInfo
 
@@ -113,7 +113,7 @@ object TablesInfo {
                               fieldListIdx: Long,
                               methodListIdx: Long)
       extends TableRowInfo
-  case object TypeRefRow extends TableRowInfo
+  case object TypeRefRow  extends TableRowInfo
   case object TypeSpecRow extends TableRowInfo
 
   def assemblyRow(indexes: TableIndexes): P[AssemblyRow.type] =
@@ -318,10 +318,11 @@ object TablesInfo {
           for {
             tablesE <- tablesP
             tablesTE <- tablesPT
-          } yield for {
-            tables <- tablesE
-            tablesT <- tablesTE
-          } yield tablesT(tables)
+          } yield
+            for {
+              tables <- tablesE
+              tablesT <- tablesTE
+            } yield tablesT(tables)
       }
   }
 }
