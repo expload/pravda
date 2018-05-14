@@ -21,7 +21,9 @@ class TypedSpec extends FlatSpec with Matchers {
       .put("typedI32")
       .put(3)
 
-    exec(typedi32) shouldBe stack(bytes(1, 0, 0, 0, 2), bytes(1, 0, 0, 0, 3), bytes(1, 0x0a, 0xbc, 0xde, 0xf1))
+    exec(typedi32) shouldBe stack(binaryData(1, 0, 0, 0, 2),
+                                  binaryData(1, 0, 0, 0, 3),
+                                  binaryData(1, 0x0a, 0xbc, 0xde, 0xf1))
   }
 
   "typedR64" should "produce correct words" in {
@@ -31,8 +33,8 @@ class TypedSpec extends FlatSpec with Matchers {
       .opcode(PUSHX)
       .put(math.Pi)
 
-    exec(program) shouldBe stack(bytes(0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
-                                 bytes(0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
+    exec(program) shouldBe stack(binaryData(0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
+                                 binaryData(0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
 
     val typedr64 = program
       .opcode(LCALL)
@@ -40,8 +42,8 @@ class TypedSpec extends FlatSpec with Matchers {
       .put("typedR64")
       .put(2)
 
-    exec(typedr64) shouldBe stack(bytes(2, 0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
-                                  bytes(2, 0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
+    exec(typedr64) shouldBe stack(binaryData(2, 0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
+                                  binaryData(2, 0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
   }
 
   private def testTypedArithmetics(i1: Int,

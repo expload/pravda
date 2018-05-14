@@ -14,10 +14,10 @@ object Translator {
   def translate(ctx: CilContext): Seq[Op] = {
 
     def pushTypedInt(i: Int): Op =
-      Op.Push(Datum.Rawbytes(1.toByte +: int32ToData(i)))
+      Op.Push(Datum.Rawbytes((1.toByte +: int32ToData(i)).toArray))
 
     def pushTypedFloat(d: Double): Op =
-      Op.Push(Datum.Rawbytes(2.toByte +: doubleToData(d)))
+      Op.Push(Datum.Rawbytes((2.toByte +: doubleToData(d)).toArray))
 
     def storeLocal(num: Int): Seq[Op] =
       Seq(

@@ -1,20 +1,13 @@
-package io.mytc.sood
-package std.libs
+package io.mytc.sood.vm.std.libs
 
-import io.mytc.sood.std.Func
 import io.mytc.sood.vm.serialization._
-import io.mytc.sood.vm.state.{Data, Memory}
+import io.mytc.sood.vm.state.Data
+import io.mytc.sood.vm.std.{Func, Lib}
 
-object Typed extends std.Lib {
+object Typed extends Lib {
 
   val Int32Tag: Byte = 1
   val Float64Tag: Byte = 2
-
-  private def createFunc(name_ : String, f: Memory => Memory): std.Func =
-    new Func {
-      override val name: String = name_
-      override def apply(m: Memory): Memory = f(m)
-    }
 
   def dataToTyped(typeTag: Byte, data: Data): Data =
     typeTag +: data
@@ -22,11 +15,11 @@ object Typed extends std.Lib {
   def typedTag(data: Data): Byte =
     data(0)
 
-  val typedI32: std.Func = createFunc("typedI32", m => {
+  val typedI32: Func = Func("typedI32", m => {
     m.copy(stack = m.stack.map(dataToTyped(Int32Tag, _)))
   })
 
-  val typedR32: std.Func = createFunc("typedR64", m => {
+  val typedR32: Func = Func("typedR64", m => {
     m.copy(stack = m.stack.map(dataToTyped(Float64Tag, _)))
   })
 
@@ -34,8 +27,8 @@ object Typed extends std.Lib {
                                    ii2i: (Int, Int) => Int,
                                    ff2f: (Double, Double) => Double,
                                    fi2f: (Double, Int) => Double,
-                                   if2f: (Int, Double) => Double): std.Func =
-    createFunc(
+                                   if2f: (Int, Double) => Double): Func =
+    Func(
       name,
       m => {
         val a = m.stack(0)
@@ -71,13 +64,13 @@ object Typed extends std.Lib {
       }
     )
 
-  val typedAdd: std.Func = createArithmeticFunc("typedAdd", _ + _, _ + _, _ + _, _ + _)
-  val typedMul: std.Func = createArithmeticFunc("typedMul", _ * _, _ *_, _ * _, _ * _)
-  val typedDiv: std.Func = createArithmeticFunc("typedDiv", _ / _, _ / _, _ / _, _ / _)
-  val typedMod: std.Func = createArithmeticFunc("typedMod", _ % _, _ % _, _ % _, _ % _)
+  val typedAdd: Func = createArithmeticFunc("typedAdd", _ + _, _ + _, _ + _, _ + _)
+  val typedMul: Func = createArithmeticFunc("typedMul", _ * _, _ *_, _ * _, _ * _)
+  val typedDiv: Func = createArithmeticFunc("typedDiv", _ / _, _ / _, _ / _, _ / _)
+  val typedMod: Func = createArithmeticFunc("typedMod", _ % _, _ % _, _ % _, _ % _)
 
   override val address: String = "Typed"
-  override val functions: Seq[std.Func] = Array(
+  override val functions: Seq[Func] = Array(
     typedI32,
     typedR32,
     typedAdd,
