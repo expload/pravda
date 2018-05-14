@@ -12,12 +12,12 @@ final case class TablesData(
     typeDefTable: Seq[TablesData.TypeDefData] = Seq.empty
 ) {
   def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
-    case 2 => Some(typeDefTable)
-    case 4 => Some(fieldTable)
-    case 6 => Some(methodDefTable)
-    case 8 => Some(paramTable)
+    case 2  => Some(typeDefTable)
+    case 4  => Some(fieldTable)
+    case 6  => Some(methodDefTable)
+    case 8  => Some(paramTable)
     case 10 => Some(memberRefTable)
-    case _ => None
+    case _  => None
   }
 }
 
@@ -28,8 +28,8 @@ object TablesData {
   final case class MethodDefData(implFlags: Short, flags: Short, name: String, signature: Bytes, params: Seq[ParamData])
       extends TableRowData
   final case class MemberRefData(cls: Long, name: String, signature: Bytes) extends TableRowData
-  final case class FieldData(flags: Short, name: String, signature: Bytes) extends TableRowData
-  final case class ParamData(flags: Short, seq: Int, name: String) extends TableRowData
+  final case class FieldData(flags: Short, name: String, signature: Bytes)  extends TableRowData
+  final case class ParamData(flags: Short, seq: Int, name: String)          extends TableRowData
   final case class TypeDefData(flags: Int,
                                name: String,
                                namespace: String,

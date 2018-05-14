@@ -2,166 +2,168 @@ package io.mytc.sood.asm
 
 import java.nio.charset.StandardCharsets
 
-
 class ByteCode {
 
   import io.mytc.sood.vm
-  import vm.{ Opcodes ⇒ VM }
+  import vm.{Opcodes ⇒ VM}
   import scala.collection.mutable.ArrayBuffer
 
   def offsets(unit: Seq[Op]): Map[String, Int] = {
     val code = new ArrayBuffer[Byte](unit.size)
-    val omap = unit.map{
-      case Op.Push(d)  ⇒ {
-                         val offset = code.size
-                         code += VM.PUSHX
-                         d match {
-                           case v: Datum.Integral ⇒ code ++= vm.int32ToWord(v.value)
-                           case v: Datum.Floating ⇒ code ++= vm.doubleToWord(v.value)
-                           case v: Datum.Rawbytes ⇒ code ++= vm.bytesToWord(v.value)
-                         }
-                         (Op.Push(d), offset)
-                         }
+    val omap = unit
+      .map {
+        case Op.Push(d) ⇒ {
+          val offset = code.size
+          code += VM.PUSHX
+          d match {
+            case v: Datum.Integral ⇒ code ++= vm.int32ToWord(v.value)
+            case v: Datum.Floating ⇒ code ++= vm.doubleToWord(v.value)
+            case v: Datum.Rawbytes ⇒ code ++= vm.bytesToWord(v.value)
+          }
+          (Op.Push(d), offset)
+        }
 
-      case Op.Call(n)  ⇒ {
-                         val offset = code.size
-                         code += VM.PUSHX
-                         code ++= vm.int32ToWord(0)
-                         code += VM.CALL
-                         (Op.Call(n), offset)
-                         }
+        case Op.Call(n) ⇒ {
+          val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.int32ToWord(0)
+          code += VM.CALL
+          (Op.Call(n), offset)
+        }
 
-      case Op.Stop     ⇒ {
-                         val offset = code.size
-                         code += VM.STOP
-                         (Op.Stop, offset)
-                         }
+        case Op.Stop ⇒ {
+          val offset = code.size
+          code += VM.STOP
+          (Op.Stop, offset)
+        }
 
-      case Op.Jump(n)  ⇒ {
-                         val offset = code.size
-                         code += VM.JUMP
-                         (Op.Jump(n), offset)
-                         }
+        case Op.Jump(n) ⇒ {
+          val offset = code.size
+          code += VM.JUMP
+          (Op.Jump(n), offset)
+        }
 
-      case Op.JumpI(n) ⇒ {
-                         val offset = code.size
-                         code += VM.JUMPI
-                         (Op.JumpI(n), offset)
-                         }
+        case Op.JumpI(n) ⇒ {
+          val offset = code.size
+          code += VM.JUMPI
+          (Op.JumpI(n), offset)
+        }
 
-      case Op.Pop      ⇒ {
-                         val offset = code.size
-                         code += VM.POP
-                         (Op.Pop, offset)
-                         }
+        case Op.Pop ⇒ {
+          val offset = code.size
+          code += VM.POP
+          (Op.Pop, offset)
+        }
 
-      case Op.Dup      ⇒ {
-                         val offset = code.size
-                         code += VM.DUP
-                         (Op.Dup, offset)
-                         }
+        case Op.Dup ⇒ {
+          val offset = code.size
+          code += VM.DUP
+          (Op.Dup, offset)
+        }
 
-      case Op.Swap     ⇒ {
-                         val offset = code.size
-                         code += VM.SWAP
-                         (Op.Swap, offset)
-                         }
+        case Op.Swap ⇒ {
+          val offset = code.size
+          code += VM.SWAP
+          (Op.Swap, offset)
+        }
 
-      case Op.Ret      ⇒ {
-                         val offset = code.size
-                         code += VM.RET
-                         (Op.Ret, offset)
-                         }
+        case Op.Ret ⇒ {
+          val offset = code.size
+          code += VM.RET
+          (Op.Ret, offset)
+        }
 
-      case Op.MPut     ⇒ {
-                         val offset = code.size
-                         code += VM.MPUT
-                         (Op.MPut, offset)
-                         }
+        case Op.MPut ⇒ {
+          val offset = code.size
+          code += VM.MPUT
+          (Op.MPut, offset)
+        }
 
-      case Op.MGet     ⇒ {
-                         val offset = code.size
-                         code += VM.MGET
-                         (Op.MGet, offset)
-                         }
+        case Op.MGet ⇒ {
+          val offset = code.size
+          code += VM.MGET
+          (Op.MGet, offset)
+        }
 
-      case Op.I32Add   ⇒ {
-                         val offset = code.size
-                         code += VM.I32ADD
-                         (Op.I32Add, offset)
-                         }
+        case Op.I32Add ⇒ {
+          val offset = code.size
+          code += VM.I32ADD
+          (Op.I32Add, offset)
+        }
 
-      case Op.I32Mul   ⇒ {
-                         val offset = code.size
-                         code += VM.I32MUL
-                         (Op.I32Mul, offset)
-                         }
+        case Op.I32Mul ⇒ {
+          val offset = code.size
+          code += VM.I32MUL
+          (Op.I32Mul, offset)
+        }
 
-      case Op.I32Div   ⇒ {
-                         val offset = code.size
-                         code += VM.I32DIV
-                         (Op.I32Div, offset)
-                         }
+        case Op.I32Div ⇒ {
+          val offset = code.size
+          code += VM.I32DIV
+          (Op.I32Div, offset)
+        }
 
-      case Op.I32Mod   ⇒ {
-                         val offset = code.size
-                         code += VM.I32MOD
-                         (Op.I32Mod, offset)
-                         }
+        case Op.I32Mod ⇒ {
+          val offset = code.size
+          code += VM.I32MOD
+          (Op.I32Mod, offset)
+        }
 
-      case Op.I32LT    ⇒ {
-                         val offset = code.size
-                         code += VM.I32LT
-                         (Op.I32LT, offset)
-                         }
+        case Op.I32LT ⇒ {
+          val offset = code.size
+          code += VM.I32LT
+          (Op.I32LT, offset)
+        }
 
-      case Op.I32GT    ⇒ {
-                         val offset = code.size
-                         code += VM.I32GT
-                         (Op.I32GT, offset)
-                         }
+        case Op.I32GT ⇒ {
+          val offset = code.size
+          code += VM.I32GT
+          (Op.I32GT, offset)
+        }
 
-      case Op.FAdd   ⇒ {
-                         val offset = code.size
-                         code += VM.FADD
-                         (Op.FAdd, offset)
-                         }
+        case Op.FAdd ⇒ {
+          val offset = code.size
+          code += VM.FADD
+          (Op.FAdd, offset)
+        }
 
-      case Op.FMul   ⇒ {
-                         val offset = code.size
-                         code += VM.FMUL
-                         (Op.FMul, offset)
-                         }
+        case Op.FMul ⇒ {
+          val offset = code.size
+          code += VM.FMUL
+          (Op.FMul, offset)
+        }
 
-      case Op.FDiv   ⇒ {
-                         val offset = code.size
-                         code += VM.FDIV
-                         (Op.FDiv, offset)
-                         }
+        case Op.FDiv ⇒ {
+          val offset = code.size
+          code += VM.FDIV
+          (Op.FDiv, offset)
+        }
 
-      case Op.FMod   ⇒ {
-                         val offset = code.size
-                         code += VM.FMOD
-                         (Op.FMod, offset)
-                         }
+        case Op.FMod ⇒ {
+          val offset = code.size
+          code += VM.FMOD
+          (Op.FMod, offset)
+        }
 
-      case Op.Label(n) ⇒ {
-                         val offset = code.size
-                         (Op.Label(n), offset)
-                         }
+        case Op.Label(n) ⇒ {
+          val offset = code.size
+          (Op.Label(n), offset)
+        }
 
-      case Op.Nop      ⇒ {
-                         val offset = code.size
-                         (Op.Nop, offset)
-                         }
-      case op @ Op.LCall(adress, func, argsNum) =>
-        val offset = code.size
-        code += VM.PUSHX
-        code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
-        code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
-        code ++= vm.int32ToWord(argsNum)
-        (op, offset)
-    }.collect{ case (Op.Label(n), v) ⇒ (n, v) }.toMap
+        case Op.Nop ⇒ {
+          val offset = code.size
+          (Op.Nop, offset)
+        }
+        case op @ Op.LCall(adress, func, argsNum) =>
+          val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.int32ToWord(argsNum)
+          (op, offset)
+      }
+      .collect { case (Op.Label(n), v) ⇒ (n, v) }
+      .toMap
     omap
   }
 
@@ -170,33 +172,33 @@ class ByteCode {
     val offset = offsets(unit)
     val code = new ArrayBuffer[Byte](unit.size)
 
-    unit.foreach{
-      case Op.Push(d)  ⇒ {
-                           code += VM.PUSHX
-                           d match {
-                             case d: Datum.Integral ⇒ code ++= vm.int32ToWord(d.value)
-                             case d: Datum.Floating ⇒ code ++= vm.doubleToWord(d.value)
-                             case d: Datum.Rawbytes ⇒ code ++= vm.bytesToWord(d.value)
-                           }
-                         }
+    unit.foreach {
+      case Op.Push(d) ⇒ {
+        code += VM.PUSHX
+        d match {
+          case d: Datum.Integral ⇒ code ++= vm.int32ToWord(d.value)
+          case d: Datum.Floating ⇒ code ++= vm.doubleToWord(d.value)
+          case d: Datum.Rawbytes ⇒ code ++= vm.bytesToWord(d.value)
+        }
+      }
 
-      case Op.Jump(n)  ⇒ {
-                         code += VM.PUSHX
-                         code ++= vm.int32ToWord(offset(n))
-                         code += VM.JUMP
-                         }
+      case Op.Jump(n) ⇒ {
+        code += VM.PUSHX
+        code ++= vm.int32ToWord(offset(n))
+        code += VM.JUMP
+      }
 
       case Op.JumpI(n) ⇒ {
-                         code += VM.PUSHX
-                         code ++= vm.int32ToWord(offset(n))
-                         code += VM.JUMPI
-                         }
+        code += VM.PUSHX
+        code ++= vm.int32ToWord(offset(n))
+        code += VM.JUMPI
+      }
 
-      case Op.Call(n)  ⇒ {
-                         code += VM.PUSHX
-                         code ++= vm.int32ToWord(offset(n))
-                         code += VM.CALL
-                         }
+      case Op.Call(n) ⇒ {
+        code += VM.PUSHX
+        code ++= vm.int32ToWord(offset(n))
+        code += VM.CALL
+      }
       case Op.LCall(adress, func, argsNum) =>
         code += VM.LCALL
         code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
@@ -238,28 +240,28 @@ class ByteCode {
     while (ubuf.remaining > 0) {
       val pos = ubuf.position
       ubuf.get() & 0xFF match {
-        case VM.PUSHX    ⇒ obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
-        case VM.CALL     ⇒ obuf += ((pos, Op.Call("")))
-        case VM.STOP     ⇒ obuf += ((pos, Op.Stop    ))
-        case VM.JUMP     ⇒ obuf += ((pos, Op.Jump("") ))
-        case VM.JUMPI    ⇒ obuf += ((pos, Op.JumpI("") ))
-        case VM.POP      ⇒ obuf += ((pos, Op.Pop     ))
-        case VM.DUP      ⇒ obuf += ((pos, Op.Dup     ))
-        case VM.SWAP     ⇒ obuf += ((pos, Op.Swap    ))
-        case VM.RET      ⇒ obuf += ((pos, Op.Ret     ))
-        case VM.MPUT     ⇒ obuf += ((pos, Op.MPut    ))
-        case VM.MGET     ⇒ obuf += ((pos, Op.MGet    ))
-        case VM.I32ADD   ⇒ obuf += ((pos, Op.I32Add  ))
-        case VM.I32MUL   ⇒ obuf += ((pos, Op.I32Mul  ))
-        case VM.I32DIV   ⇒ obuf += ((pos, Op.I32Div  ))
-        case VM.I32MOD   ⇒ obuf += ((pos, Op.I32Mod  ))
-        case VM.I32LT    ⇒ obuf += ((pos, Op.I32LT   ))
-        case VM.I32GT    ⇒ obuf += ((pos, Op.I32GT   ))
-        case VM.FADD     ⇒ obuf += ((pos, Op.FAdd    ))
-        case VM.FMUL     ⇒ obuf += ((pos, Op.FMul    ))
-        case VM.FDIV     ⇒ obuf += ((pos, Op.FDiv    ))
-        case VM.FMOD     ⇒ obuf += ((pos, Op.FMod    ))
-        case VM.LCALL    =>
+        case VM.PUSHX  ⇒ obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
+        case VM.CALL   ⇒ obuf += ((pos, Op.Call("")))
+        case VM.STOP   ⇒ obuf += ((pos, Op.Stop))
+        case VM.JUMP   ⇒ obuf += ((pos, Op.Jump("")))
+        case VM.JUMPI  ⇒ obuf += ((pos, Op.JumpI("")))
+        case VM.POP    ⇒ obuf += ((pos, Op.Pop))
+        case VM.DUP    ⇒ obuf += ((pos, Op.Dup))
+        case VM.SWAP   ⇒ obuf += ((pos, Op.Swap))
+        case VM.RET    ⇒ obuf += ((pos, Op.Ret))
+        case VM.MPUT   ⇒ obuf += ((pos, Op.MPut))
+        case VM.MGET   ⇒ obuf += ((pos, Op.MGet))
+        case VM.I32ADD ⇒ obuf += ((pos, Op.I32Add))
+        case VM.I32MUL ⇒ obuf += ((pos, Op.I32Mul))
+        case VM.I32DIV ⇒ obuf += ((pos, Op.I32Div))
+        case VM.I32MOD ⇒ obuf += ((pos, Op.I32Mod))
+        case VM.I32LT  ⇒ obuf += ((pos, Op.I32LT))
+        case VM.I32GT  ⇒ obuf += ((pos, Op.I32GT))
+        case VM.FADD   ⇒ obuf += ((pos, Op.FAdd))
+        case VM.FMUL   ⇒ obuf += ((pos, Op.FMul))
+        case VM.FDIV   ⇒ obuf += ((pos, Op.FDiv))
+        case VM.FMOD   ⇒ obuf += ((pos, Op.FMod))
+        case VM.LCALL =>
           obuf += ((pos,
                     Op.LCall(
                       new String(wordToBytes(ubuf), StandardCharsets.UTF_8),

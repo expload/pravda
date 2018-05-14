@@ -42,15 +42,15 @@ package object vm {
     assert(((len >> 56) & 0xFF) == 0)
 
     @tailrec def toBytes(len: Long, arr: ArrayBuffer[Byte]): ArrayBuffer[Byte] = {
-      if(len == 0) arr
+      if (len == 0) arr
       else toBytes(len >> 8, arr :+ (len & 0xFF).toByte)
     }
     toBytes(len, new ArrayBuffer[Byte](7)).reverse.toArray
   }
 
   def bytesToWord(bs: Array[Byte], reduction: Boolean = false): Word = {
-    val reducedBytes = if(reduction) bs.dropWhile(_ == 0) else bs
-    if((reducedBytes.length == 1) && ((reducedBytes(0) & 0xE0) == 0)) {
+    val reducedBytes = if (reduction) bs.dropWhile(_ == 0) else bs
+    if ((reducedBytes.length == 1) && ((reducedBytes(0) & 0xE0) == 0)) {
       reducedBytes
     } else {
       val prefix = lengthToBytes(reducedBytes.length.toLong)
@@ -79,7 +79,7 @@ package object vm {
   def wordToBytes(source: ByteBuffer): Array[Byte] = {
     val fb = source.get()
     val lenOfLen = fb >>> 5
-    if(lenOfLen == 0) Array(fb)
+    if (lenOfLen == 0) Array(fb)
     else {
       val lenBytes = new Array[Byte](lenOfLen)
       lenBytes(0) = (fb & 0x1F).toByte

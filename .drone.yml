@@ -3,3 +3,5 @@ pipeline:
     image: gcr.io/time-coin/sbt:latest
     commands:
       - sbt test
+      - sbt scalafmtCheck
+      - sbt scalafixTest

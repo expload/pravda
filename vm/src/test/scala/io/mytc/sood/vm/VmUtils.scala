@@ -61,7 +61,7 @@ object VmUtils {
 
     def account(prog: Program): AccountState = new AccountState {
       override def program: ByteBuffer = prog.buffer
-      override def storage: Storage = null
+      override def storage: Storage = null // scalafix:ok
     }
 
     override def get(address: Address): Option[AccountState] = {

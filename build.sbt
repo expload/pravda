@@ -10,7 +10,7 @@ val commonSettings = Seq(
     "-Ywarn-numeric-widen",
     "-Ywarn-unused-import"
   )
-)
+) ++ scalafixSettings
 
 lazy val vmVersion = "0.0.1"
 lazy val vmApi = (project in file("vm-api")).

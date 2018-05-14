@@ -5,9 +5,9 @@ import io.mytc.sood.vm.state.VmError.StackUnderflow
 
 import scala.collection.mutable.ArrayBuffer
 
-case class Memory(
-  stack: ArrayBuffer[Data],
-  heap: ArrayBuffer[Data]
+final case class Memory(
+    stack: ArrayBuffer[Data],
+    heap: ArrayBuffer[Data]
 ) {
   def pop(): Data = {
     if (stack.isEmpty) {
@@ -21,7 +21,7 @@ case class Memory(
     stack += x
 
   def top(num: Int): Memory = {
-    if(stack.length < num) {
+    if (stack.length < num) {
       throw VmErrorException(StackUnderflow)
     }
 

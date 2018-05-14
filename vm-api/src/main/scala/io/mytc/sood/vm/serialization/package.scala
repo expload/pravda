@@ -34,7 +34,7 @@ package object serialization {
   val TRUE: Data = ByteVector(1)
 
   def boolToData(b: Boolean): Data = {
-    if(b) TRUE else FALSE
+    if (b) TRUE else FALSE
   }
 
   def dataToBool(d: Data): Boolean = {

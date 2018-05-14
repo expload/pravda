@@ -65,7 +65,7 @@ object Typed extends Lib {
     )
 
   val typedAdd: Func = createArithmeticFunc("typedAdd", _ + _, _ + _, _ + _, _ + _)
-  val typedMul: Func = createArithmeticFunc("typedMul", _ * _, _ *_, _ * _, _ * _)
+  val typedMul: Func = createArithmeticFunc("typedMul", _ * _, _ * _, _ * _, _ * _)
   val typedDiv: Func = createArithmeticFunc("typedDiv", _ / _, _ / _, _ / _, _ / _)
   val typedMod: Func = createArithmeticFunc("typedMod", _ % _, _ % _, _ % _, _ % _)
 

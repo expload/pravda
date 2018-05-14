@@ -11,10 +11,17 @@ object StdLib {
   : % mod ;
   """ }
 
-  def words: Seq[Op] = Seq(
-    add, mul, div, mod,
-    fadd, fmul, fdiv, fmod
-  ).flatten
+  def words: Seq[Op] =
+    Seq(
+      add,
+      mul,
+      div,
+      mod,
+      fadd,
+      fmul,
+      fdiv,
+      fmod
+    ).flatten
 
   val fadd: Seq[Op] = Seq(
     Op.Label("fadd"),

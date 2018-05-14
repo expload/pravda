@@ -1,6 +1,5 @@
 package io.mytc.sood.forth
 
-
 class Translator {
 
   import io.mytc.sood.asm.Op
@@ -14,20 +13,22 @@ class Translator {
   }
 
   def words(unit: Seq[Statement]): Seq[Statement.Dword] = {
-    unit.collect{ case v: Statement.Dword ⇒ v.copy(name = mangle(v.name)) }
+    unit.collect { case v: Statement.Dword ⇒ v.copy(name = mangle(v.name)) }
   }
 
   def translateStmts(stmts: Seq[Statement]): Seq[Op] = {
-    stmts.map{ w ⇒ w match {
-      case Statement.Ident(n) ⇒ Op.Call(mangle(n))
-      case Statement.Integ(v) ⇒ Op.Push(Datum.Integral(v))
-      case Statement.Float(v) ⇒ Op.Push(Datum.Floating(v))
-      case _                  ⇒ Op.Nop
-    } }
+    stmts.map { w ⇒
+      w match {
+        case Statement.Ident(n) ⇒ Op.Call(mangle(n))
+        case Statement.Integ(v) ⇒ Op.Push(Datum.Integral(v))
+        case Statement.Float(v) ⇒ Op.Push(Datum.Floating(v))
+        case _                  ⇒ Op.Nop
+      }
+    }
   }
 
   def translateWords(words: Seq[Statement.Dword]): Seq[Op] = {
-    words.map{ w ⇒
+    words.map { w ⇒
       Op.Label(name = w.name) +: translateStmts(w.block) :+ Op.Ret
     }.flatten
   }

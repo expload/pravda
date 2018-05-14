@@ -21,7 +21,7 @@ package object utils {
       while (i < vs.length && vs(i).isRight) {
         vs(i) match {
           case Right(r) => res += r
-          case _ =>
+          case _        =>
         }
         i += 1
       }

@@ -17,11 +17,11 @@ class ForthTest extends FlatSpec with Matchers {
 
   object StackItem {
 
-    implicit val intStackItem = new StackItem[Int] {
+    implicit val intStackItem: StackItem[Int] = new StackItem[Int] {
       def get(item: ByteVector): Int = item.foldLeft(0){ case (s, i) => s + i }
     }
 
-    implicit val floatStackItem = new StackItem[Double] {
+    implicit val floatStackItem: StackItem[Double] = new StackItem[Double] {
       def get(item: ByteVector): Double = item.toByteBuffer.getDouble
     }
 
