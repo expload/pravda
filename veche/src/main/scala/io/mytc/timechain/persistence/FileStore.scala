@@ -4,45 +4,19 @@ package persistence
 import java.io.{File, PrintWriter}
 
 import io.mytc.timechain.data.TimechainConfig
-import io.mytc.timechain.data.common.{NodeSettings, OrganizationInfo}
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.io.Source
+import io.mytc.timechain.data.common.NodeSettings
 import io.mytc.timechain.data.serialization._
+import io.mytc.timechain.data.serialization.json._
 
-import json._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.io.Source
 
 object FileStore {
 
   import Config._
 
-  private lazy val organizationInfoFile = new File(timeChainConfig.dataDirectory, "info-organization.json")
   private lazy val nodeSettingsFile = new File(timeChainConfig.dataDirectory, "node-settings.json")
-
-  def readMyOrganizationInfoAsync(): Future[Option[OrganizationInfo]] = Future {
-    readMyOrganizationInfo()
-  }
-
-  def readMyOrganizationInfo(): Option[OrganizationInfo] = {
-    if (organizationInfoFile.exists()) {
-      Some(transcode(Json @@ Source.fromFile(organizationInfoFile).mkString).to[OrganizationInfo])
-    } else {
-      None
-    }
-  }
-
-  def updateMyOrganizationInfoAsync(info: OrganizationInfo): Future[Unit] =
-    Future(updateMyOrganizationInfo(info))
-
-  def updateMyOrganizationInfo(info: OrganizationInfo): Unit = {
-    val pw = new PrintWriter(organizationInfoFile)
-    try {
-      pw.write(transcode(info).to[Json])
-    } finally {
-      pw.close()
-    }
-  }
 
   def readNodeSettingsAsync() = Future(readNodeSettings())
   def readNodeSettings(): Option[NodeSettings] = {
@@ -67,6 +41,5 @@ object FileStore {
   def readPaymentWalletAsync(): Future[TimechainConfig.PaymentWallet] = {
     Future.successful(timeChainConfig.paymentWallet)
   }
-
 
 }

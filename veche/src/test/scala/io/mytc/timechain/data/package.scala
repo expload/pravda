@@ -1,8 +1,6 @@
 package io.mytc.timechain.data
 
-import io.mytc.timechain.data.processing.{ProcessingEffect, ProcessingError}
 import io.mytc.timechain.data.{blockchain => blch}
-import io.mytc.timechain.data.{processing => proc}
 import io.mytc.timechain.data.{cryptography => crypto}
 import utest.assert
 
@@ -14,9 +12,9 @@ object testutils {
   import blch.TransactionData
   import blch.Transaction.UnsignedTransaction
 
-  import proc.ProcessingState
-  import proc.ProcessingResult
-  import proc.processTransaction
+  import .ProcessingState
+  import .ProcessingResult
+  import .processTransaction
 
   import crypto.PrivateKey
   import crypto.generateKeyPair

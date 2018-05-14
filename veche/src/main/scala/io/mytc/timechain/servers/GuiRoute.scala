@@ -3,9 +3,6 @@ package io.mytc.timechain.servers
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import io.mytc.timechain.clients.AbciClient
-import io.mytc.timechain.servers.Abci.ConsensusState
-import io.mytc.timechain.utils.Var
 import korolev.Context
 import korolev.akkahttp._
 import korolev.execution._
@@ -16,8 +13,7 @@ import korolev.state.javaSerialization._
 import scala.concurrent.Future
 
 
-class GuiRoute(consensusState: Var.VarReader[ConsensusState], abciClient: AbciClient)
-              (implicit system: ActorSystem,
+class GuiRoute(implicit system: ActorSystem,
                materializer: ActorMaterializer,
               ) {
 

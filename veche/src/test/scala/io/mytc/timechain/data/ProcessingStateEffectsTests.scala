@@ -2,9 +2,8 @@ package io.mytc.timechain.data
 
 import io.mytc.timechain.data.common.TariffMatrix
 import io.mytc.timechain.data.domain.Punishment
-import io.mytc.timechain.data.processing.ProcessingEffect.{SetMultiplier, UpdateTariffMatrix}
+import .ProcessingEffect.{SetMultiplier, UpdateTariffMatrix}
 import utest._
-import io.mytc.timechain.data.{processing => proc}
 
 object ProcessingStateEffectsTests extends TestSuite {
 
@@ -15,9 +14,9 @@ object ProcessingStateEffectsTests extends TestSuite {
   import common.Mytc
   import common.DataRef
 
-  import proc.ProcessingState
-  import proc.ProcessingEffect
-  import proc.applyEffectToState
+  import .ProcessingState
+  import .ProcessingEffect
+  import .applyEffectToState
 
   // ----------------- Users, Data & State ------------------------
 

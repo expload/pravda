@@ -2,8 +2,7 @@ package io.mytc.timechain.data.serialization
 
 import io.mytc.timechain.data.Action
 import io.mytc.timechain.data.common._
-import io.mytc.timechain.data.offchain.PurchaseIntention._
-import io.mytc.timechain.data.offchain._
+import .PurchaseIntention._
 import com.google.protobuf.ByteString
 import io.mytc.timechain.data.Action.{ActionsFile, ActionsFileRecord}
 import io.mytc.timechain.servers.ApiRoute.Track

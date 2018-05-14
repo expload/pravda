@@ -4,7 +4,6 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
-import io.mytc.timechain.data.common.{Address, DepositId}
 import io.mytc.timechain.utils
 import shapeless.{::, HList, HNil, Lazy}
 import supertagged.{Tagged, lifterF}
@@ -79,12 +78,6 @@ trait CompositeTranscoder {
 
   implicit val byteStrWrite :CompositeEncoder[ByteString] = {
     (value: ByteString) => bytesWrite(value.toByteArray)
-  }
-
-  // AUX
-   // TODO: it might be deleted when partial unification problem is fixed
-  implicit def depositEncoder(implicit encoder: CompositeEncoder[Address::Address::HNil]): CompositeEncoder[DepositId] = {
-    (value: DepositId) => encoder(value.owner :: value.vendor :: HNil)
   }
 
 }

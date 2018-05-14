@@ -3,8 +3,6 @@ package io.mytc.timechain.data
 import io.mytc.timechain.data.blockchain.TransactionData
 import io.mytc.timechain.data.common.{DataRef, DepositId, Mytc, TariffMatrix}
 import io.mytc.timechain.data.domain.{Confirmation, Deposit, Punishment}
-import io.mytc.timechain.data.offchain.{PurchaseIntention, PurchaseIntentionData}
-import io.mytc.timechain.data.processing.{ProcessingError, ProcessingState}
 import io.mytc.timechain.data.testutils.User
 import utest._
 import testutils._

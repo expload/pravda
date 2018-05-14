@@ -36,26 +36,8 @@ object boopick {
   implicit val authorizedTransactionPickler: Pickler[Transaction.AuthorizedTransaction] = 
     generatePickler[Transaction.AuthorizedTransaction]
 
-  implicit val timePickler: Pickler[TransactionData.Time] = 
-    generatePickler[TransactionData.Time]
-
-  implicit val distributionPickler: Pickler[TransactionData.Distribution] = 
+  implicit val distributionPickler: Pickler[TransactionData.Distribution] =
     generatePickler[TransactionData.Distribution]
-
-  implicit val transferPickler: Pickler[TransactionData.Transfer] = 
-    generatePickler[TransactionData.Transfer]
-
-  implicit val dataPurchasingConfirmationPickler: Pickler[TransactionData.DataPurchasingConfirmation] = 
-    generatePickler[TransactionData.DataPurchasingConfirmation]
-
-  implicit val dataPurchasingDepositPickler: Pickler[TransactionData.DataPurchasingDeposit] = 
-    generatePickler[TransactionData.DataPurchasingDeposit]
-
-  implicit val thisIsMePickler: Pickler[TransactionData.ThisIsMe] = 
-    generatePickler[TransactionData.ThisIsMe]
-
-  implicit val cheatingCustomerPunishmentPickler: Pickler[TransactionData.CheatingCustomerPunishment] = 
-    generatePickler[TransactionData.CheatingCustomerPunishment]
 
   //---------------------------------------------------------------------------
   // Composite picklers
@@ -70,15 +52,7 @@ object boopick {
 
   implicit val transactionDataPickler: CompositePickler[TransactionData] =
     compositePickler[TransactionData]
-      .addConcreteType[TransactionData.Time]
       .addConcreteType[TransactionData.Distribution]
-      .addConcreteType[TransactionData.Transfer]
-      .addConcreteType[TransactionData.DataPurchasingConfirmation]
-      .addConcreteType[TransactionData.DataPurchasingDeposit]
-      .addConcreteType[TransactionData.ThisIsMe]
-      .addConcreteType[TransactionData.CheatingCustomerPunishment]
-      .addConcreteType[TransactionData.MultiplierUpdating]
-      .addConcreteType[TransactionData.TariffMatrixUpdating]
 
   //---------------------------------------------------------------------------
   // Transcoding

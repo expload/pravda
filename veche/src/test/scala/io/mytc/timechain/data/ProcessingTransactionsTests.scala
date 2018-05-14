@@ -4,7 +4,6 @@ import io.mytc.timechain.data.common.{DepositId, TariffMatrix}
 import io.mytc.timechain.data.domain.{Confirmation, Deposit}
 import utest._
 import io.mytc.timechain.data.{blockchain => blch}
-import io.mytc.timechain.data.{processing => proc}
 
 object ProcessingTransactionsTests extends TestSuite {
 
@@ -17,9 +16,9 @@ object ProcessingTransactionsTests extends TestSuite {
 
   import blch.TransactionData
 
-  import proc.ProcessingState
-  import proc.ProcessingError
-  import proc.ProcessingEffect
+  import .ProcessingState
+  import .ProcessingError
+  import .ProcessingEffect
 
   // ----------------- Users, Data & State ------------------------
 

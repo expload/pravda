@@ -3,12 +3,8 @@ package io.mytc.timechain.data.serialization
 
 import com.google.protobuf.ByteString
 import io.mytc.timechain.clients.AbciClient._
-import io.mytc.timechain.data.Action.{ActionsFile, ActionsFileRecord}
-import io.mytc.timechain.data.{Action, TimechainConfig}
-import io.mytc.timechain.data.common.{NodeSettings, OrganizationInfo}
-import io.mytc.timechain.data.domain.{ActionPackage, Offer}
-import io.mytc.timechain.data.offchain.PurchaseIntention.{AuthorizedPurchaseIntention, SignedPurchaseIntention}
-import io.mytc.timechain.data.offchain.PurchaseIntentionData
+import io.mytc.timechain.data.TimechainConfig
+import io.mytc.timechain.data.common.NodeSettings
 import io.mytc.timechain.utils
 import tethys._
 import tethys.derivation.builder._
@@ -176,76 +172,7 @@ object json {
   // Domain RWs for tethys
   //---------------------------------------------------------------------------
 
-  implicit val domainOfferReader: JsonReader[Offer] =
-    jsonReader[Offer]
 
-  implicit val domainActionPackageReader: JsonReader[ActionPackage] =
-    jsonReader[ActionPackage]
-
-  implicit val domainActionsFileReader: JsonReader[ActionsFile] =
-    jsonReader[ActionsFile]
-
-  implicit val domainActionsFileRecordReader: JsonReader[ActionsFileRecord] =
-    jsonReader[ActionsFileRecord]
-
-  implicit val domainOfferWriter: JsonWriter[Offer] =
-    jsonWriter[Offer]
-
-  implicit val domainActionPackageWriter: JsonWriter[ActionPackage] =
-    jsonWriter[ActionPackage]
-
-  implicit val domainActionsFileWriter: JsonWriter[ActionsFile] =
-    jsonWriter[ActionsFile]
-
-  implicit val domainActionsFileRecordWriter: JsonWriter[ActionsFileRecord] =
-    jsonWriter[ActionsFileRecord]
-
-  implicit val intentionDataReader: JsonReader[PurchaseIntentionData] =
-    jsonReader[PurchaseIntentionData]
-
-  implicit val intentionDataWriter: JsonObjectWriter[PurchaseIntentionData] =
-    jsonWriter[PurchaseIntentionData]
-
-  implicit val signedIntentionReader: JsonReader[SignedPurchaseIntention] =
-    jsonReader[SignedPurchaseIntention]
-
-  implicit val signedIntentionWriter: JsonObjectWriter[SignedPurchaseIntention] =
-    jsonWriter[SignedPurchaseIntention]
-
-  implicit val authIntentionReader: JsonReader[AuthorizedPurchaseIntention] =
-    jsonReader[AuthorizedPurchaseIntention]
-
-  implicit val authIntentionWriter: JsonObjectWriter[AuthorizedPurchaseIntention] =
-    jsonWriter[AuthorizedPurchaseIntention]
-
-
-  //---------------------------------------------------------------------------
-  // Actions
-  //---------------------------------------------------------------------------
-  private def strToAction: String => Action = {
-    case "SmokeVape" => Action.SmokeVape
-    case "DrinkSmoothie" => Action.DrinkSmoothie
-    case "DriveGyroscooter" => Action.DriveGyroscooter
-    case "WorkInCoworking" => Action.WorkInCoworking
-    case "LiveInColiving" => Action.LiveInColiving
-    case "SayMonadIsAMonoidInTheCategoryOfEndofunctors" => Action.SayMonadIsAMonoidInTheCategoryOfEndofunctors
-  }
-
-  implicit val actionWriter: JsonWriter[Action] = JsonWriter.stringWriter.contramap[Action]{
-    _.toString
-  }
-
-  implicit val actionReader: JsonReader[Action] = JsonReader.stringReader.map(strToAction)
-
-  //---------------------------------------------------------------------------
-  // Common RWs
-  //---------------------------------------------------------------------------
-
-  implicit val domainOrganizationInfoReader: JsonReader[OrganizationInfo] =
-    jsonReader[OrganizationInfo]
-  
-  implicit val domainOrganizationInfoWriter: JsonWriter[OrganizationInfo] =
-    jsonWriter[OrganizationInfo]
 
   //---------------------------------------------------------------------------
   // Misc RWs

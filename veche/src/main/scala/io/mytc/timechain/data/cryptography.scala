@@ -8,7 +8,6 @@ import com.google.protobuf.ByteString
 import io.mytc.timechain.contrib.ed25519
 import io.mytc.timechain.data.blockchain.Transaction
 import io.mytc.timechain.data.common.Address
-import io.mytc.timechain.data.offchain.{PurchaseIntention, PurchaseIntentionData}
 import io.mytc.timechain.data.serialization._
 import boopick._
 import json._
@@ -72,12 +71,6 @@ object cryptography {
 //    }
 //  }
 
-  def signIntention(privateKey: PrivateKey, i: PurchaseIntentionData): PurchaseIntention.SignedPurchaseIntention = {
-    val json = transcode(i).to[Json]
-    val signature = ed25519.sign(privateKey.toByteArray, json.getBytes)
-    PurchaseIntention.SignedPurchaseIntention(i, ByteString.copyFrom(signature))
-  }
-
   def signTransaction(privateKey: PrivateKey, tx: UnsignedTransaction): SignedTransaction =
     signTransaction(privateKey.toByteArray, tx)
 
@@ -85,13 +78,6 @@ object cryptography {
     val message = transcode(tx.data).to[BooPickle]
     val signature = ed25519.sign(privateKey, message)
     SignedTransaction(tx.from, tx.data, ByteString.copyFrom(signature), tx.fee)
-  }
-
-  def checkIntention(ip: PurchaseIntention): Option[PurchaseIntention.AuthorizedPurchaseIntention] = ip match {
-    case authorized: PurchaseIntention.AuthorizedPurchaseIntention => Some(authorized)
-    case PurchaseIntention.SignedPurchaseIntention(data, signature) =>
-      if (!ed25519.verify(data.address.toByteArray, transcode(data).to[Json].getBytes, signature.toByteArray)) None
-      else Some(PurchaseIntention.AuthorizedPurchaseIntention(data, signature))
   }
 
   def checkTransactionSignature(tx: SignedTransaction): Option[AuthorizedTransaction] = {

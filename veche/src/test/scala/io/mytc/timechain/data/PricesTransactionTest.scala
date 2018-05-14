@@ -2,8 +2,7 @@ package io.mytc.timechain.data
 
 import io.mytc.timechain.data.blockchain.TransactionData.{MultiplierUpdating, TariffMatrixUpdating}
 import io.mytc.timechain.data.common.{Matrix, TariffMatrix}
-import io.mytc.timechain.data.processing.ProcessingEffect.UpdateTariffMatrix
-import io.mytc.timechain.data.processing.{ProcessingError, ProcessingState}
+import .ProcessingEffect.UpdateTariffMatrix
 import utest._
 import testutils._
 import testutils.transactions._
