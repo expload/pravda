@@ -21,6 +21,7 @@ lazy val vmApi = (project in file("vm-api")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
+      "org.scodec" %% "scodec-bits" % "1.1.5",
       "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
     )
   )
@@ -33,7 +34,6 @@ lazy val vm = (project in file("vm")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
-      "org.scodec" %% "scodec-bits" % "1.1.5",
       "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
     )
   ).
@@ -88,6 +88,7 @@ lazy val tests = (project in file("tests")).
   )
 
 lazy val cil = (project in file("cil-translator")).
+  dependsOn(asm).
   settings(
     normalizedName := "cil-translator",
     version := "0.0.1"

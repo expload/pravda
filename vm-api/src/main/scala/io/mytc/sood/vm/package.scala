@@ -10,13 +10,14 @@ package object vm {
   type Word = Array[Byte]
 
   def doubleToWord(value: Double): Word = {
-    val buf = ByteBuffer.allocate(8)
+    val buf = ByteBuffer.allocate(9)
+    buf.put(0x28.toByte)
     buf.putDouble(value)
     buf.array()
   }
 
   def wordToDouble(word: ByteBuffer): Double = {
-    assert(word.get() == 0x24.toByte)
+    assert(word.get() == 0x28.toByte)
     word.getDouble()
   }
 
@@ -29,7 +30,6 @@ package object vm {
 
   def wordToInt32(word: ByteBuffer): Int = {
     assert(word.get() == 0x24.toByte)
-
     word.getInt()
   }
 
@@ -72,6 +72,10 @@ package object vm {
     ByteBuffer.wrap(longBytes).getLong
   }
 
+  def wordToBytes(word: Word): Array[Byte] = {
+    wordToBytes(ByteBuffer.wrap(word))
+  }
+
   def wordToBytes(source: ByteBuffer): Array[Byte] = {
     val fb = source.get()
     val lenOfLen = fb >>> 5
@@ -86,7 +90,6 @@ package object vm {
       result
     }
   }
-
 
   def bytesFromWord(source: ByteBuffer, len: Int): Array[Byte] = {
     val bs = wordToBytes(source)

@@ -59,6 +59,11 @@ class ParserTest extends FlatSpec with Matchers {
         Op.Label("@")
       ))
     )
+  }
 
+  "A parse" should "parse lcall op-code correctly" in {
+    val p = Parser()
+
+    p.parse("lcall Typed typedAdd 2") shouldBe Right(Seq(Op.LCall("Typed", "typedAdd", 2)))
   }
 }

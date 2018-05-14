@@ -4,6 +4,14 @@ import fastparse.byte.all._
 import LE._
 import io.mytc.sood.cil.utils._
 
+final case class TablesInfo(
+    fieldTable: Seq[TablesInfo.FieldRow] = Seq.empty,
+    memberRefTable: Seq[TablesInfo.MemberRefRow] = Seq.empty,
+    methodDefTable: Seq[TablesInfo.MethodDefRow] = Seq.empty,
+    paramTable: Seq[TablesInfo.ParamRow] = Seq.empty,
+    typeDefTable: Seq[TablesInfo.TypeDefRow] = Seq.empty
+)
+
 object TablesInfo {
 
   trait Index {
@@ -92,13 +100,19 @@ object TablesInfo {
 
   case object NestedClassRow extends TableRowInfo
 
-  case object ParamRow extends TableRowInfo
+  final case class ParamRow(flags: Short, seq: Int, nameIdx: Long) extends TableRowInfo
   case object PropertyRow extends TableRowInfo
   case object PropertyMapRow extends TableRowInfo
 
   case object StandAloneSigRow extends TableRowInfo
 
-  case object TypeDefRow extends TableRowInfo
+  final case class TypeDefRow(flags: Int,
+                              nameIdx: Long,
+                              namespace: Long,
+                              parent: Long,
+                              fieldListIdx: Long,
+                              methodListIdx: Long)
+      extends TableRowInfo
   case object TypeRefRow extends TableRowInfo
   case object TypeSpecRow extends TableRowInfo
 
@@ -183,8 +197,8 @@ object TablesInfo {
   def nestedClassRow(indexes: TableIndexes): P[NestedClassRow.type] =
     P(AnyBytes(indexes.typeDef.size * 2)).map(_ => NestedClassRow)
 
-  def paramRow(indexes: TableIndexes): P[ParamRow.type] =
-    P(AnyBytes(2 + 2 + indexes.stringHeap.size)).map(_ => ParamRow)
+  def paramRow(indexes: TableIndexes): P[ParamRow] =
+    P(Int16 ~ UInt16 ~ indexes.stringHeap.parser).map(ParamRow.tupled)
   def propertyRow(indexes: TableIndexes): P[PropertyRow.type] =
     P(AnyBytes(2 + indexes.stringHeap.size + indexes.blobHeap.size)).map(_ => PropertyRow)
   def propertyMapRow(indexes: TableIndexes): P[PropertyMapRow.type] =
@@ -193,63 +207,70 @@ object TablesInfo {
   def standAloneSigRow(indexes: TableIndexes): P[StandAloneSigRow.type] =
     P(AnyBytes(indexes.blobHeap.size)).map(_ => StandAloneSigRow)
 
-  def typeDefRow(indexes: TableIndexes): P[TypeDefRow.type] =
-    P(
-      AnyBytes(
-        4 + indexes.stringHeap.size * 2 + indexes.typeDefOrRef.size + indexes.field.size + indexes.methodDef.size))
-      .map(_ => TypeDefRow)
+  def typeDefRow(indexes: TableIndexes): P[TypeDefRow] =
+    P(Int32 ~ indexes.stringHeap.parser ~ indexes.stringHeap.parser ~ indexes.typeDefOrRef.parser ~ indexes.field.parser ~ indexes.methodDef.parser)
+      .map(TypeDefRow.tupled)
   def typeRefRow(indexes: TableIndexes): P[TypeRefRow.type] =
     P(AnyBytes(indexes.resolutionScope.size + indexes.stringHeap.size * 2)).map(_ => TypeRefRow)
   def typeSpecRow(indexes: TableIndexes): P[TypeSpecRow.type] =
     P(AnyBytes(indexes.blobHeap.size)).map(_ => TypeSpecRow)
 
-  val numToParser: Map[Int, TableIndexes => P[TableRowInfo]] = Map(
-    0 -> moduleRow,
-    1 -> typeRefRow,
-    2 -> typeDefRow,
-    // 3
-    4 -> fieldRow,
-    // 5
-    6 -> methodDefRow,
-    // 7
-    8 -> paramRow,
-    9 -> interfaceImplRow,
-    10 -> memberRefRow,
-    11 -> constantRow,
-    12 -> customAttributeRow,
-    13 -> fieldMarshalRow,
-    14 -> declSecurityRow,
-    15 -> classLayoutRow,
-    16 -> fieldLayoutRow,
-    17 -> standAloneSigRow,
-    18 -> eventMapRow,
-    // 19
-    20 -> eventRow,
-    21 -> propertyMapRow,
-    // 22
-    23 -> propertyRow,
-    24 -> methodSemanticsRow,
-    25 -> methodImplRow,
-    26 -> moduleRefRow,
-    27 -> typeSpecRow,
-    28 -> implMapRow,
-    29 -> fieldRVARow,
-    // 30
-    // 31
-    32 -> assemblyRow,
-    33 -> (_ => asssemblyProcessorRow),
-    34 -> (_ => assemblyOSRow),
-    35 -> assemblyRefRow,
-    36 -> assemblyRefProcessorRow,
-    37 -> assemblyRefOSRow,
-    38 -> fileRow,
-    39 -> exportedTypeRow,
-    40 -> manifestResourceRow,
-    41 -> nestedClassRow,
-    42 -> genericParamRow,
-    43 -> methodSpecRow,
-    44 -> genericParamConstraintRow
-  )
+  def tableParser(num: Int, row: Long, indexes: TableIndexes): P[Validated[TablesInfo => TablesInfo]] = {
+    def tableRep[T](p: TableIndexes => P[T]): P[Seq[T]] =
+      p(indexes).rep(exactly = row.toInt)
+
+    def tablesId(p: TableIndexes => P[TableRowInfo]): P[Validated[TablesInfo => TablesInfo]] =
+      tableRep(p).map(r => validated(t => t))
+
+    num match {
+      case 0 => tablesId(moduleRow)
+      case 1 => tablesId(typeRefRow)
+      case 2 => tableRep(typeDefRow).map(r => validated(t => t.copy(typeDefTable = r)))
+      // 3
+      case 4 => tableRep(fieldRow).map(r => validated(t => t.copy(fieldTable = r)))
+      // 5
+      case 6 => tableRep(methodDefRow).map(r => validated(t => t.copy(methodDefTable = r)))
+      // 7
+      case 8  => tableRep(paramRow).map(r => validated(t => t.copy(paramTable = r)))
+      case 9  => tablesId(interfaceImplRow)
+      case 10 => tableRep(memberRefRow).map(r => validated(t => t.copy(memberRefTable = r)))
+      case 11 => tablesId(constantRow)
+      case 12 => tablesId(customAttributeRow)
+      case 13 => tablesId(fieldMarshalRow)
+      case 14 => tablesId(declSecurityRow)
+      case 15 => tablesId(classLayoutRow)
+      case 16 => tablesId(fieldLayoutRow)
+      case 17 => tablesId(standAloneSigRow)
+      case 18 => tablesId(eventMapRow)
+      // 19
+      case 20 => tablesId(eventRow)
+      case 21 => tablesId(propertyMapRow)
+      // 22
+      case 23 => tablesId(propertyRow)
+      case 24 => tablesId(methodSemanticsRow)
+      case 25 => tablesId(methodImplRow)
+      case 26 => tablesId(moduleRefRow)
+      case 27 => tablesId(typeSpecRow)
+      case 28 => tablesId(implMapRow)
+      case 29 => tablesId(fieldRVARow)
+      // 30
+      // 31
+      case 32 => tablesId(assemblyRow)
+      case 33 => tablesId(_ => asssemblyProcessorRow)
+      case 34 => tablesId(_ => assemblyOSRow)
+      case 35 => tablesId(assemblyRefRow)
+      case 36 => tablesId(assemblyRefProcessorRow)
+      case 37 => tablesId(assemblyRefOSRow)
+      case 38 => tablesId(fileRow)
+      case 39 => tablesId(exportedTypeRow)
+      case 40 => tablesId(manifestResourceRow)
+      case 41 => tablesId(nestedClassRow)
+      case 42 => tablesId(genericParamRow)
+      case 43 => tablesId(methodSpecRow)
+      case 44 => tablesId(genericParamConstraintRow)
+      case n  => PassWith(validationError(s"Non valid table number: $n"))
+    }
+  }
 
   def validToActualTableNumbers(valid: Long): Seq[Int] =
     valid.toBinaryString.reverse.zipWithIndex.filter(_._1 == '1').map(_._2)
@@ -284,30 +305,23 @@ object TablesInfo {
     ) // FIXME
   }
 
-  def tables(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): P[Validated[Seq[Seq[TableRowInfo]]]] = {
+  def tables(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): P[Validated[TablesInfo]] = {
     val indexes = tableIndexes(heapSizes, tableNumbers, rows)
-    val parsers = tableNumbers.map(numToParser.get)
 
-    if (parsers.exists(_.isEmpty)) {
-      PassWith(validationError("Non valid tables numbers"))
-    } else {
-      if (parsers.length != rows.length) {
-        PassWith(validationError("Inconsistent number of tables"))
-      } else {
-        parsers.flatten
-          .zip(rows)
-          .map {
-            case (p, size) => p(indexes).rep(exactly = size.toInt /* should be enough, probably... */ )
-          }
-          .foldLeft[P[Seq[Seq[TableRowInfo]]]](PassWith(Seq.empty[Seq[TableRowInfo]])) {
-            case (p, nextP) =>
-              (p ~ nextP).map {
-                case (tables, newTable) => tables :+ newTable
-              }
-          }
-          .map(validated)
+    rows
+      .zip(tableNumbers)
+      .map {
+        case (row, num) => tableParser(num, row, indexes)
       }
-    }
+      .foldLeft[P[Validated[TablesInfo]]](PassWith(validated(TablesInfo()))) {
+        case (tablesP, tablesPT) =>
+          for {
+            tablesE <- tablesP
+            tablesTE <- tablesPT
+          } yield for {
+            tables <- tablesE
+            tablesT <- tablesTE
+          } yield tablesT(tables)
+      }
   }
-
 }

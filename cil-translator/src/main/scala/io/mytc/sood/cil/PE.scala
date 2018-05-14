@@ -50,10 +50,7 @@ object PE {
 
     case class StreamHeader(offset: Long, size: Long, name: String)
 
-    case class TildeStream(heapSizes: Byte,
-                           tableNumbers: Seq[Int],
-                           sorted: Long,
-                           tables: Seq[Seq[TablesInfo.TableRowInfo]])
+    case class TildeStream(heapSizes: Byte, tableNumbers: Seq[Int], sorted: Long, tables: TablesInfo)
 
     case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
 
@@ -73,17 +70,17 @@ object PE {
     final case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Int, codeBytes: Bytes)
         extends MethodHeader
 
-    case class PeData(stringHeap: Bytes,
-                      userStringHeap: Bytes,
-                      blobHeap: Bytes,
-                      tableNumbers: Seq[Int],
-                      tables: Seq[Seq[TablesInfo.TableRowInfo]])
+    final case class PeData(stringHeap: Bytes,
+                            userStringHeap: Bytes,
+                            blobHeap: Bytes,
+                            tableNumbers: Seq[Int],
+                            tables: TablesInfo)
 
-    case class Pe(peHeader: PeHeader,
-                  cliHeader: CliHeader,
-                  metadataRoot: MetadataRoot,
-                  peData: PeData,
-                  methods: Seq[MethodHeader])
+    final case class Pe(peHeader: PeHeader,
+                        cliHeader: CliHeader,
+                        metadataRoot: MetadataRoot,
+                        peData: PeData,
+                        methods: Seq[MethodHeader])
   }
 
   import Info._
@@ -276,7 +273,6 @@ object PE {
       header <- peHeader.parse(file).toValidated
       sections = header.sectionHeaders
 
-
       fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
 
       cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toValidated
@@ -298,14 +294,12 @@ object PE {
 
       tildeStream <- tildeStream.parse(tildeStreamBytes).toValidated.joinRight
 
-      methods <- tildeStream.tables
-        .flatMap(_.collect {
-          case TablesInfo.MethodDefRow(rva, _, _, _, _, _) =>
-            if (rva > 0) {
-              method.parse(fileBytesFromRva(rva)).toValidated
-            } else {
-              validated(EmptyHeader)
-            }
+      methods <- tildeStream.tables.methodDefTable
+        .map(m =>
+          if (m.rva > 0) {
+            method.parse(fileBytesFromRva(m.rva)).toValidated
+          } else {
+            validated(EmptyHeader)
         })
         .sequence
     } yield

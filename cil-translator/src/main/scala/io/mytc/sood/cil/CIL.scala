@@ -9,7 +9,7 @@ object CIL {
                            userStringHeap: Bytes,
                            blobHeap: Bytes,
                            tableNumbers: Seq[Int],
-                           tables: Seq[Seq[TablesData.TableRowData]])
+                           tables: TablesData)
 
   def fromPeData(peData: PE.Info.PeData): Validated[CilData] =
     TablesData
@@ -298,13 +298,9 @@ object CIL {
   private def opCodeWithToken[T](convert: Token => T, cilData: CilData): P[Validated[T]] = P(Int32).map(
     t => {
       val tableIdx = t >> 24
-      val tableActualIdx = cilData.tableNumbers.indexOf(tableIdx)
-      if (tableActualIdx == -1) {
-        validationError(s"unknown table: $tableActualIdx")
-      } else {
-        val idx = t & 0x00ffffff
-        validated(convert(cilData.tables(tableActualIdx)(idx - 1)))
-      }
+      val idx = t & 0x00ffffff
+      val token = cilData.tables.tableByNum(tableIdx).map(_(idx - 1)).getOrElse(TablesData.Ignored)
+      validated(convert(token))
     }
   )
   private def opCodeWithString[T](convert: String => T, cilData: CilData): P[Validated[T]] = P(Int32).map(

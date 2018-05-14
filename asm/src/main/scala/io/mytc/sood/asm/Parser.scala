@@ -54,6 +54,8 @@ class Parser {
     val fdiv   = P( IgnoreCase("fdiv") )
     val fmod   = P( IgnoreCase("fmod") )
 
+    val lcall  = P( IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue) )
+
     val opseq: P[Seq[Op]] = P( (
       label   .map(n ⇒ Op.Label(n)) |
       stop  .!.map(_ ⇒ Op.Stop)     |
@@ -79,7 +81,8 @@ class Parser {
       fadd  .!.map(_ ⇒ Op.FAdd)     |
       fmul  .!.map(_ ⇒ Op.FMul)     |
       fdiv  .!.map(_ ⇒ Op.FDiv)     |
-      fmod  .!.map(_ ⇒ Op.FMod)
+      fmod  .!.map(_ ⇒ Op.FMod)     |
+      lcall   .map(Op.LCall.tupled)
     ).rep(sep = delim) )
 
     val unit = P(Start ~ delim.rep ~ opseq ~ delim.rep ~ End)

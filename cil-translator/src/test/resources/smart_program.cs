@@ -1,3 +1,5 @@
+using System;
+
 // our special attribute, it will be a simple library
 public class Program : Attribute {}
 
@@ -38,10 +40,11 @@ class MyProgram {
     }
 
     // other functions are forbidden
-    public void otherFunc(int arg1, int arg1) { // error
-       int x = 2 + 2;
+    public void otherFunc(int arg1, int arg2) { // error
     }
 
     // all other stuff is also forbidden
     // to define
+    public static void Main() {
+    }
 }

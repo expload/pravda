@@ -1,5 +1,7 @@
 package io.mytc.sood.asm
 
+import java.nio.charset.StandardCharsets
+
 
 class ByteCode {
 
@@ -140,6 +142,13 @@ class ByteCode {
                          val offset = code.size
                          (Op.Nop, offset)
                          }
+      case op @ Op.LCall(adress, func, argsNum) =>
+        val offset = code.size
+        code += VM.PUSHX
+        code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.int32ToWord(argsNum)
+        (op, offset)
     }.collect{ case (Op.Label(n), v) ⇒ (n, v) }.toMap
     omap
   }
@@ -164,6 +173,11 @@ class ByteCode {
                          code ++= vm.int32ToWord(offset(n))
                          code += VM.CALL
                          }
+      case Op.LCall(adress, func, argsNum) =>
+        code += VM.LCALL
+        code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.int32ToWord(argsNum)
 
       case Op.Label(n) ⇒ {}
       case Op.Stop     ⇒ code += VM.STOP
@@ -192,7 +206,7 @@ class ByteCode {
   def ungen(unit: Array[Byte]): Seq[(Int, Op)] = {
 
     import java.nio.ByteBuffer
-    import vm.wordToBytes
+    import vm._
 
     val ubuf = ByteBuffer.wrap(unit)
     val obuf = new ArrayBuffer[(Int, Op)]()
@@ -219,6 +233,13 @@ class ByteCode {
         case VM.FMUL     ⇒ obuf += ((pos, Op.FMul    ))
         case VM.FDIV     ⇒ obuf += ((pos, Op.FDiv    ))
         case VM.FMOD     ⇒ obuf += ((pos, Op.FMod    ))
+        case VM.LCALL    =>
+          obuf += ((pos,
+                    Op.LCall(
+                      new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
+                      new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
+                      wordToInt32(ubuf)
+                    )))
       }
     }
 
