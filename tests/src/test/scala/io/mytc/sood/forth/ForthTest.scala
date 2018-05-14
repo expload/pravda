@@ -32,7 +32,7 @@ class ForthTest extends FlatSpec with Matchers {
       case Left(err)   ⇒ Left(err)
       case Right(code) ⇒ {
         val emptyState = new WorldState {
-          override def get(address: Address): AccountState = ???
+          override def get(address: Address): Option[AccountState] = None
         }
         val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
         Right(stack.map(_.foldLeft(0){ case (s, i) => s + i }).toList)

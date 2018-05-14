@@ -7,6 +7,7 @@ import scala.annotation.{switch, tailrec, strictfp}
 import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
+import state.VmError._
 
 object Vm {
 
@@ -21,7 +22,7 @@ object Vm {
 
     val initMemory = Memory.empty
     program.rewind()
-    run(program, worldState, initMemory, None, 0, isLibrary = false)
+    run(program, worldState, initMemory, None, None, 0, isLibrary = false)
 
   }
 
@@ -32,9 +33,11 @@ object Vm {
                   depth: Int = 0): Memory = {
 
     val account = worldState.get(programAddress)
-    val program = account.program
+    if(account.isEmpty) throw VmErrorException(NoSuchProgram)
+
+    val program = account.get.program
     program.rewind()
-    run(program, worldState, initMemory, Some(account.storage), depth, isLibrary = false)
+    run(program, worldState, initMemory, Some(programAddress), Some(account.get.storage), depth, isLibrary = false)
 
   }
 
@@ -42,12 +45,18 @@ object Vm {
                    program: ByteBuffer,
                    worldState: WorldState,
                    memory: Memory,
+                   execAddress: Option[Address],
                    progStorage: Option[Storage],
                    depth: Int,
                    isLibrary: Boolean
                  ): Memory = {
 
-    lazy val storage = progStorage.get
+    lazy val storage = {
+      if(progStorage.isEmpty) throw VmErrorException(OperationDenied)
+      progStorage.get
+    }
+
+    var currentPosition = program.position()
 
     val callStack = new ArrayBuffer[Int](1024)
 
@@ -61,35 +70,49 @@ object Vm {
 
     @tailrec
     @strictfp
-    def aux(): Unit = if (program.hasRemaining) {
+    def aux(): Memory = if (program.hasRemaining) {
+      currentPosition = program.position()
+
       (program.get() & 0xff: @switch) match {
         case CALL =>
           callPush(program.position())
           program.position(dataToInt32(memory.pop()))
           aux()
         case RET =>
-          if(callStack.nonEmpty) {
+          if(callStack.isEmpty) {
+            memory
+          } else {
             program.position(callPop())
             aux()
           }
         case PCALL =>
-          if(!isLibrary) { // TODO: it should be exeption here in case of library
-            val address = wordToData(program)
-            val num = wordToInt32(program)
-            memory ++= runProgram(address, memory.top(num), worldState, depth + 1)
+          if(isLibrary) {
+            throw VmErrorException(OperationDenied)
           }
+          val address = wordToData(program)
+          val num = wordToInt32(program)
+          val mem = runProgram(address, memory.top(num), worldState, depth + 1)
+          memory ++= mem
           aux()
         case LCALL =>
           val address = wordToData(program)
           val func = wordToData(program)
           val num = wordToInt32(program)
           val callData = memory.top(num)
-          loader.lib(address, worldState).flatMap(
-            _.func(func).map{
-              case f:StdFunction => f(callData)
-              case UserDefinedFunction(function) => run(function, worldState, callData, None, depth + 1, isLibrary = true)
+
+          loader.lib(address, worldState) match {
+            case None => throw VmErrorException(NoSuchLibrary)
+            case Some(library) => library.func(func) match {
+              case None => throw VmErrorException(NoSuchMethod)
+              case Some(function) =>
+                function match  {
+                  case f:StdFunction => memory ++= f(callData)
+                  case UserDefinedFunction(f) =>
+                    memory ++= run(f, worldState, callData, Some(address), None, depth + 1, isLibrary = true)
+                }
             }
-          ).foreach(memory ++= _)
+          }
+
           aux()
         case JUMP =>
           program.position(dataToInt32(memory.pop()))
@@ -203,15 +226,26 @@ object Vm {
           val d1 = dataToInt32(memory.pop())
           val d2 = dataToInt32(memory.pop())
           memory.push(boolToData(d1 < d2))
+          aux()
         case I32GT =>
           val d1 = dataToInt32(memory.pop())
           val d2 = dataToInt32(memory.pop())
           memory.push(boolToData(d1 > d2))
-        case STOP => ()
+          aux()
+        case STOP => memory
       }
+    } else {
+      memory
     }
-    aux()
-    memory
+
+    try {
+      aux()
+    } catch {
+      case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, execAddress))
+      case other: Exception =>
+        throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), execAddress))
+    }
+
   }
 
 }
