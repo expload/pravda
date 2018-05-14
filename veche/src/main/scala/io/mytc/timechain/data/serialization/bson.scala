@@ -40,13 +40,13 @@ trait BsonTranscoder {
     lifterF[BsonWriter].lift[T, U]
 
   // Protobuf
-  implicit def protoWriter(implicit arrayWriter: BsonWriter[Array[Byte]]) = new BsonWriter[ByteString] {
+  implicit def protoWriter(implicit arrayWriter: BsonWriter[Array[Byte]]): BsonWriter[ByteString] = new BsonWriter[ByteString] {
     override def write0 : ByteString => BSONValue = {
       x => arrayWriter.write0(x.toByteArray)
     }
   }
 
-  implicit def protoReader(implicit arrayReader: BsonReader[Array[Byte]]) = new BsonReader[ByteString] {
+  implicit def protoReader(implicit arrayReader: BsonReader[Array[Byte]]): BsonReader[ByteString] = new BsonReader[ByteString] {
     override def read0: PartialFunction[BSONValue, ByteString] = {
       case x if arrayReader.read0.isDefinedAt(x) => ByteString.copyFrom(arrayReader.read0(x))
     }

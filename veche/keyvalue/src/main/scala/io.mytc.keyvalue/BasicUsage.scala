@@ -3,7 +3,7 @@ package io.mytc.keyvalue
 import io.mytc.keyvalue.serialyzer._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 
 object BasicUsage {
 
@@ -14,15 +14,9 @@ object BasicUsage {
     println(s"$str: ${hex(db.stateHash)}")
   }
 
-  implicit val strKeyWriter = new KeyWriter[String] {
-    override def toBytes(value: String): Array[Byte] = ByteWriter.write(value)
-  }
-  implicit val strValueWriter = new ValueWriter[String] {
-    override def toBytes(value: String): Array[Byte] = ByteWriter.write(value)
-  }
-  implicit val strValueReader= new ValueReader[String] {
-    override def fromBytes(value: Array[Byte]): String = ByteReader.read[String](value)
-  }
+  implicit val strKeyWriter: KeyWriter[String] = (value: String) => ByteWriter.stringWriter.toBytes(value)
+  implicit val strValueWriter: ValueWriter[String] = (value: String) => ByteWriter.stringWriter.toBytes(value)
+  implicit val strValueReader: ValueReader[String] = (value: Array[Byte]) => ByteReader.stringReader.fromBytes(value)
 
   val db = DB("/tmp/testdb")
 
