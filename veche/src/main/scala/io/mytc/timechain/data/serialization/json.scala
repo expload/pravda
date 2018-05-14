@@ -9,7 +9,6 @@ import io.mytc.timechain.data.common.{NodeSettings, OrganizationInfo}
 import io.mytc.timechain.data.domain.{ActionPackage, Offer}
 import io.mytc.timechain.data.offchain.PurchaseIntention.{AuthorizedPurchaseIntention, SignedPurchaseIntention}
 import io.mytc.timechain.data.offchain.PurchaseIntentionData
-import io.mytc.timechain.servers.ApiRoute.{AddDeposit, Commit, Track}
 import io.mytc.timechain.utils
 import tethys._
 import tethys.derivation.builder._
@@ -219,18 +218,6 @@ object json {
   implicit val authIntentionWriter: JsonObjectWriter[AuthorizedPurchaseIntention] =
     jsonWriter[AuthorizedPurchaseIntention]
 
-  implicit val commitReader: JsonReader[Commit] =
-    jsonReader[Commit]
-
-  implicit val commitWriter: JsonObjectWriter[Commit] =
-    jsonWriter[Commit]
-
-  implicit val addDepositReader: JsonReader[AddDeposit] =
-    jsonReader[AddDeposit]
-
-  implicit val addDepositWriter: JsonObjectWriter[AddDeposit] =
-    jsonWriter[AddDeposit]
-
 
   //---------------------------------------------------------------------------
   // Actions
@@ -243,12 +230,6 @@ object json {
     case "LiveInColiving" => Action.LiveInColiving
     case "SayMonadIsAMonoidInTheCategoryOfEndofunctors" => Action.SayMonadIsAMonoidInTheCategoryOfEndofunctors
   }
-
-  implicit val trackWriter: JsonWriter[Track] = JsonWriter.stringWriter.contramap[Track]{
-    _.action.toString
-  }
-
-  implicit val trackReader: JsonReader[Track] = JsonReader.stringReader.map(s => Track(strToAction(s)))
 
   implicit val actionWriter: JsonWriter[Action] = JsonWriter.stringWriter.contramap[Action]{
     _.toString

@@ -5,7 +5,7 @@ import java.io.File
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import io.mytc.tendermint.abci.Server
-import io.mytc.timechain.clients.{AbciClient, OrganizationClient}
+import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.servers.{Abci, ApiRoute, GuiRoute, HttpServer}
 
 import scala.concurrent.duration._
@@ -34,9 +34,8 @@ object launcher extends App {
   private implicit val nodeStore: NodeStore = NodeStore(nodePath)
 
   val abciClient = new AbciClient(timeChainConfig.tendermint.rpcPort)
-  val organizationClient = new OrganizationClient(abciClient)
 
-  val abci = new Abci(organizationClient, abciClient)
+  val abci = new Abci(abciClient)
   val server = Server(
     cfg = Server.Config(
       host = "127.0.0.1",
@@ -47,7 +46,7 @@ object launcher extends App {
   )
 
   val httpServer = {
-    val apiRoute = new ApiRoute(abci.consensusStateReader, abciClient, organizationClient)
+    val apiRoute = new ApiRoute(abci.consensusStateReader, abciClient)
     val guiRoute = new GuiRoute(abci.consensusStateReader, abciClient)
     HttpServer.start(timeChainConfig.api, apiRoute.route, guiRoute.route)
   }

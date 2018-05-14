@@ -4,7 +4,7 @@ package servers
 import cats.data.EitherT
 import cats.implicits._
 import com.tendermint.abci._
-import io.mytc.timechain.clients.{AbciClient, OrganizationClient}
+import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.data.blockchain.{Transaction, TransactionData}
 import io.mytc.timechain.data.common.{Address, Mytc}
 import io.mytc.timechain.data.cryptography.PrivateKey
@@ -19,7 +19,6 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
 
 class Abci(
-      organizationClient: OrganizationClient,
       abciClient: AbciClient)(implicit
     blockChainStore: BlockChainStore,
     executionContext: ExecutionContextExecutor) extends io.mytc.tendermint.abci.Api {
@@ -143,25 +142,6 @@ class Abci(
 
   def checkTx(request: RequestCheckTx): Future[ResponseCheckTx] = {
 
-    def dirtyChecks(effects: List[ProcessingEffect]): EitherT[Future, ProcessingError, Unit] = {
-      val checksF =
-        effects.collect {
-          case x: ProcessingEffect.CheckDomainAndUpdateInfo =>
-            organizationClient.readOrganizationInfo(x.domain)
-              .map(_.fold(false)(_.address == x.address))
-              .map(Either.cond(_, (), ProcessingError.InvalidDomain))
-        }
-      EitherT {
-        Future.sequence(checksF).map { checks =>
-          checks.foldLeft(Either.right[ProcessingError, Unit](())) {
-            case (acc, _) if acc.isLeft => acc
-            case (_, y) if y.isLeft => y
-            case (acc, _) => acc
-          }
-        }
-      }
-    }
-
     val signedTransaction = transcode(request.tx).to[Transaction.SignedTransaction]
 
     cryptography.checkTransactionSignature(signedTransaction) match {
@@ -170,7 +150,6 @@ class Abci(
           for {
             state <- EitherT.right(mempoolState.updateAsync(blockChainStore.restoreProcessingState(transaction, _)))
             effects <- EitherT.fromEither[Future](processing.processTransaction(transaction, state))
-            _ <- dirtyChecks(effects)
             _ <- EitherT.right[ProcessingError].apply[Future, Unit](mempoolState.set(effects.foldLeft(state)(processing.applyEffectToState)))
           } yield {
             ResponseCheckTx(code = TxStatusOk)
