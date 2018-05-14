@@ -82,6 +82,7 @@ class ArithmeticsSpec extends FlatSpec with Matchers {
     opCodes.map(os => Translator.translate(Translator.CilContext(os))) shouldBe
       List(
         List(
+          Nop,
           Push(Rawbytes("x".getBytes)),
           LCall("Classes", "loadField", 1),
           Push(Rawbytes(Array[Byte](1, 0, 0, 0, 2))),
@@ -121,10 +122,11 @@ class ArithmeticsSpec extends FlatSpec with Matchers {
           LCall("Typed", "typedAdd", 2),
           LCall("Typed", "typedDiv", 2),
           Push(Integral(4)),
-          LCall("Local", "storeLocal", 2)
+          LCall("Local", "storeLocal", 2),
+          Ret
         ),
-        List(),
-        List(Push(Rawbytes(Array[Byte](1, 0, 0, 0, 10))))
+        List(Nop, Ret),
+        List(Push(Rawbytes(Array[Byte](1, 0, 0, 0, 10))), Ret)
       )
   }
 }
