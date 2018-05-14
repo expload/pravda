@@ -59,6 +59,16 @@ class StackOpcodesSpec extends FlatSpec with Matchers {
 
   }
 
+  "DUPN command" should "duplicate n-th value of the stack" in {
+
+    val program = prog.opcode(PUSHX).put(55).opcode(PUSHX).put(34).opcode(PUSHX).put(2).opcode(PUSHX).put(3)
+    exec(program.opcode(PUSHX).put(1).opcode(DUPN)) shouldBe stack(data(55), data(34), data(2), data(3), data(3))
+    exec(program.opcode(PUSHX).put(2).opcode(DUPN)) shouldBe stack(data(55), data(34), data(2), data(3), data(2))
+    exec(program.opcode(PUSHX).put(3).opcode(DUPN)) shouldBe stack(data(55), data(34), data(2), data(3), data(34))
+    exec(program.opcode(PUSHX).put(4).opcode(DUPN)) shouldBe stack(data(55), data(34), data(2), data(3), data(55))
+
+  }
+
   "SWAP command" should "swap two top values in the stack" in {
 
     val program1 = prog.withStack(data(55), data(55),data(2), data(3))
@@ -67,6 +77,17 @@ class StackOpcodesSpec extends FlatSpec with Matchers {
     exec(program1.opcode(SWAP)) shouldBe stack(data(55), data(55), data(3), data(2))
 
   }
+
+  "SWAPN command" should "swap the top value and the n-th value in the stack" in {
+
+    val program = prog.opcode(PUSHX).put(55).opcode(PUSHX).put(34).opcode(PUSHX).put(2).opcode(PUSHX).put(3)
+    exec(program.opcode(PUSHX).put(1).opcode(SWAPN)) shouldBe stack(data(55), data(34), data(2), data(3))
+    exec(program.opcode(PUSHX).put(2).opcode(SWAPN)) shouldBe stack(data(55), data(34), data(3), data(2))
+    exec(program.opcode(PUSHX).put(3).opcode(SWAPN)) shouldBe stack(data(55), data(3), data(2), data(34))
+    exec(program.opcode(PUSHX).put(4).opcode(SWAPN)) shouldBe stack(data(3), data(34), data(2), data(55))
+
+  }
+
 
   "SLICE command" should  "slice top word" in {
     val program = prog.opcode(PUSHX).put(bytes(13, 17, 43, 53)).opcode(SLICE).put(1).put(3)

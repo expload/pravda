@@ -143,9 +143,22 @@ object Vm {
           memory.push(x)
           memory.push(x)
           aux()
+        case DUPN =>
+          val n = dataToInt32(memory.pop())
+          memory.push(memory.stack(memory.stack.length - n))
+          aux()
         case SWAP =>
           val fsti = memory.stack.length - 1
           val sndi = fsti - 1
+          val fst = memory.stack(fsti)
+          val snd = memory.stack(sndi)
+          memory.stack(fsti) = snd
+          memory.stack(sndi) = fst
+          aux()
+        case SWAPN =>
+          val n = dataToInt32(memory.pop())
+          val fsti = memory.stack.length - 1
+          val sndi = memory.stack.length - n
           val fst = memory.stack(fsti)
           val snd = memory.stack(sndi)
           memory.stack(fsti) = snd
