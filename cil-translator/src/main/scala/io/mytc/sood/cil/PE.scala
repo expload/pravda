@@ -75,7 +75,6 @@ object PE {
                             blobHeap: Bytes,
                             tableNumbers: Seq[Int],
                             tables: TablesInfo)
-
     final case class Pe(peHeader: PeHeader,
                         cliHeader: CliHeader,
                         metadataRoot: MetadataRoot,
