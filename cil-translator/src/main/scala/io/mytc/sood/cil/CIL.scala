@@ -291,6 +291,11 @@ object CIL {
   final case class Unbox(valueType: Token) extends OpCode
   final case class UnboxAny(typeToken: Token) extends OpCode
 
+  // Syntetic OpCodes used when translating CIL to assembler
+  final case class Jump(name: String) extends OpCode
+  final case class JumpI(name: String) extends OpCode
+  final case class Label(name: String) extends OpCode
+
   private def opCode[T](t: T): P[Validated[T]] = PassWith(validated(t))
   private def opCodeWithUInt8[T](convert: Short => T): P[Validated[T]] = P(UInt8).map(convert.andThen(validated))
   private def opCodeWithInt8[T](convert: Byte => T): P[Validated[T]] = P(Int8).map(convert.andThen(validated))

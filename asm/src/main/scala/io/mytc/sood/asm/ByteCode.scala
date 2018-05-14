@@ -37,16 +37,16 @@ class ByteCode {
                          (Op.Stop, offset)
                          }
 
-      case Op.Jump     ⇒ {
+      case Op.Jump(n)  ⇒ {
                          val offset = code.size
                          code += VM.JUMP
-                         (Op.Jump, offset)
+                         (Op.Jump(n), offset)
                          }
 
-      case Op.JumpI    ⇒ {
+      case Op.JumpI(n) ⇒ {
                          val offset = code.size
                          code += VM.JUMPI
-                         (Op.JumpI, offset)
+                         (Op.JumpI(n), offset)
                          }
 
       case Op.Pop      ⇒ {
@@ -109,6 +109,18 @@ class ByteCode {
                          (Op.I32Mod, offset)
                          }
 
+      case Op.I32LT    ⇒ {
+                         val offset = code.size
+                         code += VM.I32LT
+                         (Op.I32LT, offset)
+                         }
+
+      case Op.I32GT    ⇒ {
+                         val offset = code.size
+                         code += VM.I32GT
+                         (Op.I32GT, offset)
+                         }
+
       case Op.FAdd   ⇒ {
                          val offset = code.size
                          code += VM.FADD
@@ -168,6 +180,18 @@ class ByteCode {
                            }
                          }
 
+      case Op.Jump(n)  ⇒ {
+                         code += VM.PUSHX
+                         code ++= vm.int32ToWord(offset(n))
+                         code += VM.JUMP
+                         }
+
+      case Op.JumpI(n) ⇒ {
+                         code += VM.PUSHX
+                         code ++= vm.int32ToWord(offset(n))
+                         code += VM.JUMPI
+                         }
+
       case Op.Call(n)  ⇒ {
                          code += VM.PUSHX
                          code ++= vm.int32ToWord(offset(n))
@@ -181,8 +205,6 @@ class ByteCode {
 
       case Op.Label(n) ⇒ {}
       case Op.Stop     ⇒ code += VM.STOP
-      case Op.Jump     ⇒ code += VM.JUMP
-      case Op.JumpI    ⇒ code += VM.JUMPI
       case Op.Pop      ⇒ code += VM.POP
       case Op.Dup      ⇒ code += VM.DUP
       case Op.Swap     ⇒ code += VM.SWAP
@@ -193,6 +215,8 @@ class ByteCode {
       case Op.I32Mul   ⇒ code += VM.I32MUL
       case Op.I32Div   ⇒ code += VM.I32DIV
       case Op.I32Mod   ⇒ code += VM.I32MOD
+      case Op.I32LT    ⇒ code += VM.I32LT
+      case Op.I32GT    ⇒ code += VM.I32GT
       case Op.FAdd     ⇒ code += VM.FADD
       case Op.FMul     ⇒ code += VM.FMUL
       case Op.FDiv     ⇒ code += VM.FDIV
@@ -217,8 +241,8 @@ class ByteCode {
         case VM.PUSHX    ⇒ obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
         case VM.CALL     ⇒ obuf += ((pos, Op.Call("")))
         case VM.STOP     ⇒ obuf += ((pos, Op.Stop    ))
-        case VM.JUMP     ⇒ obuf += ((pos, Op.Jump    ))
-        case VM.JUMPI    ⇒ obuf += ((pos, Op.JumpI   ))
+        case VM.JUMP     ⇒ obuf += ((pos, Op.Jump("") ))
+        case VM.JUMPI    ⇒ obuf += ((pos, Op.JumpI("") ))
         case VM.POP      ⇒ obuf += ((pos, Op.Pop     ))
         case VM.DUP      ⇒ obuf += ((pos, Op.Dup     ))
         case VM.SWAP     ⇒ obuf += ((pos, Op.Swap    ))
@@ -229,6 +253,8 @@ class ByteCode {
         case VM.I32MUL   ⇒ obuf += ((pos, Op.I32Mul  ))
         case VM.I32DIV   ⇒ obuf += ((pos, Op.I32Div  ))
         case VM.I32MOD   ⇒ obuf += ((pos, Op.I32Mod  ))
+        case VM.I32LT    ⇒ obuf += ((pos, Op.I32LT   ))
+        case VM.I32GT    ⇒ obuf += ((pos, Op.I32GT   ))
         case VM.FADD     ⇒ obuf += ((pos, Op.FAdd    ))
         case VM.FMUL     ⇒ obuf += ((pos, Op.FMul    ))
         case VM.FDIV     ⇒ obuf += ((pos, Op.FDiv    ))

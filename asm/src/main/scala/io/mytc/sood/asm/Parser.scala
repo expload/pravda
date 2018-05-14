@@ -30,8 +30,8 @@ class Parser {
     val label = P( "@" ~ ident.! ~ ":" )
 
     val stop  = P( IgnoreCase("stp") )
-    val jump  = P( IgnoreCase("jmp") )
-    val jumpi = P( IgnoreCase("jmpi") )
+    val jump  = P( IgnoreCase("jmp") ~ delim ~ "@" ~ ident.! )
+    val jumpi = P( IgnoreCase("jmpi") ~ delim ~ "@" ~ ident.! )
 
     val pop   = P( IgnoreCase("pop") )
     val push  = P( IgnoreCase("push") ~ delim ~ ( integ | numbr ) )
@@ -49,18 +49,21 @@ class Parser {
     val div   = P( IgnoreCase("div") )
     val mod   = P( IgnoreCase("mod") )
 
+    val clt   = P( IgnoreCase("clt") )
+    val cgt   = P( IgnoreCase("cgt") )
+
     val fadd   = P( IgnoreCase("fadd") )
     val fmul   = P( IgnoreCase("fmul") )
     val fdiv   = P( IgnoreCase("fdiv") )
     val fmod   = P( IgnoreCase("fmod") )
 
-    val lcall  = P( IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue) )
+    val lcall  = P( IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ word.map(_.intValue) )
 
     val opseq: P[Seq[Op]] = P( (
       label   .map(n ⇒ Op.Label(n)) |
       stop  .!.map(_ ⇒ Op.Stop)     |
-      jump  .!.map(_ ⇒ Op.Jump)     |
-      jumpi .!.map(_ ⇒ Op.JumpI)    |
+      jump    .map(n ⇒ Op.Jump(n))  |
+      jumpi   .map(n ⇒ Op.JumpI(n)) |
 
       pop   .!.map(_ ⇒ Op.Pop)      |
       push    .map(x ⇒ Op.Push(x))  |
@@ -77,6 +80,9 @@ class Parser {
       mul   .!.map(_ ⇒ Op.I32Mul)   |
       div   .!.map(_ ⇒ Op.I32Div)   |
       mod   .!.map(_ ⇒ Op.I32Mod)   |
+
+      clt   .!.map(_ ⇒ Op.I32LT)    |
+      cgt   .!.map(_ ⇒ Op.I32GT)    |
 
       fadd  .!.map(_ ⇒ Op.FAdd)     |
       fmul  .!.map(_ ⇒ Op.FMul)     |

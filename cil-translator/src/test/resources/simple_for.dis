@@ -1,0 +1,79 @@
+.assembly extern mscorlib
+{
+  .ver 4:0:0:0
+  .publickeytoken = (B7 7A 5C 56 19 34 E0 89 ) // .z\V.4..
+}
+.assembly 'simple_for'
+{
+  .custom instance void class [mscorlib]System.Runtime.CompilerServices.CompilationRelaxationsAttribute::'.ctor'(int32) =  (01 00 08 00 00 00 00 00 ) // ........
+
+  .custom instance void class [mscorlib]System.Runtime.CompilerServices.RuntimeCompatibilityAttribute::'.ctor'() =  (
+		01 00 01 00 54 02 16 57 72 61 70 4E 6F 6E 45 78   // ....T..WrapNonEx
+		63 65 70 74 69 6F 6E 54 68 72 6F 77 73 01       ) // ceptionThrows.
+
+  .custom instance void class [mscorlib]System.Diagnostics.DebuggableAttribute::'.ctor'(valuetype [mscorlib]System.Diagnostics.DebuggableAttribute/DebuggingModes) =  (01 00 07 01 00 00 00 00 ) // ........
+
+  .hash algorithm 0x00008004
+  .ver  0:0:0:0
+}
+.module simple_for.exe // GUID = {A95C5C73-8FFA-4162-ADA3-55E64B9AB7C0}
+
+
+  .class public auto ansi beforefieldinit Program
+  	extends [mscorlib]System.Object
+  {
+
+    // method line 1
+    .method public static hidebysig 
+           default void Main ()  cil managed 
+    {
+        // Method begins at RVA 0x2050
+	.entrypoint
+	// Code size 27 (0x1b)
+	.maxstack 2
+	.locals init (
+		int32	V_0,
+		int32	V_1,
+		bool	V_2)
+	IL_0000:  nop 
+	IL_0001:  ldc.i4.0 
+	IL_0002:  stloc.0 
+	IL_0003:  ldc.i4.0 
+	IL_0004:  stloc.1 
+	IL_0005:  br.s IL_0011
+
+	IL_0007:  nop 
+	IL_0008:  ldloc.0 
+	IL_0009:  ldloc.1 
+	IL_000a:  add 
+	IL_000b:  stloc.0 
+	IL_000c:  nop 
+	IL_000d:  ldloc.1 
+	IL_000e:  ldc.i4.1 
+	IL_000f:  add 
+	IL_0010:  stloc.1 
+	IL_0011:  ldloc.1 
+	IL_0012:  ldc.i4.s 0x0a
+	IL_0014:  clt 
+	IL_0016:  stloc.2 
+	IL_0017:  ldloc.2 
+	IL_0018:  brtrue.s IL_0007
+
+	IL_001a:  ret 
+    } // end of method Program::Main
+
+    // method line 2
+    .method public hidebysig specialname rtspecialname 
+           instance default void '.ctor' ()  cil managed 
+    {
+        // Method begins at RVA 0x2077
+	// Code size 8 (0x8)
+	.maxstack 8
+	IL_0000:  ldarg.0 
+	IL_0001:  call instance void object::'.ctor'()
+	IL_0006:  nop 
+	IL_0007:  ret 
+    } // end of method Program::.ctor
+
+  } // end of class Program
+

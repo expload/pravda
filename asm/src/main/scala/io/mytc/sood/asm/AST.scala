@@ -20,8 +20,8 @@ object Op {
 
   case class  Label(name: String) extends Op// { override def toString = "@" + name + ":" }
   case object Stop                extends Op// { override def toString = "stop" }
-  case object Jump                extends Op// { override def toString = "jmp" }
-  case object JumpI               extends Op// { override def toString = "jmpi" }
+  case class  Jump(name: String)  extends Op { override def toString = "jmp @" + name }
+  case class  JumpI(name: String) extends Op { override def toString = "jmpi @" + name }
 //
   case object Pop                 extends Op// { override def toString = "pop" }
   case class  Push(d: Datum)      extends Op// { override def toString = "push " + d.toString }
@@ -42,6 +42,9 @@ object Op {
   case object FMul                extends Op// { override def toString = "fmul" }
   case object FDiv                extends Op// { override def toString = "fdiv" }
   case object FMod                extends Op// { override def toString = "fmod" }
+
+  case object I32LT               extends Op { override def toString = "i32lt" }
+  case object I32GT               extends Op { override def toString = "i32gt" }
 //
   case object Nop                 extends Op// { override def toString = "nop" }
 
