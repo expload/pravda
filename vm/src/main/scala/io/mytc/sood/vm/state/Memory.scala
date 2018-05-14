@@ -5,7 +5,7 @@ import io.mytc.sood.vm.state.VmError.StackUnderflow
 
 import scala.collection.mutable.ArrayBuffer
 
-case class Memory(
+final case class Memory(
     stack: ArrayBuffer[Data],
     heap: ArrayBuffer[Data]
 ) {

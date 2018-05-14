@@ -8,7 +8,7 @@ import io.mytc.sood.vm.state.{VmError, VmErrorException, WorldState}
 
 class ErrorSpec extends FlatSpec with Matchers {
 
-  case class ErrorTestWithState(program: Program, state: WorldState) {
+  final case class ErrorTestWithState(program: Program, state: WorldState) {
     def shouldOccurError(error: VmError): Unit = {
       an [VmErrorException] should be thrownBy exec(program, state)
       val thrown = the [VmErrorException] thrownBy exec(program, state)

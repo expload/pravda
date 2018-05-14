@@ -9,56 +9,56 @@ import io.mytc.sood.cil.utils._
 //   page 303
 object PE {
   object Info {
-    case class PeFileHeader(sectionNumber: Int,
-                            optionHeaderSize: Int /*probably non necessary*/,
-                            characteristics: Short)
-    case class PeHeaderStandardFields(codeSize: Long,
-                                      initDataSize: Long,
-                                      uninitDataSize: Long,
-                                      entryRva: Long,
-                                      codeRva: Long,
-                                      dataRva: Long)
-    case class NtSpecificFields(imageBase: Long, sectionAligment: Long, imageSize: Long, headerSize: Long)
-    case class PeHeaderDataDirectories(importTableRva: Long,
-                                       importTableSize: Long,
-                                       baseRelocationTableRva: Long,
-                                       baseRelocationBaseSize: Long,
-                                       importAddressTableRva: Long,
-                                       importAddressTableSize: Long,
-                                       cliHeaderRva: Long,
-                                       cliHeaderSize: Long)
-    case class SectionHeader(name: String,
-                             virtualSize: Long,
-                             virtualAddress: Long,
-                             sizeOfRawData: Long,
-                             pointerToRawData: Long,
-                             characteristics: Int)
+    final case class PeFileHeader(sectionNumber: Int,
+                                  optionHeaderSize: Int /*probably non necessary*/,
+                                  characteristics: Short)
+    final case class PeHeaderStandardFields(codeSize: Long,
+                                            initDataSize: Long,
+                                            uninitDataSize: Long,
+                                            entryRva: Long,
+                                            codeRva: Long,
+                                            dataRva: Long)
+    final case class NtSpecificFields(imageBase: Long, sectionAligment: Long, imageSize: Long, headerSize: Long)
+    final case class PeHeaderDataDirectories(importTableRva: Long,
+                                             importTableSize: Long,
+                                             baseRelocationTableRva: Long,
+                                             baseRelocationBaseSize: Long,
+                                             importAddressTableRva: Long,
+                                             importAddressTableSize: Long,
+                                             cliHeaderRva: Long,
+                                             cliHeaderSize: Long)
+    final case class SectionHeader(name: String,
+                                   virtualSize: Long,
+                                   virtualAddress: Long,
+                                   sizeOfRawData: Long,
+                                   pointerToRawData: Long,
+                                   characteristics: Int)
 
-    case class CliHeader(cb: Long,
-                         majorRuntimeVersion: Int,
-                         minorRuntimeVersion: Int,
-                         metadataRva: Long,
-                         metadataSize: Long,
-                         flags: Int,
-                         entryPointToken: Int,
-                         resourcesRva: Long,
-                         resourcesSize: Long,
-                         strongNameSignatureRva: Long,
-                         strongNameSignatureSize: Long,
-                         vTableFixupsRva: Long,
-                         vTableFixupsSize: Long)
+    final case class CliHeader(cb: Long,
+                               majorRuntimeVersion: Int,
+                               minorRuntimeVersion: Int,
+                               metadataRva: Long,
+                               metadataSize: Long,
+                               flags: Int,
+                               entryPointToken: Int,
+                               resourcesRva: Long,
+                               resourcesSize: Long,
+                               strongNameSignatureRva: Long,
+                               strongNameSignatureSize: Long,
+                               vTableFixupsRva: Long,
+                               vTableFixupsSize: Long)
 
-    case class StreamHeader(offset: Long, size: Long, name: String)
+    final case class StreamHeader(offset: Long, size: Long, name: String)
 
-    case class TildeStream(heapSizes: Byte, tableNumbers: Seq[Int], sorted: Long, tables: TablesInfo)
+    final case class TildeStream(heapSizes: Byte, tableNumbers: Seq[Int], sorted: Long, tables: TablesInfo)
 
-    case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
+    final case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
 
-    case class PeHeader(peFileHeader: PeFileHeader,
-                        peHeaderStandardFields: PeHeaderStandardFields,
-                        ntSpecificFields: NtSpecificFields,
-                        peHeaderDataDirectories: PeHeaderDataDirectories,
-                        sectionHeaders: Seq[SectionHeader])
+    final case class PeHeader(peFileHeader: PeFileHeader,
+                              peHeaderStandardFields: PeHeaderStandardFields,
+                              ntSpecificFields: NtSpecificFields,
+                              peHeaderDataDirectories: PeHeaderDataDirectories,
+                              sectionHeaders: Seq[SectionHeader])
 
     sealed trait MethodHeader {
       val codeBytes: Bytes
