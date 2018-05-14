@@ -149,7 +149,7 @@ lazy val veche = (project in file("veche"))
 		),
 		scalacOptions ++= Seq(
 		  "-Xmacro-settings:materialize-derivations"
-		//  , "-Ypartial-unification"
+		  , "-Ypartial-unification"
 		//  , "-Xlog-implicits"
 		),
 		addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
