@@ -12,9 +12,9 @@ object blockchain {
   }
 
   object Transaction {
-    case class UnsignedTransaction(from: Address, data: TransactionData, fee: Mytc) extends Transaction
-    case class SignedTransaction(from: Address, data: TransactionData, signature: ByteString, fee: Mytc) extends Transaction
-    case class AuthorizedTransaction(from: Address, data: TransactionData, signature: ByteString, fee: Mytc) extends Transaction
+    final case class UnsignedTransaction(from: Address, data: TransactionData, fee: Mytc) extends Transaction
+    final case class SignedTransaction(from: Address, data: TransactionData, signature: ByteString, fee: Mytc) extends Transaction
+    final case class AuthorizedTransaction(from: Address, data: TransactionData, signature: ByteString, fee: Mytc) extends Transaction
   }
 
   sealed trait TransactionData
@@ -29,7 +29,7 @@ object blockchain {
       * The transaction can be applied only in
       * the first block.
       */
-    case class Distribution(accounts: List[(Address, Mytc)]) extends TransactionData
+    final case class Distribution(accounts: List[(Address, Mytc)]) extends TransactionData
 
   }
 

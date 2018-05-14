@@ -37,6 +37,6 @@ object common {
     val default = NodeSettings()
   }
 
-  case class NodeSettings()
+  final case class NodeSettings()
 
 }

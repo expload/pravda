@@ -130,11 +130,15 @@ class DB (
   }
   // def transaction(oprations: Operation*) = batch(oprations:_*)
   def deleteDiff(key: Array[Byte], cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
-    def prevValue = cache.get(bArr(key)).map {
-      case Operation.Put(_, v) => v
-      case Operation.Delete(_) => null
-    }.getOrElse(db.get(key))
-    Option(prevValue)
+    def prevValue = cache
+      .get(bArr(key))
+      .map {
+        case Operation.Put(_, v) => Some(v)
+        case Operation.Delete(_) => None
+      }
+      .getOrElse(Option(db.get(key)))
+
+    prevValue
       .map(hashPair(key, _))
       .getOrElse(zeroHash)
   }
@@ -150,11 +154,13 @@ class DB (
   }
 
   def putDiff(key: Array[Byte], value: Array[Byte], cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
-    def prevValue = cache.get(bArr(key)).map {
-      case Operation.Put(_, v) => v
-      case Operation.Delete(_) => null
-    }.getOrElse(db.get(key))
-    val prevHash = Option(prevValue)
+    def prevValue = cache
+      .get(bArr(key)).map {
+        case Operation.Put(_, v) => Some(v)
+        case Operation.Delete(_) => None
+      }
+      .getOrElse(Option(db.get(key)))
+    val prevHash = prevValue
       .map(hashPair(key, _))
       .getOrElse(zeroHash)
     val newHash = hashPair(key, value)
@@ -172,10 +178,12 @@ class DB (
     putBytes(keyBytes, valueBytes)
   }
   def put[K](key: K)(implicit keyWriter: KeyWriter[K]): Future[Unit] = {
+    // scalafix:off DisableSyntax.keywords.null
     put(key, null)(keyWriter, ValueWriter.nullWriter)
+    // scalafix:on DisableSyntax.keywords.null
   }
 
-  case class Result(bytes: Array[Byte]) {
+  final case class Result(bytes: Array[Byte]) {
     def as[V](implicit valueReader: ValueReader[V]): V = valueReader.fromBytes(bytes)
   }
 
@@ -229,11 +237,14 @@ class DB (
   }
 
   def incDiff(key: Array[Byte], cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
-    val prevValue = cache.get(bArr(key)).map {
-      case Operation.Put(_, v) => v
-      case Operation.Delete(_) => null
-    }.getOrElse(db.get(key))
-    val prevValueOpt = Option(prevValue)
+    val prevValue = cache
+      .get(bArr(key))
+      .map {
+        case Operation.Put(_, v) => Some(v)
+        case Operation.Delete(_) => None
+      }
+      .getOrElse(Option(db.get(key)))
+    val prevValueOpt = prevValue
     val prevHash = prevValueOpt
       .map(hashPair(key, _))
       .getOrElse(zeroHash)

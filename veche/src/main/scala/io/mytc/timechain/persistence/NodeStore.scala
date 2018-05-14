@@ -16,7 +16,7 @@ class NodeStore(path: String) {
 
   type FOpt[A] = Future[Option[A]]
 
-  private implicit val db = DB(path)
+  private implicit val db: DB = DB(path)
 
   private val walletEntry = Entry[String, Wallet]("wallet")
 

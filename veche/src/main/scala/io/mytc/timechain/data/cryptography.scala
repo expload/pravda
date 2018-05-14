@@ -26,13 +26,13 @@ object cryptography {
   }
   type PrivateKey = PrivateKey.Type
 
-  case class EncryptedPrivateKey(
+  final case class EncryptedPrivateKey(
     keyEncryptedData: ByteString,
     keyIv: ByteString,
     keySalt: ByteString
   )
 
-  case class SecurePasswordHash(
+  final case class SecurePasswordHash(
     passwordAlgorithm: String,
     passwordIterations: Int,
     passwordSalt: ByteString,

@@ -109,6 +109,7 @@ package object utils {
     else (x + 0x57).toChar
   }
 
+  // scalafix:off DisableSyntax.keywords.null
   private def getHexInputStream: HexInputStream = {
     var his = hexHexInputStream.get()
     if (his == null) {
@@ -117,5 +118,6 @@ package object utils {
     }
     his
   }
+  // scalafix:on DisableSyntax.keywords.null
 
 }

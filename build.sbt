@@ -13,7 +13,8 @@ val commonSettings = Seq(
     "-Xfatal-warnings",
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen",
-    "-Ywarn-unused-import"
+    "-Ywarn-unused-import",
+    "-unchecked"
   )
 ) ++ scalafixSettings
 

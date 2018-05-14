@@ -67,7 +67,7 @@ class GuiRoute(implicit system: ActorSystem,
 
 object GuiRoute {
 
-  case class GuiState(
+  final case class GuiState(
  )
 
   val globalContext: Context[Future, GuiState, Any] =

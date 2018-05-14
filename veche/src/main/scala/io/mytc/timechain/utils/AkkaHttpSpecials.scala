@@ -51,7 +51,7 @@ object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
       }
     }
 
-  case class OpenedWallet(wallet: Wallet, privateKey: PrivateKey)
+  final case class OpenedWallet(wallet: Wallet, privateKey: PrivateKey)
 
   /** Custom directive for wallet decryption */
   def authenticateWalletAsync(realm: String)(implicit nodeStore: NodeStore): AuthenticationDirective[OpenedWallet] =

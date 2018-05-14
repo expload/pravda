@@ -5,7 +5,7 @@ import java.io.File
 import io.mytc.timechain.data.common.Address
 import io.mytc.timechain.data.cryptography.PrivateKey
 
-case class TimechainConfig(
+final case class TimechainConfig(
   genesis: TimechainConfig.Genesis,
   paymentWallet: TimechainConfig.PaymentWallet,
   isValidator: Boolean,
@@ -16,32 +16,32 @@ case class TimechainConfig(
 )
 
 object TimechainConfig {
-  case class Genesis(
+  final case class Genesis(
     time: String,
     chainId: String,
     appHash: String,
     validators: Seq[GenesisValidator],
     distribution: Boolean
   )
-  case class PaymentWallet(
+  final case class PaymentWallet(
     privateKey: PrivateKey,
     address: Address
   )
 
-  case class GenesisValidator(
+  final case class GenesisValidator(
     publicKey: CryptoKey,
     power: Int,
     name: String
   )
-  case class CryptoKey(
+  final case class CryptoKey(
     `type`: String,
     data: String
   )
-  case class ApiConfig(
+  final case class ApiConfig(
     host: String,
     port: Int
   )
-  case class TendermintConfig(
+  final case class TendermintConfig(
     peerPort: Int,
     rpcPort: Int,
     proxyAppSock: String,

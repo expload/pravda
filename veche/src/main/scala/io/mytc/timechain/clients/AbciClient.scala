@@ -74,10 +74,10 @@ class AbciClient(port: Int)(implicit
 }
 
 object AbciClient {
-  case class TxResult(code: Int, data: String, log: String)
-  case class TxSyncResult(check_tx: TxResult)
-  case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
-  case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)
-  case class RpcAsyncResponse(jsonrpc: String, id: String, result: TxResult)
-  case class RpcCommitResponse(jsonrpc: String, id: String, result: TxCommitResult)
+  final case class TxResult(code: Int, data: String, log: String)
+  final case class TxSyncResult(check_tx: TxResult)
+  final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
+  final case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)
+  final case class RpcAsyncResponse(jsonrpc: String, id: String, result: TxResult)
+  final case class RpcCommitResponse(jsonrpc: String, id: String, result: TxCommitResult)
 }

@@ -10,20 +10,17 @@ sealed trait Operation {
 
 object Operation {
 
-  class Delete(val key: Array[Byte]) extends Operation {
+  final case class Delete(key: Array[Byte]) extends Operation {
     def exec(implicit db: DB): Future[Unit] = db.deleteBytes(key)
   }
 
-  class Put(val key: Array[Byte],val value: Array[Byte]) extends Operation {
+  final case class Put(key: Array[Byte], value: Array[Byte]) extends Operation {
     def exec(implicit db: DB): Future[Unit] = db.putBytes(key, value)
   }
 
   object Delete {
     def apply[K](key: K)(implicit keyWriter: KeyWriter[K]): Delete = {
       new Delete(keyWriter.toBytes(key))
-    }
-    def unapply(del: Delete): Option[Array[Byte]] = {
-      Some(del.key)
     }
   }
 
@@ -33,9 +30,6 @@ object Operation {
     }
     def apply[K](key: K)(implicit keyWriter: KeyWriter[K]): Put = {
       new Put(keyWriter.toBytes(key), Array.empty[Byte])
-    }
-    def unapply(put: Put): Option[Tuple2[Array[Byte], Array[Byte]]] = {
-      Some((put.key, put.value))
     }
   }
 

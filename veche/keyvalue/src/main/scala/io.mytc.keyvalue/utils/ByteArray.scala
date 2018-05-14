@@ -1,6 +1,6 @@
 package io.mytc.keyvalue.utils
 
-case class ByteArray(value: Array[Byte]) extends Ordered[ByteArray] {
+final case class ByteArray(value: Array[Byte]) extends Ordered[ByteArray] {
   override def hashCode(): Int = java.util.Arrays.hashCode(value)
   override def equals(other: Any): Boolean = other match {
     case o: Array[Byte] => java.util.Arrays.equals(value, o)

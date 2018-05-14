@@ -15,14 +15,25 @@ import implicits._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object BlockChainStore {
+
   def apply(path: String) = new BlockChainStore(path)
+
+  final case class BatchState(newHeight: Long,
+                              validators: Vector[Address],
+                              accounts: Map[Address, Account] = Map.empty,
+                              operations: Vector[Operation] = Vector.empty) {
+    def addOperations(ops: Operation*): BatchState = copy(operations = operations ++ ops)
+    def putAccount(account: Account): BatchState = copy(accounts = accounts + (account.address -> account))
+  }
 }
 
 class BlockChainStore(path: String) {
 
+  import BlockChainStore._
+
   type FOpt[A] = Future[Option[A]]
 
-  private implicit val db = DB(path, hashCounter = true)
+  private implicit val db: DB = DB(path, hashCounter = true)
   db.initHash
 
   private val accountEntry = Entry[Address, Account]("account")
@@ -63,16 +74,6 @@ class BlockChainStore(path: String) {
 
   def putBlockChainInfo(blockChainInfo: BlockChainInfo, state: BatchState): BatchState =  {
     state.addOperations(blockChainInfoEntry.putBatch(blockChainInfo))
-  }
-
-  case class BatchState(
-    newHeight: Long,
-    validators: Vector[Address],
-    accounts: Map[Address, Account] = Map.empty,
-    operations: Vector[Operation] = Vector.empty
-  ) {
-    def addOperations(ops: Operation*): BatchState = copy(operations = operations ++ ops)
-    def putAccount(account: Account): BatchState = copy(accounts = accounts + (account.address -> account))
   }
 
   def appHash: ByteString = {
