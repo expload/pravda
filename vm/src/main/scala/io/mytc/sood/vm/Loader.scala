@@ -1,9 +1,9 @@
 package io.mytc.sood.vm
 
-import state.{Address, WorldState}
+import state.{Address, Environment}
 
 trait Loader {
 
-  def lib(address: Address, worldState: WorldState): Option[Library]
+  def lib(address: Address, worldState: Environment): Option[Library]
 
 }

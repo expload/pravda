@@ -19,7 +19,7 @@ class CallSpec extends FlatSpec with Matchers {
     val prog2 = prog.opcode(PUSHX).put(222)
     val sum = prog.opcode(I32ADD)
 
-    val wState = worldState(address1 -> prog1, address2 -> prog2, address3 -> sum)
+    val wState = environment(address1 -> prog1, address2 -> prog2, address3 -> sum)
 
     val programA1 = prog.opcode(PCALL).put(address1).put(0)
     exec(programA1, wState) shouldBe stack(data(111))

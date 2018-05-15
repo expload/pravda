@@ -4,7 +4,7 @@ package udf
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import state.{Address, WorldState}
+import state.{Address, Environment}
 
 import scala.collection.mutable
 
@@ -22,9 +22,9 @@ object Loader extends Loader {
     table
   }
 
-  override def lib(address: Address, worldState: WorldState): Option[Library] = {
-    worldState.get(address).flatMap { acc =>
-      val program = acc.program
+  override def lib(address: Address, worldState: Environment): Option[Library] = {
+    worldState.getProgram(address).flatMap { acc =>
+      val program = acc.code
       program.rewind()
 
       if (program.get() == Opcodes.FTBL) {

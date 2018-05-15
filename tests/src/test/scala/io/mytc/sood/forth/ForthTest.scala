@@ -1,7 +1,7 @@
 package io.mytc.sood.forth
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm.state.{AccountState, Address, WorldState}
+import io.mytc.sood.vm.state.{Program, Address, Environment}
 import org.scalatest._
 
 
@@ -29,11 +29,11 @@ class ForthTest extends FlatSpec with Matchers {
     Compiler().compile(code, useStdLib=true) match {
       case Left(err)   ⇒ Left(err)
       case Right(code) ⇒
-        val emptyState = new WorldState {
-          override def get(address: Address): Option[AccountState] = None
+        val emptyState = new Environment {
+          override def getProgram(address: Address): Option[Program] = None
         }
-        val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
-        Right(stack.map(x => StackItem.intStackItem(x)).toList)
+        val stack = Vm.runRaw(ByteString.copyFrom(code), ByteString.EMPTY, emptyState).stack
+        Right(stack.map(x => StackItem.intStackItem.get(x)).toList)
         Right(stack.map(stackItem.get).toList)
     }
   }

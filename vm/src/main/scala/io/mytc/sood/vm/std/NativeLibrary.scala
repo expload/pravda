@@ -3,7 +3,7 @@ package std
 
 import com.google.protobuf.ByteString
 
-trait Lib extends Library {
+trait NativeLibrary extends Library {
 
   val address: String
   val functions: Seq[Func]

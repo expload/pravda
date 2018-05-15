@@ -3,7 +3,9 @@ package vm
 
 import java.nio.ByteBuffer
 
-import scala.annotation.{switch, tailrec, strictfp}
+import com.google.protobuf.ByteString
+
+import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
@@ -15,36 +17,41 @@ object Vm {
 
   val loader: Loader = DefaultLoader
 
-  def runTransaction(program: ByteBuffer, worldState: WorldState): Memory = {
-
-    val initMemory = Memory.empty
-    program.rewind()
-    run(program, worldState, initMemory, None, None, 0, isLibrary = false)
-
-  }
+  def runRaw(program: ByteString, executor: Address, environment: Environment): Memory = run(
+    program = ByteBuffer.wrap(program.toByteArray),
+    environment = environment,
+    memory = Memory.empty,
+    executor = executor,
+    progAddress = None,
+    progStorage = None,
+    depth = 0,
+    isLibrary = false
+  )
 
   def runProgram(programAddress: Address,
                  initMemory: Memory = Memory.empty,
-                 worldState: WorldState,
+                 executor: Address,
+                 environment: Environment,
                  depth: Int = 0): Memory = {
 
-    val account = worldState.get(programAddress)
+    val account = environment.getProgram(programAddress)
     if (account.isEmpty) throw VmErrorException(NoSuchProgram)
 
-    val program = account.get.program
+    val program = account.get.code
     program.rewind()
-    run(program, worldState, initMemory, Some(programAddress), Some(account.get.storage), depth, isLibrary = false)
-
+    run(program, environment, initMemory, executor, Some(programAddress), Some(account.get.storage), depth, isLibrary = false)
   }
 
+  // TODO @fomkin: looks like isLibrary and emptiness of storage are the same things.
   private def run(
-      program: ByteBuffer,
-      worldState: WorldState,
-      memory: Memory,
-      execAddress: Option[Address],
-      progStorage: Option[Storage],
-      depth: Int,
-      isLibrary: Boolean
+                   program: ByteBuffer,
+                   environment: Environment,
+                   memory: Memory,
+                   executor: Address,
+                   progAddress: Option[Address],
+                   progStorage: Option[Storage],
+                   depth: Int,
+                   isLibrary: Boolean
   ): Memory = {
 
     lazy val storage = {
@@ -88,7 +95,7 @@ object Vm {
             }
             val address = wordToData(program)
             val num = wordToInt32(program)
-            val mem = runProgram(address, memory.top(num), worldState, depth + 1)
+            val mem = runProgram(address, memory.top(num), executor, environment, depth + 1)
             memory ++= mem
             aux()
           case LCALL =>
@@ -97,7 +104,7 @@ object Vm {
             val num = wordToInt32(program)
             val callData = memory.top(num)
 
-            loader.lib(address, worldState) match {
+            loader.lib(address, environment) match {
               case None => throw VmErrorException(NoSuchLibrary)
               case Some(library) =>
                 library.func(func) match {
@@ -106,7 +113,7 @@ object Vm {
                     function match {
                       case f: StdFunction => memory ++= f(callData)
                       case UserDefinedFunction(f) =>
-                        memory ++= run(f, worldState, callData, Some(address), None, depth + 1, isLibrary = true)
+                        memory ++= run(f, environment, callData, executor, Some(address), None, depth + 1, isLibrary = true)
                     }
                 }
             }
@@ -252,9 +259,9 @@ object Vm {
     try {
       aux()
     } catch {
-      case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, execAddress))
+      case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, progAddress))
       case other: Exception =>
-        throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), execAddress))
+        throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), progAddress))
     }
 
   }
