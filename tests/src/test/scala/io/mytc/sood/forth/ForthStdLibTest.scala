@@ -23,6 +23,9 @@ class ForthStdLibTest extends FlatSpec with Matchers {
     implicit val floatStackItem: StackItem[Double] =
       (item: ByteString) => ByteBuffer.wrap(item.toByteArray).getDouble
 
+    implicit val boolStackItem: StackItem[Boolean] =
+      (item: ByteString) => if ((ByteBuffer.wrap(item.toByteArray).get & 0xFF) == 1) true else false
+
   }
 
   def run[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
@@ -77,6 +80,50 @@ class ForthStdLibTest extends FlatSpec with Matchers {
       dup3
     """ ) == Right(
       List(1, 2, 3, 1)
+    ))
+
+  }
+
+  "eq" must "push true if 2 top items are equal" in {
+
+    assert( run[Boolean]( """
+      1 1
+      eq
+    """ ) == Right(
+      List(true)
+    ))
+
+  }
+
+  "eq" must "push false if 2 top items are not equal" in {
+
+    assert( run[Boolean]( """
+      1 2
+      eq
+    """ ) == Right(
+      List(false)
+    ))
+
+  }
+
+  "neq" must "push false if 2 top items are equal" in {
+
+    assert( run[Boolean]( """
+      1 1
+      neq
+    """ ) == Right(
+      List(false)
+    ))
+
+  }
+
+  "neq" must "push true if 2 top items are not equal" in {
+
+    assert( run[Boolean]( """
+      1 2
+      neq
+    """ ) == Right(
+      List(true)
     ))
 
   }
