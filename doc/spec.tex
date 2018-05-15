@@ -72,6 +72,10 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \hline
 0x07 & LCALL & $0$ & $0$ & Takes three words by which it is followed. They are address $a$, function $f$ and the number of parameters $n$, respectively. Then it executes the function $f$ of the library (which is a special form of smart contract) with the address $a$ and passes there only $n$ top elements of the stack. \\
 \hline
+0x08 & PCREATE & $1$ & $1$ & Takes bytecode of a new program, put's it to state and returns programm address \\
+\hline
+0x09 & PUPDATE & $2$ & $0$ & Takes address of a program and new bytecode. Replaces bytecode in storage. This opcode can be performed only from owner of the program \\
+\hline
 
 \end{tabularx}
 

@@ -93,10 +93,22 @@ object Vm {
             if (isLibrary) {
               throw VmErrorException(OperationDenied)
             }
+            // FIXME this values can be produced my runtime
             val address = wordToData(program)
             val num = wordToInt32(program)
             val mem = runProgram(address, memory.top(num), executor, environment, depth + 1)
             memory ++= mem
+            aux()
+          case PCREATE =>
+            memory.push(environment.createProgram(executor, memory.pop()))
+            aux()
+          case PUPDATE =>
+            val address = memory.pop()
+            val code = memory.pop()
+            if (address != executor) {
+              throw VmErrorException(OperationDenied)
+            }
+            environment.updateProgram(address, code)
             aux()
           case LCALL =>
             val address = wordToData(program)
