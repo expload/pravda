@@ -33,7 +33,6 @@ class ForthTest extends FlatSpec with Matchers {
           override def get(address: Address): Option[AccountState] = None
         }
         val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
-        Right(stack.map(x => StackItem.intStackItem(x)).toList)
         Right(stack.map(stackItem.get).toList)
     }
   }

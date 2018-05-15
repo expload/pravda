@@ -43,8 +43,9 @@ object Op {
   case object FDiv extends Op // { override def toString = "fdiv" }
   case object FMod extends Op // { override def toString = "fmod" }
 
-  case object I32LT extends Op { override def toString = "i32lt" }
-  case object I32GT extends Op { override def toString = "i32gt" }
+  case object Not extends Op
+  case object I32LT extends Op
+  case object I32GT extends Op
 //
   case object Nop extends Op // { override def toString = "nop" }
 

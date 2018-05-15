@@ -95,4 +95,25 @@ class TranslatorTest extends FlatSpec with Matchers {
     )
   }
 
+  it must "translate ifs" in {
+    val t = Translator()
+    assert(
+      t.translate(Seq(
+        Dword("seq", Seq(Ident("nop"))),
+        If(pos = Seq(Ident("nop"), Ident("nop")), neg = Seq())
+      )) ==
+      Seq(
+        Op.Not,
+        Op.JumpI(t.mangleIf(t.mainName, 0)),
+        Op.Call("nop"),
+        Op.Call("nop"),
+        Op.Label(t.mangleIf(t.mainName, 0)),
+        Op.Stop,
+        Op.Label("seq"),
+        Op.Call("nop"),
+        Op.Ret
+      )
+    )
+  }
+
 }

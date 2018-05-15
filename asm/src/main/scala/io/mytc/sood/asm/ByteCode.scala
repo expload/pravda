@@ -121,6 +121,12 @@ class ByteCode {
           (Op.I32GT, offset)
         }
 
+        case Op.Not ⇒ {
+          val offset = code.size
+          code += VM.NOT
+          (Op.Not, offset)
+        }
+
         case Op.FAdd ⇒ {
           val offset = code.size
           code += VM.FADD
@@ -219,6 +225,7 @@ class ByteCode {
       case Op.I32Mod   ⇒ code += VM.I32MOD
       case Op.I32LT    ⇒ code += VM.I32LT
       case Op.I32GT    ⇒ code += VM.I32GT
+      case Op.Not      ⇒ code += VM.NOT
       case Op.FAdd     ⇒ code += VM.FADD
       case Op.FMul     ⇒ code += VM.FMUL
       case Op.FDiv     ⇒ code += VM.FDIV
