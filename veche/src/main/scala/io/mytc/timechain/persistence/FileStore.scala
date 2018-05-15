@@ -5,7 +5,7 @@ package persistence
 import java.io.{File, PrintWriter}
 
 import io.mytc.timechain.data.TimechainConfig
-import io.mytc.timechain.data.common.NodeSettings
+import io.mytc.timechain.data.common.ApplicationStateInfo
 import io.mytc.timechain.data.serialization._
 import io.mytc.timechain.data.serialization.json._
 
@@ -17,22 +17,22 @@ object FileStore {
 
   import Config._
 
-  private lazy val nodeSettingsFile = new File(timeChainConfig.dataDirectory, "node-settings.json")
+  private lazy val applicationStateInfoFile = new File(timeChainConfig.dataDirectory, "application-state-info.json")
 
-  def readNodeSettingsAsync() = Future(readNodeSettings())
+  def readApplicationStateInfoAsync() = Future(readApplicationStateInfo())
 
-  def readNodeSettings(): Option[NodeSettings] = {
-    if (nodeSettingsFile.exists()) {
-      Some(transcode(Json @@ Source.fromFile(nodeSettingsFile).mkString).to[NodeSettings])
+  def readApplicationStateInfo(): Option[ApplicationStateInfo] = {
+    if (applicationStateInfoFile.exists()) {
+      Some(transcode(Json @@ Source.fromFile(applicationStateInfoFile).mkString).to[ApplicationStateInfo])
     } else {
       None
     }
   }
 
-  def updateNodeSettingsAsync(settings: NodeSettings) = Future(updateNodeSettings(settings))
+  def updateApplicationStateInfoAsync(settings: ApplicationStateInfo) = Future(updateApplicationStateInfo(settings))
 
-  def updateNodeSettings(settings: NodeSettings): Unit = {
-    val pw = new PrintWriter(nodeSettingsFile)
+  def updateApplicationStateInfo(settings: ApplicationStateInfo): Unit = {
+    val pw = new PrintWriter(applicationStateInfoFile)
     try {
       pw.write(transcode(settings).to[Json])
     } finally {

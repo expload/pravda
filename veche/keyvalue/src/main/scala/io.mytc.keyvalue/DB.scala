@@ -15,14 +15,14 @@ import scala.concurrent.Future
 
 object DB {
 
-  def apply(path: String, hashCounter: Boolean = false): DB = {
-    new DB(path, hashCounter)
+  def apply(path: String, initialHash: Option[Array[Byte]]): DB = {
+    new DB(path, initialHash)
   }
 }
 
 class DB(
     path: String,
-    hashCounter: Boolean
+    initialHash: Option[Array[Byte]]
 ) {
 
   private val options = new Options
@@ -66,29 +66,21 @@ class DB(
 
   private def execWithLock[A](keys: Set[ByteArray])(diff: => Array[Byte], op: => A): A = {
     lock(keys) {
-      if (hashCounter) {
-        val d = diff
-        val res = op
-        applyDiff(d)
-        res
-      } else {
-        op
-      }
+      val d = diff
+      val res = op
+      applyDiff(d)
+      res
     }
   }
   private def execWithLock[A](key: ByteArray)(diff: => Array[Byte], op: => A): A = {
     execWithLock(Set(key))(diff, op)
   }
   private def exec[A](keys: Set[ByteArray])(diff: => Array[Byte], op: => A): A = {
-    if (hashCounter) {
-      lock(keys) {
-        val d = diff
-        val res = op
-        applyDiff(d)
-        res
-      }
-    } else {
-      op
+    lock(keys) {
+      val d = diff
+      val res = op
+      applyDiff(d)
+      res
     }
   }
   private def exec[A](key: ByteArray)(diff: => Array[Byte], op: => A): A = {
@@ -111,12 +103,12 @@ class DB(
       ._1
   }
 
-  def batch(operatioins: Operation*): Future[Unit] = Future {
-    val keys = operatioins.map(_.key).map(bArr).toSet
+  def syncBatch(operations: Operation*): Unit = {
+    val keys = operations.map(_.key).map(bArr).toSet
     exec(keys)(
-      batchDiff(operatioins: _*), {
+      batchDiff(operations: _*), {
         tryCloseable(db.createWriteBatch()) { batch =>
-          operatioins.foreach {
+          operations.foreach {
             case Operation.Delete(key) =>
               batch.delete(key)
             case Operation.Put(key, value) =>
@@ -127,6 +119,9 @@ class DB(
       }
     )
   }
+
+  def batch(operations: Operation*): Future[Unit] =
+    Future(syncBatch(operations:_*))
 
   // def transaction(oprations: Operation*) = batch(oprations:_*)
   def deleteDiff(key: Array[Byte], cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
@@ -280,9 +275,9 @@ class DB(
     )
   }
 
-  private var curHash = zeroHash
+  private var curHash = initialHash.getOrElse(zeroHash)
 
-  private def calcHashSync: Array[Byte] = {
+  private def syncCalcHash: Array[Byte] = {
 
     tryCloseable(db.iterator()) { it =>
       it.seekToFirst()
@@ -301,7 +296,7 @@ class DB(
   }
 
   def calcHash: Future[Array[Byte]] = Future {
-    calcHashSync
+    syncCalcHash
   }
 
   def setHash(hash: Array[Byte]): Unit = synchronized {
@@ -309,7 +304,7 @@ class DB(
   }
 
   def initHash(): Unit = synchronized {
-    curHash = calcHashSync
+    curHash = syncCalcHash
   }
   def stateHash: Array[Byte] = synchronized { curHash }
 

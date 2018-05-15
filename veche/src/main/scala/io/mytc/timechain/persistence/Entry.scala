@@ -53,8 +53,8 @@ class Entry[K, V](
 
 object Entry {
 
-  def apply[K, V](prefix: String)(
-      implicit db: DB,
+  def apply[K, V](db: DB, prefix: String)(
+      implicit
       keyWriter: KeyWriter[String :: K :: HNil],
       valueWriter: ValueWriter[V],
       valueReader: ValueReader[V]

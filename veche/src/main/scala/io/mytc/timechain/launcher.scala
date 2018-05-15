@@ -4,13 +4,14 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import io.mytc.keyvalue.DB
 import io.mytc.tendermint.abci.Server
 import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.servers.{Abci, ApiRoute, GuiRoute, HttpServer}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
-import io.mytc.timechain.persistence.{BlockChainStore, NodeStore}
+import io.mytc.timechain.persistence.FileStore
 
 object launcher extends App {
 
@@ -27,12 +28,13 @@ object launcher extends App {
   val bcPath = new File(timeChainConfig.dataDirectory.getAbsolutePath, "bc_data").getAbsolutePath
   val nodePath = new File(timeChainConfig.dataDirectory.getAbsolutePath, "node_data").getAbsolutePath
 
-  private implicit val blockchainStore: BlockChainStore = BlockChainStore(bcPath)
-  private implicit val nodeStore: NodeStore = NodeStore(nodePath)
-
   val abciClient = new AbciClient(timeChainConfig.tendermint.rpcPort)
 
-  val abci = new Abci(abciClient)
+  val applicationStateDb = DB(
+    path = Config.timeChainConfig.dataDirectory.getPath,
+    initialHash = FileStore.readApplicationStateInfo().map(_.appHash.toByteArray)
+  )
+  val abci = new Abci(applicationStateDb, abciClient)
 
   val server = Server(
     cfg = Server.Config(
@@ -65,10 +67,8 @@ object launcher extends App {
     system.terminate()
     println(s"${Console.GREEN} done${Console.RESET}")
 
-    print("Closing blockchain db...")
-    blockchainStore.close()
-    print("Closing node db...")
-    nodeStore.close()
+    print("Closing application state db...")
+    applicationStateDb.close()
   }
 
 }

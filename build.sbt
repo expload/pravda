@@ -181,7 +181,7 @@ lazy val veche = (project in file("veche"))
 		outputStrategy in run := Some(OutputStrategy.StdoutOutput),
 		testFrameworks += new TestFramework("utest.runner.Framework")
 	)
-	.aggregate(keyvalue)
 	.dependsOn(keyvalue)
+	.dependsOn(vm)
 
 

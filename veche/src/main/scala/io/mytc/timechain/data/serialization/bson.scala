@@ -33,6 +33,7 @@ trait BsonTranscoder {
   import bsonpickle.default.{Writer => BsonWriter, Reader => BsonReader}
 
   // Tagged types
+
   implicit def taggedReaderLifter[T: BsonReader, U]: BsonReader[Tagged[T, U]] =
     lifterF[BsonReader].lift[T, U]
 
@@ -40,6 +41,7 @@ trait BsonTranscoder {
     lifterF[BsonWriter].lift[T, U]
 
   // Protobuf
+
   implicit def protoWriter(implicit arrayWriter: BsonWriter[Array[Byte]]): BsonWriter[ByteString] =
     new BsonWriter[ByteString] {
       override def write0: ByteString => BSONValue = { x =>
