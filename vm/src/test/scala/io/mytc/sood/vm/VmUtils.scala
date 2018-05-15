@@ -58,12 +58,12 @@ object VmUtils {
 
   def environment(accs: (Address, ProgramStub)*): Environment = new Environment {
 
-    def account(prog: ProgramStub): Program = new Program {
+    def account(prog: ProgramStub): ProgramContext = new ProgramContext {
       def code: ByteBuffer = prog.buffer
       def storage: Storage = null // scalafix:ok
     }
 
-    override def getProgram(address: Address): Option[Program] = {
+    override def getProgram(address: Address): Option[ProgramContext] = {
       accs.find{_._1 == address}.map {
         case (addr, prog) => account(prog)
       }

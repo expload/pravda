@@ -18,7 +18,7 @@ object BasicUsage {
   implicit val strValueWriter: ValueWriter[String] = (value: String) => ByteWriter.stringWriter.toBytes(value)
   implicit val strValueReader: ValueReader[String] = (value: Array[Byte]) => ByteReader.stringReader.fromBytes(value)
 
-  val db = DB("/tmp/testdb")
+  val db = DB("/tmp/testdb", None)
 
   val f = for {
     _ <- db.put("newkey", "newvalue2")

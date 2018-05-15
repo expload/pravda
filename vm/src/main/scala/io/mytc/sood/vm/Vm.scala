@@ -250,6 +250,9 @@ object Vm {
             val d2 = dataToInt32(memory.pop())
             memory.push(boolToData(d1 > d2))
             aux()
+          case FROM =>
+            memory.push(executor)
+            aux()
           case STOP => memory
         }
       } else {

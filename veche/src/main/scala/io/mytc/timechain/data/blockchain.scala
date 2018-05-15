@@ -8,18 +8,21 @@ object blockchain {
 
   sealed trait Transaction {
     def from: Address
-    def data: TransactionData
+    def program: TransactionData
     def fee: Mytc
 
     def forSignature: (Address, TransactionData, Mytc) =
-      (from, data, fee)
+      (from, program, fee)
   }
 
   object Transaction {
-    final case class UnsignedTransaction(from: Address, data: TransactionData, fee: Mytc) extends Transaction
-    final case class SignedTransaction(from: Address, data: TransactionData, signature: ByteString, fee: Mytc)
+
+    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc) extends Transaction
+
+    final case class SignedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc)
         extends Transaction
-    final case class AuthorizedTransaction(from: Address, data: TransactionData, signature: ByteString, fee: Mytc)
+
+    final case class AuthorizedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc)
         extends Transaction
   }
 

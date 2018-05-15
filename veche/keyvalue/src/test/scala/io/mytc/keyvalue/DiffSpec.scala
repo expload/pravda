@@ -18,20 +18,14 @@ class DiffSpec extends FlatSpec with Matchers {
 
   val path = "test"
 
-  implicit val stringKeyWriter: KeyWriter[String] = new KeyWriter[String] {
-    override def toBytes(value: String): Array[Byte] = ByteWriter.stringWriter.toBytes(value)
-  }
+  implicit val stringKeyWriter: KeyWriter[String] = (value: String) => ByteWriter.stringWriter.toBytes(value)
 
-  implicit val stringWriter: ValueWriter[String] = new ValueWriter[String] {
-    override def toBytes(value: String): Array[Byte] = ByteWriter.stringWriter.toBytes(value)
-  }
-  implicit val stringReader: ValueReader[String] = new ValueReader[String] {
-    override def fromBytes(array: Array[Byte]): String = ByteReader.stringReader.fromBytes(array)
-  }
+  implicit val stringWriter: ValueWriter[String] = (value: String) => ByteWriter.stringWriter.toBytes(value)
 
+  implicit val stringReader: ValueReader[String] = (array: Array[Byte]) => ByteReader.stringReader.fromBytes(array)
 
   def test(body: DB => Unit): Unit = {
-    val db: DB = DB(path, true)
+    val db: DB = DB(path, None)
     try {
       body(db)
     } finally {

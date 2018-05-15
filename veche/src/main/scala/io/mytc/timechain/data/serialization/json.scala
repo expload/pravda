@@ -3,7 +3,7 @@ package io.mytc.timechain.data.serialization
 import com.google.protobuf.ByteString
 import io.mytc.timechain.clients.AbciClient._
 import io.mytc.timechain.data.TimechainConfig
-import io.mytc.timechain.data.common.NodeSettings
+import io.mytc.timechain.data.common.ApplicationStateInfo
 import io.mytc.timechain.utils
 import tethys._
 import tethys.derivation.builder._
@@ -180,11 +180,11 @@ object json {
   // Misc RWs
   //---------------------------------------------------------------------------
 
-  implicit val domainNodeSettingsReader: JsonReader[NodeSettings] =
-    jsonReader[NodeSettings]
+  implicit val domainNodeSettingsReader: JsonReader[ApplicationStateInfo] =
+    jsonReader[ApplicationStateInfo]
 
-  implicit val domainNodeSettingsWriter: JsonWriter[NodeSettings] =
-    jsonWriter[NodeSettings]
+  implicit val domainNodeSettingsWriter: JsonWriter[ApplicationStateInfo] =
+    jsonWriter[ApplicationStateInfo]
 
   //---------------------------------------------------------------------------
   // ABCI

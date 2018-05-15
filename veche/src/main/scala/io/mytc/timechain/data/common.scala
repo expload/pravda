@@ -33,10 +33,5 @@ object common {
   }
   type Address = Address.Type
 
-  object NodeSettings {
-    val default = NodeSettings()
-  }
-
-  final case class NodeSettings()
-
+  final case class ApplicationStateInfo(blockHeight: Long, appHash: ByteString)
 }
