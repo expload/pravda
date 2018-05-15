@@ -62,7 +62,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   }
 
-  "dup2" must "push the 2-nd item of the stack" in {
+  "dup2" must "push the 2nd item of the stack" in {
 
     assert( run[Int]( """
       1 2 3
@@ -73,7 +73,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   }
 
-  "dup3" must "push the 3-nd item of the stack" in {
+  "dup3" must "push the 3rd item of the stack" in {
 
     assert( run[Int]( """
       1 2 3

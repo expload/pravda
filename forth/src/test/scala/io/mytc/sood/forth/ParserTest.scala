@@ -16,12 +16,17 @@ class ParserTest extends FlatSpec with Matchers {
     )))
   }
 
-  "A parser" must "correctly parse floats" in {
+  it should "parse ints correcltly" in {
+    val p = Parser()
+    assert( p.parse("-1 2 3 0") == Right(Seq( Integ(-1), Integ(2), Integ(3), Integ(0))))
+  }
+
+  it must "correctly parse floats" in {
     val p = Parser()
     assert( p.parse("1.0 2.0 3.0") == Right(Seq( Float(1.0), Float(2.0), Float(3.0) )))
   }
 
-  "A parser" must "correctly parse ifs" in {
+  it must "correctly parse ifs" in {
     val p = Parser()
     assert( p.parse("if 1 2 3 then") == Right(Seq(
       If(

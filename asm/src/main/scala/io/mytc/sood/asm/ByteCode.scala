@@ -39,6 +39,8 @@ class ByteCode {
 
         case Op.Jump(n) ⇒ {
           val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.int32ToWord(0)
           code += VM.JUMP
           (Op.Jump(n), offset)
         }
@@ -242,6 +244,7 @@ class ByteCode {
         code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
         code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
         code ++= vm.int32ToWord(argsNum)
+
       case Op.PCall(address, argsNum) =>
         code += VM.PCALL
         code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))

@@ -7,6 +7,7 @@ object StdLib {
 
   def defs: String = { """
   : + add ;
+  : - -1 mul add ;
   : * mul ;
   : / div ;
   : % mod ;
@@ -29,7 +30,10 @@ object StdLib {
       eqls,
       neq,
       not,
-      dup(1), dup(2), dup(3), dup(4), dup(5)
+      dup(1), dup(2), dup(3), dup(4), dup(5),
+      sget,
+      sput,
+      loadData
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -118,4 +122,11 @@ object StdLib {
     Op.Ret
   )
 
+  val loadData: Seq[Op] = Seq(// FIXME temporary stub method before real data in transaction
+    Op.Label("loadData"),
+    Op.Push(Datum.Integral(1)),
+    Op.Push(Datum.Integral(10)),
+    Op.Push(Datum.Rawbytes(Array[Byte](10))),
+    Op.Ret
+  )
 }

@@ -21,9 +21,9 @@ class Parser {
     val blockStmt: P[Seq[Statement]] = P(
       dwordStmt.map { case (n, b) ⇒ Statement.Dword(n, b) } |
         ifStmt.map(b ⇒ Statement.If(b, Seq())) |
-        (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v)) |
         numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
-        integStmt.!.map(v ⇒ Statement.Integ(v.toInt))
+        integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
+        (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
     ).rep(sep = delim)
 
     val forthUnit = P(Start ~ delim.rep ~ blockStmt ~ delim.rep ~ End)
