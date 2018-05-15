@@ -1,11 +1,10 @@
 package io.mytc.sood.forth
 
-import io.mytc.sood.vm.Vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
+import io.mytc.sood.vm.Vm
 import io.mytc.sood.vm.state._
-import io.mytc.sood.vm.serialization._
 
 import scala.collection.mutable
 
@@ -45,13 +44,13 @@ object ForthTestUtils {
     }
   }
 
-  def runProgram[T](code: String)(implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Address, T])] = {
+  def runProgram[T](code: String, storageItems: Seq[(Address, Data)])(implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Address, T])] = {
     val programAddress = ByteString.copyFrom(Array[Byte](1, 2, 3))
 
     Compiler().compile(code, useStdLib = true) match {
       case Left(err) ⇒ Left(err)
       case Right(c) ⇒
-        val programStorageMap = mutable.Map[Address, Data](int32ToAddress(10) -> int32ToData(0))
+        val programStorageMap = mutable.Map[Address, Data](storageItems: _*)
         val programStorage = new Storage {
           override def get(key: Address): Option[Data] = programStorageMap.get(key)
           override def put(key: Address, value: Data): Unit = programStorageMap.put(key, value)
