@@ -157,6 +157,15 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 0x84 & EQ & $2$ & $1$ & Defines whether the top element is equal to the second. \\
 \hline
 
+\subsection{Specials}
+\begin{tabularx}{\textwidth}{ c l c c p{7cm} }
+\textbf{Code} & \textbf{Mnemonic} & \textbf{$\Uparrow$} & \textbf{$\Downarrow$} & \textbf{Description} \\
+\hline
+0xa0 & FROM & $1$ & $0$ & Gives current executor address. \\
+\hline
+0xa1 & HEIGHT & $1$ & $0$ & Gives current block height. \\
+\hline
+
 \end{tabularx}
 
 

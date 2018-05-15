@@ -1,6 +1,7 @@
 package io.mytc.sood.vm
 
 object Opcodes {
+
   // Control
   final val STOP = int.STOP.toByte
   final val JUMP = int.JUMP.toByte
@@ -53,6 +54,9 @@ object Opcodes {
   final val I32GT = int.I32GT.toByte
 
   final val FTBL = int.FTBL.toByte
+
+  // Specials
+  final val FROM = int.FROM.toByte
 
   object int {
     // Control
@@ -108,5 +112,7 @@ object Opcodes {
 
     final val FTBL = 0xfa
 
+    // Specials
+    final val FROM = 0xa0
   }
 }
