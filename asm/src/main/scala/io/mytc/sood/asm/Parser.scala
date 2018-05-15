@@ -63,6 +63,7 @@ class Parser {
 
     val eqls = P(IgnoreCase("eq"))
     val conc = P(IgnoreCase("concat"))
+    val from = P(IgnoreCase("from"))
 
     val lcall = P(IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue))
     val pcall = P(IgnoreCase("pcall") ~ delim ~ hexs.map(_.value) ~ delim ~ integ.map(_.value))
@@ -94,6 +95,7 @@ class Parser {
 
           eqls.!.map(_ ⇒ Op.Eq) |
           conc.!.map(_ ⇒ Op.Concat) |
+          from.!.map(_ ⇒ Op.From) |
 
           fadd.!.map(_ ⇒ Op.FAdd) |
           fmul.!.map(_ ⇒ Op.FMul) |

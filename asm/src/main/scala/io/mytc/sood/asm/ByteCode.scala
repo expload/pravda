@@ -173,6 +173,12 @@ class ByteCode {
           (Op.Dupn, offset)
         }
 
+        case Op.From ⇒ {
+          val offset = code.size
+          code += VM.FROM
+          (Op.From, offset)
+        }
+
         case op @ Op.LCall(address, func, argsNum) =>
           val offset = code.size
           code += VM.PUSHX
@@ -281,6 +287,7 @@ class ByteCode {
       case Op.FMod     ⇒ code += VM.FMOD
       case Op.Dupn     ⇒ code += VM.DUPN
       case Op.Concat   ⇒ code += VM.CONCAT
+      case Op.From     ⇒ code += VM.FROM
       case Op.Nop      ⇒ code += VM.I32MOD
     }
 
@@ -322,6 +329,7 @@ class ByteCode {
         case VM.FMOD   ⇒ obuf += ((pos, Op.FMod))
         case VM.DUPN   ⇒ obuf += ((pos, Op.Dupn))
         case VM.CONCAT ⇒ obuf += ((pos, Op.Concat))
+        case VM.FROM   ⇒ obuf += ((pos, Op.From))
         case VM.PCALL => obuf += ((pos, Op.PCall(wordToBytes(ubuf), wordToInt32(ubuf))))
         case VM.LCALL =>
           obuf += ((pos,

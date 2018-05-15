@@ -32,7 +32,8 @@ object StdLib {
       dup(1), dup(2), dup(3), dup(4), dup(5),
       sget,
       sput,
-      concat
+      concat,
+      from
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -117,6 +118,12 @@ object StdLib {
   val concat: Seq[Op] = Seq(
     Op.Label("concat"),
     Op.Concat,
+    Op.Ret
+  )
+
+  val from: Seq[Op] = Seq(
+    Op.Label("from"),
+    Op.From,
     Op.Ret
   )
 

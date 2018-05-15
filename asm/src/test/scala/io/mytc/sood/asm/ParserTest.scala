@@ -77,6 +77,18 @@ class ParserTest extends FlatSpec with Matchers {
     )
   }
 
+  "A parser" must "correctly parse FROM" in {
+    val p = Parser()
+
+    assert(
+      p.parse( """
+        from
+      """ ) == Right(Seq(
+        Op.From
+      ))
+    )
+  }
+
   "A parse" should "parse lcall op-code correctly" in {
     val p = Parser()
 
