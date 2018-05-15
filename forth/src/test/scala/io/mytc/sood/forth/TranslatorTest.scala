@@ -18,7 +18,7 @@ class TranslatorTest extends FlatSpec with Matchers {
         Ident("add"),
         Ident("pushseq"),
         Dword("pushseq", Seq(Integ(1), Integ(2), Integ(3), Integ(4), Integ(5))),
-        Dword("seq&add", Seq(Integ(1), Integ(2), Integ(3), Ident("add"), Ident("add")))
+        Dword("seq&add", Seq(Integ(1), Integ(2), Integ(3), Ident("add"), Ident("add"))),
       )) ==
       Seq(
         Op.Push(Datum.Integral(1)),
@@ -93,6 +93,19 @@ class TranslatorTest extends FlatSpec with Matchers {
         Op.Ret
       )
     )
+  }
+
+  it must "translate external calls to pcall" in {
+    val t = Translator()
+    val address = Array(0xFF.toByte, 0x0F.toByte)
+    t.translate(Seq(
+      ECall(Array(0xFF.toByte, 0x0F.toByte), 10)
+    )) match {
+      case Op.PCall(a, n) :: Op.Stop :: Nil ⇒
+        assert(a.toList == address.toList)
+        assert(n == 10)
+      case oops ⇒ assert(false)
+    }
   }
 
   it must "translate ifs" in {

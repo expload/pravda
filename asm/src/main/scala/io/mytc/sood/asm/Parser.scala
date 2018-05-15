@@ -17,7 +17,7 @@ class Parser {
     val delim = P(CharIn(" \t\r\n").rep(1))
 
     val hexs = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map{ str ⇒
-      Datum.Rawbytes(str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).asInstanceOf[Byte]).toArray)
+      Datum.Rawbytes(str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).toByte).toArray)
     }
 
     val hexw = P("0x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map(x ⇒ java.lang.Integer.valueOf(x, 16))
@@ -64,6 +64,7 @@ class Parser {
     val eqls = P(IgnoreCase("eq"))
 
     val lcall = P(IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue))
+    val pcall = P(IgnoreCase("pcall") ~ delim ~ hexs.map(_.value) ~ delim ~ integ.map(_.value))
 
     val opseq: P[Seq[Op]] = P(
       (
@@ -96,6 +97,7 @@ class Parser {
           fmul.!.map(_ ⇒ Op.FMul) |
           fdiv.!.map(_ ⇒ Op.FDiv) |
           fmod.!.map(_ ⇒ Op.FMod) |
+          pcall.map(Op.PCall.tupled) |
           lcall.map(Op.LCall.tupled)
       ).rep(sep = delim))
 

@@ -80,4 +80,14 @@ class ParserTest extends FlatSpec with Matchers {
 
     p.parse("lcall Typed typedAdd 2") shouldBe Right(Seq(Op.LCall("Typed", "typedAdd", 2)))
   }
+
+  "Parser" should "parse pcall correctly" in {
+    val p = Parser()
+    p.parse("pcall $xFFFFFFFF 2") match {
+      case Right(Seq(Op.PCall(addr, num))) ⇒
+        assert(addr.toList == List(0xFF, 0xFF, 0xFF, 0xFF).map(_.toByte))
+        assert(num == 2)
+    }
+  }
+
 }

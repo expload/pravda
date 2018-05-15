@@ -20,12 +20,14 @@ class Parser {
     val identStmt = P((digit.rep ~ alpha ~ aldig.rep) | (aldig.rep ~ alpha ~ aldig.rep))
     val dwordStmt = P(":" ~ delim ~ identStmt.! ~ delim ~ blockStmt ~ delim ~ ";")
     val ifStmt    = P("if" ~ delim ~ blockStmt ~ delim ~ "then")
+    val ecallStmt = P(hexarStmt ~ ":" ~ integStmt.!.map(_.toInt))
 
     val blockStmt: P[Seq[Statement]] = P(
       dwordStmt.map { case (n, b) ⇒ Statement.Dword(n, b) } |
         ifStmt.map(b ⇒ Statement.If(b, Seq())) |
         numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
         integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
+        ecallStmt.map{case (a, n) ⇒ Statement.ECall(a, n)} |
         hexarStmt.map(v ⇒ Statement.Hexar(v)) |
         (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
     ).rep(sep = delim)

@@ -178,7 +178,7 @@ class ByteCode {
         case op @ Op.PCall(address, argsNum) =>
           val offset = code.size
           code += VM.PUSHX
-          code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.bytesToWord(address)
           code ++= vm.int32ToWord(argsNum)
           (op, offset)
 
@@ -247,7 +247,7 @@ class ByteCode {
 
       case Op.PCall(address, argsNum) =>
         code += VM.PCALL
-        code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.bytesToWord(address)
         code ++= vm.int32ToWord(argsNum)
 
       case Op.SGet => code += VM.SGET
@@ -314,16 +314,11 @@ class ByteCode {
         case VM.FDIV   ⇒ obuf += ((pos, Op.FDiv))
         case VM.FMOD   ⇒ obuf += ((pos, Op.FMod))
         case VM.DUPN   ⇒ obuf += ((pos, Op.Dupn))
+        case VM.PCALL => obuf += ((pos, Op.PCall(wordToBytes(ubuf), wordToInt32(ubuf))))
         case VM.LCALL =>
           obuf += ((pos,
                     Op.LCall(
                       new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
-                      new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
-                      wordToInt32(ubuf)
-                    )))
-        case VM.PCALL =>
-          obuf += ((pos,
-                    Op.PCall(
                       new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
                       wordToInt32(ubuf)
                     )))

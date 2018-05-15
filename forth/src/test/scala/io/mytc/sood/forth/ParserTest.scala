@@ -38,6 +38,16 @@ class ParserTest extends FlatSpec with Matchers {
     assert( p.parse("1.0 2.0 3.0") == Right(Seq( Float(1.0), Float(2.0), Float(3.0) )))
   }
 
+  it must "correctly parse external calls" in {
+    val p = Parser()
+    p.parse("2 $xFFFF:2 nop") match {
+      case Right(Seq( Integ(2), ECall(addr, num), Ident("nop") )) ⇒
+        assert(addr.toList == List(0xFF.toByte, 0xFF.toByte))
+        assert(num == 2)
+      case boo ⇒ assert(false)
+    }
+  }
+
   it must "correctly parse ifs" in {
     val p = Parser()
     assert( p.parse("if 1 2 3 then") == Right(Seq(
