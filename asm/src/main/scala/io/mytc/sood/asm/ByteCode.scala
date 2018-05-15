@@ -160,13 +160,30 @@ class ByteCode {
           val offset = code.size
           (Op.Nop, offset)
         }
-        case op @ Op.LCall(adress, func, argsNum) =>
+        case op @ Op.LCall(address, func, argsNum) =>
           val offset = code.size
           code += VM.PUSHX
-          code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
           code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
           code ++= vm.int32ToWord(argsNum)
           (op, offset)
+
+        case op @ Op.PCall(address, argsNum) =>
+          val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.int32ToWord(argsNum)
+          (op, offset)
+
+        case Op.SGet =>
+          val offset = code.size
+          code += VM.SGET
+          (Op.SGet, offset)
+
+        case Op.SPut =>
+          val offset = code.size
+          code += VM.SPUT
+          (Op.SPut, offset)
       }
       .collect { case (Op.Label(n), v) ⇒ (n, v) }
       .toMap
@@ -205,11 +222,18 @@ class ByteCode {
         code ++= vm.int32ToWord(offset(n))
         code += VM.CALL
       }
-      case Op.LCall(adress, func, argsNum) =>
+      case Op.LCall(address, func, argsNum) =>
         code += VM.LCALL
-        code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
         code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
         code ++= vm.int32ToWord(argsNum)
+      case Op.PCall(address, argsNum) =>
+        code += VM.PCALL
+        code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.int32ToWord(argsNum)
+
+      case Op.SGet => code += VM.SGET
+      case Op.SPut => code += VM.SPUT
 
       case Op.Label(n) ⇒ {}
       case Op.Stop     ⇒ code += VM.STOP
@@ -275,10 +299,19 @@ class ByteCode {
                       new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
                       wordToInt32(ubuf)
                     )))
+        case VM.PCALL =>
+          obuf += ((pos,
+                    Op.PCall(
+                      new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
+                      wordToInt32(ubuf)
+                    )))
+
+        case VM.SGET => obuf += ((pos, Op.SGet))
+        case VM.SPUT => obuf += ((pos, Op.SPut))
       }
     }
 
-    obuf.toSeq
+    obuf
   }
 
 }

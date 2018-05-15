@@ -47,5 +47,4 @@ class ParserTest extends FlatSpec with Matchers {
       )
     )))
   }
-
 }

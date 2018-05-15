@@ -90,4 +90,13 @@ class ForthTest extends FlatSpec with Matchers {
 
   }
 
+  "Smart-program" should "run correctly" in {
+    run[Int](
+      """
+        |dup3 1 == if dup1 sget dup3 + dup2 sput then
+        |dup3 2 == if dup1 sget dup3 - dup2 sput then
+      """.stripMargin
+    ) shouldBe List()
+  }
+
 }

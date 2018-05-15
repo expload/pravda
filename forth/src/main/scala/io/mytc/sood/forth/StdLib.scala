@@ -71,4 +71,15 @@ object StdLib {
     Op.Ret
   )
 
+  val sget: Seq[Op] = Seq(
+    Op.Label("sget"),
+    Op.SGet,
+    Op.Ret
+  )
+
+  val sput: Seq[Op] = Seq(
+    Op.Label("sput"),
+    Op.SPut,
+    Op.Ret
+  )
 }
