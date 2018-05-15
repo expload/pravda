@@ -9,8 +9,7 @@ import io.mytc.timechain.contrib.ed25519
 import io.mytc.timechain.data.blockchain.Transaction
 import io.mytc.timechain.data.common.Address
 import io.mytc.timechain.data.serialization._
-import boopick._
-import json._
+import io.mytc.timechain.data.serialization.bson._
 
 import io.mytc.timechain.utils.hex2bytes
 import supertagged.TaggedType
@@ -75,7 +74,7 @@ object cryptography {
     signTransaction(privateKey.toByteArray, tx)
 
   private def signTransaction(privateKey: Array[Byte], tx: UnsignedTransaction): SignedTransaction = {
-    val message = transcode(tx.data).to[BooPickle]
+    val message = transcode(tx.forSignature).to[Bson]
     val signature = ed25519.sign(privateKey, message)
     SignedTransaction(tx.from, tx.data, ByteString.copyFrom(signature), tx.fee)
   }
@@ -83,7 +82,7 @@ object cryptography {
   def checkTransactionSignature(tx: SignedTransaction): Option[AuthorizedTransaction] = {
 
     val pubKey = tx.from.toByteArray
-    val message = transcode(tx.data).to[BooPickle]
+    val message = transcode(tx.forSignature).to[Bson]
     val signature = tx.signature.toByteArray
 
     if (ed25519.verify(pubKey, message, signature)) {

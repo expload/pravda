@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import boopickle.Default._
 import boopickle.{CompositePickler, Pickler}
 import com.google.protobuf.{ByteString => PbByteString}
-import io.mytc.timechain.data.blockchain.{Transaction, TransactionData}
+import io.mytc.timechain.data.blockchain.Transaction
 import supertagged.{@@, lifterF}
 import akka.util.{ByteString => AkkaByteString}
 
@@ -36,9 +36,6 @@ object boopick {
   implicit val authorizedTransactionPickler: Pickler[Transaction.AuthorizedTransaction] = 
     generatePickler[Transaction.AuthorizedTransaction]
 
-  implicit val distributionPickler: Pickler[TransactionData.Distribution] =
-    generatePickler[TransactionData.Distribution]
-
   //---------------------------------------------------------------------------
   // Composite picklers
   //---------------------------------------------------------------------------
@@ -49,10 +46,6 @@ object boopick {
       .addConcreteType[Transaction.UnsignedTransaction]
       .addConcreteType[Transaction.AuthorizedTransaction]
 
-
-  implicit val transactionDataPickler: CompositePickler[TransactionData] =
-    compositePickler[TransactionData]
-      .addConcreteType[TransactionData.Distribution]
 
   //---------------------------------------------------------------------------
   // Transcoding
