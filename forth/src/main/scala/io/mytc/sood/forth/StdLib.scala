@@ -3,6 +3,7 @@ package io.mytc.sood.forth
 object StdLib {
 
   import io.mytc.sood.asm.Op
+  import io.mytc.sood.asm.Datum
 
   def defs: String = { """
   : + add ;
@@ -11,6 +12,8 @@ object StdLib {
   : % mod ;
   : == eq ;
   : != neq ;
+  : dup dup1 ;
+  : dup_2 dup2 ;
   """ }
 
   def words: Seq[Op] =
@@ -24,7 +27,8 @@ object StdLib {
       fdiv,
       fmod,
       eqls,
-      neq
+      neq,
+      dup(1), dup(2), dup(3), dup(4), dup(5)
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -97,6 +101,13 @@ object StdLib {
     Op.Label("neq"),
     Op.Eq,
     Op.Not,
+    Op.Ret
+  )
+
+  def dup(n: Int): Seq[Op] = Seq(
+    Op.Label(s"dup${n}"),
+    Op.Push(Datum.Integral(n)),
+    Op.Dupn,
     Op.Ret
   )
 

@@ -157,6 +157,12 @@ class ByteCode {
           (Op.FMod, offset)
         }
 
+        case Op.Dupn ⇒ {
+          val offset = code.size
+          code += VM.DUPN
+          (Op.Dupn, offset)
+        }
+
         case Op.Label(n) ⇒ {
           val offset = code.size
           (Op.Label(n), offset)
@@ -262,6 +268,7 @@ class ByteCode {
       case Op.FMul     ⇒ code += VM.FMUL
       case Op.FDiv     ⇒ code += VM.FDIV
       case Op.FMod     ⇒ code += VM.FMOD
+      case Op.Dupn     ⇒ code += VM.DUPN
       case Op.Nop      ⇒ code += VM.I32MOD
     }
 
@@ -301,6 +308,7 @@ class ByteCode {
         case VM.FMUL   ⇒ obuf += ((pos, Op.FMul))
         case VM.FDIV   ⇒ obuf += ((pos, Op.FDiv))
         case VM.FMOD   ⇒ obuf += ((pos, Op.FMod))
+        case VM.DUPN   ⇒ obuf += ((pos, Op.Dupn))
         case VM.LCALL =>
           obuf += ((pos,
                     Op.LCall(

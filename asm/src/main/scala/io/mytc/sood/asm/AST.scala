@@ -51,6 +51,8 @@ object Op {
 //
   case object Nop extends Op // { override def toString = "nop" }
 
+  case object Dupn extends Op
+
   final case class PCall(address: String, argsNum: Int) extends Op
   final case class LCall(address: String, func: String, argsNum: Int) extends Op {
     //override def toString = s"lcall $adress $func $argsNum"
