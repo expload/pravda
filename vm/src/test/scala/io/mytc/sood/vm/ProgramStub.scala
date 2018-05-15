@@ -6,40 +6,43 @@ import java.nio.charset.StandardCharsets
 import state.Data
 import com.google.protobuf.ByteString
 
-final case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
+final case class ProgramStub(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
   lazy val buffer: ByteBuffer =
     ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toByteArray)).toArray ++ bytes)
 
-  def put(d: Double): Program = {
+  lazy val byteString: Data =
+    ByteString.copyFrom(buffer)
+
+  def put(d: Double): ProgramStub = {
     copy(bytes ++ doubleToWord(d))
   }
 
-  def put(i: Int): Program = {
+  def put(i: Int): ProgramStub = {
     copy(bytes ++ int32ToWord(i))
   }
-  def put(b: Byte): Program = {
+  def put(b: Byte): ProgramStub = {
     copy(bytes ++ bytesToWord(Array(b)))
   }
-  def put(bs: Array[Byte]): Program = {
+  def put(bs: Array[Byte]): ProgramStub = {
     copy(bytes ++ bytesToWord(bs))
   }
-  def put(bs: ByteString): Program = {
+  def put(bs: ByteString): ProgramStub = {
     copy(bytes ++ bytesToWord(bs.toByteArray))
   }
-  def put(bs: String): Program = {
+  def put(bs: String): ProgramStub = {
     copy(bytes ++ bytesToWord(bs.getBytes(StandardCharsets.UTF_8)))
   }
 
-  def opcode(cmd: Int): Program = {
+  def opcode(cmd: Int): ProgramStub = {
     copy(bytes :+ cmd.toByte)
   }
-  def opcode(cmd: Byte): Program = {
+  def opcode(cmd: Byte): ProgramStub = {
     copy(bytes :+ cmd)
   }
-  def withStack(stack: Data*): Program = copy(stack = stack.to[Vector])
+  def withStack(stack: Data*): ProgramStub = copy(stack = stack.to[Vector])
 
   def length: Int = bytes.length
-  def + (p: Program): Program = copy(bytes = bytes ++ p.bytes, stack = stack ++ p.stack)
+  def + (p: ProgramStub): ProgramStub = copy(bytes = bytes ++ p.bytes, stack = stack ++ p.stack)
 
   // FIXME
 //  override def toString: String = {

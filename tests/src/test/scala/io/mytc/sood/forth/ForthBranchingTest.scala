@@ -1,7 +1,7 @@
 package io.mytc.sood.forth
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm.state.{AccountState, Address, WorldState}
+import io.mytc.sood.vm.state.{Program, Address, Environment}
 import org.scalatest._
 
 
@@ -23,26 +23,23 @@ class ForthBranchingTest extends FlatSpec with Matchers {
     implicit val floatStackItem: StackItem[Double] =
       (item: ByteString) => ByteBuffer.wrap(item.toByteArray).getDouble
 
-    implicit val boolStackItem: StackItem[Boolean] =
-      (item: ByteString) => if ((ByteBuffer.wrap(item.toByteArray).get & 0xFF) == 1) true else false
-
   }
 
-  def run[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
-    Compiler().compile(code, useStdLib=true) match {
-      case Left(err)   ⇒ Left(err)
+  def runTransaction[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
+    Compiler().compile(code, useStdLib = true) match {
+      case Left(err) ⇒ Left(err)
       case Right(code) ⇒
-        val emptyState = new WorldState {
-          override def get(address: Address): Option[AccountState] = None
+        val emptyState = new Environment {
+          override def getProgram(address: Address): Option[Program] = None
         }
-        val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
+        val stack = Vm.runRaw(ByteString.copyFrom(code), ByteString.EMPTY, emptyState).stack
         Right(stack.map(stackItem.get).toList)
     }
   }
 
   "if" must "execute block if true is on top of the stack" in {
 
-    assert( run[Int]( """
+    assert( runTransaction[Int]( """
       0 0
       eq
       if 5 then
@@ -54,7 +51,7 @@ class ForthBranchingTest extends FlatSpec with Matchers {
 
   "if" must "not execute block if false is on top of the stack" in {
 
-    assert( run[Int]( """
+    assert( runTransaction[Int]( """
       0 1
       eq
       if 5 then
@@ -65,4 +62,3 @@ class ForthBranchingTest extends FlatSpec with Matchers {
   }
 
 }
-

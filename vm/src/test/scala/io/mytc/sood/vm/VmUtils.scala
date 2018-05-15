@@ -8,21 +8,19 @@ import serialization._
 
 object VmUtils {
 
-  val emptyState: WorldState = new WorldState {
-    override def get(address: Address): Option[AccountState] = None
+  val emptyState: Environment = (address: Address) => None
+
+  def exec(p: ProgramStub): Array[Data] = {
+    Vm.runRaw(p.byteString, ByteString.EMPTY, emptyState).stack.toArray
   }
 
-  def exec(p: Program): Array[Data] = {
-    Vm.runTransaction(p.buffer, emptyState).stack.toArray
-  }
-
-  def exec(p: Program, worldState: WorldState): Array[Data] = {
-    Vm.runTransaction(p.buffer, worldState).stack.toArray
+  def exec(p: ProgramStub, worldState: Environment): Array[Data] = {
+    Vm.runRaw(p.byteString, ByteString.EMPTY, worldState).stack.toArray
   }
 
   def stack(item: Data*): Array[Data] =  item.toArray
 
-  def prog: Program = Program()
+  def prog: ProgramStub = ProgramStub()
 
   def hex(b: Byte): String = {
     val s = (b & 0xFF).toHexString
@@ -58,14 +56,14 @@ object VmUtils {
     dataToInt32(d)
   }
 
-  def worldState(accs: (Address, Program)*): WorldState = new WorldState {
+  def environment(accs: (Address, ProgramStub)*): Environment = new Environment {
 
-    def account(prog: Program): AccountState = new AccountState {
-      override def program: ByteBuffer = prog.buffer
-      override def storage: Storage = null // scalafix:ok
+    def account(prog: ProgramStub): Program = new Program {
+      def code: ByteBuffer = prog.buffer
+      def storage: Storage = null // scalafix:ok
     }
 
-    override def get(address: Address): Option[AccountState] = {
+    override def getProgram(address: Address): Option[Program] = {
       accs.find{_._1 == address}.map {
         case (addr, prog) => account(prog)
       }

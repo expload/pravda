@@ -3,9 +3,9 @@ package io.mytc.sood.vm.std.libs
 import com.google.protobuf.ByteString
 import io.mytc.sood.vm.serialization._
 import io.mytc.sood.vm.state.Data
-import io.mytc.sood.vm.std.{Func, Lib}
+import io.mytc.sood.vm.std.{Func, NativeLibrary}
 
-object Typed extends Lib {
+object Typed extends NativeLibrary {
 
   val Int32Tag: Byte = 1
   val Float64Tag: Byte = 2

@@ -1,7 +1,7 @@
 package io.mytc.sood.forth
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm.state.{AccountState, Address, WorldState}
+import io.mytc.sood.vm.state.{Program, Address, Environment}
 import org.scalatest._
 
 
@@ -25,24 +25,23 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
     implicit val boolStackItem: StackItem[Boolean] =
       (item: ByteString) => if ((ByteBuffer.wrap(item.toByteArray).get & 0xFF) == 1) true else false
-
   }
 
-  def run[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
-    Compiler().compile(code, useStdLib=true) match {
-      case Left(err)   ⇒ Left(err)
+  def runTransaction[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
+    Compiler().compile(code, useStdLib = true) match {
+      case Left(err) ⇒ Left(err)
       case Right(code) ⇒
-        val emptyState = new WorldState {
-          override def get(address: Address): Option[AccountState] = None
+        val emptyState = new Environment {
+          override def getProgram(address: Address): Option[Program] = None
         }
-        val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
+        val stack = Vm.runRaw(ByteString.copyFrom(code), ByteString.EMPTY, emptyState).stack
         Right(stack.map(stackItem.get).toList)
     }
   }
 
   "dup" must "duplicate the top of the stack" in {
 
-    assert( run[Int]( """
+    assert( runTransaction[Int]( """
       1 2 3
       dup
     """ ) == Right(
@@ -53,7 +52,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "dup1" must "duplicate the top of the stack" in {
 
-    assert( run[Int]( """
+    assert( runTransaction[Int]( """
       1 2 3
       dup1
     """ ) == Right(
@@ -64,7 +63,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "dup2" must "push the 2nd item of the stack" in {
 
-    assert( run[Int]( """
+    assert( runTransaction[Int]( """
       1 2 3
       dup2
     """ ) == Right(
@@ -75,7 +74,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "dup3" must "push the 3rd item of the stack" in {
 
-    assert( run[Int]( """
+    assert( runTransaction[Int]( """
       1 2 3
       dup3
     """ ) == Right(
@@ -86,7 +85,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "eq" must "push true if 2 top items are equal" in {
 
-    assert( run[Boolean]( """
+    assert( runTransaction[Boolean]( """
       1 1
       eq
     """ ) == Right(
@@ -97,7 +96,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "eq" must "push false if 2 top items are not equal" in {
 
-    assert( run[Boolean]( """
+    assert( runTransaction[Boolean]( """
       1 2
       eq
     """ ) == Right(
@@ -108,7 +107,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "neq" must "push false if 2 top items are equal" in {
 
-    assert( run[Boolean]( """
+    assert( runTransaction[Boolean]( """
       1 1
       neq
     """ ) == Right(
@@ -119,7 +118,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "neq" must "push true if 2 top items are not equal" in {
 
-    assert( run[Boolean]( """
+    assert( runTransaction[Boolean]( """
       1 2
       neq
     """ ) == Right(
@@ -130,7 +129,7 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   "not" must "push !top of the stack" in {
 
-    assert( run[Boolean]( """
+    assert( runTransaction[Boolean]( """
       1 2
       eq
       not
