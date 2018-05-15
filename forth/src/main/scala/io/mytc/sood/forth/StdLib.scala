@@ -9,6 +9,8 @@ object StdLib {
   : * mul ;
   : / div ;
   : % mod ;
+  : == eq ;
+  : != neq ;
   """ }
 
   def words: Seq[Op] =
@@ -20,7 +22,9 @@ object StdLib {
       fadd,
       fmul,
       fdiv,
-      fmod
+      fmod,
+      eqls,
+      neq
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -82,4 +86,18 @@ object StdLib {
     Op.SPut,
     Op.Ret
   )
+
+  val eqls: Seq[Op] = Seq(
+    Op.Label("eq"),
+    Op.Eq,
+    Op.Ret
+  )
+
+  val neq: Seq[Op] = Seq(
+    Op.Label("neq"),
+    Op.Eq,
+    Op.Not,
+    Op.Ret
+  )
+
 }

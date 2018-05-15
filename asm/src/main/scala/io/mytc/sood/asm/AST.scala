@@ -46,6 +46,8 @@ object Op {
   case object Not extends Op
   case object I32LT extends Op
   case object I32GT extends Op
+
+  case object Eq extends Op
 //
   case object Nop extends Op // { override def toString = "nop" }
 

@@ -57,6 +57,8 @@ class Parser {
     val fdiv = P(IgnoreCase("fdiv"))
     val fmod = P(IgnoreCase("fmod"))
 
+    val eqls = P(IgnoreCase("eq"))
+
     val lcall = P(IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue))
 
     val opseq: P[Seq[Op]] = P(
@@ -83,6 +85,8 @@ class Parser {
 
           clt.!.map(_ ⇒ Op.I32LT) |
           cgt.!.map(_ ⇒ Op.I32GT) |
+
+          eqls.!.map(_ ⇒ Op.Eq) |
 
           fadd.!.map(_ ⇒ Op.FAdd) |
           fmul.!.map(_ ⇒ Op.FMul) |

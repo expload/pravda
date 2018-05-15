@@ -121,6 +121,12 @@ class ByteCode {
           (Op.I32GT, offset)
         }
 
+        case Op.Eq ⇒ {
+          val offset = code.size
+          code += VM.EQ
+          (Op.Eq, offset)
+        }
+
         case Op.Not ⇒ {
           val offset = code.size
           code += VM.NOT
@@ -160,6 +166,7 @@ class ByteCode {
           val offset = code.size
           (Op.Nop, offset)
         }
+
         case op @ Op.LCall(address, func, argsNum) =>
           val offset = code.size
           code += VM.PUSHX
@@ -249,6 +256,7 @@ class ByteCode {
       case Op.I32Mod   ⇒ code += VM.I32MOD
       case Op.I32LT    ⇒ code += VM.I32LT
       case Op.I32GT    ⇒ code += VM.I32GT
+      case Op.Eq       ⇒ code += VM.EQ
       case Op.Not      ⇒ code += VM.NOT
       case Op.FAdd     ⇒ code += VM.FADD
       case Op.FMul     ⇒ code += VM.FMUL
@@ -288,6 +296,7 @@ class ByteCode {
         case VM.I32MOD ⇒ obuf += ((pos, Op.I32Mod))
         case VM.I32LT  ⇒ obuf += ((pos, Op.I32LT))
         case VM.I32GT  ⇒ obuf += ((pos, Op.I32GT))
+        case VM.EQ     ⇒ obuf += ((pos, Op.Eq))
         case VM.FADD   ⇒ obuf += ((pos, Op.FAdd))
         case VM.FMUL   ⇒ obuf += ((pos, Op.FMul))
         case VM.FDIV   ⇒ obuf += ((pos, Op.FDiv))
