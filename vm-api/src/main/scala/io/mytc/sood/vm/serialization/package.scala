@@ -3,7 +3,7 @@ package io.mytc.sood.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import state.Data
+import state.{Address, Data}
 
 package object serialization {
 
@@ -15,11 +15,17 @@ package object serialization {
     data.asReadOnlyByteBuffer().getDouble
   }
 
-  def int32ToData(i: Int): Data = {
+  def int32ToByteString(i: Int): ByteString = {
     val buf = ByteBuffer.allocate(4).putInt(i)
     buf.rewind()
     ByteString.copyFrom(buf)
   }
+
+  def int32ToData(i: Int): Data =
+    int32ToByteString(i)
+
+  def int32ToAddress(i: Int): Address =
+    int32ToByteString(i)
 
   def doubleToData(v: Double): Data = {
     val buf = ByteBuffer.allocate(8)

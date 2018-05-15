@@ -32,8 +32,7 @@ object StdLib {
       not,
       dup(1), dup(2), dup(3), dup(4), dup(5),
       sget,
-      sput,
-      loadData
+      sput
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -119,14 +118,6 @@ object StdLib {
     Op.Label(s"dup${n}"),
     Op.Push(Datum.Integral(n)),
     Op.Dupn,
-    Op.Ret
-  )
-
-  val loadData: Seq[Op] = Seq(// FIXME temporary stub method before real data in transaction
-    Op.Label("loadData"),
-    Op.Push(Datum.Integral(1)),
-    Op.Push(Datum.Integral(10)),
-    Op.Push(Datum.Rawbytes(Array[Byte](10))),
     Op.Ret
   )
 }
