@@ -14,7 +14,6 @@ object StdLib {
   : == eq ;
   : != neq ;
   : dup dup1 ;
-  : dup_2 dup2 ;
   """ }
 
   def words: Seq[Op] =
@@ -32,7 +31,8 @@ object StdLib {
       not,
       dup(1), dup(2), dup(3), dup(4), dup(5),
       sget,
-      sput
+      sput,
+      concat
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -111,6 +111,12 @@ object StdLib {
   val not: Seq[Op] = Seq(
     Op.Label("not"),
     Op.Not,
+    Op.Ret
+  )
+
+  val concat: Seq[Op] = Seq(
+    Op.Label("concat"),
+    Op.Concat,
     Op.Ret
   )
 

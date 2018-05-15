@@ -131,6 +131,12 @@ class ByteCode {
           (Op.Eq, offset)
         }
 
+        case Op.Concat ⇒ {
+          val offset = code.size
+          code += VM.CONCAT
+          (Op.Concat, offset)
+        }
+
         case Op.Not ⇒ {
           val offset = code.size
           code += VM.NOT
@@ -274,6 +280,7 @@ class ByteCode {
       case Op.FDiv     ⇒ code += VM.FDIV
       case Op.FMod     ⇒ code += VM.FMOD
       case Op.Dupn     ⇒ code += VM.DUPN
+      case Op.Concat   ⇒ code += VM.CONCAT
       case Op.Nop      ⇒ code += VM.I32MOD
     }
 
@@ -314,6 +321,7 @@ class ByteCode {
         case VM.FDIV   ⇒ obuf += ((pos, Op.FDiv))
         case VM.FMOD   ⇒ obuf += ((pos, Op.FMod))
         case VM.DUPN   ⇒ obuf += ((pos, Op.Dupn))
+        case VM.CONCAT ⇒ obuf += ((pos, Op.Concat))
         case VM.PCALL => obuf += ((pos, Op.PCall(wordToBytes(ubuf), wordToInt32(ubuf))))
         case VM.LCALL =>
           obuf += ((pos,

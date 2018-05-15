@@ -106,5 +106,16 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   }
 
+  "concat" must "take 2 arrays of bytes from top and push concatenation of them" in {
+
+    assert( runTransaction[List[Byte]]( """
+      $xFFFF
+      $x0000
+      concat
+    """ ) == Right(
+      List(List(0x00.toByte, 0x00.toByte, 0xFF.toByte, 0xFF.toByte))
+    ))
+
+  }
 
 }

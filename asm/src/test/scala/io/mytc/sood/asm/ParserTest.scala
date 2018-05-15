@@ -17,6 +17,7 @@ class ParserTest extends FlatSpec with Matchers {
       @boo:
         pop
         pop
+        concat
         ret
       """ ) == Right(Seq(
         Op.Push(Datum.Integral(3)),
@@ -27,6 +28,7 @@ class ParserTest extends FlatSpec with Matchers {
         Op.Label("boo"),
         Op.Pop,
         Op.Pop,
+        Op.Concat,
         Op.Ret
       ))
     )
