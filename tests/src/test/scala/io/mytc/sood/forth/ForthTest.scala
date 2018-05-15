@@ -36,4 +36,13 @@ class ForthTest extends FlatSpec with Matchers {
       runTransaction[Int]("1 2 3 *") == Right(List(1, 6))
     )
   }
+
+  "A forth" must " work with hex strings" in {
+
+    assert(
+      runTransaction[List[Byte]]("$xFFF1F2") == Right(List(List(0xFF.toByte, 0xF1.toByte, 0xF2.toByte)))
+    )
+
+  }
+
 }

@@ -27,6 +27,7 @@ class Translator {
         case (Statement.Ident(n), i) ⇒ List( Op.Call(mangle(n))         )
         case (Statement.Integ(v), i) ⇒ List( Op.Push(Datum.Integral(v)) )
         case (Statement.Float(v), i) ⇒ List( Op.Push(Datum.Floating(v)) )
+        case (Statement.Hexar(v), i) ⇒ List( Op.Push(Datum.Rawbytes(v)) )
         case (Statement.If(p, n), i) ⇒ List(
                                          List(Op.Not),
                                          List(Op.JumpI(mangleIf(prefix, i))),

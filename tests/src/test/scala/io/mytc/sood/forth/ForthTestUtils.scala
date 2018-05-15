@@ -28,6 +28,9 @@ object ForthTestUtils {
 
     implicit val boolStackItem: StackItem[Boolean] =
       (item: ByteString) => if ((ByteBuffer.wrap(item.toByteArray).get & 0xFF) == 1) true else false
+
+    implicit val arrayStackItem: StackItem[List[Byte]] =
+      (item: ByteString) => item.toByteArray.toList
   }
 
   def runTransaction[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
