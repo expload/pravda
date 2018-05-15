@@ -26,8 +26,7 @@ package object utils {
       if (x > -1) {
         array(i) = x.toByte
         aux(i + 1)
-      }
-      else ()
+      } else ()
     }
 
     aux(0)
@@ -78,20 +77,20 @@ package object utils {
 
   def detectCpuArchitecture(): Future[CpuArchitecture] = Future.successful {
     System.getProperty("os.arch").toLowerCase match {
-      case s if s.contains("amd64") => CpuArchitecture.x86_64
+      case s if s.contains("amd64")  => CpuArchitecture.x86_64
       case s if s.contains("x86_64") => CpuArchitecture.x86_64
-      case s if s.contains("x86") => CpuArchitecture.x86
-      case _ => CpuArchitecture.Unsupported
+      case s if s.contains("x86")    => CpuArchitecture.x86
+      case _                         => CpuArchitecture.Unsupported
     }
   }
 
   def detectOperationSystem(): Future[OperationSystem] = Future.successful {
     println(s"System.getProperty(os.name)=${System.getProperty("os.name")}")
     System.getProperty("os.name").toLowerCase match {
-      case s if s.contains("mac") => OperationSystem.MacOS
+      case s if s.contains("mac")   => OperationSystem.MacOS
       case s if s.contains("linux") => OperationSystem.Linux
-      case s if s.contains("win") => OperationSystem.Windows
-      case _ => OperationSystem.Unsupported
+      case s if s.contains("win")   => OperationSystem.Windows
+      case _                        => OperationSystem.Unsupported
     }
   }
 

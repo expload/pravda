@@ -6,47 +6,46 @@ import io.mytc.timechain.data.common.Address
 import io.mytc.timechain.data.cryptography.PrivateKey
 
 final case class TimechainConfig(
-  genesis: TimechainConfig.Genesis,
-  paymentWallet: TimechainConfig.PaymentWallet,
-  isValidator: Boolean,
-  dataDirectory: File,
-  seeds: String,
-  api: TimechainConfig.ApiConfig,
-  tendermint: TimechainConfig.TendermintConfig
+    genesis: TimechainConfig.Genesis,
+    paymentWallet: TimechainConfig.PaymentWallet,
+    isValidator: Boolean,
+    dataDirectory: File,
+    seeds: String,
+    api: TimechainConfig.ApiConfig,
+    tendermint: TimechainConfig.TendermintConfig
 )
 
 object TimechainConfig {
   final case class Genesis(
-    time: String,
-    chainId: String,
-    appHash: String,
-    validators: Seq[GenesisValidator],
-    distribution: Boolean
+      time: String,
+      chainId: String,
+      appHash: String,
+      validators: Seq[GenesisValidator],
+      distribution: Boolean
   )
   final case class PaymentWallet(
-    privateKey: PrivateKey,
-    address: Address
+      privateKey: PrivateKey,
+      address: Address
   )
 
   final case class GenesisValidator(
-    publicKey: CryptoKey,
-    power: Int,
-    name: String
+      publicKey: CryptoKey,
+      power: Int,
+      name: String
   )
   final case class CryptoKey(
-    `type`: String,
-    data: String
+      `type`: String,
+      data: String
   )
   final case class ApiConfig(
-    host: String,
-    port: Int
+      host: String,
+      port: Int
   )
   final case class TendermintConfig(
-    peerPort: Int,
-    rpcPort: Int,
-    proxyAppSock: String,
-    proxyAppPort: Int
+      peerPort: Int,
+      rpcPort: Int,
+      proxyAppSock: String,
+      proxyAppPort: Int
   )
-
 
 }

@@ -46,7 +46,7 @@ object ByteReader {
     }
   }
   implicit val byteReader: ByteReader[Byte] = new ByteReader[Byte] {
-    override def fromBytes(array: Array[Byte]): Byte= {
+    override def fromBytes(array: Array[Byte]): Byte = {
       array(0)
     }
   }

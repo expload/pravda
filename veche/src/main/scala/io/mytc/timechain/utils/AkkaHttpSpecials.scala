@@ -28,13 +28,12 @@ object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
     .`Content-Type`(ContentType(MediaTypes.`application/json`))
     .contentType
 
-  implicit def transcodingUnmarshaller[T](implicit tc: Transcoder[Json, T], mat: ActorMaterializer): FromEntityUnmarshaller[T] =
+  implicit def transcodingUnmarshaller[T](implicit tc: Transcoder[Json, T],
+                                          mat: ActorMaterializer): FromEntityUnmarshaller[T] =
     Unmarshaller { implicit ec => entity =>
       entity.toStrict(5.seconds) map {
         case strict if strict.contentType.mediaType == MediaTypes.`application/json` =>
-          val charset = strict
-            .contentType
-            .charsetOption
+          val charset = strict.contentType.charsetOption
             .fold(StandardCharsets.UTF_8)(_.nioCharset())
           val jsonRaw = new String(strict.data.toArray, charset)
           transcode(Json @@ jsonRaw).to[T]

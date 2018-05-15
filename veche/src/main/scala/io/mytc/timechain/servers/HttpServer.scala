@@ -11,13 +11,12 @@ import scala.util.Success
 
 import io.mytc.timechain.data.TimechainConfig
 
-
 object HttpServer {
 
-  def start(config: TimechainConfig.ApiConfig, apiRoute: Route, guiRoute: Route)
-      (implicit system: ActorSystem,
-        materializer: ActorMaterializer,
-        executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
+  def start(config: TimechainConfig.ApiConfig, apiRoute: Route, guiRoute: Route)(
+      implicit system: ActorSystem,
+      materializer: ActorMaterializer,
+      executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
     val route = pathPrefix("api")(apiRoute) ~ pathPrefix("ui")(guiRoute)
     Http().bindAndHandle(route, config.host, config.port) andThen {
       case Success(_) => println(s"API server started at ${config.host}:${config.port}")

@@ -1,6 +1,6 @@
 package io.mytc
-package timechain.persistence
 
+package timechain.persistence
 
 import com.google.protobuf.ByteString
 import io.mytc.keyvalue.{DB, Operation}
@@ -39,9 +39,7 @@ class BlockChainStore(path: String) {
   private val accountEntry = Entry[Address, Account]("account")
   private val blockChainInfoEntry = SingleEntry[BlockChainInfo]("blockchain")
 
-
-
-  def putAccount(account: Account, state: BatchState): BatchState =  {
+  def putAccount(account: Account, state: BatchState): BatchState = {
     state.addOperations(accountEntry.putBatch(account.address, account))
   }
 
@@ -50,15 +48,17 @@ class BlockChainStore(path: String) {
   }
 
   def addOrCreateAccount(
-                                  address: Address,
-                                  free: BigDecimal,
-                                  frozen: BigDecimal,
-                                  state: BatchState
-                                ): BatchState = {
+      address: Address,
+      free: BigDecimal,
+      frozen: BigDecimal,
+      state: BatchState
+  ): BatchState = {
     val account = state.accounts.get(address).orElse(accountEntry.syncGet(address))
-    val newAccount = account.map(
-      a => a.copy(free = a.free + free, frozen = a.frozen + frozen)
-    ).getOrElse(Account(address, Mytc(free), Mytc(frozen)))
+    val newAccount = account
+      .map(
+        a => a.copy(free = a.free + free, frozen = a.frozen + frozen)
+      )
+      .getOrElse(Account(address, Mytc(free), Mytc(frozen)))
     state.addOperations(accountEntry.putBatch(address, newAccount)).putAccount(newAccount)
   }
 
@@ -72,12 +72,12 @@ class BlockChainStore(path: String) {
     blockChainInfoEntry.put(blockChainInfo)
   }
 
-  def putBlockChainInfo(blockChainInfo: BlockChainInfo, state: BatchState): BatchState =  {
+  def putBlockChainInfo(blockChainInfo: BlockChainInfo, state: BatchState): BatchState = {
     state.addOperations(blockChainInfoEntry.putBatch(blockChainInfo))
   }
 
   def appHash: ByteString = {
-    if(db.stateHash.forall(_ == 0)) ByteString.EMPTY
+    if (db.stateHash.forall(_ == 0)) ByteString.EMPTY
     else ByteString.copyFrom(db.stateHash)
   }
 

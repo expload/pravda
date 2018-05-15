@@ -17,15 +17,15 @@ import io.mytc.timechain.utils.bytes2hex
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class AbciClient(port: Int)(implicit
-    system: ActorSystem,
-    materializer: ActorMaterializer,
-    executionContext: ExecutionContextExecutor) {
+                            system: ActorSystem,
+                            materializer: ActorMaterializer,
+                            executionContext: ExecutionContextExecutor) {
 
   // Response format:
   // https://tendermint.readthedocs.io/en/master/getting-started.html
 
   import AbciClient._
-  
+
   private def throwIfError(prefix: String, res: TxResult): Unit = {
     if (res.code != 0)
       throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
@@ -58,7 +58,11 @@ class AbciClient(port: Int)(implicit
     }
   }
 
-  def broadcastTransaction(from: Address, privateKey: PrivateKey, data: TransactionData, fee: Mytc, mode: String = "commit"): Future[Unit] = {
+  def broadcastTransaction(from: Address,
+                           privateKey: PrivateKey,
+                           data: TransactionData,
+                           fee: Mytc,
+                           mode: String = "commit"): Future[Unit] = {
 
     val unsignedTx = Transaction.UnsignedTransaction(from, data, fee)
     val tx = cryptography.signTransaction(privateKey, unsignedTx)

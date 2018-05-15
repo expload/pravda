@@ -24,8 +24,7 @@ object config {
 
   implicit val genesisValidatorsReader: ConfigReader[Seq[GenesisValidator]] = {
     ConfigReader[String] map {
-      _.split(",")
-        .toSeq
+      _.split(",").toSeq
         .filter(_.nonEmpty)
         .map { s =>
           val Array(name, power, key) = s.split(":")

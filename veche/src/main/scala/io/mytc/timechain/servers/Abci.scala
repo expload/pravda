@@ -1,13 +1,12 @@
 package io.mytc.timechain
+
 package servers
 
 import com.tendermint.abci._
 import io.mytc.timechain.clients.AbciClient
 import scala.concurrent.Future
 
-class Abci(
-      abciClient: AbciClient) extends io.mytc.tendermint.abci.Api {
-
+class Abci(abciClient: AbciClient) extends io.mytc.tendermint.abci.Api {
 
   def info(request: RequestInfo): Future[ResponseInfo] = ???
 

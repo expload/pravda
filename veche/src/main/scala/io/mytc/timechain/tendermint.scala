@@ -39,12 +39,11 @@ object tendermint {
       }
     }
 
-    def createExecutableFile(os: OperationSystem, dir: File) = new File(dir,
-      os match {
+    def createExecutableFile(os: OperationSystem, dir: File) =
+      new File(dir, os match {
         case OperationSystem.Windows => "tendermint.exe"
-        case _ => "tendermint"
-      }
-    )
+        case _                       => "tendermint"
+      })
 
     def copyFromResources(resName: String, dest: File): Unit = {
       def copy(in: java.io.InputStream, out: java.io.OutputStream): Unit = {
@@ -66,8 +65,12 @@ object tendermint {
           out.flush()
         }
       } finally {
-        fileOut.foreach{ s ⇒ s.close() }
-        resourceInput.foreach{ s ⇒ s.close() }
+        fileOut.foreach { s ⇒
+          s.close()
+        }
+        resourceInput.foreach { s ⇒
+          s.close()
+        }
       }
     }
 

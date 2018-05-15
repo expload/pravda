@@ -23,13 +23,13 @@ final class Var[T](private var value: T) extends Var.VarReader[T] with Var.VarWr
   def get(): Future[T] = this.synchronized {
     lock match {
       case Some(future) => future
-      case None => Future.successful(value)
+      case None         => Future.successful(value)
     }
   }
 
   def update(f: T => T)(implicit ec: ExecutionContext): Future[T] = this.synchronized {
     val future = lock match {
-      case None => Future.successful(f(value))
+      case None             => Future.successful(f(value))
       case Some(prevFuture) => prevFuture.map(f)
     }
     lock = Some(future)
@@ -42,7 +42,7 @@ final class Var[T](private var value: T) extends Var.VarReader[T] with Var.VarWr
 
   def updateAsync(f: T => Future[T])(implicit ec: ExecutionContext): Future[T] = this.synchronized {
     val future = lock match {
-      case None => f(value)
+      case None             => f(value)
       case Some(prevFuture) => prevFuture.flatMap(f)
     }
     lock = Some(future)

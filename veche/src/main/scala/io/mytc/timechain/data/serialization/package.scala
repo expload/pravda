@@ -1,6 +1,5 @@
 package io.mytc.timechain.data
 
-
 import supertagged.TaggedType
 
 /**

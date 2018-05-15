@@ -17,7 +17,8 @@ object boopick {
 
   /** This pickler allow to use protocol buffers' ByteString inside case classes */
   implicit val pbByteStringPickler: Pickler[PbByteString] =
-    transformPickler[PbByteString, Array[Byte]](byteArray => PbByteString.copyFrom(byteArray))(byteString => byteString.toByteArray)
+    transformPickler[PbByteString, Array[Byte]](byteArray => PbByteString.copyFrom(byteArray))(byteString =>
+      byteString.toByteArray)
 
   /** Allow to use tagged primitives inside case classes */
   implicit def picklerLifter[T: Pickler, U]: Pickler[@@[T, U]] =
@@ -33,7 +34,7 @@ object boopick {
   implicit val unsignedTransactionPickler: Pickler[Transaction.UnsignedTransaction] =
     generatePickler[Transaction.UnsignedTransaction]
 
-  implicit val authorizedTransactionPickler: Pickler[Transaction.AuthorizedTransaction] = 
+  implicit val authorizedTransactionPickler: Pickler[Transaction.AuthorizedTransaction] =
     generatePickler[Transaction.AuthorizedTransaction]
 
   //---------------------------------------------------------------------------
@@ -45,7 +46,6 @@ object boopick {
       .addConcreteType[Transaction.SignedTransaction]
       .addConcreteType[Transaction.UnsignedTransaction]
       .addConcreteType[Transaction.AuthorizedTransaction]
-
 
   //---------------------------------------------------------------------------
   // Transcoding

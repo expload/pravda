@@ -12,10 +12,7 @@ import korolev.state.javaSerialization._
 
 import scala.concurrent.Future
 
-
-class GuiRoute(implicit system: ActorSystem,
-               materializer: ActorMaterializer,
-              ) {
+class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
   import GuiRoute._
   import globalContext._
@@ -68,7 +65,7 @@ class GuiRoute(implicit system: ActorSystem,
 object GuiRoute {
 
   final case class GuiState(
- )
+      )
 
   val globalContext: Context[Future, GuiState, Any] =
     Context[Future, GuiState, Any]

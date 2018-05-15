@@ -8,15 +8,15 @@ import shapeless.{::, HNil}
 import scala.concurrent.Future
 
 class Entry[K, V](
-                   db: DB,
-                   prefix: String,
-                   keyWriter: KeyWriter[String :: K :: HNil],
-                   valueWriter: ValueWriter[V],
-                   valueReader: ValueReader[V]
-                 ) {
+    db: DB,
+    prefix: String,
+    keyWriter: KeyWriter[String :: K :: HNil],
+    valueWriter: ValueWriter[V],
+    valueReader: ValueReader[V]
+) {
   type KeyType = String :: K :: HNil
 
-  def key(id: K) : KeyType = prefix :: id :: HNil
+  def key(id: K): KeyType = prefix :: id :: HNil
 
   def put(id: K) = db.put(key(id))(keyWriter)
 
@@ -52,18 +52,22 @@ class Entry[K, V](
 }
 
 object Entry {
+
   def apply[K, V](prefix: String)(
-    implicit db: DB,
-    keyWriter: KeyWriter[String :: K :: HNil],
-    valueWriter: ValueWriter[V],
-    valueReader: ValueReader[V]
+      implicit db: DB,
+      keyWriter: KeyWriter[String :: K :: HNil],
+      valueWriter: ValueWriter[V],
+      valueReader: ValueReader[V]
   ) = new Entry(db, prefix, keyWriter, valueWriter, valueReader)
 }
 
 class SingleEntry[V](
-                      db: DB, key: String, keyWriter: KeyWriter[String],
-                      valueWriter: ValueWriter[V], valueReader: ValueReader[V]
-                    ) {
+    db: DB,
+    key: String,
+    keyWriter: KeyWriter[String],
+    valueWriter: ValueWriter[V],
+    valueReader: ValueReader[V]
+) {
 
   def put(value: V) = db.put(key, value)(keyWriter, valueWriter)
 
@@ -78,10 +82,11 @@ class SingleEntry[V](
 }
 
 object SingleEntry {
+
   def apply[V](key: String)(
-    implicit db: DB,
-    keyWriter: KeyWriter[String],
-    valueWriter: ValueWriter[V],
-    valueReader: ValueReader[V]
+      implicit db: DB,
+      keyWriter: KeyWriter[String],
+      valueWriter: ValueWriter[V],
+      valueReader: ValueReader[V]
   ) = new SingleEntry(db, key, keyWriter, valueWriter, valueReader)
 }

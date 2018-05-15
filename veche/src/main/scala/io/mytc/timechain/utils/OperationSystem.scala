@@ -5,8 +5,8 @@ sealed abstract class OperationSystem(name: String) {
 }
 
 object OperationSystem {
-  case object Windows extends OperationSystem("windows")
-  case object Linux extends OperationSystem("linux")
-  case object MacOS extends OperationSystem("macos")
+  case object Windows     extends OperationSystem("windows")
+  case object Linux       extends OperationSystem("linux")
+  case object MacOS       extends OperationSystem("macos")
   case object Unsupported extends OperationSystem("?")
 }

@@ -1,6 +1,5 @@
 package io.mytc.timechain.data.serialization
 
-
 import com.google.protobuf.ByteString
 import io.mytc.timechain.clients.AbciClient._
 import io.mytc.timechain.data.TimechainConfig
@@ -17,7 +16,6 @@ import tethys.readers.FieldName
 import tethys.readers.tokens.TokenIterator
 import tethys.writers.tokens.TokenWriter
 import supertagged.{Tagged, lifterF}
-
 
 object json {
 
@@ -56,18 +54,16 @@ object json {
       if (token.isNullValue) {
         it.skipExpression()
         JsonAST.JNull
-      }
-      else if (token.isArrayStart) {
+      } else if (token.isArrayStart) {
         var ar = Vector.empty[JValue]
-        while(!token.isArrayEnd) {
+        while (!token.isArrayEnd) {
           ar = ar :+ json4sReader.read(it)
         }
         it.skipExpression()
         JsonAST.JArray(
           ar.toList
         )
-      }
-      else if (token.isObjectStart) objReader.read(it)
+      } else if (token.isObjectStart) objReader.read(it)
       else if (token.isStringValue) JsonAST.JString(JsonReader.stringReader.read(it))
       else if (token.isNumberValue) JsonAST.JDecimal(JsonReader.bigDecimalReader.read(it))
       else if (token.isBooleanValue) JsonAST.JBool(JsonReader.booleanReader.read(it))
@@ -78,14 +74,14 @@ object json {
   implicit val json4sWriter: JsonWriter[JValue] = new JsonWriter[JValue] {
 
     def write(value: JValue, tokenWriter: TokenWriter): Unit = value match {
-      case JsonAST.JNothing => tokenWriter.writeNull()
-      case JsonAST.JNull => tokenWriter.writeNull()
-      case JsonAST.JBool(bool) => tokenWriter.writeBoolean(bool)
+      case JsonAST.JNothing      => tokenWriter.writeNull()
+      case JsonAST.JNull         => tokenWriter.writeNull()
+      case JsonAST.JBool(bool)   => tokenWriter.writeBoolean(bool)
       case JsonAST.JDecimal(num) => tokenWriter.writeNumber(num)
-      case JsonAST.JDouble(num) => tokenWriter.writeNumber(num)
-      case JsonAST.JInt(num) => tokenWriter.writeNumber(num)
-      case JsonAST.JLong(num) => tokenWriter.writeNumber(num)
-      case JsonAST.JString(s) => tokenWriter.writeString(s)
+      case JsonAST.JDouble(num)  => tokenWriter.writeNumber(num)
+      case JsonAST.JInt(num)     => tokenWriter.writeNumber(num)
+      case JsonAST.JLong(num)    => tokenWriter.writeNumber(num)
+      case JsonAST.JString(s)    => tokenWriter.writeString(s)
       case JsonAST.JObject(xs) =>
         tokenWriter.writeObjectStart()
         for ((k, v) <- xs) {
@@ -112,9 +108,12 @@ object json {
     jsonReader[TimechainConfig.Genesis] {
       describe {
         ReaderBuilder[TimechainConfig.Genesis]
-          .extract(_.time).from("genesis_time".as[String])(identity)
-          .extract(_.chainId).from("chain_id".as[String])(identity)
-          .extract(_.appHash).from("app_hash".as[String])(identity)
+          .extract(_.time)
+          .from("genesis_time".as[String])(identity)
+          .extract(_.chainId)
+          .from("chain_id".as[String])(identity)
+          .extract(_.appHash)
+          .from("app_hash".as[String])(identity)
       }
     }
 
@@ -122,9 +121,12 @@ object json {
     jsonWriter[TimechainConfig.Genesis] {
       describe {
         WriterBuilder[TimechainConfig.Genesis]
-          .remove(_.time).add("genesis_time")(_.time)
-          .remove(_.chainId).add("chain_id")(_.chainId)
-          .remove(_.appHash).add("app_hash")(_.appHash)
+          .remove(_.time)
+          .add("genesis_time")(_.time)
+          .remove(_.chainId)
+          .add("chain_id")(_.chainId)
+          .remove(_.appHash)
+          .add("app_hash")(_.appHash)
       }
     }
 
@@ -132,7 +134,8 @@ object json {
     jsonReader[TimechainConfig.GenesisValidator] {
       describe {
         ReaderBuilder[TimechainConfig.GenesisValidator]
-          .extract(_.publicKey).from("pub_key".as[TimechainConfig.CryptoKey])(identity)
+          .extract(_.publicKey)
+          .from("pub_key".as[TimechainConfig.CryptoKey])(identity)
       }
     }
 
@@ -140,7 +143,8 @@ object json {
     jsonWriter[TimechainConfig.GenesisValidator] {
       describe {
         WriterBuilder[TimechainConfig.GenesisValidator]
-          .remove(_.publicKey).add("pub_key")(_.publicKey)
+          .remove(_.publicKey)
+          .add("pub_key")(_.publicKey)
       }
     }
 
@@ -172,8 +176,6 @@ object json {
   // Domain RWs for tethys
   //---------------------------------------------------------------------------
 
-
-
   //---------------------------------------------------------------------------
   // Misc RWs
   //---------------------------------------------------------------------------
@@ -183,7 +185,6 @@ object json {
 
   implicit val domainNodeSettingsWriter: JsonWriter[NodeSettings] =
     jsonWriter[NodeSettings]
-
 
   //---------------------------------------------------------------------------
   // ABCI
@@ -233,8 +234,6 @@ object json {
 
   implicit def tethysJsonDecoder[T: JsonReader]: Transcoder[Json, T] =
     _.jsonAs[T].fold(throw _, identity)
-
-
   //  implicit val zdtPushkaWriter = new Writer[ZonedDateTime] {
 //    def write(value: ZonedDateTime): Ast =
 //      Ast.Str(value.format(PushkaDateTimeFormatter))

@@ -1,4 +1,5 @@
 package io.mytc.timechain
+
 package persistence
 
 import java.io.{File, PrintWriter}
@@ -19,6 +20,7 @@ object FileStore {
   private lazy val nodeSettingsFile = new File(timeChainConfig.dataDirectory, "node-settings.json")
 
   def readNodeSettingsAsync() = Future(readNodeSettings())
+
   def readNodeSettings(): Option[NodeSettings] = {
     if (nodeSettingsFile.exists()) {
       Some(transcode(Json @@ Source.fromFile(nodeSettingsFile).mkString).to[NodeSettings])
@@ -28,6 +30,7 @@ object FileStore {
   }
 
   def updateNodeSettingsAsync(settings: NodeSettings) = Future(updateNodeSettings(settings))
+
   def updateNodeSettings(settings: NodeSettings): Unit = {
     val pw = new PrintWriter(nodeSettingsFile)
     try {

@@ -12,7 +12,6 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
 import io.mytc.timechain.persistence.{BlockChainStore, NodeStore}
 
-
 object launcher extends App {
 
   import Config._
@@ -21,11 +20,9 @@ object launcher extends App {
     sys.props.put("config.file", path)
   }
 
-
   private implicit val system: ActorSystem = ActorSystem("timechain-system")
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-
 
   val bcPath = new File(timeChainConfig.dataDirectory.getAbsolutePath, "bc_data").getAbsolutePath
   val nodePath = new File(timeChainConfig.dataDirectory.getAbsolutePath, "node_data").getAbsolutePath
@@ -36,6 +33,7 @@ object launcher extends App {
   val abciClient = new AbciClient(timeChainConfig.tendermint.rpcPort)
 
   val abci = new Abci(abciClient)
+
   val server = Server(
     cfg = Server.Config(
       host = "127.0.0.1",

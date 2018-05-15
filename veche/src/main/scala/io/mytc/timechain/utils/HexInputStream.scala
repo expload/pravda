@@ -5,7 +5,7 @@ import java.io.InputStream
 final class HexInputStream extends InputStream {
 
   import HexInputStream._
-  
+
   private var i = 0
   private var hex: CharSequence = ""
 

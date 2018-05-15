@@ -20,22 +20,23 @@ object cryptography {
   import Transaction._
 
   object PrivateKey extends TaggedType[ByteString] {
+
     def fromHex(hex: String): PrivateKey =
       PrivateKey(ByteString.copyFrom(hex2bytes(hex)))
   }
   type PrivateKey = PrivateKey.Type
 
   final case class EncryptedPrivateKey(
-    keyEncryptedData: ByteString,
-    keyIv: ByteString,
-    keySalt: ByteString
+      keyEncryptedData: ByteString,
+      keyIv: ByteString,
+      keySalt: ByteString
   )
 
   final case class SecurePasswordHash(
-    passwordAlgorithm: String,
-    passwordIterations: Int,
-    passwordSalt: ByteString,
-    passwordHash: ByteString
+      passwordAlgorithm: String,
+      passwordIterations: Int,
+      passwordSalt: ByteString,
+      passwordHash: ByteString
   ) {
 
     def mkString: String = {

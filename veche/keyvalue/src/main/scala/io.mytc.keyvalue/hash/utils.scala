@@ -23,8 +23,9 @@ object utils {
   }
 
   def xor(arr1: Array[Byte], arr2: Array[Byte]): Array[Byte] = {
-    arr1.zip(arr2).map { case (el1, el2) =>
-      (el1 ^ el2).toByte
+    arr1.zip(arr2).map {
+      case (el1, el2) =>
+        (el1 ^ el2).toByte
     }
   }
 

@@ -1,5 +1,3 @@
 package io.mytc.timechain
 
-package object persistence {
-
-}
+package object persistence {}

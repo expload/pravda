@@ -35,7 +35,7 @@ object ByteWriter {
   implicit val booleanWriter: ByteWriter[Boolean] = new ByteWriter[Boolean] {
     override def toBytes(value: Boolean): Array[Byte] = {
       Array(
-        if(value) 0.toByte else 1.toByte
+        if (value) 0.toByte else 1.toByte
       )
     }
   }

@@ -1,4 +1,5 @@
 package io.mytc.timechain
+
 package servers
 
 import akka.http.scaladsl.server.Directives._
@@ -19,6 +20,4 @@ class ApiRoute(abciClient: AbciClient) {
 
 }
 
-object ApiRoute {
-
-}
+object ApiRoute {}

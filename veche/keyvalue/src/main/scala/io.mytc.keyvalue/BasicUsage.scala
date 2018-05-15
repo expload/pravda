@@ -23,8 +23,7 @@ object BasicUsage {
   val f = for {
     _ <- db.put("newkey", "newvalue2")
     v <- db.getAs[String]("newkey")
-  } yield(v)
+  } yield (v)
   println(Await.result(f, Duration.Inf))
 
 }
-
