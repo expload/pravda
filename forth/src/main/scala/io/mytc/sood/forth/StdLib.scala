@@ -28,6 +28,7 @@ object StdLib {
       fmod,
       eqls,
       neq,
+      not,
       dup(1), dup(2), dup(3), dup(4), dup(5)
     ).flatten
 
@@ -100,6 +101,12 @@ object StdLib {
   val neq: Seq[Op] = Seq(
     Op.Label("neq"),
     Op.Eq,
+    Op.Not,
+    Op.Ret
+  )
+
+  val not: Seq[Op] = Seq(
+    Op.Label("not"),
     Op.Not,
     Op.Ret
   )

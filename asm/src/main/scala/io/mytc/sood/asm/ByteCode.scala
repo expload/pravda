@@ -45,6 +45,8 @@ class ByteCode {
 
         case Op.JumpI(n) ⇒ {
           val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.int32ToWord(0)
           code += VM.JUMPI
           (Op.JumpI(n), offset)
         }
@@ -163,16 +165,6 @@ class ByteCode {
           (Op.Dupn, offset)
         }
 
-        case Op.Label(n) ⇒ {
-          val offset = code.size
-          (Op.Label(n), offset)
-        }
-
-        case Op.Nop ⇒ {
-          val offset = code.size
-          (Op.Nop, offset)
-        }
-
         case op @ Op.LCall(address, func, argsNum) =>
           val offset = code.size
           code += VM.PUSHX
@@ -197,6 +189,16 @@ class ByteCode {
           val offset = code.size
           code += VM.SPUT
           (Op.SPut, offset)
+
+        case Op.Nop ⇒ {
+          val offset = code.size
+          (Op.Nop, offset)
+        }
+
+        case Op.Label(n) ⇒ {
+          val offset = code.size
+          (Op.Label(n), offset)
+        }
       }
       .collect { case (Op.Label(n), v) ⇒ (n, v) }
       .toMap

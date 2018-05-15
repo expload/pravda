@@ -128,4 +128,17 @@ class ForthStdLibTest extends FlatSpec with Matchers {
 
   }
 
+  "not" must "push !top of the stack" in {
+
+    assert( run[Boolean]( """
+      1 2
+      eq
+      not
+    """ ) == Right(
+      List(true)
+    ))
+
+  }
+
+
 }

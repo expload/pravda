@@ -116,8 +116,8 @@ object Vm {
             program.position(dataToInt32(memory.pop()))
             aux()
           case JUMPI =>
-            val condition = memory.pop()
             val position = memory.pop()
+            val condition = memory.pop()
             if (dataToBool(condition))
               program.position(dataToInt32(position))
             aux()

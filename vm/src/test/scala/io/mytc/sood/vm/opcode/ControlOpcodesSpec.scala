@@ -53,19 +53,19 @@ class ControlOpcodesSpec extends FlatSpec with Matchers {
 
   "JUMPI opcode" should "do a conditional jump" in {
     def iprogram(i: Int) = prog
-      .opcode(PUSHX) // 0
-      .put(19) // 1
       .opcode(PUSHX) // 6
       .put(i) // 7
+      .opcode(PUSHX) // 0
+      .put(19) // 1
       .opcode(JUMPI) // 12
       .opcode(PUSHX).put(31) // 13, 14
       .opcode(PUSHX).put(54) // 19, 20
 
     def bprogram(b: Byte) = prog
-      .opcode(PUSHX) // 0
-      .put(15) // 1
       .opcode(PUSHX) // 6
       .put(b) // 7
+      .opcode(PUSHX) // 0
+      .put(15) // 1
       .opcode(JUMPI) // 8
       .opcode(PUSHX).put(31) // 9, 10
       .opcode(PUSHX).put(54) // 15, 16
