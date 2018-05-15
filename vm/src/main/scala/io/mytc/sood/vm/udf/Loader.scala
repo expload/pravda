@@ -3,13 +3,13 @@ package udf
 
 import java.nio.ByteBuffer
 
-import scodec.bits.ByteVector
+import com.google.protobuf.ByteString
 import state.{Address, WorldState}
 
 import scala.collection.mutable
 
 object Loader extends Loader {
-  type ExternalTable = mutable.Map[ByteVector, Int]
+  type ExternalTable = mutable.Map[ByteString, Int]
 
   private def readExternalTable(program: ByteBuffer): ExternalTable = {
     val table: ExternalTable = mutable.Map.empty
@@ -17,7 +17,7 @@ object Loader extends Loader {
     for (i <- 1 to n) {
       val address = wordToBytes(program)
       val position = wordToInt32(program)
-      table += (ByteVector(address) -> position)
+      table += (ByteString.copyFrom(address) -> position)
     }
     table
   }
@@ -30,7 +30,7 @@ object Loader extends Loader {
       if (program.get() == Opcodes.FTBL) {
         val table: ExternalTable = readExternalTable(program)
         val lib = new Library {
-          override def func(name: ByteVector): Option[Function] = {
+          override def func(name: ByteString): Option[Function] = {
             table.get(name).map { i =>
               val prog = program.duplicate()
               prog.position(i)

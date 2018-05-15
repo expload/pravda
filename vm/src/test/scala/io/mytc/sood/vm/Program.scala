@@ -4,12 +4,11 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import state.Data
-import VmUtils._
-import scodec.bits.ByteVector
+import com.google.protobuf.ByteString
 
 final case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
   lazy val buffer: ByteBuffer =
-    ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toArray)).toArray ++ bytes)
+    ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toByteArray)).toArray ++ bytes)
 
   def put(d: Double): Program = {
     copy(bytes ++ doubleToWord(d))
@@ -24,8 +23,8 @@ final case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector
   def put(bs: Array[Byte]): Program = {
     copy(bytes ++ bytesToWord(bs))
   }
-  def put(bs: ByteVector): Program = {
-    copy(bytes ++ bytesToWord(bs.toArray))
+  def put(bs: ByteString): Program = {
+    copy(bytes ++ bytesToWord(bs.toByteArray))
   }
   def put(bs: String): Program = {
     copy(bytes ++ bytesToWord(bs.getBytes(StandardCharsets.UTF_8)))
@@ -42,12 +41,13 @@ final case class Program(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector
   def length: Int = bytes.length
   def + (p: Program): Program = copy(bytes = bytes ++ p.bytes, stack = stack ++ p.stack)
 
-  override def toString: String = {
-    s"""
-       |program: ${hex(bytes)}
-       |init stack:
-       |  ${stack.reverse.map(x => x.toHex).mkString("\n\t")}
-     """.stripMargin
-  }
+  // FIXME
+//  override def toString: String = {
+//    s"""
+//       |program: ${hex(bytes)}
+//       |init stack:
+//       |  ${stack.reverse.map(x => x.toHex).mkString("\n\t")}
+//     """.stripMargin
+//  }
 }
 

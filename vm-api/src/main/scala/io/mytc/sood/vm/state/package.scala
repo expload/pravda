@@ -1,8 +1,8 @@
 package io.mytc.sood.vm
 
-import scodec.bits.ByteVector
+import com.google.protobuf.ByteString
 
 package object state {
-  type Data = ByteVector // TODO: replace it with ByteString
-  type Address = ByteVector // TODO: replace it with ByteString
+  type Data = ByteString
+  type Address = ByteString
 }

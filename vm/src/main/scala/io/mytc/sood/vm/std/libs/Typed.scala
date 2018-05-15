@@ -1,5 +1,6 @@
 package io.mytc.sood.vm.std.libs
 
+import com.google.protobuf.ByteString
 import io.mytc.sood.vm.serialization._
 import io.mytc.sood.vm.state.Data
 import io.mytc.sood.vm.std.{Func, Lib}
@@ -9,11 +10,12 @@ object Typed extends Lib {
   val Int32Tag: Byte = 1
   val Float64Tag: Byte = 2
 
+  // FIXME optimize
   def dataToTyped(typeTag: Byte, data: Data): Data =
-    typeTag +: data
+    ByteString.copyFrom(Array(typeTag)).concat(data)
 
   def typedTag(data: Data): Byte =
-    data(0)
+    data.byteAt(0)
 
   val typedI32: Func = Func("typedI32", m => {
     m.copy(stack = m.stack.map(dataToTyped(Int32Tag, _)))
@@ -39,22 +41,22 @@ object Typed extends Lib {
           case (Int32Tag, Int32Tag) =>
             dataToTyped(Int32Tag,
                         int32ToData(
-                          ii2i(dataToInt32(a.drop(1)), dataToInt32(b.drop(1)))
+                          ii2i(dataToInt32(a.substring(1)), dataToInt32(b.substring(1)))
                         ))
           case (Float64Tag, Float64Tag) =>
             dataToTyped(Float64Tag,
                         doubleToData(
-                          ff2f(dataToDouble(a.drop(1)), dataToDouble(b.drop(1)))
+                          ff2f(dataToDouble(a.substring(1)), dataToDouble(b.substring(1)))
                         ))
           case (Int32Tag, Float64Tag) =>
             dataToTyped(Float64Tag,
                         doubleToData(
-                          if2f(dataToInt32(a.drop(1)), dataToDouble(b.drop(1)))
+                          if2f(dataToInt32(a.substring(1)), dataToDouble(b.substring(1)))
                         ))
           case (Float64Tag, Int32Tag) =>
             dataToTyped(Float64Tag,
                         doubleToData(
-                          fi2f(dataToDouble(a.drop(1)), dataToInt32(b.drop(1)))
+                          fi2f(dataToDouble(a.substring(1)), dataToInt32(b.substring(1)))
                         ))
           case (_, _) => int32ToData(0) // FIXME
         }

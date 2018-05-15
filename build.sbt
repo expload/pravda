@@ -26,7 +26,7 @@ lazy val vmApi = (project in file("vm-api")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
-      "org.scodec" %% "scodec-bits" % "1.1.5",
+			"com.google.protobuf" % "protobuf-java" % "3.5.0",
       "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
     )
   )
@@ -41,8 +41,7 @@ lazy val vm = (project in file("vm")).
       "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
     )
   ).
-  aggregate(vmApi).
-  dependsOn(vmApi)
+	dependsOn(vmApi)
 
 lazy val asm = (project in file("asm")).
   dependsOn(vmApi).

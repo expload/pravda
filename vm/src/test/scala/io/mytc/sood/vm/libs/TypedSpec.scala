@@ -1,5 +1,6 @@
 package io.mytc.sood.vm.libs
 
+import com.google.protobuf.ByteString
 import io.mytc.sood.vm._
 import org.scalatest.{FlatSpec, Matchers}
 import io.mytc.sood.vm.VmUtils._
@@ -74,7 +75,7 @@ class TypedSpec extends FlatSpec with Matchers {
 
       val execRes = exec(typedFuncI)
 
-      execRes shouldBe stack(1.toByte +: int32ToData(iFunc(i1, i2)))
+      execRes shouldBe stack(ByteString.copyFrom(Array(1.toByte)) concat int32ToData(iFunc(i1, i2)))
 
       val programR = prog
         .opcode(PUSHX)
@@ -92,7 +93,7 @@ class TypedSpec extends FlatSpec with Matchers {
         .put(typedFunc)
         .put(2)
 
-      exec(typedAddR) shouldBe stack(2.toByte +: doubleToData(fFunc(f1, f2)))
+      exec(typedAddR) shouldBe stack(ByteString.copyFrom(Array(2.toByte)) concat doubleToData(fFunc(f1, f2)))
     }
   }
 

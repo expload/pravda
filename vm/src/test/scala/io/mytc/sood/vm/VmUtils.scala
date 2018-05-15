@@ -2,8 +2,8 @@ package io.mytc.sood.vm
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
 import io.mytc.sood.vm.state._
-import scodec.bits.ByteVector
 import serialization._
 
 object VmUtils {
@@ -41,16 +41,17 @@ object VmUtils {
     doubleToData(v)
   }
 
-  def binaryData(i: Int*): Data = {
-    ByteVector(i:_*)
-  }
+  // FIXME lead to bugs
+  /** They are NOT integers, they are bytes! */
+  def binaryData(i: Int*): Data =
+    ByteString.copyFrom(i.map(_.toByte).toArray)
 
   def data(i: Int): Data = {
     int32ToData(i)
   }
 
   def data(b: Byte): Data = {
-    ByteVector(b)
+    ByteString.copyFrom(Array(b))
   }
 
   def int(d: Data): Int = {

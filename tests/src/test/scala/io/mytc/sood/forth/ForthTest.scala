@@ -1,8 +1,8 @@
 package io.mytc.sood.forth
 
+import com.google.protobuf.ByteString
 import io.mytc.sood.vm.state.{AccountState, Address, WorldState}
 import org.scalatest._
-import scodec.bits.ByteVector
 
 
 class ForthTest extends FlatSpec with Matchers {
@@ -12,32 +12,29 @@ class ForthTest extends FlatSpec with Matchers {
   import java.nio.ByteBuffer
 
   trait StackItem[T] {
-    def get(item: ByteVector): T
+    def get(item: ByteString): T
   }
 
   object StackItem {
 
-    implicit val intStackItem: StackItem[Int] = new StackItem[Int] {
-      def get(item: ByteVector): Int = item.foldLeft(0){ case (s, i) => s + i }
-    }
+    implicit val intStackItem: StackItem[Int] =
+      (item: ByteString) => ByteBuffer.wrap(item.toByteArray).getInt
 
-    implicit val floatStackItem: StackItem[Double] = new StackItem[Double] {
-      def get(item: ByteVector): Double = item.toByteBuffer.getDouble
-    }
+    implicit val floatStackItem: StackItem[Double] =
+      (item: ByteString) => ByteBuffer.wrap(item.toByteArray).getDouble
 
   }
 
   def run[T](code: String)(implicit stackItem: StackItem[T]): Either[String, List[T]] = {
     Compiler().compile(code, useStdLib=true) match {
       case Left(err)   ⇒ Left(err)
-      case Right(code) ⇒ {
+      case Right(code) ⇒
         val emptyState = new WorldState {
           override def get(address: Address): Option[AccountState] = None
         }
         val stack = Vm.runTransaction(ByteBuffer.wrap(code), emptyState).stack
-        Right(stack.map(_.foldLeft(0){ case (s, i) => s + i }).toList)
+        Right(stack.map(x => StackItem.intStackItem(x)).toList)
         Right(stack.map(stackItem.get).toList)
-      }
     }
   }
 

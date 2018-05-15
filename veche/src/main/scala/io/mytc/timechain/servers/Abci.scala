@@ -2,8 +2,11 @@ package io.mytc.timechain
 
 package servers
 
+import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import io.mytc.timechain.clients.AbciClient
+
+import scala.collection.mutable
 import scala.concurrent.Future
 
 class Abci(abciClient: AbciClient) extends io.mytc.tendermint.abci.Api {
