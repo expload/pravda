@@ -13,6 +13,10 @@ object StdLib {
   : % mod ;
   : == eq ;
   : != neq ;
+  : < lt ;
+  : > gt ;
+  : <= gt not ;
+  : >= lt not ;
   : dup dup1 ;
   """ }
 
@@ -28,6 +32,8 @@ object StdLib {
       fmod,
       eqls,
       neq,
+      lt,
+      gt,
       not,
       dup(1), dup(2), dup(3), dup(4), dup(5),
       sget,
@@ -106,6 +112,18 @@ object StdLib {
     Op.Label("neq"),
     Op.Eq,
     Op.Not,
+    Op.Ret
+  )
+
+  val lt: Seq[Op] = Seq(
+    Op.Label("lt"),
+    Op.I32LT,
+    Op.Ret
+  )
+
+  val gt: Seq[Op] = Seq(
+    Op.Label("gt"),
+    Op.I32GT,
     Op.Ret
   )
 

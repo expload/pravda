@@ -276,6 +276,7 @@ object Vm {
     } catch {
       case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, progAddress))
       case other: Exception =>
+        other.printStackTrace()
         throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), progAddress))
     }
 

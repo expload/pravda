@@ -38,6 +38,9 @@ object ForthTestUtils {
       case Right(code) ⇒
         val emptyState = new Environment {
           override def getProgram(address: Address): Option[ProgramContext] = None
+          override def updateProgram(address: Data, code: Data): Unit = ???
+          override def createProgram(owner: Address, code: Data): Address = ???
+          override def getProgramOwner(address: Address): Option[Address] = ???
         }
         val stack = Vm.runRaw(ByteString.copyFrom(code), ByteString.EMPTY, emptyState).stack
         Right(stack.map(stackItem.get).toList)
@@ -67,6 +70,10 @@ object ForthTestUtils {
             } else {
               None
             }
+
+          override def updateProgram(address: Data, code: Data): Unit = ???
+          override def createProgram(owner: Address, code: Data): Address = ???
+          override def getProgramOwner(address: Address): Option[Address] = ???
         }
         val stack = Vm.runProgram(programAddress, Memory.empty, ByteString.EMPTY, stateWithAccount).stack
         Right(

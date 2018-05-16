@@ -33,17 +33,17 @@ class ForthSmartProgramTest extends FlatSpec with Matchers {
         |: balance $xBA concat ;
         |: allowed concat $xA1 concat  ;
         |dup1 1 == if dup2 balance sget then
-        |dup1 2 == if exct balance sget dup3 <= if
-        |                  exct balance dup1 sget dup4 - sput
+        |dup1 2 == if from balance sget dup3 <= if
+        |                  from balance dup1 sget dup4 - sput
         |                  dup3 balance dup1 sget dup4 + sput
         |          then then
         |dup1 3 == if dup4 balance sget dup3 <= if
-        |             dup4 exct allowed sget dup3 <= if
+        |             dup4 from allowed sget dup3 <= if
         |                  dup4 balance dup1 sget dup4 - sput
-        |                  dup4 exct allowed dup1 sget dup4 - sput
+        |                  dup4 from allowed dup1 sget dup4 - sput
         |                  dup3 balance dup1 sget dup4 + sput
         |          then then then
-        |dup1 4 == if exct dup4 allowed dup3 sput then
+        |dup1 4 == if from dup4 allowed dup3 sput then
         |dup1 5 == if dup3 dup3 allowed sget then
       """.stripMargin
 
