@@ -2,10 +2,10 @@ package io.mytc.sood.asm
 
 object Application {
 
-  case class Config(
-    out: String         = "a.mytc",
-    hexDump: Boolean    = false,
-    files: Seq[String]  = Seq.empty[String]
+  final case class Config(
+      out: String = "a.mytc",
+      hexDump: Boolean = false,
+      files: Seq[String] = Seq.empty[String]
   )
 
   def compile(filename: String): Either[String, Array[Byte]] = {
@@ -50,21 +50,30 @@ object Application {
     val optParser = new scopt.OptionParser[Config]("scopt") {
       head("Forth language compiler", "")
 
-      opt[String]('o', "output").action{ (name, c) =>
-        c.copy(out = name)
-      }.text("Output file")
+      opt[String]('o', "output")
+        .action { (name, c) =>
+          c.copy(out = name)
+        }
+        .text("Output file")
 
-      opt[Unit]('x', "hex").action{ (_, c) =>
-        c.copy(hexDump = true)
-      }.text("Hex dump of bytecode")
+      opt[Unit]('x', "hex")
+        .action { (_, c) =>
+          c.copy(hexDump = true)
+        }
+        .text("Hex dump of bytecode")
 
-      opt[String]('o', "output").action{ (name, c) =>
-        c.copy(out = name)
-      }.text("Output file or stdout (hex string)")
+      opt[String]('o', "output")
+        .action { (name, c) =>
+          c.copy(out = name)
+        }
+        .text("Output file or stdout (hex string)")
 
-      arg[String]("<filename>").unbounded().action{ (name, c) =>
-        c.copy(files = c.files :+ name)
-      }.text("Files to compile")
+      arg[String]("<filename>")
+        .unbounded()
+        .action { (name, c) =>
+          c.copy(files = c.files :+ name)
+        }
+        .text("Files to compile")
 
       help("help").text("Simple usage: forth filename.forth")
     }
