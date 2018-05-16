@@ -59,8 +59,7 @@ class AbciClient(port: Int)(implicit
     }
   }
 
-  def broadcastBytes(bytes: Array[Byte],
-                     mode: String = "commit"): Future[Unit] = {
+  def broadcastBytes(bytes: Array[Byte], mode: String = "commit"): Future[Unit] = {
 
     val uri = Uri(s"http://127.0.0.1:$port/broadcast_tx_$mode")
       .withQuery(Uri.Query("tx" -> ("0x" + bytes2hex(bytes))))
@@ -70,8 +69,7 @@ class AbciClient(port: Int)(implicit
       .flatMap(handleResponse(_, mode))
   }
 
-  def broadcastTransaction(tx: SignedTransaction,
-                           mode: String = "commit"): Future[Unit] = {
+  def broadcastTransaction(tx: SignedTransaction, mode: String = "commit"): Future[Unit] = {
 
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)

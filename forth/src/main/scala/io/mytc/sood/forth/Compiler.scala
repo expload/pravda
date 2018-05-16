@@ -1,6 +1,7 @@
 package io.mytc.sood.forth
 
 class Compiler {
+
   def compile(code: String, useStdLib: Boolean = false): Either[String, Array[Byte]] = {
     import io.mytc.sood.asm.Assembler
     val parser = Parser()

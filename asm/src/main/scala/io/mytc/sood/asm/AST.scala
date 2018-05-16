@@ -43,7 +43,7 @@ object Op {
   case object FDiv extends Op // { override def toString = "fdiv" }
   case object FMod extends Op // { override def toString = "fmod" }
 
-  case object Not extends Op
+  case object Not   extends Op
   case object I32LT extends Op
   case object I32GT extends Op
 
@@ -51,9 +51,9 @@ object Op {
 //
   case object Nop extends Op // { override def toString = "nop" }
 
-  case object Dupn extends Op
-  case object Concat extends Op
-  case object From extends Op
+  case object Dupn    extends Op
+  case object Concat  extends Op
+  case object From    extends Op
   case object PCreate extends Op
   case object PUpdate extends Op
 

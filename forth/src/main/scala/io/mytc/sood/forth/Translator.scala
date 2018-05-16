@@ -24,18 +24,19 @@ class Translator {
   def translateStmts(stmts: Seq[Statement], prefix: String): Seq[Op] = {
     stmts.zipWithIndex.flatMap { w ⇒
       w match {
-        case (Statement.Ident(n), i) ⇒ List( Op.Call(mangle(n))         )
-        case (Statement.Integ(v), i) ⇒ List( Op.Push(Datum.Integral(v)) )
-        case (Statement.Float(v), i) ⇒ List( Op.Push(Datum.Floating(v)) )
-        case (Statement.Hexar(v), i) ⇒ List( Op.Push(Datum.Rawbytes(v)) )
-        case (Statement.If(p, n), i) ⇒ List(
-                                         List(Op.Not),
-                                         List(Op.JumpI(mangleIf(prefix, i))),
-                                         translateStmts(p, prefix + prefix),
-                                         List(Op.Label(mangleIf(prefix, i)))
-                                       ).flatten
-        case (Statement.ECall(a, n), i) ⇒ List( Op.PCall(a, n) )
-        case _                       ⇒ List( Op.Nop )
+        case (Statement.Ident(n), i) ⇒ List(Op.Call(mangle(n)))
+        case (Statement.Integ(v), i) ⇒ List(Op.Push(Datum.Integral(v)))
+        case (Statement.Float(v), i) ⇒ List(Op.Push(Datum.Floating(v)))
+        case (Statement.Hexar(v), i) ⇒ List(Op.Push(Datum.Rawbytes(v)))
+        case (Statement.If(p, n), i) ⇒
+          List(
+            List(Op.Not),
+            List(Op.JumpI(mangleIf(prefix, i))),
+            translateStmts(p, prefix + prefix),
+            List(Op.Label(mangleIf(prefix, i)))
+          ).flatten
+        case (Statement.ECall(a, n), i) ⇒ List(Op.PCall(a, n))
+        case _                          ⇒ List(Op.Nop)
       }
     }
   }

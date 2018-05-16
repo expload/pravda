@@ -1,6 +1,7 @@
 package io.mytc.sood.asm
 
 class Parser {
+
   object grammar {
     import fastparse.all._
 
@@ -16,7 +17,7 @@ class Parser {
 
     val delim = P(CharIn(" \t\r\n").rep(1))
 
-    val hexs = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map{ str ⇒
+    val hexs = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str ⇒
       Datum.Rawbytes(str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).toByte).toArray)
     }
 
@@ -24,6 +25,7 @@ class Parser {
     val word = P(CharIn('0' to '9').rep(1)).!.map(x ⇒ java.lang.Integer.valueOf(x, 16))
 
     val integ = P(hexw | word).map(x ⇒ Datum.Integral(x))
+
     val numbr =
       P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?).!.map(x ⇒ Datum.Floating(java.lang.Double.valueOf(x)))
 

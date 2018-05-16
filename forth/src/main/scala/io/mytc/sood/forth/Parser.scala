@@ -1,6 +1,7 @@
 package io.mytc.sood.forth
 
 class Parser {
+
   object grammar {
     import fastparse.all._
     val keyword = P("if" | "else" | "then" | "while" | "loop")
@@ -14,12 +15,13 @@ class Parser {
     val nExpPart = P(CharIn("eE") ~ CharIn("+-").? ~ digit.rep)
     val integStmt = P(nSgnPart.? ~ digit.rep(1))
     val numbrStmt = P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?)
-    val hexarStmt = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map{ str ⇒
+
+    val hexarStmt = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str ⇒
       str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).toByte).toArray
     }
     val identStmt = P((digit.rep ~ alpha ~ aldig.rep) | (aldig.rep ~ alpha ~ aldig.rep))
     val dwordStmt = P(":" ~ delim ~ identStmt.! ~ delim ~ blockStmt ~ delim ~ ";")
-    val ifStmt    = P("if" ~ delim ~ blockStmt ~ delim ~ "then")
+    val ifStmt = P("if" ~ delim ~ blockStmt ~ delim ~ "then")
     val ecallStmt = P(hexarStmt ~ ":" ~ integStmt.!.map(_.toInt))
 
     val blockStmt: P[Seq[Statement]] = P(
@@ -27,7 +29,7 @@ class Parser {
         ifStmt.map(b ⇒ Statement.If(b, Seq())) |
         numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
         integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
-        ecallStmt.map{case (a, n) ⇒ Statement.ECall(a, n)} |
+        ecallStmt.map { case (a, n) ⇒ Statement.ECall(a, n) } |
         hexarStmt.map(v ⇒ Statement.Hexar(v)) |
         (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
     ).rep(sep = delim)
