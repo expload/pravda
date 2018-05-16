@@ -19,6 +19,8 @@ object ParserTest extends TestSuite {
           pop
           pop
           concat
+          pcreate
+          pupdate
           ret
         """ ) == Right(Seq(
           Op.Push(Datum.Integral(3)),
@@ -30,6 +32,8 @@ object ParserTest extends TestSuite {
           Op.Pop,
           Op.Pop,
           Op.Concat,
+          Op.PCreate,
+          Op.PUpdate,
           Op.Ret
         ))
       )

@@ -39,7 +39,9 @@ object StdLib {
       sget,
       sput,
       concat,
-      from
+      from,
+      pcreate,
+      pupdate,
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -142,6 +144,18 @@ object StdLib {
   val from: Seq[Op] = Seq(
     Op.Label("from"),
     Op.From,
+    Op.Ret
+  )
+
+  val pcreate: Seq[Op] = Seq(
+    Op.Label("pcreate"),
+    Op.PCreate,
+    Op.Ret
+  )
+
+  val pupdate: Seq[Op] = Seq(
+    Op.Label("pupdate"),
+    Op.PUpdate,
     Op.Ret
   )
 

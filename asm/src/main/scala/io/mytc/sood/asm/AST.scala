@@ -54,6 +54,8 @@ object Op {
   case object Dupn extends Op
   case object Concat extends Op
   case object From extends Op
+  case object PCreate extends Op
+  case object PUpdate extends Op
 
   final case class PCall(address: Array[Byte], argsNum: Int) extends Op
   final case class LCall(address: String, func: String, argsNum: Int) extends Op {
