@@ -2,10 +2,16 @@ import java.nio.file.Files
 
 resolvers += "jitpack" at "https://jitpack.io"
 
+
 val commonSettings = Seq(
   organization := "io.mytc",
   version := "0.0.1",
   crossScalaVersions := Seq("2.12.4"),
+  libraryDependencies ++= Seq(
+    // Tests
+    "com.lihaoyi" %% "utest" % "0.6.3" % "test"
+  ),
+  testFrameworks += new TestFramework("utest.runner.Framework"),
   scalacOptions ++= Seq(
     "-deprecation",
     "-feature",
@@ -26,8 +32,7 @@ lazy val vmApi = (project in file("vm-api")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
-			"com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
+      "com.google.protobuf" % "protobuf-java" % "3.5.0"
     )
   )
 
@@ -36,11 +41,6 @@ lazy val vm = (project in file("vm")).
     normalizedName := "sood",
   ).
   settings( commonSettings: _* ).
-  settings(
-    libraryDependencies ++= Seq (
-      "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
-    )
-  ).
 	dependsOn(vmApi)
 
 lazy val asm = (project in file("asm")).
@@ -54,8 +54,7 @@ lazy val asm = (project in file("asm")).
   settings( mainClass in Compile := Some("io.mytc.sood.asm.Application") ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi"    %% "fastparse"  % "1.0.0",
-      "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
+      "com.lihaoyi"    %% "fastparse"  % "1.0.0"
     )
   )
 
@@ -70,8 +69,7 @@ lazy val forth = (project in file("forth")).
   settings( mainClass in Compile := Some("io.mytc.sood.forth.Application") ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi"    %% "fastparse"  % "1.0.0",
-      "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
+      "com.lihaoyi"    %% "fastparse"  % "1.0.0"
     )
   )
 
@@ -83,12 +81,7 @@ lazy val tests = (project in file("tests")).
     normalizedName := "tests",
     version := "0.0.1"
   ).
-  settings( commonSettings: _* ).
-  settings(
-    libraryDependencies ++= Seq (
-      "org.scalatest"  %% "scalatest"  % "3.0.5"   % Test
-    )
-  )
+  settings( commonSettings: _* )
 
 lazy val cil = (project in file("cil-translator")).
   dependsOn(asm).
@@ -99,8 +92,7 @@ lazy val cil = (project in file("cil-translator")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
-      "org.scalatest"  %% "scalatest"        % "3.0.5"   % Test
+      "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
     )
   )
 
@@ -112,9 +104,8 @@ lazy val keyvalue = (project in file("veche/keyvalue"))
   	.settings(
 			normalizedName := "veche",
 			version      := "0.1.0-SNAPSHOT",
-			libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10",
-			libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
-		)
+			libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
+    )
 
 
 
@@ -143,9 +134,7 @@ lazy val veche = (project in file("veche"))
 		  "io.suzaku" %% "boopickle" % "1.2.6",
 		  "com.lightbend.akka"    %% "akka-stream-alpakka-unix-domain-socket" % "0.17",
 		  "name.pellet.jp" %% "bsonpickle" % "0.4.4.2",
-		  "com.chuusai" %% "shapeless" % "2.3.3",
-		  // Tests
-		  "com.lihaoyi" %% "utest" % "0.6.3" % "test"
+		  "com.chuusai" %% "shapeless" % "2.3.3"
 		),
 		scalacOptions ++= Seq(
 		  "-Xmacro-settings:materialize-derivations"
@@ -178,8 +167,7 @@ lazy val veche = (project in file("veche"))
 		}.taskValue,
 		fork in run := true,
 		connectInput in run := true,
-		outputStrategy in run := Some(OutputStrategy.StdoutOutput),
-		testFrameworks += new TestFramework("utest.runner.Framework")
+		outputStrategy in run := Some(OutputStrategy.StdoutOutput)
 	)
 	.dependsOn(keyvalue)
 	.dependsOn(vm)
