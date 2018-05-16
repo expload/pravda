@@ -1,4 +1,5 @@
 package io.mytc.sood
+
 package vm
 import io.mytc.sood.vm.state.{Address, Environment}
 

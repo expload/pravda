@@ -22,12 +22,14 @@ final case class VmErrorException(error: VmError, stackTrace: StackTrace = Stack
 }
 
 final case class StackTrace(stackTrace: Seq[Point]) {
+
   def +(p: Point): StackTrace = {
     copy(stackTrace = p +: stackTrace)
   }
 }
 
 object StackTrace {
+
   def apply(p: Point): StackTrace = {
     StackTrace(List(p))
   }

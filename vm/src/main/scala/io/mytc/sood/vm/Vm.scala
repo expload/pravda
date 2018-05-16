@@ -1,4 +1,5 @@
 package io.mytc.sood
+
 package vm
 
 import java.nio.ByteBuffer
@@ -39,19 +40,26 @@ object Vm {
 
     val program = account.get.code
     program.rewind()
-    run(program, environment, initMemory, executor, Some(programAddress), Some(account.get.storage), depth, isLibrary = false)
+    run(program,
+        environment,
+        initMemory,
+        executor,
+        Some(programAddress),
+        Some(account.get.storage),
+        depth,
+        isLibrary = false)
   }
 
   // TODO @fomkin: looks like isLibrary and emptiness of storage are the same things.
   private def run(
-                   program: ByteBuffer,
-                   environment: Environment,
-                   memory: Memory,
-                   executor: Address,
-                   progAddress: Option[Address],
-                   progStorage: Option[Storage],
-                   depth: Int,
-                   isLibrary: Boolean
+      program: ByteBuffer,
+      environment: Environment,
+      memory: Memory,
+      executor: Address,
+      progAddress: Option[Address],
+      progStorage: Option[Storage],
+      depth: Int,
+      isLibrary: Boolean
   ): Memory = {
 
     lazy val storage = {
@@ -125,7 +133,14 @@ object Vm {
                     function match {
                       case f: StdFunction => memory ++= f(callData)
                       case UserDefinedFunction(f) =>
-                        memory ++= run(f, environment, callData, executor, Some(address), None, depth + 1, isLibrary = true)
+                        memory ++= run(f,
+                                       environment,
+                                       callData,
+                                       executor,
+                                       Some(address),
+                                       None,
+                                       depth + 1,
+                                       isLibrary = true)
                     }
                 }
             }

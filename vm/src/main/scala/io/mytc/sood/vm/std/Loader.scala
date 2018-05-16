@@ -1,4 +1,5 @@
 package io.mytc.sood.vm
+
 package std
 
 import state.{Environment, Address}
