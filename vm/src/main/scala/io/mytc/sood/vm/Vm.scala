@@ -215,6 +215,9 @@ object Vm {
           case SDROP =>
             storage.delete(memory.pop())
             aux()
+          case SEXIST =>
+            memory.push(boolToData(storage.get(memory.pop()).isEmpty))
+            aux()
           case I32ADD =>
             memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))
             aux()

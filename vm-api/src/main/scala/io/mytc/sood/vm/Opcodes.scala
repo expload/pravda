@@ -33,6 +33,7 @@ object Opcodes {
   final val SPUT = int.SPUT.toByte
   final val SGET = int.SGET.toByte
   final val SDROP = int.SDROP.toByte
+  final val SEXIST = int.SEXIST.toByte
 
   // Int32 operations
   final val I32ADD = int.I32ADD.toByte
@@ -93,6 +94,7 @@ object Opcodes {
     final val SPUT = 0x50
     final val SGET = 0x51
     final val SDROP = 0x52
+    final val SEXIST = 0x53
 
     // Int32 operations
     final val I32ADD = 0x60
