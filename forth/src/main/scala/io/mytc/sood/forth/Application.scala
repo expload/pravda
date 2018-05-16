@@ -4,14 +4,19 @@ object Application {
 
   final case class Config(
       out: String = "a.mytc",
+      inline: Boolean = false,
       hexDump: Boolean = false,
       files: Seq[String] = Seq.empty[String]
   )
 
-  def compile(filename: String): Either[String, Array[Byte]] = {
+  def compile(filename: String, inline: Boolean): Either[String, Array[Byte]] = {
     import scala.io.Source
     val compiler = Compiler()
-    val code = Source.fromFile(filename).getLines.toList.reduce(_ + "\n" + _)
+    val code = if (inline) {
+      filename
+    } else {
+      Source.fromFile(filename).getLines.toList.reduce(_ + "\n" + _)
+    }
     val bcode = compiler.compile(code, useStdLib = true)
     bcode
   }
@@ -22,12 +27,12 @@ object Application {
 
     val fileName = config.files.head
 
-    if (!(new java.io.File(fileName)).exists) {
+    if (!(new java.io.File(fileName)).exists && !config.inline) {
       System.err.println("File not found: " + fileName)
       System.exit(1)
     }
 
-    compile(fileName) match {
+    compile(fileName, config.inline) match {
       case Right(code) ⇒ {
         if (config.hexDump) {
           val hexStr = code.map("%02X" format _).mkString
@@ -64,6 +69,12 @@ object Application {
           c.copy(out = name)
         }
         .text("Output file or stdout (hex string)")
+
+      opt[Unit]('i', "inline")
+        .action { (_, c) =>
+          c.copy(inline = true)
+        }
+        .text("Use inline forth program")
 
       arg[String]("<filename>")
         .unbounded()

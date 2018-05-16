@@ -5,8 +5,22 @@ object Application {
   final case class Config(
       out: String = "a.mytc",
       hexDump: Boolean = false,
-      files: Seq[String] = Seq.empty[String]
+      disasm: Boolean = false,
+      files: Seq[String] = Seq("stdin")
   )
+
+  def decompile(filename: String): Unit = {
+    import scala.io.Source
+    val hexCode = if (filename == "stdin") {
+      Source.stdin.getLines.toList.reduce(_ + _)
+    } else {
+      Source.fromFile(filename).getLines.toList.reduce(_ + _)
+    }
+    val byteCode = (new java.math.BigInteger(hexCode, 16).toByteArray)
+    val asm = Assembler()
+    val asmCode = asm.decompile(byteCode)
+    asmCode.foreach(println)
+  }
 
   def compile(filename: String): Either[String, Array[Byte]] = {
     import scala.io.Source
@@ -22,25 +36,29 @@ object Application {
 
     val fileName = config.files.head
 
-    if (!(new java.io.File(fileName)).exists) {
+    if (!(new java.io.File(fileName)).exists && fileName != "stdin") {
       System.err.println("File not found: " + fileName)
       System.exit(1)
     }
 
-    compile(fileName) match {
-      case Right(code) ⇒ {
-        if (config.hexDump) {
-          val hexStr = code.map("%02X" format _).mkString
-          println(hexStr)
-        } else {
-          val out = new BufferedOutputStream(new FileOutputStream(config.out))
-          out.write(code)
-          out.close()
+    if (config.disasm) {
+      decompile(fileName)
+    } else {
+      compile(fileName) match {
+        case Right(code) ⇒ {
+          if (config.hexDump) {
+            val hexStr = code.map("%02X" format _).mkString
+            println(hexStr)
+          } else {
+            val out = new BufferedOutputStream(new FileOutputStream(config.out))
+            out.write(code)
+            out.close()
+          }
         }
-      }
-      case Left(err) ⇒ {
-        System.err.println(err)
-        System.exit(1)
+        case Left(err) ⇒ {
+          System.err.println(err)
+          System.exit(1)
+        }
       }
     }
   }
@@ -62,6 +80,12 @@ object Application {
         }
         .text("Hex dump of bytecode")
 
+      opt[Unit]('d', "disasm")
+        .action { (_, c) =>
+          c.copy(disasm = true)
+        }
+        .text("Hex dump of bytecode")
+
       opt[String]('o', "output")
         .action { (name, c) =>
           c.copy(out = name)
@@ -70,6 +94,7 @@ object Application {
 
       arg[String]("<filename>")
         .unbounded()
+        .optional()
         .action { (name, c) =>
           c.copy(files = c.files :+ name)
         }
