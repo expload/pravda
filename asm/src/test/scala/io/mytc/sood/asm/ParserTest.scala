@@ -19,6 +19,7 @@ object ParserTest extends TestSuite {
           pop
           pop
           concat
+          swap
           pcreate
           pupdate
           ret
@@ -32,6 +33,7 @@ object ParserTest extends TestSuite {
           Op.Pop,
           Op.Pop,
           Op.Concat,
+          Op.Swap,
           Op.PCreate,
           Op.PUpdate,
           Op.Ret

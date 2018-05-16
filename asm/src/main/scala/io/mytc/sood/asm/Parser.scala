@@ -42,7 +42,7 @@ class Parser {
     val pop = P(IgnoreCase("pop"))
     val push = P(IgnoreCase("push") ~ delim ~ (integ | numbr | hexs))
     val dup = P(IgnoreCase("dup"))
-    val swap = P(IgnoreCase("swp"))
+    val swap = P(IgnoreCase("swap"))
 
     val call = P(IgnoreCase("call") ~ delim ~ "@" ~ ident.!)
     val ret = P(IgnoreCase("ret"))
