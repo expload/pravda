@@ -15,6 +15,7 @@ package object utils {
   private[cil] def validated[T](t: T): Validated[T] = Right(t)
 
   private[cil] implicit class ValidatedSeqOps[T](vs: Seq[Validated[T]]) {
+
     def sequence: Validated[Seq[T]] = {
       val res = Seq.newBuilder[T]
       var i = 0
@@ -34,6 +35,7 @@ package object utils {
   }
 
   private[cil] implicit class ParserOps[T](p: Parsed[T]) {
+
     def toValidated: Validated[T] = p match {
       case Success(t, _)        => Right(t)
       case f @ Failure(_, _, _) => Left(s"An error occurred during parsing: ${f.msg}")

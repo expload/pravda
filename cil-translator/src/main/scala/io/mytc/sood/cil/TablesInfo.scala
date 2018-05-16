@@ -118,21 +118,28 @@ object TablesInfo {
 
   def assemblyRow(indexes: TableIndexes): P[AssemblyRow.type] =
     P(AnyBytes(4 + 4 * 2 + 4 + indexes.blobHeap.size + indexes.stringHeap.size * 2)).map(_ => AssemblyRow)
+
   val assemblyOSRow: P[AssemblyOSRow.type] =
     P(AnyBytes(4 * 3)).map(_ => AssemblyOSRow)
+
   val asssemblyProcessorRow: P[AssemblyProcessorRow.type] =
     P(AnyBytes(4)).map(_ => AssemblyProcessorRow)
+
   def assemblyRefRow(indexes: TableIndexes): P[AssemblyRefRow.type] =
     P(AnyBytes(4 * 2 + 4 + indexes.blobHeap.size * 2 + indexes.stringHeap.size * 2)).map(_ => AssemblyRefRow)
+
   def assemblyRefOSRow(indexes: TableIndexes): P[AssemblyRefOSRow.type] =
     P(AnyBytes(3 * 4 + indexes.assemblyRef.size)).map(_ => AssemblyRefOSRow)
+
   def assemblyRefProcessorRow(indexes: TableIndexes): P[AssemblyRefProcessorRow.type] =
     P(AnyBytes(4 + indexes.assemblyRef.size)).map(_ => AssemblyRefProcessorRow)
 
   def classLayoutRow(indexes: TableIndexes): P[ClassLayoutRow.type] =
     P(AnyBytes(2 + 4 + indexes.typeDef.size)).map(_ => ClassLayoutRow)
+
   def constantRow(indexes: TableIndexes): P[ConstantRow.type] =
     P(AnyBytes(2 + indexes.hasConstant.size + indexes.blobHeap.size)).map(_ => ConstantRow)
+
   def customAttributeRow(indexes: TableIndexes): P[CustomAttributeRow.type] =
     P(AnyBytes(indexes.hasCustomAttribute.size + indexes.customAttibute.size + indexes.blobHeap.size))
       .map(_ => CustomAttributeRow)
@@ -142,38 +149,48 @@ object TablesInfo {
 
   def eventMapRow(indexes: TableIndexes): P[EventMapRow.type] =
     P(AnyBytes(indexes.typeDef.size + indexes.event.size)).map(_ => EventMapRow)
+
   def eventRow(indexes: TableIndexes): P[EventRow.type] =
     P(AnyBytes(2 + indexes.stringHeap.size + indexes.typeDefOrRef.size)).map(_ => EventRow)
+
   def exportedTypeRow(indexes: TableIndexes): P[ExportedTypeRow.type] =
     P(AnyBytes(4 + 4 + indexes.stringHeap.size + indexes.stringHeap.size + indexes.implementation.size))
       .map(_ => ExportedTypeRow)
 
   def fieldRow(indexes: TableIndexes): P[FieldRow] =
     P(Int16 ~ indexes.stringHeap.parser ~ indexes.blobHeap.parser).map(FieldRow.tupled)
+
   def fieldLayoutRow(indexes: TableIndexes): P[FieldLayoutRow.type] =
     P(AnyBytes(4 + indexes.field.size)).map(_ => FieldLayoutRow)
+
   def fieldMarshalRow(indexes: TableIndexes): P[FieldMarshalRow.type] =
     P(AnyBytes(indexes.hasFieldMarshal.size + indexes.blobHeap.size)).map(_ => FieldMarshalRow)
+
   def fieldRVARow(indexes: TableIndexes): P[FieldRVARow.type] =
     P(AnyBytes(4 + indexes.field.size)).map(_ => FieldRVARow)
+
   def fileRow(indexes: TableIndexes): P[FileRow.type] =
     P(AnyBytes(4 + indexes.stringHeap.size + indexes.blobHeap.size)).map(_ => FileRow)
 
   def genericParamRow(indexes: TableIndexes): P[GenericParamRow.type] =
     P(AnyBytes(2 + 2 + indexes.typeOrMethodDef.size + indexes.stringHeap.size)).map(_ => GenericParamRow)
+
   def genericParamConstraintRow(indexes: TableIndexes): P[GenericParamConstraintRow.type] =
     P(AnyBytes(indexes.genericParam.size + indexes.typeDefOrRef.size)).map(_ => GenericParamConstraintRow)
 
   def implMapRow(indexes: TableIndexes): P[ImplMapRow.type] =
     P(AnyBytes(2 + indexes.memberForwarded.size + indexes.stringHeap.size + indexes.moduleRef.size))
       .map(_ => ImplMapRow)
+
   def interfaceImplRow(indexes: TableIndexes): P[InterfaceImplRow.type] =
     P(AnyBytes(indexes.typeDef.size + indexes.typeDefOrRef.size)).map(_ => InterfaceImplRow)
 
   def manifestResourceRow(indexes: TableIndexes): P[ManifestResourceRow.type] =
     P(AnyBytes(4 + 4 + indexes.stringHeap.size + indexes.implementation.size)).map(_ => ManifestResourceRow)
+
   def memberRefRow(indexes: TableIndexes): P[MemberRefRow] =
     P(indexes.memberRefParent.parser ~ indexes.stringHeap.parser ~ indexes.blobHeap.parser).map(MemberRefRow.tupled)
+
   def methodDefRow(indexes: TableIndexes): P[MethodDefRow] = {
     val rva = UInt32
     val implFlags = Int16
@@ -183,14 +200,19 @@ object TablesInfo {
     val paramListIdx = indexes.param.parser
     P(rva ~ implFlags ~ flags ~ nameIdx ~ signatureIdx ~ paramListIdx).map(MethodDefRow.tupled)
   }
+
   def methodImplRow(indexes: TableIndexes): P[MethodImplRow.type] =
     P(AnyBytes(indexes.typeDef.size + indexes.methodDefOrRef.size * 2)).map(_ => MethodImplRow)
+
   def methodSemanticsRow(indexes: TableIndexes): P[MethodSemanticsRow.type] =
     P(AnyBytes(2 + indexes.methodDef.size + indexes.hasSemantics.size)).map(_ => MethodSemanticsRow)
+
   def methodSpecRow(indexes: TableIndexes): P[MethodSpecRow.type] =
     P(AnyBytes(indexes.methodDefOrRef.size + indexes.blobHeap.size)).map(_ => MethodSpecRow)
+
   def moduleRow(indexes: TableIndexes): P[ModuleRow.type] =
     P(AnyBytes(2 + indexes.stringHeap.size + indexes.guidHeap.size * 3)).map(_ => ModuleRow)
+
   def moduleRefRow(indexes: TableIndexes): P[ModuleRefRow.type] =
     P(AnyBytes(indexes.stringHeap.size)).map(_ => ModuleRefRow)
 
@@ -199,8 +221,10 @@ object TablesInfo {
 
   def paramRow(indexes: TableIndexes): P[ParamRow] =
     P(Int16 ~ UInt16 ~ indexes.stringHeap.parser).map(ParamRow.tupled)
+
   def propertyRow(indexes: TableIndexes): P[PropertyRow.type] =
     P(AnyBytes(2 + indexes.stringHeap.size + indexes.blobHeap.size)).map(_ => PropertyRow)
+
   def propertyMapRow(indexes: TableIndexes): P[PropertyMapRow.type] =
     P(AnyBytes(indexes.typeDef.size + indexes.property.size)).map(_ => PropertyMapRow)
 
@@ -210,8 +234,10 @@ object TablesInfo {
   def typeDefRow(indexes: TableIndexes): P[TypeDefRow] =
     P(Int32 ~ indexes.stringHeap.parser ~ indexes.stringHeap.parser ~ indexes.typeDefOrRef.parser ~ indexes.field.parser ~ indexes.methodDef.parser)
       .map(TypeDefRow.tupled)
+
   def typeRefRow(indexes: TableIndexes): P[TypeRefRow.type] =
     P(AnyBytes(indexes.resolutionScope.size + indexes.stringHeap.size * 2)).map(_ => TypeRefRow)
+
   def typeSpecRow(indexes: TableIndexes): P[TypeSpecRow.type] =
     P(AnyBytes(indexes.blobHeap.size)).map(_ => TypeSpecRow)
 

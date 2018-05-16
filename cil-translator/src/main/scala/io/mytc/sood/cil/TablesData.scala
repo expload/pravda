@@ -11,6 +11,7 @@ final case class TablesData(
     paramTable: Seq[TablesData.ParamData] = Seq.empty,
     typeDefTable: Seq[TablesData.TypeDefData] = Seq.empty
 ) {
+
   def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
     case 2  => Some(typeDefTable)
     case 4  => Some(fieldTable)
