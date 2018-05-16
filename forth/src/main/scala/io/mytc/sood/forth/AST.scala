@@ -9,6 +9,5 @@ object Statement {
   final case class Ident(v: String)                             extends Statement
   final case class Delim(v: String)                             extends Statement
   final case class Dword(name: String, block: Seq[Statement])   extends Statement
-  final case class ECall(addr: Array[Byte], argNum: Int)        extends Statement
   final case class If(pos: Seq[Statement], neg: Seq[Statement]) extends Statement
 }

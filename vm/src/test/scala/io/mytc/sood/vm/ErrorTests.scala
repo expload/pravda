@@ -56,7 +56,7 @@ object ErrorTests extends TestSuite {
 
       val wState = environment(address -> storedProg)
 
-      val program1 = prog.opcode(PCALL).put(wrongAddress).put(0)
+      val program1 = prog.opcode(PUSHX).put(wrongAddress).opcode(PUSHX).put(0).opcode(PCALL)
       assertError(program1, NoSuchProgram, env = wState)
 
     }

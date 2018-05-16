@@ -199,10 +199,10 @@ class ByteCode {
           code ++= vm.int32ToWord(argsNum)
           (op, offset)
 
-        case op @ Op.PCall =>
+        case Op.PCall =>
           val offset = code.size
           code += VM.PUSHX
-          (op, offset)
+          (Op.PCall, offset)
 
         case Op.SGet =>
           val offset = code.size

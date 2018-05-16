@@ -22,12 +22,12 @@ object CallTests extends TestSuite {
 
       val wState = environment(address1 -> prog1, address2 -> prog2, address3 -> sum)
 
-      val programA1 = prog.opcode(PCALL).put(address1).put(0)
+      val programA1 = prog.opcode(PUSHX).put(address1).opcode(PUSHX).put(0).opcode(PCALL)
       exec(programA1, wState) ==> stack(data(111))
-      val programA2 = prog.opcode(PUSHX).put(333).opcode(PCALL).put(address2).put(0).opcode(I32ADD)
+      val programA2 = prog.opcode(PUSHX).put(333).opcode(PUSHX).put(address2).opcode(PUSHX).put(0).opcode(PCALL).opcode(I32ADD)
       exec(programA2, wState) ==> stack(data(555))
 
-      val programSum = prog.opcode(PUSHX).put(7).opcode(PUSHX).put(13).opcode(PCALL).put(address3).put(2)
+      val programSum = prog.opcode(PUSHX).put(7).opcode(PUSHX).put(13).opcode(PUSHX).put(address3).opcode(PUSHX).put(2).opcode(PCALL)
       exec(programSum, wState) ==> stack(data(20))
 
     }

@@ -35,7 +35,6 @@ class Translator {
             translateStmts(p, prefix + prefix),
             List(Op.Label(mangleIf(prefix, i)))
           ).flatten
-        case (Statement.ECall(a, n), i) ⇒ List(Op.PCall(a, n))
         case _                          ⇒ List(Op.Nop)
       }
     }
