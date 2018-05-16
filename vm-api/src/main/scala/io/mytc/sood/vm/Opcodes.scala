@@ -11,6 +11,8 @@ object Opcodes {
 
   final val PCALL = int.PCALL.toByte
   final val LCALL = int.LCALL.toByte
+  final val PCREATE = int.PCREATE.toByte
+  final val PUPDATE = int.PUPDATE.toByte
 
   // Stack
   final val POP = int.POP.toByte
@@ -68,6 +70,9 @@ object Opcodes {
 
     final val PCALL = 0x06
     final val LCALL = 0x07
+
+    final val PCREATE = 0x08
+    final val PUPDATE = 0x09
 
     // Stack
     final val POP = 0x10
