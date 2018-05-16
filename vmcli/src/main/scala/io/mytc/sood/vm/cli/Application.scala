@@ -5,6 +5,7 @@ object Application {
   import io.mytc.sood.vm.state.Memory
   import io.mytc.sood.vm.state.VmErrorException
 
+
   final case class Config(
     exec: Boolean      = true,
     files: Seq[String] = Seq("stdin")
@@ -57,10 +58,15 @@ object Application {
       println(show(mem))
     } catch {
       case e @ VmErrorException(err, trace) =>
+        val point = trace.last
+
         println(err)
+        point.address.foreach{ addr => println(s"\tprog: ${hex(addr.toByteArray)}") }
+        println($"\tpos: ${point.position}")
     }
   }
 
+  def show(trace: )
   def run(config: Config): Unit = {
     val fileName = config.files.head
     if (!(new java.io.File(fileName)).exists && fileName != "stdin") {
