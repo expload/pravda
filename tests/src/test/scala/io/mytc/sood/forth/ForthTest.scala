@@ -1,48 +1,51 @@
 package io.mytc.sood.forth
 
-import io.mytc.sood.forth.ForthTestUtils._
-import org.scalatest._
+import utest._
+import ForthTestUtils._
 
-class ForthTest extends FlatSpec with Matchers {
 
-  "A forth compiler" must "correctly define and run word" in {
-    assert(
-      runTransaction[Int](": seq5 1 2 3 ; seq5") == Right(List(1, 2, 3))
-    )
-  }
+class ForthTest extends TestSuite {
 
-  "A forth program " must " be able to push to the stack" in {
-    assert(
-      runTransaction[Int]("1") == Right(List(1))
-    )
+  def tests = Tests {
+    "A forth compiler must correctly define and run word" - {
+      assert(
+        runTransaction[Int](": seq5 1 2 3 ; seq5") == Right(List(1, 2, 3))
+      )
+    }
 
-    assert(
-      runTransaction[Int]("1 2") == Right(List(1, 2))
-    )
+    "A forth program must be able to push to the stack" - {
+      assert(
+        runTransaction[Int]("1") == Right(List(1))
+      )
 
-    assert(
-      runTransaction[Int]("1 2 3") == Right(List(1, 2, 3))
-    )
-  }
+      assert(
+        runTransaction[Int]("1 2") == Right(List(1, 2))
+      )
 
-  "A forth standard library" must "define +" in {
-    assert(
-      runTransaction[Int]("3 5 add") == Right(List(8))
-    )
-  }
+      assert(
+        runTransaction[Int]("1 2 3") == Right(List(1, 2, 3))
+      )
+    }
 
-  "A forth standard library" must "define *" in {
-    assert(
-      runTransaction[Int]("1 2 3 *") == Right(List(1, 6))
-    )
-  }
+    "A forth standard library must define +" - {
+      assert(
+        runTransaction[Int]("3 5 add") == Right(List(8))
+      )
+    }
 
-  "A forth" must " work with hex strings" in {
+    "A forth standard library must define *" - {
+      assert(
+        runTransaction[Int]("1 2 3 *") == Right(List(1, 6))
+      )
+    }
 
-    assert(
-      runTransaction[List[Byte]]("$xFFF1F2") == Right(List(List(0xFF.toByte, 0xF1.toByte, 0xF2.toByte)))
-    )
+    "A forth must  work with hex strings" - {
 
+      assert(
+        runTransaction[List[Byte]]("$xFFF1F2") == Right(List(List(0xFF.toByte, 0xF1.toByte, 0xF2.toByte)))
+      )
+
+    }
   }
 
 }
