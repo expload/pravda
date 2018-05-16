@@ -150,8 +150,8 @@ object Vm {
             program.position(dataToInt32(memory.pop()))
             aux()
           case JUMPI =>
-            val condition = memory.pop()
             val position = memory.pop()
+            val condition = memory.pop()
             if (dataToBool(condition))
               program.position(dataToInt32(position))
             aux()
@@ -291,6 +291,7 @@ object Vm {
     } catch {
       case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, progAddress))
       case other: Exception =>
+        other.printStackTrace()
         throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), progAddress))
     }
 

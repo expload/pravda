@@ -5,36 +5,49 @@ class Translator {
   import io.mytc.sood.asm.Op
   import io.mytc.sood.asm.Datum
 
+  val mainName = "__main__"
+
   // TODO: name mangling
   def mangle(name: String): String = name
+  def mangleIf(name: String, idx: Int): String = s"__if${name}_${idx}"
 
   def stmts(unit: Seq[Statement]): Seq[Statement] = {
     unit.filter(!_.isInstanceOf[Statement.Dword])
   }
 
   def words(unit: Seq[Statement]): Seq[Statement.Dword] = {
-    unit.collect { case v: Statement.Dword ⇒ v.copy(name = mangle(v.name)) }
+    unit.collect {
+      case v: Statement.Dword ⇒ v.copy(name = mangle(v.name))
+    }
   }
 
-  def translateStmts(stmts: Seq[Statement]): Seq[Op] = {
-    stmts.map { w ⇒
+  def translateStmts(stmts: Seq[Statement], prefix: String): Seq[Op] = {
+    stmts.zipWithIndex.flatMap { w ⇒
       w match {
-        case Statement.Ident(n) ⇒ Op.Call(mangle(n))
-        case Statement.Integ(v) ⇒ Op.Push(Datum.Integral(v))
-        case Statement.Float(v) ⇒ Op.Push(Datum.Floating(v))
-        case _                  ⇒ Op.Nop
+        case (Statement.Ident(n), i) ⇒ List( Op.Call(mangle(n))         )
+        case (Statement.Integ(v), i) ⇒ List( Op.Push(Datum.Integral(v)) )
+        case (Statement.Float(v), i) ⇒ List( Op.Push(Datum.Floating(v)) )
+        case (Statement.Hexar(v), i) ⇒ List( Op.Push(Datum.Rawbytes(v)) )
+        case (Statement.If(p, n), i) ⇒ List(
+                                         List(Op.Not),
+                                         List(Op.JumpI(mangleIf(prefix, i))),
+                                         translateStmts(p, prefix + prefix),
+                                         List(Op.Label(mangleIf(prefix, i)))
+                                       ).flatten
+        case (Statement.ECall(a, n), i) ⇒ List( Op.PCall(a, n) )
+        case _                       ⇒ List( Op.Nop )
       }
     }
   }
 
   def translateWords(words: Seq[Statement.Dword]): Seq[Op] = {
     words.map { w ⇒
-      Op.Label(name = w.name) +: translateStmts(w.block) :+ Op.Ret
+      Op.Label(name = w.name) +: translateStmts(w.block, w.name) :+ Op.Ret
     }.flatten
   }
 
   def translate(unit: Seq[Statement], useStdLib: Boolean = false): Seq[Op] = {
-    val mainUnit = translateStmts(stmts(unit)) ++ Seq(Op.Stop) ++ translateWords(words(unit))
+    val mainUnit = translateStmts(stmts(unit), mainName) ++ Seq(Op.Stop) ++ translateWords(words(unit))
     if (useStdLib) {
       mainUnit ++ StdLib.words
     } else {

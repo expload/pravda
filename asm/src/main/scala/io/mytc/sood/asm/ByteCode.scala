@@ -39,12 +39,16 @@ class ByteCode {
 
         case Op.Jump(n) ⇒ {
           val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.int32ToWord(0)
           code += VM.JUMP
           (Op.Jump(n), offset)
         }
 
         case Op.JumpI(n) ⇒ {
           val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.int32ToWord(0)
           code += VM.JUMPI
           (Op.JumpI(n), offset)
         }
@@ -121,6 +125,24 @@ class ByteCode {
           (Op.I32GT, offset)
         }
 
+        case Op.Eq ⇒ {
+          val offset = code.size
+          code += VM.EQ
+          (Op.Eq, offset)
+        }
+
+        case Op.Concat ⇒ {
+          val offset = code.size
+          code += VM.CONCAT
+          (Op.Concat, offset)
+        }
+
+        case Op.Not ⇒ {
+          val offset = code.size
+          code += VM.NOT
+          (Op.Not, offset)
+        }
+
         case Op.FAdd ⇒ {
           val offset = code.size
           code += VM.FADD
@@ -145,22 +167,52 @@ class ByteCode {
           (Op.FMod, offset)
         }
 
-        case Op.Label(n) ⇒ {
+        case Op.Dupn ⇒ {
           val offset = code.size
-          (Op.Label(n), offset)
+          code += VM.DUPN
+          (Op.Dupn, offset)
         }
+
+        case Op.From ⇒ {
+          val offset = code.size
+          code += VM.FROM
+          (Op.From, offset)
+        }
+
+        case op @ Op.LCall(address, func, argsNum) =>
+          val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
+          code ++= vm.int32ToWord(argsNum)
+          (op, offset)
+
+        case op @ Op.PCall(address, argsNum) =>
+          val offset = code.size
+          code += VM.PUSHX
+          code ++= vm.bytesToWord(address)
+          code ++= vm.int32ToWord(argsNum)
+          (op, offset)
+
+        case Op.SGet =>
+          val offset = code.size
+          code += VM.SGET
+          (Op.SGet, offset)
+
+        case Op.SPut =>
+          val offset = code.size
+          code += VM.SPUT
+          (Op.SPut, offset)
 
         case Op.Nop ⇒ {
           val offset = code.size
           (Op.Nop, offset)
         }
-        case op @ Op.LCall(adress, func, argsNum) =>
+
+        case Op.Label(n) ⇒ {
           val offset = code.size
-          code += VM.PUSHX
-          code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
-          code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
-          code ++= vm.int32ToWord(argsNum)
-          (op, offset)
+          (Op.Label(n), offset)
+        }
       }
       .collect { case (Op.Label(n), v) ⇒ (n, v) }
       .toMap
@@ -199,11 +251,19 @@ class ByteCode {
         code ++= vm.int32ToWord(offset(n))
         code += VM.CALL
       }
-      case Op.LCall(adress, func, argsNum) =>
+      case Op.LCall(address, func, argsNum) =>
         code += VM.LCALL
-        code ++= vm.bytesToWord(adress.getBytes(StandardCharsets.UTF_8))
+        code ++= vm.bytesToWord(address.getBytes(StandardCharsets.UTF_8))
         code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
         code ++= vm.int32ToWord(argsNum)
+
+      case Op.PCall(address, argsNum) =>
+        code += VM.PCALL
+        code ++= vm.bytesToWord(address)
+        code ++= vm.int32ToWord(argsNum)
+
+      case Op.SGet => code += VM.SGET
+      case Op.SPut => code += VM.SPUT
 
       case Op.Label(n) ⇒ {}
       case Op.Stop     ⇒ code += VM.STOP
@@ -219,10 +279,15 @@ class ByteCode {
       case Op.I32Mod   ⇒ code += VM.I32MOD
       case Op.I32LT    ⇒ code += VM.I32LT
       case Op.I32GT    ⇒ code += VM.I32GT
+      case Op.Eq       ⇒ code += VM.EQ
+      case Op.Not      ⇒ code += VM.NOT
       case Op.FAdd     ⇒ code += VM.FADD
       case Op.FMul     ⇒ code += VM.FMUL
       case Op.FDiv     ⇒ code += VM.FDIV
       case Op.FMod     ⇒ code += VM.FMOD
+      case Op.Dupn     ⇒ code += VM.DUPN
+      case Op.Concat   ⇒ code += VM.CONCAT
+      case Op.From     ⇒ code += VM.FROM
       case Op.Nop      ⇒ code += VM.I32MOD
     }
 
@@ -257,10 +322,15 @@ class ByteCode {
         case VM.I32MOD ⇒ obuf += ((pos, Op.I32Mod))
         case VM.I32LT  ⇒ obuf += ((pos, Op.I32LT))
         case VM.I32GT  ⇒ obuf += ((pos, Op.I32GT))
+        case VM.EQ     ⇒ obuf += ((pos, Op.Eq))
         case VM.FADD   ⇒ obuf += ((pos, Op.FAdd))
         case VM.FMUL   ⇒ obuf += ((pos, Op.FMul))
         case VM.FDIV   ⇒ obuf += ((pos, Op.FDiv))
         case VM.FMOD   ⇒ obuf += ((pos, Op.FMod))
+        case VM.DUPN   ⇒ obuf += ((pos, Op.Dupn))
+        case VM.CONCAT ⇒ obuf += ((pos, Op.Concat))
+        case VM.FROM   ⇒ obuf += ((pos, Op.From))
+        case VM.PCALL => obuf += ((pos, Op.PCall(wordToBytes(ubuf), wordToInt32(ubuf))))
         case VM.LCALL =>
           obuf += ((pos,
                     Op.LCall(
@@ -268,10 +338,13 @@ class ByteCode {
                       new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
                       wordToInt32(ubuf)
                     )))
+
+        case VM.SGET => obuf += ((pos, Op.SGet))
+        case VM.SPUT => obuf += ((pos, Op.SPut))
       }
     }
 
-    obuf.toSeq
+    obuf
   }
 
 }

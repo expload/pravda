@@ -3,12 +3,21 @@ package io.mytc.sood.forth
 object StdLib {
 
   import io.mytc.sood.asm.Op
+  import io.mytc.sood.asm.Datum
 
   def defs: String = { """
   : + add ;
+  : - -1 mul add ;
   : * mul ;
   : / div ;
   : % mod ;
+  : == eq ;
+  : != neq ;
+  : < lt ;
+  : > gt ;
+  : <= gt not ;
+  : >= lt not ;
+  : dup dup1 ;
   """ }
 
   def words: Seq[Op] =
@@ -20,7 +29,17 @@ object StdLib {
       fadd,
       fmul,
       fdiv,
-      fmod
+      fmod,
+      eqls,
+      neq,
+      lt,
+      gt,
+      not,
+      dup(1), dup(2), dup(3), dup(4), dup(5),
+      sget,
+      sput,
+      concat,
+      from
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -71,4 +90,65 @@ object StdLib {
     Op.Ret
   )
 
+  val sget: Seq[Op] = Seq(
+    Op.Label("sget"),
+    Op.SGet,
+    Op.Ret
+  )
+
+  val sput: Seq[Op] = Seq(
+    Op.Label("sput"),
+    Op.SPut,
+    Op.Ret
+  )
+
+  val eqls: Seq[Op] = Seq(
+    Op.Label("eq"),
+    Op.Eq,
+    Op.Ret
+  )
+
+  val neq: Seq[Op] = Seq(
+    Op.Label("neq"),
+    Op.Eq,
+    Op.Not,
+    Op.Ret
+  )
+
+  val lt: Seq[Op] = Seq(
+    Op.Label("lt"),
+    Op.I32LT,
+    Op.Ret
+  )
+
+  val gt: Seq[Op] = Seq(
+    Op.Label("gt"),
+    Op.I32GT,
+    Op.Ret
+  )
+
+  val not: Seq[Op] = Seq(
+    Op.Label("not"),
+    Op.Not,
+    Op.Ret
+  )
+
+  val concat: Seq[Op] = Seq(
+    Op.Label("concat"),
+    Op.Concat,
+    Op.Ret
+  )
+
+  val from: Seq[Op] = Seq(
+    Op.Label("from"),
+    Op.From,
+    Op.Ret
+  )
+
+  def dup(n: Int): Seq[Op] = Seq(
+    Op.Label(s"dup${n}"),
+    Op.Push(Datum.Integral(n)),
+    Op.Dupn,
+    Op.Ret
+  )
 }
