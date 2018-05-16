@@ -121,7 +121,7 @@ class DB(
   }
 
   def batch(operations: Operation*): Future[Unit] =
-    Future(syncBatch(operations:_*))
+    Future(syncBatch(operations: _*))
 
   // def transaction(oprations: Operation*) = batch(oprations:_*)
   def deleteDiff(key: Array[Byte], cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
