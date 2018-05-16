@@ -10,7 +10,6 @@ class Compiler {
     parser.parse(prog) match {
       case Right(forthAst) ⇒ {
         val asmAst = transl.translate(forthAst, useStdLib)
-        println(asmAst)
         Right(assemb.compile(asmAst))
       }
       case Left(err) ⇒ Left(err)

@@ -50,4 +50,12 @@ package object serialization {
     d.iterator().asScala.exists(_ != 0.toByte)
   }
 
+  def bytesToByteString(ints: Int*): ByteString =
+    ByteString.copyFrom(ints.map(_.toByte).toArray)
+
+  def bytesToData(ints: Int*): Data =
+    bytesToByteString(ints: _*)
+
+  def bytesToAddress(ints: Int*): Address =
+    bytesToByteString(ints: _*)
 }

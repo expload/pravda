@@ -47,7 +47,8 @@ object ForthTestUtils {
     }
   }
 
-  def runProgram[T](code: String, storageItems: Seq[(Address, Data)])(implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Address, T])] = {
+  def runProgram[T](code: String, storageItems: Seq[(Address, Data)] = Seq.empty, executor: Address = ByteString.EMPTY)(
+      implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Address, T])] = {
     val programAddress = ByteString.copyFrom(Array[Byte](1, 2, 3))
 
     Compiler().compile(code, useStdLib = true) match {
@@ -75,7 +76,7 @@ object ForthTestUtils {
           override def createProgram(owner: Address, code: Data): Address = ???
           override def getProgramOwner(address: Address): Option[Address] = ???
         }
-        val stack = Vm.runProgram(programAddress, Memory.empty, ByteString.EMPTY, stateWithAccount).stack
+        val stack = Vm.runProgram(programAddress, Memory.empty, executor, stateWithAccount).stack
         Right(
           (
             stack.map(stackItem.get).toList,
