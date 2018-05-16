@@ -57,18 +57,18 @@ object ControlOpcodesTests extends TestSuite {
     'jumpi - {
       def iprogram(i: Int) = prog
         .opcode(PUSHX) // 0
-        .put(19) // 1
+        .put(i) // 1
         .opcode(PUSHX) // 6
-        .put(i) // 7
+        .put(19) // 7
         .opcode(JUMPI) // 12
         .opcode(PUSHX).put(31) // 13, 14
         .opcode(PUSHX).put(54) // 19, 20
 
       def bprogram(b: Byte) = prog
         .opcode(PUSHX) // 0
-        .put(15) // 1
+        .put(b) // 1
         .opcode(PUSHX) // 6
-        .put(b) // 7
+        .put(15) // 7
         .opcode(JUMPI) // 8
         .opcode(PUSHX).put(31) // 9, 10
         .opcode(PUSHX).put(54) // 15, 16
