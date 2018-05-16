@@ -8,7 +8,12 @@ import serialization._
 
 object VmUtils {
 
-  val emptyState: Environment = (address: Address) => None
+  val emptyState: Environment = new Environment {
+    def getProgram(address: Address): Option[ProgramContext] = None
+    def getProgramOwner(address: Address): Option[Address] = ???
+    def createProgram(owner: Address, code: Data): Address = ???
+    def updateProgram(address: Data, code: Data): Unit = ???
+  }
 
   def exec(p: ProgramStub): Array[Data] = {
     Vm.runRaw(p.byteString, ByteString.EMPTY, emptyState).stack.toArray
@@ -58,16 +63,23 @@ object VmUtils {
 
   def environment(accs: (Address, ProgramStub)*): Environment = new Environment {
 
-    def account(prog: ProgramStub): ProgramContext = new ProgramContext {
+    def program(prog: ProgramStub): ProgramContext = new ProgramContext {
       def code: ByteBuffer = prog.buffer
       def storage: Storage = null // scalafix:ok
     }
 
-    override def getProgram(address: Address): Option[ProgramContext] = {
+    def getProgram(address: Address): Option[ProgramContext] = {
       accs.find{_._1 == address}.map {
-        case (addr, prog) => account(prog)
+        case (addr, prog) => program(prog)
       }
     }
+
+    def getProgramOwner(address: Address): Option[Address] = ???
+
+    def createProgram(owner: Address, code: Data): Address = ???
+
+    def updateProgram(address: Data, code: Data): Unit = ???
+
   }
 
 }
