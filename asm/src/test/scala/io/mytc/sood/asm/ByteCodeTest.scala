@@ -3,7 +3,7 @@ package io.mytc.sood.asm
 import utest._
 
 
-class ByteCodeTest extends TestSuite {
+object ByteCodeTest extends TestSuite {
 
   import io.mytc.sood.vm
   import java.nio.ByteBuffer

@@ -3,7 +3,7 @@ package io.mytc.sood.asm
 import utest._
 
 
-class ParserTest extends TestSuite {
+object ParserTest extends TestSuite {
 
   def tests = Tests {
     "A parser must correctly parse sequence of ops" - {

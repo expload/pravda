@@ -3,7 +3,7 @@ package io.mytc.sood.forth
 import utest._
 import ForthTestUtils._
 
-class ForthBranchingTest extends TestSuite {
+object ForthBranchingTest extends TestSuite {
 
   def tests = Tests {
 

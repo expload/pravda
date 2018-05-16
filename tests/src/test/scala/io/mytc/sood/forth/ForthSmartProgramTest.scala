@@ -6,7 +6,7 @@ import com.google.protobuf.ByteString
 import io.mytc.sood.vm.serialization._
 
 
-class ForthSmartProgramTest extends TestSuite {
+object ForthSmartProgramTest extends TestSuite {
 
   def tests = Tests {
     "Simple smart-program must run correctly" - {

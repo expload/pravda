@@ -4,7 +4,7 @@ import utest._
 import ForthTestUtils._
 
 
-class ForthTest extends TestSuite {
+object ForthTest extends TestSuite {
 
   def tests = Tests {
     "A forth compiler must correctly define and run word" - {

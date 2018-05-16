@@ -3,7 +3,7 @@ package io.mytc.sood.forth
 import utest._
 
 
-class ParserTest extends TestSuite {
+object ParserTest extends TestSuite {
 
   import Statement._
 

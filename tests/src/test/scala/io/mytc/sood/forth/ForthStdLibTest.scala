@@ -4,7 +4,7 @@ import utest._
 import ForthTestUtils._
 
 
-class ForthStdLibTest extends TestSuite {
+object ForthStdLibTest extends TestSuite {
 
   def tests = Tests {
     "dup must duplicate the top of the stack" - {
