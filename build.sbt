@@ -99,15 +99,13 @@ lazy val cil = (project in file("cil-translator")).
 
 val `tendermint-version` = "0.16.0"
 
-lazy val keyvalue = (project in file("veche/keyvalue"))
-		.disablePlugins(RevolverPlugin)
-  	.settings(
-			normalizedName := "veche",
-			version      := "0.1.0-SNAPSHOT",
-			libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
-    )
-
-
+lazy val keyvalue = (project in file("keyvalue"))
+  .disablePlugins(RevolverPlugin)
+  .settings(
+    normalizedName := "keyvalue",
+    version      := "0.1.0-SNAPSHOT",
+    libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
+  )
 
 lazy val veche = (project in file("veche"))
 	.enablePlugins(JavaAppPackaging)
