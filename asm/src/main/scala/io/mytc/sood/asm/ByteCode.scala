@@ -199,11 +199,9 @@ class ByteCode {
           code ++= vm.int32ToWord(argsNum)
           (op, offset)
 
-        case op @ Op.PCall(address, argsNum) =>
+        case op @ Op.PCall =>
           val offset = code.size
           code += VM.PUSHX
-          code ++= vm.bytesToWord(address)
-          code ++= vm.int32ToWord(argsNum)
           (op, offset)
 
         case Op.SGet =>
@@ -269,10 +267,8 @@ class ByteCode {
         code ++= vm.bytesToWord(func.getBytes(StandardCharsets.UTF_8))
         code ++= vm.int32ToWord(argsNum)
 
-      case Op.PCall(address, argsNum) =>
+      case Op.PCall =>
         code += VM.PCALL
-        code ++= vm.bytesToWord(address)
-        code ++= vm.int32ToWord(argsNum)
 
       case Op.SGet => code += VM.SGET
       case Op.SPut => code += VM.SPUT
@@ -346,7 +342,7 @@ class ByteCode {
         case VM.FROM    ⇒ obuf += ((pos, Op.From))
         case VM.PCREATE ⇒ obuf += ((pos, Op.PCreate))
         case VM.PUPDATE ⇒ obuf += ((pos, Op.PUpdate))
-        case VM.PCALL   => obuf += ((pos, Op.PCall(wordToBytes(ubuf), wordToInt32(ubuf))))
+        case VM.PCALL   => obuf += ((pos, Op.PCall))
         case VM.LCALL =>
           obuf += ((pos,
                     Op.LCall(

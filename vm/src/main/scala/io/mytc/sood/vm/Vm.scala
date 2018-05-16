@@ -101,9 +101,8 @@ object Vm {
             if (isLibrary) {
               throw VmErrorException(OperationDenied)
             }
-            // FIXME this values can be produced my runtime
-            val address = wordToData(program)
-            val num = wordToInt32(program)
+            val num = dataToInt32(memory.pop())
+            val address = memory.pop()
             val mem = runProgram(address, memory.top(num), executor, environment, depth + 1)
             memory ++= mem
             aux()

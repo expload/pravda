@@ -163,6 +163,12 @@ object StdLib {
     Op.Ret
   )
 
+  val pcall: Seq[Op] = Seq(
+    Op.Label("pcall"),
+    Op.PCall,
+    Op.Ret
+  )
+
   def dup(n: Int): Seq[Op] = Seq(
     Op.Label(s"dup${n}"),
     Op.Push(Datum.Integral(n)),

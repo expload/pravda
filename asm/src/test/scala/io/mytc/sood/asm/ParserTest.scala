@@ -94,7 +94,7 @@ object ParserTest extends TestSuite {
       )
     }
 
-    "A parse must parse lcall op-code correctly" - {
+    "Parser must parse lcall correctly" - {
       val p = Parser()
 
       p.parse("lcall Typed typedAdd 2") ==> Right(Seq(Op.LCall("Typed", "typedAdd", 2)))
@@ -102,11 +102,8 @@ object ParserTest extends TestSuite {
 
     "Parser must parse pcall correctly" - {
       val p = Parser()
-      p.parse("pcall $xFFFFFFFF 2") match {
-        case Right(Seq(Op.PCall(addr, num))) ⇒
-          assert(addr.toList == List(0xFF, 0xFF, 0xFF, 0xFF).map(_.toByte))
-          assert(num == 2)
-      }
+
+      p.parse("pcall") ==> Right(Seq(Op.PCall))
     }
   }
 

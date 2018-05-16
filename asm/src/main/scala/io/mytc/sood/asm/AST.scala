@@ -57,7 +57,7 @@ object Op {
   case object PCreate extends Op
   case object PUpdate extends Op
 
-  final case class PCall(address: Array[Byte], argsNum: Int) extends Op
+  case object PCall extends Op
   final case class LCall(address: String, func: String, argsNum: Int) extends Op {
     //override def toString = s"lcall $adress $func $argsNum"
   }

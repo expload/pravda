@@ -12,6 +12,14 @@ object ByteCodeTest extends TestSuite {
     Datum.Rawbytes(vm.wordToBytes(ByteBuffer.wrap(vm.int32ToWord(v))))
   }
 
+  def roundTrip(opcodes: Seq[Op]): Unit = {
+    val bc = ByteCode()
+    val bytes = bc.gen(opcodes)
+    val opcodes2 = bc.ungen(bytes)
+
+    opcodes2 ==> opcodes2
+  }
+
   def tests = Tests {
     "A bc must correctly disassemble binary" - {
       val bc = ByteCode()
@@ -24,13 +32,15 @@ object ByteCodeTest extends TestSuite {
       ))
     }
 
-    "lcall must be converted to byte-code and vice versa correctly" - {
-      val opcodes = Seq(Op.LCall("Typed", "typedAdd", 2))
-      val bc = ByteCode()
-      val bytes = bc.gen(opcodes)
-      val opcodes2 = bc.ungen(bytes)
+    "opcodes must be converted to byte-code and vice versa correctly" - {
 
-      opcodes2 ==> opcodes2
+      "lcall" - {
+        roundTrip(Seq(Op.LCall("Typed", "typedAdd", 2)))
+      }
+
+      "pcall" - {
+        roundTrip(Seq(Op.PCall))
+      }
     }
   }
 
