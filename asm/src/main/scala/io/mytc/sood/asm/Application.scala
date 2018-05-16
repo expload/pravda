@@ -1,6 +1,12 @@
 package io.mytc.sood.asm
 
-class Application {
+object Application {
+
+  case class Config(
+    out: String         = "a.mytc",
+    hexDump: Boolean    = false,
+    files: Seq[String]  = Seq.empty[String]
+  )
 
   def compile(filename: String): Either[String, Array[Byte]] = {
     import scala.io.Source
@@ -10,25 +16,63 @@ class Application {
     bcode
   }
 
-  def main(argv: Array[String]): Unit = {
-
+  def run(config: Config): Unit = {
     import java.io.FileOutputStream
     import java.io.BufferedOutputStream
 
-    if (argv.size < 1) {
-      println("Specify filename")
+    val fileName = config.files.head
+
+    if (!(new java.io.File(fileName)).exists) {
+      System.err.println("File not found: " + fileName)
       System.exit(1)
     }
 
-    compile(argv(0)) match {
+    compile(fileName) match {
       case Right(code) ⇒ {
-        val out = new BufferedOutputStream(new FileOutputStream("a.out"))
-        out.write(code)
-        out.close()
+        if (config.hexDump) {
+          val hexStr = code.map("%02X" format _).mkString
+          println(hexStr)
+        } else {
+          val out = new BufferedOutputStream(new FileOutputStream(config.out))
+          out.write(code)
+          out.close()
+        }
       }
-      case Left(err) ⇒ System.err.println(err)
+      case Left(err) ⇒ {
+        System.err.println(err)
+        System.exit(1)
+      }
+    }
+  }
+
+  def main(argv: Array[String]): Unit = {
+
+    val optParser = new scopt.OptionParser[Config]("scopt") {
+      head("Forth language compiler", "")
+
+      opt[String]('o', "output").action{ (name, c) =>
+        c.copy(out = name)
+      }.text("Output file")
+
+      opt[Unit]('x', "hex").action{ (_, c) =>
+        c.copy(hexDump = true)
+      }.text("Hex dump of bytecode")
+
+      opt[String]('o', "output").action{ (name, c) =>
+        c.copy(out = name)
+      }.text("Output file or stdout (hex string)")
+
+      arg[String]("<filename>").unbounded().action{ (name, c) =>
+        c.copy(files = c.files :+ name)
+      }.text("Files to compile")
+
+      help("help").text("Simple usage: forth filename.forth")
     }
 
+    optParser.parse(argv, Config()) match {
+      case Some(config) => run(config)
+      case None         => ()
+    }
   }
 
 }

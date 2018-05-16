@@ -54,7 +54,8 @@ lazy val asm = (project in file("asm")).
   settings( mainClass in Compile := Some("io.mytc.sood.asm.Application") ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi"    %% "fastparse"  % "1.0.0"
+      "com.github.scopt" %% "scopt"      % "3.7.0",
+      "com.lihaoyi"      %% "fastparse"  % "1.0.0"
     )
   )
 
@@ -69,7 +70,8 @@ lazy val forth = (project in file("forth")).
   settings( mainClass in Compile := Some("io.mytc.sood.forth.Application") ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi"    %% "fastparse"  % "1.0.0"
+      "com.github.scopt" %% "scopt"      % "3.7.0",
+      "com.lihaoyi"      %% "fastparse"  % "1.0.0"
     )
   )
 
