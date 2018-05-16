@@ -6,7 +6,7 @@ object Application {
     import scala.io.Source
     val compiler = Compiler()
     val code = Source.fromFile(filename).getLines.toList.reduce(_ + "\n" + _)
-    val bcode = compiler.compile(code)
+    val bcode = compiler.compile(code, useStdLib = true)
     bcode
   }
 
@@ -15,7 +15,7 @@ object Application {
     import java.io.FileOutputStream
     import java.io.BufferedOutputStream
 
-    if (argv.size < 1) {
+    if (argv.length < 1) {
       println("Specify filename")
       System.exit(1)
     }

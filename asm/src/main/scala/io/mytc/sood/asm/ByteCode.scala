@@ -317,7 +317,7 @@ class ByteCode {
     val obuf = new ArrayBuffer[(Int, Op)]()
 
     while (ubuf.remaining > 0) {
-      val pos = ubuf.position
+      val pos = ubuf.position()
       ubuf.get() & 0xFF match {
         case VM.PUSHX  ⇒ obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
         case VM.CALL   ⇒ obuf += ((pos, Op.Call("")))

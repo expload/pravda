@@ -33,6 +33,8 @@ class ApiRoute(abciClient: AbciClient) {
       case MediaTypes.`application/base64` =>
         val bytes = Base64.getDecoder.decode(body.data.toArray)
         TransactionData @@ ByteString.copyFrom(bytes)
+      case mediaType =>
+        throw new IllegalArgumentException(s"Unsupported Content-Type: $mediaType")
     }
   }
 
@@ -53,6 +55,28 @@ class ApiRoute(abciClient: AbciClient) {
               val mode = maybeMode.getOrElse("commit")
               val result = abciClient.broadcastTransaction(tx, mode)
 
+              onSuccess(result) {
+                complete("ok")
+              }
+            }
+          }
+        }
+      }
+    } ~ pathPrefix("private") {
+      val paymentWallet = Config.timeChainConfig.paymentWallet
+      post {
+        path("broadcast") {
+
+          parameters((
+            'fee.as(bigDecimalUnmarshaller),
+            'mode.?)) { (fee, maybeMode) =>
+
+            extractStrictEntity(1.second) { body =>
+              val program = bodyToTransactionData(body)
+              val from = paymentWallet.address
+              val mode = maybeMode.getOrElse("commit")
+              val result = abciClient.singAndBroadcastTransaction(
+                from, paymentWallet.privateKey, program, Mytc @@ fee, mode)
               onSuccess(result) {
                 complete("ok")
               }
