@@ -25,13 +25,10 @@ object launcher extends App {
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  val bcPath = new File(timeChainConfig.dataDirectory.getAbsolutePath, "bc_data").getAbsolutePath
-  val nodePath = new File(timeChainConfig.dataDirectory.getAbsolutePath, "node_data").getAbsolutePath
-
   val abciClient = new AbciClient(timeChainConfig.tendermint.rpcPort)
 
   val applicationStateDb = DB(
-    path = Config.timeChainConfig.dataDirectory.getPath,
+    path = new File(Config.timeChainConfig.dataDirectory, "application-state").getAbsolutePath,
     initialHash = FileStore.readApplicationStateInfo().map(_.appHash.toByteArray)
   )
   val abci = new Abci(applicationStateDb, abciClient)

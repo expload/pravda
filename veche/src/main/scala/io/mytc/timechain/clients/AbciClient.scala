@@ -5,12 +5,13 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import io.mytc.timechain.data.blockchain.Transaction.SignedTransaction
 import io.mytc.timechain.data.blockchain.{Transaction, TransactionData}
 import io.mytc.timechain.data.common.{Address, Mytc}
 import io.mytc.timechain.data.cryptography
 import io.mytc.timechain.data.cryptography.PrivateKey
 import io.mytc.timechain.data.serialization._
-import io.mytc.timechain.data.serialization.boopick._
+import io.mytc.timechain.data.serialization.bson._
 import io.mytc.timechain.data.serialization.json._
 import io.mytc.timechain.utils.bytes2hex
 
@@ -58,22 +59,34 @@ class AbciClient(port: Int)(implicit
     }
   }
 
-  def broadcastTransaction(from: Address,
-                           privateKey: PrivateKey,
-                           data: TransactionData,
-                           fee: Mytc,
-                           mode: String = "commit"): Future[Unit] = {
+  def broadcastBytes(bytes: Array[Byte],
+                     mode: String = "commit"): Future[Unit] = {
 
-    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee)
-    val tx = cryptography.signTransaction(privateKey, unsignedTx)
-    val bytes = transcode(tx).to[BooPickle]
-
-    val uri = Uri(s"http://127.0.0.1:${port}/broadcast_tx_$mode")
+    val uri = Uri(s"http://127.0.0.1:$port/broadcast_tx_$mode")
       .withQuery(Uri.Query("tx" -> ("0x" + bytes2hex(bytes))))
 
     Http()
       .singleRequest(HttpRequest(uri = uri))
       .flatMap(handleResponse(_, mode))
+  }
+
+  def broadcastTransaction(tx: SignedTransaction,
+                           mode: String = "commit"): Future[Unit] = {
+
+    val bytes = transcode(tx).to[Bson]
+    broadcastBytes(bytes, mode)
+  }
+
+  def singAndBroadcastTransaction(from: Address,
+                                  privateKey: PrivateKey,
+                                  data: TransactionData,
+                                  fee: Mytc,
+                                  mode: String = "commit"): Future[Unit] = {
+
+    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee)
+    val tx = cryptography.signTransaction(privateKey, unsignedTx)
+    val bytes = transcode(tx).to[Bson]
+    broadcastBytes(bytes, mode)
   }
 }
 
