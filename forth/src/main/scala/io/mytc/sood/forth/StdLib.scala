@@ -6,18 +6,18 @@ object StdLib {
   import io.mytc.sood.asm.Datum
 
   def defs: String = { """
-  : + add ;
-  : - -1 mul add ;
-  : * mul ;
-  : / div ;
-  : % mod ;
-  : == eq ;
-  : != neq ;
-  : < lt ;
-  : > gt ;
-  : <= gt not ;
-  : >= lt not ;
-  : dup dup1 ;
+    : + add ;
+    : - -1 mul add ;
+    : * mul ;
+    : / div ;
+    : % mod ;
+    : == eq ;
+    : != neq ;
+    : < lt ;
+    : > gt ;
+    : <= gt not ;
+    : >= lt not ;
+    : dup dup1 ;
   """ }
 
   def words: Seq[Op] =
