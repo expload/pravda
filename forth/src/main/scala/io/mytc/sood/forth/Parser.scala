@@ -1,22 +1,22 @@
 package io.mytc.sood.forth
 
-class Parser {
+final case class NamedFunction[T, V](f: T => V, name: String) extends (T => V) {
+  def apply(t: T) = f(t)
+  override def toString() = name
+}
 
-  case class NamedFunction[T, V](f: T => V, name: String) extends (T => V){
-    def apply(t: T) = f(t)
-    override def toString() = name
-  }
+class Parser {
 
   object grammar {
     import fastparse.all._
     val keyword = P("if" | "else" | "then" | "while" | "loop")
 
-    val hexDigit = P( CharIn('0'to'9', 'a'to'f', 'A'to'F') )
+    val hexDigit = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
     val StringChars = NamedFunction(!"\"\\".contains(_: Char), "StringChars")
-    val strChars = P( CharsWhile(StringChars) )
-    val unicodeEscape = P( "u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit )
+    val strChars = P(CharsWhile(StringChars))
+    val unicodeEscape = P("u" ~ hexDigit ~ hexDigit ~ hexDigit ~ hexDigit)
 
-    val escape = P( "\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape) )
+    val escape = P("\\" ~ (CharIn("\"/\\bfnrt") | unicodeEscape))
     val alpha = P(CharIn("!@#$%^&*-_+=<>/\\|~'") | CharIn('a' to 'z') | CharIn('A' to 'Z'))
     val digit = P(CharIn('0' to '9'))
     val aldig = P(alpha | digit)
@@ -38,12 +38,16 @@ class Parser {
 
     val blockStmt: P[Seq[Statement]] = P(
       dwordStmt.map { case (n, b) ⇒ Statement.Dword(n, b) } |
-      ifStmt.map(b ⇒ Statement.If(b, Seq())) |
-      numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
-      integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
-      hexarStmt.map { v ⇒ Statement.Hexar(v) } |
-      chrarStmt.map { v ⇒ Statement.Chrar(v) } |
-      (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
+        ifStmt.map(b ⇒ Statement.If(b, Seq())) |
+        numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
+        integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
+        hexarStmt.map { v ⇒
+          Statement.Hexar(v)
+        } |
+        chrarStmt.map { v ⇒
+          Statement.Chrar(v)
+        } |
+        (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
     ).rep(sep = delim)
 
     val forthUnit = P(Start ~ delim.? ~ blockStmt ~ delim.? ~ End)

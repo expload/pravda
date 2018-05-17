@@ -4,7 +4,7 @@ object Application {
 
   final case class Config(
       out: String = "a.mytc",
-      inline: Boolean = false,
+      useInline: Boolean = false,
       hexDump: Boolean = false,
       useStdLib: Boolean = true,
       files: Seq[String] = Seq.empty[String]
@@ -13,7 +13,7 @@ object Application {
   def compile(filename: String, config: Config): Either[String, Array[Byte]] = {
     import scala.io.Source
     val compiler = Compiler()
-    val code = if (config.inline) {
+    val code = if (config.useInline) {
       filename
     } else {
       Source.fromFile(filename).getLines.toList.reduce(_ + "\n" + _)
@@ -28,7 +28,7 @@ object Application {
 
     val fileName = config.files.head
 
-    if (!(new java.io.File(fileName)).exists && !config.inline) {
+    if (!(new java.io.File(fileName)).exists && !config.useInline) {
       System.err.println("File not found: " + fileName)
       System.exit(1)
     }
@@ -73,7 +73,7 @@ object Application {
 
       opt[Unit]('i', "inline")
         .action { (_, c) =>
-          c.copy(inline = true)
+          c.copy(useInline = true)
         }
         .text("Use inline forth program")
 

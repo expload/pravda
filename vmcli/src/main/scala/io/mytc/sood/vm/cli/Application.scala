@@ -75,7 +75,7 @@ object Application {
     override def updateProgram(address: Data, code: Data): Unit = ???
 
     override def getProgram(address: Address): Option[ProgramContext] = {
-      storage.get(mkKey("prg:", address)).map{ prog =>
+      storage.get(mkKey("prg:", address)).map { prog =>
         new ProgramContext {
           override val storage = (new SimpleDb(name + "-inner"))
           override val code = prog.asReadOnlyByteBuffer
@@ -96,14 +96,14 @@ object Application {
   }
 
   final case class Config(
-    exec: Boolean       = true,
-    storageName: String = "mytc-storage",
-    files: Seq[String]  = Seq("stdin")
+      exec: Boolean = true,
+      storageName: String = "mytc-storage",
+      files: Seq[String] = Seq("stdin")
   )
 
   def hex(b: Byte): String = {
     val s = (b & 0xFF).toHexString
-    if(s.length < 2){
+    if (s.length < 2) {
       s"0$s"
     } else {
       s
@@ -117,7 +117,9 @@ object Application {
   def show(memory: Memory): String = {
     s"""
        |stack: ${memory.stack.map(d => hex(d.toByteArray)).mkString("[", ", ", "]")}
-       |heap : ${memory.heap.zipWithIndex.map{case (d, i) => s"($i: ${hex(d.toByteArray)})"}.mkString("[", ", ", "]")}
+       |heap : ${memory.heap.zipWithIndex
+         .map { case (d, i) => s"($i: ${hex(d.toByteArray)})" }
+         .mkString("[", ", ", "]")}
        |""".stripMargin
   }
 
@@ -140,7 +142,9 @@ object Application {
       case e @ VmErrorException(err, StackTrace(trace)) =>
         val point = trace.last
         println(err)
-        point.address.foreach{ addr => println(s"\tprog: ${hex(addr.toByteArray)}") }
+        point.address.foreach { addr =>
+          println(s"\tprog: ${hex(addr.toByteArray)}")
+        }
         println(s"\tpos: ${point.position}")
     }
   }
@@ -189,4 +193,3 @@ object Application {
   }
 
 }
-
