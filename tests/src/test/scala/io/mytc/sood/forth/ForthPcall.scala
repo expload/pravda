@@ -30,5 +30,35 @@ object ForthPcall extends TestSuite {
         )
       )
     }
+
+    'storage_pcall - {
+      val Right(code) = Compiler().compile(
+        """
+          |dup1 1 == if dup3 dup3 sput then
+          |dup1 2 == if dup2 sget then
+        """.stripMargin,
+        useStdLib = true
+      )
+
+      val res = runWithEnviroment[ByteString](
+        s"""
+           |$$x${code.map("%02X".format(_)).mkString}
+           |pcreate
+           |10 100 1
+           |dup4 3 pcall
+           |pop pop pop
+           |10 2
+           |dup3 2 pcall
+          """.stripMargin,
+        int32ToByteString(42)
+      )
+
+      res ==> Right(
+        (
+          Seq(1, 10, 2, 100).map(int32ToData),
+          Map(int32ToAddress(1) -> ((bytesToByteString(code.map(_.toInt): _*), Map(int32ToAddress(10) -> int32ToData(100)))))
+        )
+      )
+    }
   }
 }

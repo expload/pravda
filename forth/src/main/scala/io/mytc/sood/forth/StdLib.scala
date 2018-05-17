@@ -48,7 +48,8 @@ object StdLib {
       pcreate,
       pupdate,
       swap,
-      pcall
+      pcall,
+      pop
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -182,6 +183,12 @@ object StdLib {
     Op.Label(s"dup${n}"),
     Op.Push(Datum.Integral(n)),
     Op.Dupn,
+    Op.Ret
+  )
+
+  def pop: Seq[Op] = Seq(
+    Op.Label("pop"),
+    Op.Pop,
     Op.Ret
   )
 }
