@@ -6,18 +6,19 @@ object Application {
       out: String = "a.mytc",
       inline: Boolean = false,
       hexDump: Boolean = false,
+      useStdLib: Boolean = true,
       files: Seq[String] = Seq.empty[String]
   )
 
-  def compile(filename: String, inline: Boolean): Either[String, Array[Byte]] = {
+  def compile(filename: String, config: Config): Either[String, Array[Byte]] = {
     import scala.io.Source
     val compiler = Compiler()
-    val code = if (inline) {
+    val code = if (config.inline) {
       filename
     } else {
       Source.fromFile(filename).getLines.toList.reduce(_ + "\n" + _)
     }
-    val bcode = compiler.compile(code, useStdLib = true)
+    val bcode = compiler.compile(code, useStdLib = config.useStdLib)
     bcode
   }
 
@@ -32,7 +33,7 @@ object Application {
       System.exit(1)
     }
 
-    compile(fileName, config.inline) match {
+    compile(fileName, config) match {
       case Right(code) ⇒ {
         if (config.hexDump) {
           val hexStr = code.map("%02X" format _).mkString
@@ -75,6 +76,12 @@ object Application {
           c.copy(inline = true)
         }
         .text("Use inline forth program")
+
+      opt[Unit]('S', "no-stdlib")
+        .action { (_, c) =>
+          c.copy(useStdLib = false)
+        }
+        .text("Don't link standard library")
 
       arg[String]("<filename>")
         .unbounded()
