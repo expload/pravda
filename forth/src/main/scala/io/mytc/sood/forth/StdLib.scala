@@ -44,6 +44,7 @@ object StdLib {
       sput,
       concat,
       from,
+      pcall,
       pcreate,
       pupdate,
       swap,

@@ -8,7 +8,7 @@ object ForthBranchingTest extends TestSuite {
   def tests = Tests {
 
     "if must execute block if true is on top of the stack" - {
-      assert( runTransaction[Int]("""
+      assert( runWithoutEnviroment[Int]("""
         0 0
         eq
         if 5 then
@@ -18,7 +18,7 @@ object ForthBranchingTest extends TestSuite {
     }
 
     "if must not execute block if false is on top of the stack" - {
-      assert( runTransaction[Int]("""
+      assert( runWithoutEnviroment[Int]("""
         0 1
         eq
         if 5 then

@@ -9,40 +9,40 @@ object ForthTest extends TestSuite {
   def tests = Tests {
     "A forth compiler must correctly define and run word" - {
       assert(
-        runTransaction[Int](": seq5 1 2 3 ; seq5") == Right(List(1, 2, 3))
+        runWithoutEnviroment[Int](": seq5 1 2 3 ; seq5") == Right(List(1, 2, 3))
       )
     }
 
     "A forth program must be able to push to the stack" - {
       assert(
-        runTransaction[Int]("1") == Right(List(1))
+        runWithoutEnviroment[Int]("1") == Right(List(1))
       )
 
       assert(
-        runTransaction[Int]("1 2") == Right(List(1, 2))
+        runWithoutEnviroment[Int]("1 2") == Right(List(1, 2))
       )
 
       assert(
-        runTransaction[Int]("1 2 3") == Right(List(1, 2, 3))
+        runWithoutEnviroment[Int]("1 2 3") == Right(List(1, 2, 3))
       )
     }
 
     "A forth standard library must define +" - {
       assert(
-        runTransaction[Int]("3 5 add") == Right(List(8))
+        runWithoutEnviroment[Int]("3 5 add") == Right(List(8))
       )
     }
 
     "A forth standard library must define *" - {
       assert(
-        runTransaction[Int]("1 2 3 *") == Right(List(1, 6))
+        runWithoutEnviroment[Int]("1 2 3 *") == Right(List(1, 6))
       )
     }
 
     "A forth must  work with hex strings" - {
 
       assert(
-        runTransaction[List[Byte]]("$xFFF1F2") == Right(List(List(0xFF.toByte, 0xF1.toByte, 0xF2.toByte)))
+        runWithoutEnviroment[List[Byte]]("$xFFF1F2") == Right(List(List(0xFF.toByte, 0xF1.toByte, 0xF2.toByte)))
       )
 
     }
