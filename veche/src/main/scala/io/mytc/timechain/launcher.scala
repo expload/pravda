@@ -37,14 +37,14 @@ object launcher extends App {
     cfg = Server.Config(
       host = "127.0.0.1",
       port = timeChainConfig.tendermint.proxyAppPort,
-      usock = timeChainConfig.tendermint.proxyAppSock
+      usock = new File(timeChainConfig.dataDirectory, "abci.sock").getAbsolutePath
     ),
     api = abci
   )
 
   val httpServer = {
     val apiRoute = new ApiRoute(abciClient)
-    val guiRoute = new GuiRoute()
+    val guiRoute = new GuiRoute(applicationStateDb)
     HttpServer.start(timeChainConfig.api, apiRoute.route, guiRoute.route)
   }
 

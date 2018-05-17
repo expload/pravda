@@ -6,6 +6,12 @@ import scala.concurrent.Future
 
 package object utils {
 
+  // TODO better naming
+  def padLong(i: Long, digits: Int): String = {
+    val str = i.toString
+    ("0" * (digits - str.length)) + str
+  }
+
   def hex2byteString(hex: String): ByteString = {
     if (hex.length > 0) {
       val his = getHexInputStream

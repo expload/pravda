@@ -135,7 +135,7 @@ object Abci {
   final class EnvironmentProvider(db: DB) {
 
     private val operations = mutable.Buffer.empty[Operation]
-    private val effectsMap = mutable.Buffer.empty[(ByteString, mutable.Buffer[EnvironmentEffect])]
+    private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
     private val cache = mutable.Map.empty[String, Array[Byte]]
 
     private lazy val programsPath = new DbPath("program")
@@ -252,17 +252,15 @@ object Abci {
 
     def commit(height: Long): Unit = {
       // FIXME fomkin: this is temporary solution. must be replaced with binary serialization
-      def its(i: Long, digits: Int) = {
-        val str = i.toString
-        ("0" * (digits - str.length)) + str
-      }
-      val thisBlockPath = effectsPath :+ its(height, 10)
-      for (((tid, effects), i) <- effectsMap.zipWithIndex) {
-        val thisTxPath = thisBlockPath :+ s"${its(i.toLong, 5)}-${utils.bytes2hex(tid)}"
-        for ((effect, j) <- effects.zipWithIndex) {
-          thisTxPath.put(its(j.toLong, 10), effect)
-        }
-      }
+      import utils.padLong
+      effectsPath.put(padLong(height, 10), effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]])
+//      val thisBlockPath = effectsPath :+ its(height, 10)
+//      for (((tid, effects), i) <- effectsMap.zipWithIndex) {
+//        val thisTxPath = thisBlockPath :+ s"${its(i.toLong, 5)}-${utils.bytes2hex(tid)}"
+//        for ((effect, j) <- effects.zipWithIndex) {
+//          thisTxPath.put(its(j.toLong, 10), effect)
+//        }
+//      }
 
       db.syncBatch(operations: _*)
       clear()

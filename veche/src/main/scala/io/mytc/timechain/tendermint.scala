@@ -139,10 +139,10 @@ object tendermint {
 //      val cswal = new File(tmDataDir, "cswal")
 //      println(tmpDir)
 
-      val proxyAppAddr = if (config.tendermint.proxyAppSock.isEmpty) {
+      val proxyAppAddr = if (!config.tendermint.useUnixDomainSocket) {
         s"tcp://127.0.0.1:${config.tendermint.proxyAppPort}"
       } else {
-        s"unix://${config.tendermint.proxyAppSock}"
+        s"unix://${new File(config.dataDirectory, "abci.sock").getAbsolutePath}"
       }
 
       val tomlConfig =

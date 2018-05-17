@@ -137,7 +137,7 @@ lazy val veche = (project in file("veche"))
 		  "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
 		  // Other
 		  "org.rudogma" %% "supertagged" % "1.4",
-		  "io.mytc" %% "scala-abci-server" % "0.9.0",
+		  "io.mytc" %% "scala-abci-server" % "0.9.1",
 		  "com.github.pureconfig" %% "pureconfig" % "0.9.0",
 		  "org.typelevel" %% "cats-core" % "1.0.1",
 		  // Cryptography

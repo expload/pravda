@@ -44,8 +44,8 @@ object TimechainConfig {
   final case class TendermintConfig(
       peerPort: Int,
       rpcPort: Int,
-      proxyAppSock: String,
-      proxyAppPort: Int
+      proxyAppPort: Int,
+      useUnixDomainSocket: Boolean
   )
 
 }
