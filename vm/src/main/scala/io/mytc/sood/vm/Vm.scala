@@ -210,13 +210,17 @@ object Vm {
             storage.put(key, value)
             aux()
           case SGET =>
-            memory.push(storage.get(memory.pop()).get)
+            val valOpt = storage.get(memory.pop())
+            if (valOpt.isEmpty) {
+              throw VmErrorException(NoSuchElement)
+            }
+            memory.push(valOpt.get)
             aux()
           case SDROP =>
             storage.delete(memory.pop())
             aux()
           case SEXIST =>
-            memory.push(boolToData(storage.get(memory.pop()).isEmpty))
+            memory.push(boolToData(storage.get(memory.pop()).isDefined))
             aux()
           case I32ADD =>
             memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))
