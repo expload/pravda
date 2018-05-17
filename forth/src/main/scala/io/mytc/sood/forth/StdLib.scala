@@ -47,6 +47,7 @@ object StdLib {
       pcreate,
       pupdate,
       swap,
+      pcall
     ).flatten
 
   val fadd: Seq[Op] = Seq(
