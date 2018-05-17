@@ -6,6 +6,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import io.mytc.keyvalue.DB
 import io.mytc.tendermint.abci.Server
+import io.mytc.tendermint.abci.Server.ConnectionMethod
 import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.servers.{Abci, ApiRoute, GuiRoute, HttpServer}
 
@@ -35,9 +36,13 @@ object launcher extends App {
 
   val server = Server(
     cfg = Server.Config(
-      host = "127.0.0.1",
-      port = timeChainConfig.tendermint.proxyAppPort,
-      usock = new File(timeChainConfig.dataDirectory, "abci.sock").getAbsolutePath
+      connectionMethod =
+        if (timeChainConfig.tendermint.useUnixDomainSocket) {
+          val path = new File(timeChainConfig.dataDirectory, "abci.sock").getAbsolutePath
+          ConnectionMethod.UnixSocket(path)
+        } else {
+          ConnectionMethod.Tcp(host = "127.0.0.1", port = timeChainConfig.tendermint.proxyAppPort)
+        }
     ),
     api = abci
   )
