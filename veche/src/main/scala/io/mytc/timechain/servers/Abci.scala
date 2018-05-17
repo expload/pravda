@@ -58,7 +58,10 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
       env = environmentProvider.transactionEnvironment(encodedTransaction)
-      _ <- Try(Vm.runRaw(authTx.program, authTx.from, env))
+      _ <- Try {
+        val stack = Vm.runRaw(authTx.program, authTx.from, env).stack
+        println(s"Stack: ${stack.map(_.toByteArray.map("0x%02X".format(_)).mkString(" ")).mkString("[", ", ", "]")}")
+      } // FIXME println stack
     } yield {
       ()
     }
@@ -205,9 +208,8 @@ object Abci {
 
         val address = Address @@ ByteString.copyFrom(addressBytes)
         val sp = StoredProgram(code, Address @@ owner)
-        val encodedSp = transcode(sp).to[Bson]
 
-        programsPath.put(utils.bytes2hex(addressBytes), encodedSp.asInstanceOf[Array[Byte]]) // FIXME
+        programsPath.put(utils.bytes2hex(addressBytes), sp)
 
         effects += ProgramCreate(address, code.toByteArray)
         address
@@ -216,8 +218,7 @@ object Abci {
       def updateProgram(address: state.Address, code: Data): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
         val sp = oldSb.copy(code = code)
-        val encodedSp = transcode(sp).to[Bson]
-        programsPath.put(utils.bytes2hex(address), encodedSp.asInstanceOf[Array[Byte]]) // FIXME
+        programsPath.put(utils.bytes2hex(address), sp)
         effects += ProgramUpdate(Address @@ address, code.toByteArray)
       }
 
