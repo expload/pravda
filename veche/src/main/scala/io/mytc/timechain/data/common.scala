@@ -1,6 +1,7 @@
 package io.mytc.timechain.data
 
 import com.google.protobuf.ByteString
+import io.mytc.timechain.contrib.ripemd160
 import supertagged.TaggedType
 import io.mytc.timechain.utils._
 
@@ -32,6 +33,16 @@ object common {
       Address(hex2byteString(hex))
   }
   type Address = Address.Type
+
+  /**
+    * Ripemd160 hash of BSON representation of signed transaction
+    */
+  object TransactionId extends TaggedType[ByteString] {
+
+    def forEncodedTransaction(tx: ByteString): TransactionId =
+      TransactionId @@ ByteString.copyFrom(ripemd160.getHash(tx.toByteArray))
+  }
+  type TransactionId = TransactionId.Type
 
   final case class ApplicationStateInfo(blockHeight: Long, appHash: ByteString)
 }

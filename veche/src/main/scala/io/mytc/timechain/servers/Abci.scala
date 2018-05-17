@@ -13,7 +13,7 @@ import io.mytc.sood.vm.state.{Data, Environment, ProgramContext, Storage}
 import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.data.blockchain.Transaction
 import io.mytc.timechain.data.blockchain.Transaction.AuthorizedTransaction
-import io.mytc.timechain.data.common.{Address, ApplicationStateInfo}
+import io.mytc.timechain.data.common.{Address, ApplicationStateInfo, TransactionId}
 import io.mytc.timechain.data.cryptography
 import io.mytc.timechain.data.serialization._
 import io.mytc.timechain.persistence.implicits._
@@ -30,8 +30,9 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   import Abci._
 
   var proposedHeight = 0L
-  val mempoolEnv = new WorldStateEnvironment(applicationStateDb)
-  val consensusEnv = new WorldStateEnvironment(applicationStateDb)
+  val consensusEnv = new EnvironmentProvider(applicationStateDb)
+  // FIXME fomkin: mempool should work without data base
+  val mempoolEnv = new EnvironmentProvider(applicationStateDb)
 
   def info(request: RequestInfo): Future[ResponseInfo] = {
     FileStore.readApplicationStateInfoAsync().map { maybeInfo =>
@@ -49,30 +50,34 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
     Future.successful(ResponseBeginBlock())
   }
 
-  def deliverTx(request: RequestDeliverTx): Future[ResponseDeliverTx] = {
-
+  def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: EnvironmentProvider)(
+      result: (Int, String) => R): Future[R] = {
     val `try` = for {
-      tx <- Try(transcode(Bson @@ request.tx.toByteArray).to[Transaction.SignedTransaction])
+      tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[Transaction.SignedTransaction])
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
-      _ = println(authTx.program)
-      _ <- Try(Vm.runRaw(authTx.program, authTx.from, consensusEnv))
+      env = mempoolEnv.transactionEnvironment(encodedTransaction)
+      _ <- Try(Vm.runRaw(authTx.program, authTx.from, env))
     } yield {
       ()
     }
 
     Future.successful {
       `try` match {
-        case Success(_) => ResponseDeliverTx(code = TxStatusOk)
+        case Success(_) => result(TxStatusOk, "")
         case Failure(e) =>
-          ResponseDeliverTx(
-            code =
-              if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
-              else TxStatusError,
-            log = e.getMessage
-          )
+          val code =
+            if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
+            else TxStatusError
+          result(code, e.getMessage)
       }
+    }
+  }
+
+  def deliverTx(request: RequestDeliverTx): Future[ResponseDeliverTx] = {
+    deliverOrCheckTx(request.tx, consensusEnv) { (code, log) =>
+      ResponseDeliverTx(code = code, log = log)
     }
   }
 
@@ -82,7 +87,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   }
 
   def commit(request: RequestCommit): Future[ResponseCommit] = {
-    consensusEnv.commit()
+    consensusEnv.commit(proposedHeight)
     mempoolEnv.clear()
     val hash = ByteString.copyFrom(applicationStateDb.stateHash)
     FileStore
@@ -96,27 +101,8 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   }
 
   def checkTx(request: RequestCheckTx): Future[ResponseCheckTx] = {
-    val `try` = for {
-      tx <- Try(transcode(Bson @@ request.tx.toByteArray).to[Transaction.SignedTransaction])
-      authTx <- cryptography
-        .checkTransactionSignature(tx)
-        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
-      _ <- Try(Vm.runRaw(authTx.program, authTx.from, mempoolEnv))
-    } yield {
-      ()
-    }
-
-    Future.successful {
-      `try` match {
-        case Success(_) => ResponseCheckTx(code = TxStatusOk)
-        case Failure(e) =>
-          ResponseCheckTx(
-            code =
-              if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
-              else TxStatusError,
-            log = e.getMessage
-          )
-      }
+    deliverOrCheckTx(request.tx, mempoolEnv) { (code, log) =>
+      ResponseCheckTx(code = code, log = log)
     }
   }
 
@@ -127,7 +113,8 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
 object Abci {
 
-  final case class TransactionUnauthorized() extends Exception("Transaction signature is invalid")
+  final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
+  final case class ProgramNotFoundException() extends Exception("Program not found")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -135,15 +122,29 @@ object Abci {
 
   final case class StoredProgram(code: ByteString, owner: Address)
 
-  final class WorldStateEnvironment(db: DB) extends Environment {
+  sealed trait EnvironmentEffect
+
+  object EnvironmentEffect {
+    final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
+    final case class StorageWrite(key: String, value: Array[Byte])          extends EnvironmentEffect
+    final case class StorageRead(key: String, value: Option[Array[Byte]])   extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Array[Byte])  extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Array[Byte])  extends EnvironmentEffect
+  }
+
+  final class EnvironmentProvider(db: DB) {
 
     private val operations = mutable.Buffer.empty[Operation]
+    private val effectsMap = mutable.Buffer.empty[(ByteString, mutable.Buffer[EnvironmentEffect])]
     private val cache = mutable.Map.empty[String, Array[Byte]]
-    private val programsPath = new DbPath("program")
+
+    private lazy val programsPath = new DbPath("program")
+    private lazy val effectsPath = new DbPath("effects")
 
     private final class DbPath(path: String) {
 
-      private def mkKey(suffix: String) = s"$path:$suffix"
+      def mkKey(suffix: String) = s"$path:$suffix"
+
       def :+(suffix: String) = new DbPath(mkKey(suffix))
 
       def get(suffix: String): Option[Array[Byte]] = {
@@ -157,60 +158,110 @@ object Abci {
         operations += Operation.Put(key, value)
       }
 
-      def remove(suffix: String): Unit = {
+      def remove(suffix: String): Option[Array[Byte]] = {
         val key = mkKey(suffix)
-        cache.remove(key)
         operations += Operation.Delete(key)
+        cache.remove(key)
       }
     }
 
-    private final class WsProgramStorage(dbPath: DbPath) extends Storage {
-
-      def get(key: state.Address): Option[state.Data] =
-        dbPath.get(utils.bytes2hex(key)).map(ba => ByteString.copyFrom(ba))
-
-      def put(key: state.Address, value: state.Data): Unit =
-        dbPath.put(utils.bytes2hex(key), value)
-
-      def delete(key: state.Address): Unit =
-        dbPath.remove(utils.bytes2hex(key))
+    def transactionEnvironment(rawTransaction: ByteString): Environment = {
+      val tid = TransactionId.forEncodedTransaction(rawTransaction)
+      val effects = mutable.Buffer.empty[EnvironmentEffect]
+      effectsMap += (tid -> effects)
+      new TransactionDependentEnvironment(effects)
     }
 
-    def createProgram(owner: state.Address, code: Data): state.Address = {
-      // FIXME fomkin: consider something better
-      val address = ripemd160.getHash(owner.concat(code))
-      programsPath.put(utils.bytes2hex(address), code.toByteArray)
-      ByteString.copyFrom(address)
-    }
+    private final class TransactionDependentEnvironment(effects: mutable.Buffer[EnvironmentEffect])
+        extends Environment {
 
-    def updateProgram(address: Data, code: Data): Unit =
-      programsPath.put(utils.bytes2hex(address), code.toByteArray)
+      import EnvironmentEffect._
 
-    private def getStoredProgram(address: ByteString) =
-      programsPath.get(utils.bytes2hex(address)) map { serializedProgram =>
-        transcode(Bson @@ serializedProgram).to[StoredProgram]
-      }
+      private final class WsProgramStorage(dbPath: DbPath) extends Storage {
 
-    def getProgramOwner(address: ByteString): Option[ByteString] =
-      getStoredProgram(address).map(_.owner)
+        def get(key: state.Address): Option[state.Data] = {
+          val hexKey = utils.bytes2hex(key)
+          val value = dbPath.get(hexKey)
+          effects += StorageRead(dbPath.mkKey(hexKey), value)
+          value.map(ba => ByteString.copyFrom(ba))
+        }
 
-    def getProgram(address: ByteString): Option[ProgramContext] =
-      getStoredProgram(address) map { program =>
-        new ProgramContext {
-          def code: ByteBuffer = ByteBuffer.wrap(program.code.toByteArray)
-          def storage: Storage = {
-            val newPath = programsPath :+ utils.bytes2hex(address)
-            new WsProgramStorage(newPath)
-          }
+        def put(key: state.Address, value: state.Data): Unit = {
+          val hexKey = utils.bytes2hex(key)
+          effects += StorageWrite(dbPath.mkKey(hexKey), value.toByteArray)
+          dbPath.put(utils.bytes2hex(key), value)
+        }
+
+        def delete(key: state.Address): Unit = {
+          val hexKey = utils.bytes2hex(key)
+          val value = dbPath.remove(utils.bytes2hex(key))
+          effects += StorageRemove(dbPath.mkKey(hexKey), value)
         }
       }
 
+      def createProgram(owner: state.Address, code: Data): state.Address = {
+        // FIXME fomkin: consider something better
+        val addressBytes = ripemd160.getHash(owner.concat(code))
+
+        val address = Address @@ ByteString.copyFrom(addressBytes)
+        val sp = StoredProgram(code, Address @@ owner)
+        val encodedSp = transcode(sp).to[Bson]
+
+        programsPath.put(utils.bytes2hex(addressBytes), encodedSp.asInstanceOf[Array[Byte]]) // FIXME
+        effects += ProgramCreate(address, code.toByteArray)
+        address
+      }
+
+      def updateProgram(address: state.Address, code: Data): Unit = {
+        val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
+        val sp = oldSb.copy(code = code)
+        val encodedSp = transcode(sp).to[Bson]
+        programsPath.put(utils.bytes2hex(address), encodedSp.asInstanceOf[Array[Byte]]) // FIXME
+        effects += ProgramUpdate(Address @@ address, code.toByteArray)
+      }
+
+      private def getStoredProgram(address: ByteString) =
+        programsPath.get(utils.bytes2hex(address)) map { serializedProgram =>
+          transcode(Bson @@ serializedProgram).to[StoredProgram]
+        }
+
+      // Effects below are ignored by effect collect
+      // because they are inaccessible from user space
+
+      def getProgramOwner(address: ByteString): Option[ByteString] =
+        getStoredProgram(address).map(_.owner)
+
+      def getProgram(address: ByteString): Option[ProgramContext] =
+        getStoredProgram(address) map { program =>
+          new ProgramContext {
+            def code: ByteBuffer = ByteBuffer.wrap(program.code.toByteArray)
+            def storage: Storage = {
+              val newPath = programsPath :+ utils.bytes2hex(address)
+              new WsProgramStorage(newPath)
+            }
+          }
+        }
+    }
+
     def clear(): Unit = {
       operations.clear()
+      effectsMap.clear()
       cache.clear()
     }
 
-    def commit(): Unit = {
+    def commit(height: Long): Unit = {
+      // FIXME fomkin: this is temporary solution. must be replaced with binary serialization
+      def its(i: Long, digits: Int) = {
+        val str = i.toString
+        ("0" * (digits - str.length)) + str
+      }
+      val thisBlockPath = effectsPath :+ its(height, 10)
+      for (((tid, effects), i) <- effectsMap.zipWithIndex) {
+        val thisTxPath = thisBlockPath :+ s"${its(i.toLong, 5)}-${utils.bytes2hex(tid)}"
+        for ((effect, j) <- effects.zipWithIndex) {
+          thisTxPath.put(its(j.toLong, 10), effect)
+        }
+      }
       db.batch(operations: _*)
       clear()
     }
