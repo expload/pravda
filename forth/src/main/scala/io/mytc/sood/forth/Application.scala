@@ -7,6 +7,7 @@ object Application {
       useInline: Boolean = false,
       hexDump: Boolean = false,
       useStdLib: Boolean = true,
+      useBase64: Boolean = true,
       files: Seq[String] = Seq.empty[String]
   )
 
@@ -38,6 +39,9 @@ object Application {
         if (config.hexDump) {
           val hexStr = code.map("%02X" format _).mkString
           println(hexStr)
+        } else if (config.useBase64) {
+          val base64Str = java.util.Base64.getEncoder().encode(code)
+          println(new String(base64Str))
         } else {
           val out = new BufferedOutputStream(new FileOutputStream(config.out))
           out.write(code)
@@ -64,6 +68,12 @@ object Application {
           c.copy(hexDump = true)
         }
         .text("Hex dump of bytecode")
+
+      opt[Unit]('b', "base64")
+        .action { (_, c) =>
+          c.copy(useBase64 = true)
+        }
+        .text("base64 dump of bytecode")
 
       opt[String]('o', "output")
         .action { (name, c) =>
