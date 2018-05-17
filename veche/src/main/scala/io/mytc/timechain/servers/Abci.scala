@@ -56,6 +56,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
+      _ = println(authTx.program)
       _ <- Try(Vm.runRaw(authTx.program, authTx.from, consensusEnv))
     } yield {
       ()

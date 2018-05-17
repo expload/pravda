@@ -314,7 +314,8 @@ class ByteCode {
 
     while (ubuf.remaining > 0) {
       val pos = ubuf.position()
-      ubuf.get() & 0xFF match {
+      val ins = ubuf.get()
+      ins & 0xFF match {
         case VM.PUSHX   ⇒ obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
         case VM.CALL    ⇒ obuf += ((pos, Op.Call("")))
         case VM.STOP    ⇒ obuf += ((pos, Op.Stop))
@@ -332,6 +333,7 @@ class ByteCode {
         case VM.I32MOD  ⇒ obuf += ((pos, Op.I32Mod))
         case VM.I32LT   ⇒ obuf += ((pos, Op.I32LT))
         case VM.I32GT   ⇒ obuf += ((pos, Op.I32GT))
+        case VM.NOT     ⇒ obuf += ((pos, Op.Not))
         case VM.EQ      ⇒ obuf += ((pos, Op.Eq))
         case VM.FADD    ⇒ obuf += ((pos, Op.FAdd))
         case VM.FMUL    ⇒ obuf += ((pos, Op.FMul))

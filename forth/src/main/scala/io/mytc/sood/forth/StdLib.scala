@@ -46,6 +46,7 @@ object StdLib {
       from,
       pcreate,
       pupdate,
+      swap,
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -166,6 +167,12 @@ object StdLib {
   val pcall: Seq[Op] = Seq(
     Op.Label("pcall"),
     Op.PCall,
+    Op.Ret
+  )
+
+  val swap: Seq[Op] = Seq(
+    Op.Label("swap"),
+    Op.Swap,
     Op.Ret
   )
 

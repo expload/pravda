@@ -25,14 +25,14 @@ class Parser {
 
     val blockStmt: P[Seq[Statement]] = P(
       dwordStmt.map { case (n, b) ⇒ Statement.Dword(n, b) } |
-        ifStmt.map(b ⇒ Statement.If(b, Seq())) |
-        numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
-        integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
-        hexarStmt.map(v ⇒ Statement.Hexar(v)) |
-        (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
+      ifStmt.map(b ⇒ Statement.If(b, Seq())) |
+      numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
+      integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
+      hexarStmt.map { v ⇒ Statement.Hexar(v) } |
+      (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
     ).rep(sep = delim)
 
-    val forthUnit = P(Start ~ delim.rep ~ blockStmt ~ delim.rep ~ End)
+    val forthUnit = P(Start ~ delim.? ~ blockStmt ~ delim.? ~ End)
   }
 
   def lex(code: String): Either[String, Seq[Statement]] = grammar.forthUnit.parse(code) match {

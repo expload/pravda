@@ -85,6 +85,20 @@ lazy val tests = (project in file("tests")).
   ).
   settings( commonSettings: _* )
 
+lazy val vmcli = (project in file("vmcli")).
+  dependsOn(vm).
+	enablePlugins(JavaAppPackaging).
+  settings(
+    normalizedName := "vmcli",
+    version := "0.0.1"
+  ).
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
+      "com.github.scopt" %% "scopt"      % "3.7.0"
+    )
+  )
+
 lazy val cil = (project in file("cil-translator")).
   dependsOn(asm).
   settings(

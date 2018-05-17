@@ -151,7 +151,7 @@ object tendermint {
            |abci="socket"
            |proxy_app = "${proxyAppAddr}"
            |[consensus]
-           |create_empty_blocks = true
+           |create_empty_blocks = false
            |[p2p]
            |addr_book_strict=false
            |seeds="${config.seeds}"
