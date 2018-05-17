@@ -137,6 +137,8 @@ object Abci {
 
   final class EnvironmentProvider(db: DB) {
 
+    val dataWriter: ValueWriter[Data] = (value: Data) => value.toByteArray
+
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
     private val cache = mutable.Map.empty[String, Array[Byte]]
@@ -192,7 +194,7 @@ object Abci {
         def put(key: state.Address, value: state.Data): Unit = {
           val hexKey = utils.bytes2hex(key)
           effects += StorageWrite(dbPath.mkKey(hexKey), value.toByteArray)
-          dbPath.put(utils.bytes2hex(key), value)
+          dbPath.put(utils.bytes2hex(key), value)(dataWriter) // FIXME remove explicit writer
         }
 
         def delete(key: state.Address): Unit = {
