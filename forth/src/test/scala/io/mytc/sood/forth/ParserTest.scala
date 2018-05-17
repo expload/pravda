@@ -39,6 +39,13 @@ object ParserTest extends TestSuite {
       assert( p.parse("1.0 2.0 3.0") == Right(Seq( Float(1.0), Float(2.0), Float(3.0) )))
     }
 
+    "Parser must correctly parse strings (char arrays)" - {
+      val p = Parser()
+      assert(p.parse("1.0 2 \"boo\" 3.0") == Right(Seq(
+        Float(1.0), Integ(2), Chrar("boo"), Float(3.0)
+      )))
+    }
+
     "Parser must correctly parse ifs" - {
       val p = Parser()
       assert( p.parse("if 1 2 3 then") == Right(Seq(
