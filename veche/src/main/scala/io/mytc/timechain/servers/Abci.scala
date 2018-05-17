@@ -57,7 +57,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
-      env = mempoolEnv.transactionEnvironment(encodedTransaction)
+      env = environmentProvider.transactionEnvironment(encodedTransaction)
       _ <- Try(Vm.runRaw(authTx.program, authTx.from, env))
     } yield {
       ()
@@ -208,6 +208,7 @@ object Abci {
         val encodedSp = transcode(sp).to[Bson]
 
         programsPath.put(utils.bytes2hex(addressBytes), encodedSp.asInstanceOf[Array[Byte]]) // FIXME
+
         effects += ProgramCreate(address, code.toByteArray)
         address
       }
@@ -262,7 +263,8 @@ object Abci {
           thisTxPath.put(its(j.toLong, 10), effect)
         }
       }
-      db.batch(operations: _*)
+
+      db.syncBatch(operations: _*)
       clear()
     }
   }
