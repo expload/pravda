@@ -16,9 +16,10 @@ import korolev.server.{KorolevServiceConfig, ServerRouter}
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
 import io.mytc.timechain.persistence.implicits._
-
 import cats.data.OptionT
 import cats.implicits._
+import com.google.protobuf.ByteString
+import io.mytc.sood.asm.{Assembler, Op}
 
 import scala.concurrent.Future
 
@@ -28,7 +29,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   import globalContext._
   import symbolDsl._
 
-  def effectsTable(table: List[Map[String, Node]]): Node = {
+  private def effectsTable(table: List[Map[String, Node]]): Node = {
     'table('class /= "table",
       'thead('tr(table.head.keys.map(k => 'td(k)))),
       'tbody(
@@ -39,7 +40,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     )
   }
 
-  def showEffectName(effect: EnvironmentEffect) = effect match {
+  private def showEffectName(effect: EnvironmentEffect) = effect match {
     case _: EnvironmentEffect.ProgramCreate => "Create program"
     case _: EnvironmentEffect.StorageRemove => "Remove from storage"
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
@@ -47,7 +48,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     case _: EnvironmentEffect.StorageWrite => "Write to storage"
   }
 
-  def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
+  private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
     def localKey(key: String) = key.substring(key.lastIndexOf(':') + 1)
     def showOption(value: Option[Array[Byte]]): Node = value match {
       case None => 'span('fontStyle @= "italic", "None")
@@ -57,12 +58,12 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       case EnvironmentEffect.ProgramCreate(address, program) =>
         Map(
           "Generated address" -> utils.bytes2hex(address),
-          "Code" -> utils.bytes2hex(program)
+          "Disassembled code" -> 'pre(programToAsm(program))
         )
       case EnvironmentEffect.ProgramUpdate(address, program) =>
         Map(
           "Program address" -> utils.bytes2hex(address),
-          "Code" -> utils.bytes2hex(program)
+          "Disassembled code" -> 'pre(programToAsm(program))
         )
       case EnvironmentEffect.StorageRemove(key, value) =>
         Map(
@@ -82,7 +83,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     }
   }
 
-  def groupEffects(effects: List[EnvironmentEffect]) = effects
+  private def groupEffects(effects: List[EnvironmentEffect]) = effects
     .reverse
     .foldLeft(List.empty[(String, List[EnvironmentEffect])]) {
       case (Nil, effect) => (showEffectName(effect), effect :: Nil) :: Nil
@@ -91,6 +92,16 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
         if (thisName == lastName) (lastName, effect :: lastGroup) :: xs
         else (thisName, effect :: Nil) :: acc
     }
+
+  private def asmAstToAsm(asmAst: Seq[(Int, Op)]) = {
+    asmAst.map{ case (no, op) => "%06X:\t%s".format(no, op.toAsm) }.mkString("\n")
+  }
+
+  private def programToAsm(program: Array[Byte]) =
+    asmAstToAsm(Assembler().decompile(program))
+
+  private def programToAsm(program: ByteString) =
+    asmAstToAsm(Assembler().decompile(program))
 
   private val service = akkaHttpService(
     KorolevServiceConfig[Future, GuiState, Any](
@@ -148,7 +159,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                     Block(
                       height, transactions.toList.map {
                         case (id, transaction) =>
-                          Transaction(id, transaction.from, blockInfo(id).toList, "")
+                          val asm = programToAsm(transaction.program)
+                          Transaction(id, transaction.from, blockInfo(id).toList, asm)
                       }
                     )
                   }
