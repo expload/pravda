@@ -1,5 +1,8 @@
 package io.mytc.timechain.clients
 
+import java.util.Base64
+import com.google.protobuf.{ByteString => PbByteString}
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
@@ -32,28 +35,26 @@ class AbciClient(port: Int)(implicit
 //      throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
 //  }
 
-  private def handleResponse(response: HttpResponse, mode: String): Future[Unit] = {
+  private def handleResponse(response: HttpResponse, mode: String): Future[List[PbByteString]] = {
     response match {
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
-        response.discardEntityBytes()
-        Future.unit
-//        entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
-          // FIXME error reporting
-          //val jsonBody = body.utf8String
-//          mode match {
-//            case "async" ⇒
-//              val res = transcode(Json @@ jsonBody).to[RpcAsyncResponse].result
-//              throwIfError("async request", res)
-//            case "sync" ⇒
-//              val res = transcode(Json @@ jsonBody).to[RpcSyncResponse].result
-//              throwIfError("check tx", res.check_tx)
-//            case "commit" ⇒
-//              val res = transcode(Json @@ jsonBody).to[RpcCommitResponse].result
-//              throwIfError("check tx", res.check_tx)
-//              throwIfError("deliver tx", res.deliver_tx)
-//            case _ ⇒ ()
-//          }
-//        }
+        entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
+          val json = body.utf8String
+          println(s"!!!! $json")
+          mode match {
+            case "commit" ⇒
+              transcode(Json @@ json)
+                .to[RpcCommitResponse]
+                .result
+                .deliver_tx
+                .log
+                .split(',')
+                .toList
+                .map(s => PbByteString.copyFrom(Base64.getDecoder.decode(s)))
+            case _ ⇒
+              Nil
+          }
+        }
       case HttpResponse(code, _, _, _) =>
         response.discardEntityBytes()
         //System.err.println(s"tx broadcast request error: http code ${code}")
@@ -71,7 +72,6 @@ class AbciClient(port: Int)(implicit
       .flatMap {
         case HttpResponse(StatusCodes.OK, _, entity, _) =>
           entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { data =>
-            println(data.utf8String)
             val txResponse = transcode(Json @@ data.utf8String).to[AbciClient.RpcTxResponse]
             txResponse.error match {
               case Some(error) =>
@@ -86,7 +86,7 @@ class AbciClient(port: Int)(implicit
       }
   }
 
-  def broadcastBytes(bytes: Array[Byte], mode: String = "commit"): Future[Unit] = {
+  def broadcastBytes(bytes: Array[Byte], mode: String = "commit"): Future[List[PbByteString]] = {
 
     val uri = Uri(s"http://127.0.0.1:$port/broadcast_tx_$mode")
       .withQuery(Uri.Query("tx" -> ("0x" + bytes2hex(bytes))))
@@ -96,7 +96,7 @@ class AbciClient(port: Int)(implicit
       .flatMap(handleResponse(_, mode))
   }
 
-  def broadcastTransaction(tx: SignedTransaction, mode: String = "commit"): Future[Unit] = {
+  def broadcastTransaction(tx: SignedTransaction, mode: String = "commit"): Future[List[PbByteString]] = {
 
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)
@@ -106,7 +106,7 @@ class AbciClient(port: Int)(implicit
                                   privateKey: PrivateKey,
                                   data: TransactionData,
                                   fee: Mytc,
-                                  mode: String = "commit"): Future[Unit] = {
+                                  mode: String = "commit"): Future[List[PbByteString]] = {
 
     val unsignedTx = Transaction.UnsignedTransaction(from, data, fee)
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
@@ -117,18 +117,17 @@ class AbciClient(port: Int)(implicit
 
 object AbciClient {
 
-  import com.google.protobuf.{ByteString => PbByteString}
-
   final case class RpcException(error: RpcError) extends Exception(s"${error.message}: ${error.data}")
   final case class RpcHttpException(httpCode: Int) extends
     Exception(s"RPC request to Tendermint failed with HTTP code $httpCode")
 
-  final case class TxResult(code: Int, data: String, log: String)
   final case class TxSyncResult(check_tx: TxResult)
-  final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
   final case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)
   final case class RpcAsyncResponse(jsonrpc: String, id: String, result: TxResult)
-  final case class RpcCommitResponse(jsonrpc: String, id: String, result: TxCommitResult)
+
+  final case class RpcCommitResponse(result: TxCommitResult)
+  final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
+  final case class TxResult(log: String)
 
   final case class RpcError(code: Int, message: String, data: String)
   final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])

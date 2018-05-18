@@ -280,11 +280,11 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                   case Right(tx) =>
                     for {
                       _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
-                      _ <- abciClient.broadcastTransaction(tx)
+                      stack <- abciClient.broadcastTransaction(tx)
                       _ <- access.transition { _ =>
                         SendTransactionScreen(
                           inProgress = false,
-                          maybeResult = Some("ok")
+                          maybeResult = Some(utils.showStack(stack))
                         )
                       }
                     } yield {

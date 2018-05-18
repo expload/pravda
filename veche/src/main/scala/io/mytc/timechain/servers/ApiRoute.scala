@@ -52,8 +52,8 @@ class ApiRoute(abciClient: AbciClient) {
                 val mode = maybeMode.getOrElse("commit")
                 val result = abciClient.broadcastTransaction(tx, mode)
 
-                onSuccess(result) {
-                  complete("ok")
+                onSuccess(result) { stack =>
+                  complete(utils.showStack(stack))
                 }
               }
           }
@@ -71,8 +71,8 @@ class ApiRoute(abciClient: AbciClient) {
               val mode = maybeMode.getOrElse("commit")
               val result =
                 abciClient.singAndBroadcastTransaction(from, paymentWallet.privateKey, program, Mytc @@ fee, mode)
-              onSuccess(result) {
-                complete("ok")
+              onSuccess(result) { stack =>
+                complete(utils.showStack(stack))
               }
             }
           }

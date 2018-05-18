@@ -3,6 +3,7 @@ package io.mytc.timechain
 package servers
 
 import java.nio.ByteBuffer
+import java.util.Base64
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
@@ -59,17 +60,20 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
-      _ <- Try {
-        val stack = Vm.runRaw(authTx.program, authTx.from, env).stack
-        println(s"Stack: ${stack.map(_.toByteArray.map("0x%02X".format(_)).mkString(" ")).mkString("[", ", ", "]")}")
-      } // FIXME println stack
+      encodedStack <- Try {
+        Vm.runRaw(authTx.program, authTx.from, env)
+          .stack
+          .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
+          .mkString(",")
+      }
     } yield {
-      ()
+      encodedStack
     }
 
     Future.successful {
       `try` match {
-        case Success(_) => result(TxStatusOk, "")
+        case Success(encodedStack) =>
+            result(TxStatusOk, encodedStack)
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized

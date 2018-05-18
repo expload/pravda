@@ -6,6 +6,9 @@ import scala.concurrent.Future
 
 package object utils {
 
+  def showStack(stack: Seq[ByteString]): String = stack
+    .map(_.toByteArray.map("0x%02X".format(_)).mkString(" ")).mkString("[", ", ", "]")
+
   // TODO better naming
   def padLong(i: Long, digits: Int): String = {
     val str = i.toString
