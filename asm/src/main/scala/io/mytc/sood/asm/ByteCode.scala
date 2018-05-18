@@ -214,6 +214,11 @@ class ByteCode {
           code += VM.SPUT
           (Op.SPut, offset)
 
+        case Op.SExst =>
+          val offset = code.size
+          code += VM.SEXIST
+          (Op.SExst, offset)
+
         case Op.Nop ⇒ {
           val offset = code.size
           (Op.Nop, offset)
@@ -272,6 +277,7 @@ class ByteCode {
 
       case Op.SGet => code += VM.SGET
       case Op.SPut => code += VM.SPUT
+      case Op.SExst => code += VM.SEXIST
 
       case Op.Label(n) ⇒ {}
       case Op.Stop     ⇒ code += VM.STOP
@@ -355,6 +361,7 @@ class ByteCode {
 
         case VM.int.SGET => obuf += ((pos, Op.SGet))
         case VM.int.SPUT => obuf += ((pos, Op.SPut))
+        case VM.int.SEXIST => obuf += ((pos, Op.SExst))
       }
     }
 

@@ -41,6 +41,10 @@ object ByteCodeTest extends TestSuite {
       "pcall" - {
         roundTrip(Seq(Op.PCall))
       }
+
+      "sexist" - {
+        roundTrip(Seq(Op.SExst))
+      }
     }
   }
 

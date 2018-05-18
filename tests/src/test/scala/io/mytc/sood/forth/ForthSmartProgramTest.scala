@@ -33,7 +33,8 @@ object ForthSmartProgramTest extends TestSuite {
       val erc20 =
         """
         |: balance $xBA concat ;
-        |: allowed concat $xA1 concat  ;
+        |: allowed concat $xA1 concat ;
+        |dup1 0 == if from $x67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45 == if from balance dup3 sput
         |dup1 1 == if dup2 balance sget then
         |dup1 2 == if dup2 0 < if
         |             from balance sget dup3 <= if

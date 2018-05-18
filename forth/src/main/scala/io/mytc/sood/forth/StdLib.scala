@@ -112,6 +112,12 @@ object StdLib {
     Op.Ret
   )
 
+  val sexst: Seq[Op] = Seq(
+    Op.Label("sexst"),
+    Op.SExst,
+    Op.Ret
+  )
+
   val eqls: Seq[Op] = Seq(
     Op.Label("eq"),
     Op.Eq,

@@ -64,4 +64,5 @@ object Op {
 
   case object SGet extends Op
   case object SPut extends Op
+  case object SExst extends Op
 }
