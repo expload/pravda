@@ -10,19 +10,20 @@ object blockchain {
     def from: Address
     def program: TransactionData
     def fee: Mytc
+    def nonce: Int
 
-    def forSignature: (Address, TransactionData, Mytc) =
-      (from, program, fee)
+    def forSignature: (Address, TransactionData, Mytc, Int) =
+      (from, program, fee, nonce)
   }
 
   object Transaction {
 
-    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc) extends Transaction
+    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc, nonce: Int) extends Transaction
 
-    final case class SignedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc)
+    final case class SignedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc, nonce: Int)
         extends Transaction
 
-    final case class AuthorizedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc)
+    final case class AuthorizedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc, nonce: Int)
         extends Transaction
   }
 

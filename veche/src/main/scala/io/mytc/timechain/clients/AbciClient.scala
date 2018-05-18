@@ -1,8 +1,8 @@
 package io.mytc.timechain.clients
 
 import java.util.Base64
-import com.google.protobuf.{ByteString => PbByteString}
 
+import com.google.protobuf.{ByteString => PbByteString}
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
@@ -19,6 +19,7 @@ import io.mytc.timechain.data.serialization.json._
 import io.mytc.timechain.utils.bytes2hex
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.util.Random
 
 class AbciClient(port: Int)(implicit
                             system: ActorSystem,
@@ -40,7 +41,6 @@ class AbciClient(port: Int)(implicit
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
         entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
           val json = body.utf8String
-          println(s"!!!! $json")
           mode match {
             case "commit" ⇒
               transcode(Json @@ json)
@@ -57,7 +57,6 @@ class AbciClient(port: Int)(implicit
         }
       case HttpResponse(code, _, _, _) =>
         response.discardEntityBytes()
-        //System.err.println(s"tx broadcast request error: http code ${code}")
         Future.failed(RpcHttpException(code.intValue()))
     }
   }
@@ -108,7 +107,7 @@ class AbciClient(port: Int)(implicit
                                   fee: Mytc,
                                   mode: String = "commit"): Future[List[PbByteString]] = {
 
-    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee)
+    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)

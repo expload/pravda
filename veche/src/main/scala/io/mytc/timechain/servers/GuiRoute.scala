@@ -26,6 +26,7 @@ import io.mytc.timechain.data.cryptography
 import io.mytc.timechain.data.cryptography.PrivateKey
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
@@ -269,8 +270,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                     address <- access.valueOf(addressField)
                     pk <- access.valueOf(pkField)
                   } yield {
-                    io.mytc.sood.forth.Compiler().compile(code, useStdLib = true) map { data =>
-                      val unsignedTx = UnsignedTransaction(Address.fromHex(address), TransactionData @@ ByteString.copyFrom(data), Mytc.fromString(fee))
+                    io.mytc.sood.forth.Compiler().compile(code) map { data =>
+                      val unsignedTx = UnsignedTransaction(Address.fromHex(address), TransactionData @@ ByteString.copyFrom(data), Mytc.fromString(fee), Random.nextInt())
                       cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                     }
                   }

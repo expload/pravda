@@ -15,6 +15,7 @@ import io.mytc.timechain.data.blockchain.TransactionData
 import io.mytc.timechain.data.common.{Address, Mytc}
 
 import scala.concurrent.duration._
+import scala.util.Random
 
 class ApiRoute(abciClient: AbciClient) {
 
@@ -48,7 +49,7 @@ class ApiRoute(abciClient: AbciClient) {
             (from, signature, fee, maybeMode) =>
               extractStrictEntity(1.second) { body =>
                 val program = bodyToTransactionData(body)
-                val tx = SignedTransaction(Address @@ from, program, signature, Mytc @@ fee)
+                val tx = SignedTransaction(Address @@ from, program, signature, Mytc @@ fee, Random.nextInt)
                 val mode = maybeMode.getOrElse("commit")
                 val result = abciClient.broadcastTransaction(tx, mode)
 
