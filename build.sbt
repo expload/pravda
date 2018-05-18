@@ -188,4 +188,17 @@ lazy val veche = (project in file("veche"))
   .dependsOn(asm)
   .dependsOn(forth)
 
+lazy val pravda = (project in file("pravda")).
+	enablePlugins(JavaAppPackaging).
+  settings(
+    normalizedName := "pravda",
+    version := "0.0.1"
+  ).
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
+      "com.github.scopt" %% "scopt" % "3.7.0",
+      "org.whispersystems" % "curve25519-java" % "0.4.1"
+    )
+  )
 
