@@ -8,7 +8,7 @@ import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.data.common.{Address, Mytc, TransactionId}
 import io.mytc.timechain.persistence.FileStore
 import io.mytc.timechain.servers.Abci.EnvironmentEffect
-import io.mytc.timechain.utils
+import io.mytc.timechain.{Config, utils}
 import korolev.Context
 import korolev.akkahttp._
 import korolev.execution._
@@ -166,7 +166,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
             'div('class /= "columns", 'margin @= "0",
               // Block number
               'div('class /= "column is-narrow has-text-centered",
-                'div('class /= "is-size-3", block.height.toString),
+                'div('class /= "is-size-3", block.height.toString)
 //                'a('href /= "#",
 //                  'class /= "button is-outlined is-rounded is-small",
 //                  'i('class /= "fas fa-arrow-left",
@@ -258,41 +258,80 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
               'flexDirection @= "column",
               'textarea('class /= "textarea", 'margin @= 10, 'height @= 400, codeArea, 'placeholder /= "Place your p-forth code here"),
               'input('class /= "input", 'margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
-              'input('class /= "input", 'margin @= 10, addressField, 'placeholder /= "Address"),
-              'input('class /= "input", 'margin @= 10, pkField, 'placeholder /= "Private key", 'type /= "password"),
-              'button('class /= "button is-link", 'margin @= 10, 'width @= 200, "Send transaction", if (inProgress) 'disabled /= "" else void),
-              maybeResult.map(x => 'pre(x)),
-              event('submit) { access =>
-                val eventuallyErrorOrTransaction =
-                  for {
-                    code <- access.valueOf(codeArea)
-                    fee <- access.valueOf(feeField)
-                    address <- access.valueOf(addressField)
-                    pk <- access.valueOf(pkField)
-                  } yield {
-                    io.mytc.sood.forth.Compiler().compile(code) map { data =>
-                      val unsignedTx = UnsignedTransaction(Address.fromHex(address), TransactionData @@ ByteString.copyFrom(data), Mytc.fromString(fee), Random.nextInt())
-                      cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
+              'input('class /= "input", 'margin @= 10, addressField, 'placeholder /= "Address", 'value /= utils.bytes2hex(Config.timeChainConfig.paymentWallet.address)),
+              'input('class /= "input", 'margin @= 10, pkField, 'placeholder /= "Private key", 'type /= "password", 'value /= utils.bytes2hex(Config.timeChainConfig.paymentWallet.privateKey)),
+              'div(
+                'button('class /= "button is-link", 'margin @= 10, 'width @= 200, "Send transaction", if (inProgress) 'disabled /= "" else void,
+                  event('click) { access =>
+                    val eventuallyErrorOrTransaction =
+                      for {
+                        code <- access.valueOf(codeArea)
+                        fee <- access.valueOf(feeField)
+                        address <- access.valueOf(addressField)
+                        pk <- access.valueOf(pkField)
+                      } yield {
+                        io.mytc.sood.forth.Compiler().compile(code) map { data =>
+                          val unsignedTx = UnsignedTransaction(Address.fromHex(address), TransactionData @@ ByteString.copyFrom(data), Mytc.fromString(fee), Random.nextInt())
+                          cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
+                        }
+                      }
+                    eventuallyErrorOrTransaction flatMap {
+                      case Left(error) =>
+                        access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                      case Right(tx) =>
+                        for {
+                          _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
+                          stack <- abciClient.broadcastTransaction(tx)
+                          _ <- access.transition { _ =>
+                            SendTransactionScreen(
+                              inProgress = false,
+                              maybeResult = Some(utils.showStack(stack))
+                            )
+                          }
+                        } yield {
+                          ()
+                        }
                     }
                   }
-                eventuallyErrorOrTransaction flatMap {
-                  case Left(error) =>
-                    access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
-                  case Right(tx) =>
-                    for {
-                      _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
-                      stack <- abciClient.broadcastTransaction(tx)
-                      _ <- access.transition { _ =>
-                        SendTransactionScreen(
-                          inProgress = false,
-                          maybeResult = Some(utils.showStack(stack))
-                        )
+                ),
+                'button('class /= "button is-link is-danger", 'margin @= 10, 'width @= 200, "Create program", if (inProgress) 'disabled /= "" else void,
+                  event('click) { access =>
+                    val eventuallyErrorOrTransaction =
+                      for {
+                        code <- access.valueOf(codeArea)
+                        fee <- access.valueOf(feeField)
+                        address <- access.valueOf(addressField)
+                        pk <- access.valueOf(pkField)
+                      } yield {
+                        val compiler = io.mytc.sood.forth.Compiler()
+                        compiler.compile(code) flatMap { data =>
+                          compiler.compile(s"$$x${utils.bytes2hex(data)} pcreate") map { data =>
+                            val unsignedTx = UnsignedTransaction(Address.fromHex(address), TransactionData @@ ByteString.copyFrom(data), Mytc.fromString(fee), Random.nextInt())
+                            cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
+                          }
+                        }
                       }
-                    } yield {
-                      ()
+                    eventuallyErrorOrTransaction flatMap {
+                      case Left(error) =>
+                        access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                      case Right(tx) =>
+                        for {
+                          _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
+                          stack <- abciClient.broadcastTransaction(tx)
+                          _ <- access.transition { _ =>
+                            SendTransactionScreen(
+                              inProgress = false,
+                              maybeResult = Some(utils.showStack(stack))
+                            )
+                          }
+                        } yield {
+                          ()
+                        }
                     }
-                }
-              }
+                  }
+                )
+              ),
+              maybeResult.map(x => 'pre(x))
             )
           )
       }
