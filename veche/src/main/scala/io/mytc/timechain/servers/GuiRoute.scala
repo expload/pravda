@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import io.mytc.keyvalue.DB
 import io.mytc.timechain.clients.AbciClient
-import io.mytc.timechain.data.common.{Address, TransactionId}
+import io.mytc.timechain.data.common.{Address, Mytc, TransactionId}
 import io.mytc.timechain.persistence.FileStore
 import io.mytc.timechain.servers.Abci.EnvironmentEffect
 import io.mytc.timechain.utils
@@ -20,6 +20,10 @@ import cats.data.OptionT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import io.mytc.sood.asm.{Assembler, Op}
+import io.mytc.timechain.data.blockchain.Transaction.UnsignedTransaction
+import io.mytc.timechain.data.blockchain.TransactionData
+import io.mytc.timechain.data.cryptography
+import io.mytc.timechain.data.cryptography.PrivateKey
 
 import scala.concurrent.Future
 
@@ -103,6 +107,11 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   private def programToAsm(program: ByteString) =
     asmAstToAsm(Assembler().decompile(program))
 
+  private val codeArea = elementId()
+  private val feeField = elementId()
+  private val addressField = elementId()
+  private val pkField = elementId()
+
   private val service = akkaHttpService(
     KorolevServiceConfig[Future, GuiState, Any](
       serverRouter = ServerRouter
@@ -144,6 +153,12 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       render = {
         case MainScreen =>
           'body(
+            'button(
+              "Send transaction",
+              event('click) { access =>
+                access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = None))
+              }
+            ),
             'button(
               "Show last block",
               event('click) { access =>
@@ -241,6 +256,50 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           )
         case ErrorScreen(error) =>
           'body('pre('color @= "red", error))
+        case SendTransactionScreen(inProgress, maybeResult) =>
+          'body(
+            'form(
+                'display @= "flex",
+                'flexDirection @= "column",
+              'textarea('margin @= 10, 'height @= 400, codeArea, 'placeholder /= "Place your p-forth code here"),
+              'input('margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
+              'input('margin @= 10, addressField, 'placeholder /= "Address"),
+              'input('margin @= 10, pkField, 'placeholder /= "Private key", 'type /= "password"),
+              'button('margin @= 10, 'width @= 200, "Send transaction", if (inProgress) 'disabled /= "" else void),
+              maybeResult.map(x => 'pre(x)),
+              event('submit) { access =>
+                val eventuallyErrorOrTransaction =
+                  for {
+                    code <- access.valueOf(codeArea)
+                    fee <- access.valueOf(feeField)
+                    address <- access.valueOf(addressField)
+                    pk <- access.valueOf(pkField)
+                  } yield {
+                    io.mytc.sood.forth.Compiler().compile(code, useStdLib = true) map { data =>
+                      val unsignedTx = UnsignedTransaction(Address.fromHex(address), TransactionData @@ ByteString.copyFrom(data), Mytc.fromString(fee))
+                      cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
+                    }
+                  }
+                eventuallyErrorOrTransaction flatMap {
+                  case Left(error) =>
+                    access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                  case Right(tx) =>
+                    for {
+                      _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
+                      _ <- abciClient.broadcastTransaction(tx)
+                      _ <- access.transition { _ =>
+                        SendTransactionScreen(
+                          inProgress = false,
+                          maybeResult = Some("ok")
+                        )
+                      }
+                    } yield {
+                      ()
+                    }
+                }
+              }
+            )
+          )
       }
     )
   )
@@ -265,6 +324,8 @@ object GuiRoute {
                                  currentEffectsGroup: Option[Int] = None) extends GuiState
 
   final case object MainScreen extends GuiState
+
+  final case class SendTransactionScreen(inProgress: Boolean, maybeResult: Option[String]) extends GuiState
 
   final case class ErrorScreen(error: String) extends GuiState
 

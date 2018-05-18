@@ -186,5 +186,6 @@ lazy val veche = (project in file("veche"))
 	.dependsOn(keyvalue)
 	.dependsOn(vm)
   .dependsOn(asm)
+  .dependsOn(forth)
 
 
