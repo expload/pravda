@@ -42,6 +42,7 @@ object StdLib {
       dup(5),
       sget,
       sput,
+      sexst,
       concat,
       from,
       pcall,

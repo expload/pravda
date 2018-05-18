@@ -1,5 +1,7 @@
 package io.mytc.sood.forth
 
+import java.nio.charset.StandardCharsets
+
 class Translator {
 
   import io.mytc.sood.asm.Op
@@ -35,7 +37,8 @@ class Translator {
             translateStmts(p, prefix + prefix),
             List(Op.Label(mangleIf(prefix, i)))
           ).flatten
-        case _ ⇒ List(Op.Nop)
+        case (Statement.Chrar(s), i) => List(Op.Push(Datum.Rawbytes(s.getBytes(StandardCharsets.UTF_8))))
+        case _                       ⇒ List(Op.Nop)
       }
     }
   }
