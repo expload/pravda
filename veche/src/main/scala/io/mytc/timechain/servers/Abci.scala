@@ -256,7 +256,10 @@ object Abci {
     def commit(height: Long): Unit = {
       // FIXME fomkin: this is temporary solution. must be replaced with binary serialization
       import utils.padLong
-      effectsPath.put(padLong(height, 10), effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]])
+      if (effectsMap.nonEmpty) {
+        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
+        effectsPath.put(padLong(height, 10), data)
+      }
 //      val thisBlockPath = effectsPath :+ its(height, 10)
 //      for (((tid, effects), i) <- effectsMap.zipWithIndex) {
 //        val thisTxPath = thisBlockPath :+ s"${its(i.toLong, 5)}-${utils.bytes2hex(tid)}"

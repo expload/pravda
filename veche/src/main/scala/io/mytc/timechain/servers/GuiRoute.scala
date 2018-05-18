@@ -134,7 +134,7 @@ class GuiRoute(db: DB)(implicit system: ActorSystem, materializer: ActorMaterial
               event('click) { access =>
                 for {
                   maybeHeight <- FileStore.readApplicationStateInfoAsync()
-                  height = maybeHeight.map(_.blockHeight).getOrElse(0L)
+                  height = maybeHeight.map(_.blockHeight - 1).getOrElse(0L)
                   maybeBlockInfo <- db.getAs[Map[TransactionId, Seq[EnvironmentEffect]]](s"effects:${utils.padLong(height, 10)}")
                 } yield {
                   access.maybeTransition {

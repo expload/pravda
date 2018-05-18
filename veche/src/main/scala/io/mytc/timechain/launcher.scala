@@ -53,7 +53,7 @@ object launcher extends App {
     HttpServer.start(timeChainConfig.api, apiRoute.route, guiRoute.route)
   }
 
-  val tendermintNode = Await.result(tendermint.run(timeChainConfig), 1.seconds)
+  val tendermintNode = Await.result(tendermint.run(timeChainConfig), 10.seconds)
 
   server.start()
 

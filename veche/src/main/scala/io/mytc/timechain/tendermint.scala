@@ -146,20 +146,23 @@ object tendermint {
       }
 
       val tomlConfig =
-        s"""log_level="state:info,*:debug"
-           |abci="socket"
+        s"""
+           |log_level = "state:info,*:debug"
+           |abci = "socket"
            |proxy_app = "$proxyAppAddr"
            |[consensus]
-           |create_empty_blocks=false
+           |create_empty_blocks = false
            |[p2p]
-           |addr_book_strict=false
+           |addr_book_strict = false
            |seeds="${config.seeds}"
-           |laddr="tcp://0.0.0.0:${config.tendermint.peerPort}"
+           |laddr = "tcp://0.0.0.0:${config.tendermint.peerPort}"
            |[rpc]
-           |laddr="tcp://127.0.0.1:${config.tendermint.rpcPort}"""".stripMargin
+           |laddr = "tcp://127.0.0.1:${config.tendermint.rpcPort}"
+           |""".stripMargin
 
       writeFile(new File(configDir, "config.toml"))(tomlConfig)
-      new ProcessBuilder(executable.getAbsolutePath, "--home", ".", "node")
+
+      new ProcessBuilder(executable.getAbsolutePath, "--home", config.dataDirectory.getAbsolutePath, "node")
         .directory(config.dataDirectory)
         .inheritIO()
         .start()
