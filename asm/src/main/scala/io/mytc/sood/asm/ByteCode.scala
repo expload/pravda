@@ -1,6 +1,8 @@
 package io.mytc.sood.asm
 
+import com.google.protobuf.ByteString
 import java.nio.charset.StandardCharsets
+
 
 class ByteCode {
 
@@ -308,6 +310,10 @@ class ByteCode {
     }
 
     code.toArray
+  }
+
+  def ungen(unit: ByteString): Seq[(Int, Op)] = {
+    ungen(unit.toByteArray)
   }
 
   def ungen(unit: Array[Byte]): Seq[(Int, Op)] = {
