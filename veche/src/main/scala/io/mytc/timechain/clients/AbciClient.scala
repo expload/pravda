@@ -7,7 +7,7 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import io.mytc.timechain.data.blockchain.Transaction.SignedTransaction
 import io.mytc.timechain.data.blockchain.{Transaction, TransactionData}
-import io.mytc.timechain.data.common.{Address, Mytc}
+import io.mytc.timechain.data.common.{Address, Mytc, TransactionId}
 import io.mytc.timechain.data.cryptography
 import io.mytc.timechain.data.cryptography.PrivateKey
 import io.mytc.timechain.data.serialization._
@@ -27,36 +27,63 @@ class AbciClient(port: Int)(implicit
 
   import AbciClient._
 
-  private def throwIfError(prefix: String, res: TxResult): Unit = {
-    if (res.code != 0)
-      throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
+//  private def throwIfError(prefix: String, res: TxResult): Unit = {
+//    if (res.code != 0)
+//      throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
+//  }
+
+  private def handleResponse(response: HttpResponse, mode: String): Future[Unit] = {
+    response match {
+      case HttpResponse(StatusCodes.OK, _, entity, _) =>
+        response.discardEntityBytes()
+        Future.unit
+//        entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
+          // FIXME error reporting
+          //val jsonBody = body.utf8String
+//          mode match {
+//            case "async" ⇒
+//              val res = transcode(Json @@ jsonBody).to[RpcAsyncResponse].result
+//              throwIfError("async request", res)
+//            case "sync" ⇒
+//              val res = transcode(Json @@ jsonBody).to[RpcSyncResponse].result
+//              throwIfError("check tx", res.check_tx)
+//            case "commit" ⇒
+//              val res = transcode(Json @@ jsonBody).to[RpcCommitResponse].result
+//              throwIfError("check tx", res.check_tx)
+//              throwIfError("deliver tx", res.deliver_tx)
+//            case _ ⇒ ()
+//          }
+//        }
+      case HttpResponse(code, _, _, _) =>
+        response.discardEntityBytes()
+        //System.err.println(s"tx broadcast request error: http code ${code}")
+        Future.failed(RpcHttpException(code.intValue()))
+    }
   }
 
-  private def handleResponse(response: HttpResponse, mode: String): Future[Unit] = Future {
-    response match {
-      case HttpResponse(StatusCodes.OK, _, entity, _) => {
-        entity.dataBytes.runFold(ByteString(""))(_ ++ _).foreach { body =>
-          val jsonBody = body.utf8String
-          mode match {
-            case "async" ⇒
-              val res = transcode(Json @@ jsonBody).to[RpcAsyncResponse].result
-              throwIfError("async request", res)
-            case "sync" ⇒
-              val res = transcode(Json @@ jsonBody).to[RpcSyncResponse].result
-              throwIfError("check tx", res.check_tx)
-            case "commit" ⇒
-              val res = transcode(Json @@ jsonBody).to[RpcCommitResponse].result
-              throwIfError("check tx", res.check_tx)
-              throwIfError("deliver tx", res.deliver_tx)
-            case _ ⇒ ()
+  def readTransaction(id: TransactionId): Future[SignedTransaction] = {
+
+    val uri = Uri(s"http://127.0.0.1:$port/tx")
+      .withQuery(Uri.Query("hash" -> ("0x" + bytes2hex(id))))
+
+    Http()
+      .singleRequest(HttpRequest(uri = uri))
+      .flatMap {
+        case HttpResponse(StatusCodes.OK, _, entity, _) =>
+          entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { data =>
+            println(data.utf8String)
+            val txResponse = transcode(Json @@ data.utf8String).to[AbciClient.RpcTxResponse]
+            txResponse.error match {
+              case Some(error) =>
+                throw RpcException(error)
+              case None =>
+                transcode(Bson @@ txResponse.result.get.tx.toByteArray).to[SignedTransaction]
+            }
           }
-        }
+        case HttpResponse(code, _, entity, _) =>
+          entity.discardBytes()
+          throw RpcHttpException(code.intValue())
       }
-      case HttpResponse(code, _, _, _) => {
-        response.discardEntityBytes()
-        System.err.println(s"tx broadcast request error: http code ${code}")
-      }
-    }
   }
 
   def broadcastBytes(bytes: Array[Byte], mode: String = "commit"): Future[Unit] = {
@@ -89,10 +116,24 @@ class AbciClient(port: Int)(implicit
 }
 
 object AbciClient {
+
+  import com.google.protobuf.{ByteString => PbByteString}
+
+  final case class RpcException(error: RpcError) extends Exception(s"${error.message}: ${error.data}")
+  final case class RpcHttpException(httpCode: Int) extends
+    Exception(s"RPC request to Tendermint failed with HTTP code $httpCode")
+
   final case class TxResult(code: Int, data: String, log: String)
   final case class TxSyncResult(check_tx: TxResult)
   final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
   final case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)
   final case class RpcAsyncResponse(jsonrpc: String, id: String, result: TxResult)
   final case class RpcCommitResponse(jsonrpc: String, id: String, result: TxCommitResult)
+
+  final case class RpcError(code: Int, message: String, data: String)
+  final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])
+
+  object RpcTxResponse {
+    final case class Result(height: Long, tx: PbByteString)
+  }
 }

@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import io.mytc.keyvalue.DB
+import io.mytc.timechain.clients.AbciClient
 import io.mytc.timechain.data.common.{Address, TransactionId}
 import io.mytc.timechain.persistence.FileStore
 import io.mytc.timechain.servers.Abci.EnvironmentEffect
@@ -16,9 +17,12 @@ import korolev.state.StateStorage
 import korolev.state.javaSerialization._
 import io.mytc.timechain.persistence.implicits._
 
+import cats.data.OptionT
+import cats.implicits._
+
 import scala.concurrent.Future
 
-class GuiRoute(db: DB)(implicit system: ActorSystem, materializer: ActorMaterializer) {
+class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
   import GuiRoute._
   import globalContext._
@@ -132,25 +136,42 @@ class GuiRoute(db: DB)(implicit system: ActorSystem, materializer: ActorMaterial
             'button(
               "Show last block",
               event('click) { access =>
-                for {
-                  maybeHeight <- FileStore.readApplicationStateInfoAsync()
-                  height = maybeHeight.map(_.blockHeight - 1).getOrElse(0L)
-                  maybeBlockInfo <- db.getAs[Map[TransactionId, Seq[EnvironmentEffect]]](s"effects:${utils.padLong(height, 10)}")
-                } yield {
-                  access.maybeTransition {
-                    case MainScreen =>
-                      BlockExplorer(
-                        currentTransactionId = None,
-                        currentEffectsGroup = None,
-                        currentBlock = Block(
-                          height, maybeBlockInfo.get.toList map {
-                            case (txId, effects) =>
-                              Transaction(txId, Address.fromHex("0000000000"), effects.toList, "not ready")
-                          }
-                        )
-                      )
+                val eventuallyTransactions =
+                  for {
+                    asi <- OptionT(FileStore.readApplicationStateInfoAsync())
+                    height = asi.blockHeight - 1
+                    key = s"effects:${utils.padLong(height, 10)}"
+                    blockInfo <- OptionT(db.getAs[Map[TransactionId, Seq[EnvironmentEffect]]](key))
+                    eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
+                    transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
+                  } yield {
+                    Block(
+                      height, transactions.toList.map {
+                        case (id, transaction) =>
+                          Transaction(id, transaction.from, blockInfo(id).toList, "")
+                      }
+                    )
                   }
+                val eventuallyNewScreen = eventuallyTransactions.value.map {
+                  case None =>
+                    ErrorScreen("Inconsistent state: Identifier of transaction " +
+                      "mentioned in state effects is not found on blockchain.")
+                  case Some(block) =>
+                    BlockExplorer(
+                      currentTransactionId = None,
+                      currentEffectsGroup = None,
+                      currentBlock = block
+                    )
                 }
+                eventuallyNewScreen
+                  .recover {
+                    case e: Throwable => ErrorScreen(e)
+                  }
+                  .flatMap { newScreen =>
+                    access.maybeTransition {
+                      case MainScreen => newScreen
+                    }
+                  }
               }
             )
           )
@@ -206,6 +227,8 @@ class GuiRoute(db: DB)(implicit system: ActorSystem, materializer: ActorMaterial
               )
             )
           )
+        case ErrorScreen(error) =>
+          'body('pre('color @= "red", error))
       }
     )
   )
@@ -230,6 +253,13 @@ object GuiRoute {
                                  currentEffectsGroup: Option[Int] = None) extends GuiState
 
   final case object MainScreen extends GuiState
+
+  final case class ErrorScreen(error: String) extends GuiState
+
+  object ErrorScreen {
+    def apply(e: Throwable): ErrorScreen =
+      ErrorScreen(s"${e.getMessage}:\n  ${e.getStackTrace.mkString("\n  ")}")
+  }
 
   val globalContext: Context[Future, GuiState, Any] =
     Context[Future, GuiState, Any]

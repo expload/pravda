@@ -1,6 +1,7 @@
 package io.mytc.timechain.data.serialization
 
 import com.google.protobuf.ByteString
+import fastparse.utils.Base64
 import io.mytc.timechain.clients.AbciClient._
 import io.mytc.timechain.data.TimechainConfig
 import io.mytc.timechain.data.common.ApplicationStateInfo
@@ -189,6 +190,7 @@ object json {
   //---------------------------------------------------------------------------
   // ABCI
   //---------------------------------------------------------------------------
+
   implicit val txResultReader: JsonReader[TxResult] =
     jsonReader[TxResult]
 
@@ -224,6 +226,20 @@ object json {
 
   implicit val rpcCommitResponseWriter: JsonWriter[RpcCommitResponse] =
     jsonWriter[RpcCommitResponse]
+
+  implicit val rpcError: JsonReader[RpcError] =
+    jsonReader[RpcError]
+
+  implicit val rpcTxResponseReader: JsonReader[RpcTxResponse] =
+    jsonReader[RpcTxResponse]
+
+  implicit val rpcTxResponseResultReader: JsonReader[RpcTxResponse.Result] =
+    jsonReader[RpcTxResponse.Result] {
+      describe {
+        ReaderBuilder[RpcTxResponse.Result]
+          .extract(_.tx).as[String](x => ByteString.copyFrom(Base64.Decoder(x).toByteArray))
+      }
+    }
 
   //---------------------------------------------------------------------------
   // Tethys transcoding

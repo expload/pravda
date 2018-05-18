@@ -147,7 +147,7 @@ object tendermint {
 
       val tomlConfig =
         s"""
-           |log_level = "state:info,*:debug"
+           |log_level = "*:info"
            |abci = "socket"
            |proxy_app = "$proxyAppAddr"
            |[consensus]

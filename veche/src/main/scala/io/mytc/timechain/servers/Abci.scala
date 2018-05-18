@@ -57,7 +57,8 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
-      env = environmentProvider.transactionEnvironment(encodedTransaction)
+      tid = TransactionId.forEncodedTransaction(encodedTransaction)
+      env = environmentProvider.transactionEnvironment(tid)
       _ <- Try {
         val stack = Vm.runRaw(authTx.program, authTx.from, env).stack
         println(s"Stack: ${stack.map(_.toByteArray.map("0x%02X".format(_)).mkString(" ")).mkString("[", ", ", "]")}")
@@ -170,8 +171,7 @@ object Abci {
       }
     }
 
-    def transactionEnvironment(rawTransaction: ByteString): Environment = {
-      val tid = TransactionId.forEncodedTransaction(rawTransaction)
+    def transactionEnvironment(tid: TransactionId): Environment = {
       val effects = mutable.Buffer.empty[EnvironmentEffect]
       effectsMap += (tid -> effects)
       new TransactionDependentEnvironment(effects)
@@ -254,19 +254,11 @@ object Abci {
     }
 
     def commit(height: Long): Unit = {
-      // FIXME fomkin: this is temporary solution. must be replaced with binary serialization
       import utils.padLong
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
         effectsPath.put(padLong(height, 10), data)
       }
-//      val thisBlockPath = effectsPath :+ its(height, 10)
-//      for (((tid, effects), i) <- effectsMap.zipWithIndex) {
-//        val thisTxPath = thisBlockPath :+ s"${its(i.toLong, 5)}-${utils.bytes2hex(tid)}"
-//        for ((effect, j) <- effects.zipWithIndex) {
-//          thisTxPath.put(its(j.toLong, 10), effect)
-//        }
-//      }
 
       db.syncBatch(operations: _*)
       clear()
