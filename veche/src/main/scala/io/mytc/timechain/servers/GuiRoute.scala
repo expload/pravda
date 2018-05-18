@@ -117,38 +117,40 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       serverRouter = ServerRouter
         .empty[Future, GuiState]
         .withRootPath("/ui/"),
-      stateStorage = StateStorage.default(MainScreen),
-//      stateStorage = StateStorage.default(BlockExplorer(
-//        currentBlock = Block(
-//          height = 42,
-//          transactions = List(
-//            Transaction(
-//              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd")),
-//              from = Address.fromHex("fab124939fe200de19"),
-//              effects = List(),
-//              disassembledProgram = "lol"
-//            ),
-//            Transaction(
-//              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("vsdfds")),
-//              from = Address.fromHex("fab124939fe200de1a"),
-//              effects = List(
-//                EnvironmentEffect.StorageRead("xx:vasja", Some(Array(0x10))),
-//                EnvironmentEffect.StorageRead("xx:vova", Some(Array(0x10))),
-//                EnvironmentEffect.StorageRead("xx:vanya", Some(Array(0x10))),
-//                EnvironmentEffect.StorageWrite("xx:abram", Array(0x30)),
-//                EnvironmentEffect.StorageWrite("xx:vasja", Array(0)),
-//                EnvironmentEffect.StorageWrite("xx:vova", Array(0)),
-//                EnvironmentEffect.StorageWrite("xx:vanya", Array(0)),
-//                EnvironmentEffect.StorageRead("xx:izya", Some(Array(0x50))),
-//              ),
-//              disassembledProgram = "zog"
-//            ),
-//          )
-//        ),
-//        currentTransactionId = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd"))
-//      )),
+//      stateStorage = StateStorage.default(MainScreen),
+      stateStorage = StateStorage.default(BlockExplorer(
+        currentBlock = Block(
+          height = 42,
+          transactions = List(
+            Transaction(
+              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd")),
+              from = Address.fromHex("fab124939fe200de19"),
+              effects = List(),
+              disassembledProgram = "lol"
+            ),
+            Transaction(
+              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("vsdfds")),
+              from = Address.fromHex("fab124939fe200de1a"),
+              effects = List(
+                EnvironmentEffect.StorageRead("xx:vasja", Some(Array(0x10))),
+                EnvironmentEffect.StorageRead("xx:vova", Some(Array(0x10))),
+                EnvironmentEffect.StorageRead("xx:vanya", Some(Array(0x10))),
+                EnvironmentEffect.StorageWrite("xx:abram", Array(0x30)),
+                EnvironmentEffect.StorageWrite("xx:vasja", Array(0)),
+                EnvironmentEffect.StorageWrite("xx:vova", Array(0)),
+                EnvironmentEffect.StorageWrite("xx:vanya", Array(0)),
+                EnvironmentEffect.StorageRead("xx:izya", Some(Array(0x50))),
+              ),
+              disassembledProgram = "zog"
+            ),
+          )
+        ),
+        currentTransactionId = None // TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd"))
+      )),
       head = Seq(
-        'link('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet")
+        'link('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),
+        'link('href /= "https://use.fontawesome.com/releases/v5.0.13/css/all.css", 'rel /= "stylesheet", 'crossorigin /= "anonymous", 'integrity /= "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"),
+        'link('href /= "main.css", 'rel /= "stylesheet")
       ),
       render = {
         case MainScreen =>
@@ -204,33 +206,50 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           )
         case state: BlockExplorer =>
           val block = state.currentBlock
-          'body(
-            'div('class /= "columns",
+          'body('class /= "has-background-black",
+            'div('class /= "tile",
               // Block number
-              'div('class /= "column is-2", block.height.toString),
+              'div('class /= "tile is-2 has-text-white",
+                'div('class /= "column",
+                  'div('class /= "subtitle is-5 has-text-white",
+                    'div(
+                      'span('class /= "icon is-medium",
+                        'i('class /="fas fa-list")
+                      ), "Block explorer"
+                    )
+                  ),
+                  'div('class /= "is-size-1", block.height.toString),
+                  'a('href /= "#", 'class /= "button is-outlined is-rounded is-small", "Previous")
+                )
+              ),
               // Block content
-              'div('class /= "column",
-                'ul(
+              'div('class /= "tile is-10",
+                'div('class /= "column",
                   block.transactions.map { transaction =>
                     val groupedEffects = groupEffects(transaction.effects)
-                    'li(
-                      'span(
-                        s"0x${utils.bytes2hex(transaction.id)}",
-                        event('click) { access =>
-                          access.maybeTransition {
-                            case s: BlockExplorer =>
-                              s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
+                    'div ( 'class /= "card",
+                      'header ( 'class /= "card-header",
+                        'p('class /= "card-header-title",
+                          'span('class /= "icon has-text-black",
+                            'i('class /="fas fa-stream")
+                          ),
+                          s"0x${utils.bytes2hex(transaction.id)}",
+                          event('click) { access =>
+                            access.maybeTransition {
+                              case s: BlockExplorer =>
+                                s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
+                            }
                           }
-                        }
+                        )
                       ),
                       if (state.currentTransactionId.contains(transaction.id)) {
-                        'div(
-                          'pre(transaction.disassembledProgram),
-                          'div(s"From: 0x${utils.bytes2hex(transaction.from)}"),
+                        'div('class /= "card-content",
+                          'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "From")), 'div('class /= "column", 'div(utils.bytes2hex(transaction.from)))),
+                          'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "Disassembled code")), 'div('class /= "column", 'pre(transaction.disassembledProgram))),
                           groupedEffects.zipWithIndex map {
                             case ((name, effects), i) =>
-                              'li(
-                                'b(
+                              'li (
+                                'b (
                                   s"$i. $name (${effects.length})",
                                   event('click) { access =>
                                     access.maybeTransition {

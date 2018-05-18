@@ -26,7 +26,13 @@ object tendermint {
     GoWireAddressHeader.concat(address)
 
   def selectTendermintExecutable(name: OperationSystem, arch: CpuArchitecture) =
-    s"tendermint_${name.toString.toLowerCase}_$arch"
+  {
+    val exeName = s"tendermint_${name.toString.toLowerCase}_$arch"
+    name match {
+      case OperationSystem.Windows => exeName + ".exe"
+      case _ => exeName
+    }
+  }
 
   def run(config: TimechainConfig)(implicit ec: ExecutionContext): Future[Process] = {
 
