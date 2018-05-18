@@ -34,7 +34,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   import symbolDsl._
 
   private def effectsTable(table: List[Map[String, Node]]): Node = {
-    'table('class /= "table",
+    'table('class /= "table is-striped is-hoverable is-fullwidth",
       'thead('tr(table.head.keys.map(k => 'td(k)))),
       'tbody(
         table.map { el =>
@@ -117,36 +117,36 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       serverRouter = ServerRouter
         .empty[Future, GuiState]
         .withRootPath("/ui/"),
-//      stateStorage = StateStorage.default(MainScreen),
-      stateStorage = StateStorage.default(BlockExplorer(
-        currentBlock = Block(
-          height = 42,
-          transactions = List(
-            Transaction(
-              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd")),
-              from = Address.fromHex("fab124939fe200de19"),
-              effects = List(),
-              disassembledProgram = "lol"
-            ),
-            Transaction(
-              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("vsdfds")),
-              from = Address.fromHex("fab124939fe200de1a"),
-              effects = List(
-                EnvironmentEffect.StorageRead("xx:vasja", Some(Array(0x10))),
-                EnvironmentEffect.StorageRead("xx:vova", Some(Array(0x10))),
-                EnvironmentEffect.StorageRead("xx:vanya", Some(Array(0x10))),
-                EnvironmentEffect.StorageWrite("xx:abram", Array(0x30)),
-                EnvironmentEffect.StorageWrite("xx:vasja", Array(0)),
-                EnvironmentEffect.StorageWrite("xx:vova", Array(0)),
-                EnvironmentEffect.StorageWrite("xx:vanya", Array(0)),
-                EnvironmentEffect.StorageRead("xx:izya", Some(Array(0x50))),
-              ),
-              disassembledProgram = "zog"
-            ),
-          )
-        ),
-        currentTransactionId = None // TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd"))
-      )),
+      stateStorage = StateStorage.default(MainScreen),
+//      stateStorage = StateStorage.default(BlockExplorer(
+//        currentBlock = Block(
+//          height = 42,
+//          transactions = List(
+//            Transaction(
+//              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd")),
+//              from = Address.fromHex("fab124939fe200de19"),
+//              effects = List(),
+//              disassembledProgram = "lol"
+//            ),
+//            Transaction(
+//              id = TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("vsdfds")),
+//              from = Address.fromHex("fab124939fe200de1a"),
+//              effects = List(
+//                EnvironmentEffect.StorageRead("xx:vasja", Some(Array(0x10))),
+//                EnvironmentEffect.StorageRead("xx:vova", Some(Array(0x10))),
+//                EnvironmentEffect.StorageRead("xx:vanya", Some(Array(0x10))),
+//                EnvironmentEffect.StorageWrite("xx:abram", Array(0x30)),
+//                EnvironmentEffect.StorageWrite("xx:vasja", Array(0)),
+//                EnvironmentEffect.StorageWrite("xx:vova", Array(0)),
+//                EnvironmentEffect.StorageWrite("xx:vanya", Array(0)),
+//                EnvironmentEffect.StorageRead("xx:izya", Some(Array(0x50))),
+//              ),
+//              disassembledProgram = "zog"
+//            ),
+//          )
+//        ),
+//        currentTransactionId = None // TransactionId.forEncodedTransaction(ByteString.copyFromUtf8("dadasdasd"))
+//      )),
       head = Seq(
         'link('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),
         'link('href /= "https://use.fontawesome.com/releases/v5.0.13/css/all.css", 'rel /= "stylesheet", 'crossorigin /= "anonymous", 'integrity /= "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"),
@@ -246,23 +246,26 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         'div('class /= "card-content",
                           'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "From")), 'div('class /= "column", 'div(utils.bytes2hex(transaction.from)))),
                           'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "Disassembled code")), 'div('class /= "column", 'pre(transaction.disassembledProgram))),
-                          groupedEffects.zipWithIndex map {
-                            case ((name, effects), i) =>
-                              'li (
-                                'b (
-                                  s"$i. $name (${effects.length})",
-                                  event('click) { access =>
-                                    access.maybeTransition {
-                                      case s: BlockExplorer =>
-                                        s.copy(currentEffectsGroup = Some(i))
+                          if (groupedEffects.nonEmpty) 'div('class /= "title is-5", "World state effects") else void,
+                          'ul('class /= "columns is-multiline",
+                            groupedEffects.zipWithIndex map {
+                              case ((name, effects), i) =>
+                                'li('class /= "column is-12",
+                                  'div('class /= "title is-6",
+                                    s"${i + 1}. $name", 'span('marginLeft @= 5, 'class /= "tag is-dark", effects.length.toString),
+                                    event('click) { access =>
+                                      access.maybeTransition {
+                                        case s: BlockExplorer =>
+                                          s.copy(currentEffectsGroup = Some(i))
+                                      }
                                     }
-                                  }
-                                ),
-                                if (state.currentEffectsGroup.contains(i)) {
-                                  effectsTable(effects.map(effectToTableElement))
-                                } else void
-                              )
-                          }
+                                  ),
+                                  if (state.currentEffectsGroup.contains(i)) {
+                                    effectsTable(effects.map(effectToTableElement))
+                                  } else void
+                                )
+                            }
+                          )
                         )
                       } else {
                         void
