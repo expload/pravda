@@ -5,3 +5,18 @@ html, body {
 body > .tile {
     height: 100%;
 }
+
+.hash {
+  font-family: monospace;
+  background-color: #fafafa;
+  border: 1px solid #ccc;
+  color: #c72d2d;
+  padding: 0 10px;
+  display: inline-block;
+}
+
+.code {
+  max-width: 700px;
+  height: 200px;
+  overflow: scroll;
+}

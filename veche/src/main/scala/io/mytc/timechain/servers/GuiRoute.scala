@@ -52,22 +52,28 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     case _: EnvironmentEffect.StorageWrite => "Write to storage"
   }
 
+  private def mono(s: ByteString): Node =
+    'span('class /= "hash", utils.bytes2hex(s))
+
+  private def mono(s: Array[Byte]): Node =
+    'span('class /= "hash", utils.bytes2hex(s))
+
   private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
     def localKey(key: String) = key.substring(key.lastIndexOf(':') + 1)
     def showOption(value: Option[Array[Byte]]): Node = value match {
       case None => 'span('fontStyle @= "italic", "None")
-      case Some(s) => utils.bytes2hex(s)
+      case Some(s) => mono(s)
     }
     effect match {
       case EnvironmentEffect.ProgramCreate(address, program) =>
         Map(
-          "Generated address" -> utils.bytes2hex(address),
-          "Disassembled code" -> 'pre(programToAsm(program))
+          "Generated address" -> mono(address),
+          "Disassembled code" -> 'pre('class /= "code", programToAsm(program))
         )
       case EnvironmentEffect.ProgramUpdate(address, program) =>
         Map(
-          "Program address" -> utils.bytes2hex(address),
-          "Disassembled code" -> 'pre(programToAsm(program))
+          "Program address" -> mono(address),
+          "Disassembled code" -> 'pre('class /= "code", programToAsm(program))
         )
       case EnvironmentEffect.StorageRemove(key, value) =>
         Map(
@@ -77,7 +83,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       case EnvironmentEffect.StorageWrite(key, value) =>
         Map(
           "Key" -> localKey(key),
-          "Written value" -> utils.bytes2hex(value)
+          "Written value" -> mono(value)
         )
       case EnvironmentEffect.StorageRead(key, value) =>
         Map(
@@ -117,7 +123,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       serverRouter = ServerRouter
         .empty[Future, GuiState]
         .withRootPath("/ui/"),
-      stateStorage = StateStorage.default(MainScreen),
+      stateStorage = StateStorage.default(SendTransactionScreen(false, None)),
 //      stateStorage = StateStorage.default(BlockExplorer(
 //        currentBlock = Block(
 //          height = 42,
@@ -153,141 +159,107 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
         'link('href /= "main.css", 'rel /= "stylesheet")
       ),
       render = {
-        case MainScreen =>
-          'body(
-            'button(
-              "Send transaction",
-              event('click) { access =>
-                access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = None))
-              }
-            ),
-            'button(
-              "Show last block",
-              event('click) { access =>
-                val eventuallyTransactions =
-                  for {
-                    asi <- OptionT(FileStore.readApplicationStateInfoAsync())
-                    height = asi.blockHeight - 1
-                    key = s"effects:${utils.padLong(height, 10)}"
-                    blockInfo <- OptionT(db.getAs[Map[TransactionId, Seq[EnvironmentEffect]]](key))
-                    eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
-                    transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
-                  } yield {
-                    Block(
-                      height, transactions.toList.map {
-                        case (id, transaction) =>
-                          val asm = programToAsm(transaction.program)
-                          Transaction(id, transaction.from, blockInfo(id).toList, asm)
-                      }
-                    )
-                  }
-                val eventuallyNewScreen = eventuallyTransactions.value.map {
-                  case None =>
-                    ErrorScreen("Inconsistent state: Identifier of transaction " +
-                      "mentioned in state effects is not found on blockchain.")
-                  case Some(block) =>
-                    BlockExplorer(
-                      currentTransactionId = None,
-                      currentEffectsGroup = None,
-                      currentBlock = block
-                    )
-                }
-                eventuallyNewScreen
-                  .recover {
-                    case e: Throwable => ErrorScreen(e)
-                  }
-                  .flatMap { newScreen =>
-                    access.maybeTransition {
-                      case MainScreen => newScreen
-                    }
-                  }
-              }
-            )
-          )
         case state: BlockExplorer =>
           val block = state.currentBlock
-          'body('class /= "has-background-black",
-            'div('class /= "tile",
+          mainLayout(state,
+            'div('class /= "columns", 'margin @= "0",
               // Block number
-              'div('class /= "tile is-2 has-text-white",
-                'div('class /= "column",
-                  'div('class /= "subtitle is-5 has-text-white",
-                    'div(
-                      'span('class /= "icon is-medium",
-                        'i('class /="fas fa-list")
-                      ), "Block explorer"
-                    )
-                  ),
-                  'div('class /= "is-size-1", block.height.toString),
-                  'a('href /= "#", 'class /= "button is-outlined is-rounded is-small", "Previous")
-                )
+              'div('class /= "column is-narrow has-text-centered",
+                'div('class /= "is-size-3", block.height.toString),
+//                'a('href /= "#",
+//                  'class /= "button is-outlined is-rounded is-small",
+//                  'i('class /= "fas fa-arrow-left",
+//                    event('click) { access =>
+//                      def aux(height: Long): Future[Block] =
+//                        loadBlock(block.height - 1).value.flatMap {
+//                          case None if height == 0 => throw new Exception("No more blocks")
+//                          case None => aux(height - 1)
+//                          case Some(b) => Future.successful(b)
+//                        }
+//                      val eventuallyNewScreen = aux(block.height - 1).map { newBlock =>
+//                        BlockExplorer(
+//                          currentTransactionId = None,
+//                          currentEffectsGroup = None,
+//                          currentBlock = newBlock
+//                        )
+//                      }
+//                      eventuallyNewScreen
+//                        .recover {
+//                          case e: Throwable => ErrorScreen(e)
+//                        }
+//                        .flatMap { newScreen =>
+//                          access.maybeTransition {
+//                            case _ => newScreen
+//                          }
+//                        }
+//                    }
+//                  )
+//                )
               ),
               // Block content
-              'div('class /= "tile is-10",
-                'div('class /= "column",
-                  block.transactions.map { transaction =>
-                    val groupedEffects = groupEffects(transaction.effects)
-                    'div ( 'class /= "card",
-                      'header ( 'class /= "card-header",
-                        'p('class /= "card-header-title",
-                          'span('class /= "icon has-text-black",
-                            'i('class /="fas fa-stream")
-                          ),
-                          s"0x${utils.bytes2hex(transaction.id)}",
-                          event('click) { access =>
-                            access.maybeTransition {
-                              case s: BlockExplorer =>
-                                s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
-                            }
+              'div('class /= "column",
+                block.transactions.map { transaction =>
+                  val groupedEffects = groupEffects(transaction.effects)
+                  'div ( 'class /= "card",
+                    'header ( 'class /= "card-header",
+                      'p('class /= "card-header-title",
+                        'span('class /= "icon has-text-black",
+                          'i('class /="fas fa-stream")
+                        ),
+                        mono(transaction.id),
+                        event('click) { access =>
+                          access.maybeTransition {
+                            case s: BlockExplorer =>
+                              s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
+                          }
+                        }
+                      )
+                    ),
+                    if (state.currentTransactionId.contains(transaction.id)) {
+                      'div('class /= "card-content",
+                        'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "From")), 'div('class /= "column", mono(transaction.from))),
+                        'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "Disassembled code")), 'div('class /= "column", 'pre('class /= "code", transaction.disassembledProgram))),
+                        if (groupedEffects.nonEmpty) 'div('class /= "title is-5", "World state effects") else void,
+                        'ul('class /= "columns is-multiline",
+                          groupedEffects.zipWithIndex map {
+                            case ((name, effects), i) =>
+                              'li('class /= "column is-12",
+                                'div('class /= "title is-6",
+                                  s"${i + 1}. $name", 'span('marginLeft @= 5, 'class /= "tag is-blue", effects.length.toString),
+                                  event('click) { access =>
+                                    access.maybeTransition {
+                                      case s: BlockExplorer =>
+                                        s.copy(currentEffectsGroup = Some(i))
+                                    }
+                                  }
+                                ),
+                                if (state.currentEffectsGroup.contains(i)) {
+                                  effectsTable(effects.map(effectToTableElement))
+                                } else void
+                              )
                           }
                         )
-                      ),
-                      if (state.currentTransactionId.contains(transaction.id)) {
-                        'div('class /= "card-content",
-                          'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "From")), 'div('class /= "column", 'div(utils.bytes2hex(transaction.from)))),
-                          'div('class /= "columns", 'div('class /= "column is-2", 'div('class /= "title is-5", "Disassembled code")), 'div('class /= "column", 'pre(transaction.disassembledProgram))),
-                          if (groupedEffects.nonEmpty) 'div('class /= "title is-5", "World state effects") else void,
-                          'ul('class /= "columns is-multiline",
-                            groupedEffects.zipWithIndex map {
-                              case ((name, effects), i) =>
-                                'li('class /= "column is-12",
-                                  'div('class /= "title is-6",
-                                    s"${i + 1}. $name", 'span('marginLeft @= 5, 'class /= "tag is-dark", effects.length.toString),
-                                    event('click) { access =>
-                                      access.maybeTransition {
-                                        case s: BlockExplorer =>
-                                          s.copy(currentEffectsGroup = Some(i))
-                                      }
-                                    }
-                                  ),
-                                  if (state.currentEffectsGroup.contains(i)) {
-                                    effectsTable(effects.map(effectToTableElement))
-                                  } else void
-                                )
-                            }
-                          )
-                        )
-                      } else {
-                        void
-                      }
-                    )
-                  }
-                )
+                      )
+                    } else {
+                      void
+                    }
+                  )
+                }
               )
             )
           )
-        case ErrorScreen(error) =>
-          'body('pre('color @= "red", error))
-        case SendTransactionScreen(inProgress, maybeResult) =>
-          'body(
+        case state @ ErrorScreen(error) =>
+          mainLayout(state, 'pre('color @= "red", error))
+        case state @ SendTransactionScreen(inProgress, maybeResult) =>
+          mainLayout(state,
             'form(
-                'display @= "flex",
-                'flexDirection @= "column",
-              'textarea('margin @= 10, 'height @= 400, codeArea, 'placeholder /= "Place your p-forth code here"),
-              'input('margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
-              'input('margin @= 10, addressField, 'placeholder /= "Address"),
-              'input('margin @= 10, pkField, 'placeholder /= "Private key", 'type /= "password"),
-              'button('margin @= 10, 'width @= 200, "Send transaction", if (inProgress) 'disabled /= "" else void),
+              'display @= "flex",
+              'flexDirection @= "column",
+              'textarea('class /= "textarea", 'margin @= 10, 'height @= 400, codeArea, 'placeholder /= "Place your p-forth code here"),
+              'input('class /= "input", 'margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
+              'input('class /= "input", 'margin @= 10, addressField, 'placeholder /= "Address"),
+              'input('class /= "input", 'margin @= 10, pkField, 'placeholder /= "Private key", 'type /= "password"),
+              'button('class /= "button is-link", 'margin @= 10, 'width @= 200, "Send transaction", if (inProgress) 'disabled /= "" else void),
               maybeResult.map(x => 'pre(x)),
               event('submit) { access =>
                 val eventuallyErrorOrTransaction =
@@ -326,6 +298,74 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     )
   )
 
+  private def loadBlock(height: Long) = {
+    val key = s"effects:${utils.padLong(height, 10)}"
+    for {
+      blockInfo <- OptionT(db.getAs[Map[TransactionId, Seq[EnvironmentEffect]]](key))
+      eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
+      transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
+    } yield {
+      Block(
+        height, transactions.toList.map {
+          case (id, transaction) =>
+            val asm = programToAsm(transaction.program)
+            Transaction(id, transaction.from, blockInfo(id).toList, asm)
+        }
+      )
+    }
+  }
+
+  private def mainLayout(state: GuiState, content: Node*) = {
+    'body(
+      'div('class /= "column",
+        'div(
+          'class /= "tabs",
+          'ul(
+            'li(
+              if (state.isInstanceOf[BlockExplorer]) 'class /= "is-active" else void,
+              'a("Block Explorer"),
+              event('click) { access =>
+                val eventuallyTransactions =
+                  OptionT(FileStore.readApplicationStateInfoAsync()).flatMap { asi =>
+                    val height = asi.blockHeight - 1
+                    loadBlock(height)
+                  }
+                val eventuallyNewScreen = eventuallyTransactions.value.map {
+                  case None =>
+                    ErrorScreen("Inconsistent state: Identifier of transaction " +
+                      "mentioned in state effects is not found on blockchain.")
+                  case Some(block) =>
+                    BlockExplorer(
+                      currentTransactionId = None,
+                      currentEffectsGroup = None,
+                      currentBlock = block
+                    )
+                }
+                eventuallyNewScreen
+                  .recover {
+                    case e: Throwable => ErrorScreen(e)
+                  }
+                  .flatMap { newScreen =>
+                    access.maybeTransition {
+                      case _ => newScreen
+                    }
+                  }
+              }
+            ),
+            'li(
+              if (state.isInstanceOf[SendTransactionScreen]) 'class /= "is-active" else void,
+              'a("Transacton Composer"),
+              event('click) { access =>
+                access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = None))
+              }
+            )
+          )
+        )
+      ),
+      content
+    )
+  }
+
   val route: Route = service(AkkaHttpServerConfig())
 }
 
@@ -344,8 +384,6 @@ object GuiRoute {
   final case class BlockExplorer(currentBlock: Block,
                                  currentTransactionId: Option[TransactionId],
                                  currentEffectsGroup: Option[Int] = None) extends GuiState
-
-  final case object MainScreen extends GuiState
 
   final case class SendTransactionScreen(inProgress: Boolean, maybeResult: Option[String]) extends GuiState
 
