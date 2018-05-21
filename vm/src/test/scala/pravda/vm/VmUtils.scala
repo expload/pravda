@@ -40,19 +40,15 @@ object VmUtils {
     bs.map(hex).mkString(" ")
   }
 
-  def data(v: Double): Data = {
+  def float2Data(v: Double): Data = {
     doubleToData(v)
   }
 
   def data(i: Byte*): Data =
     ByteString.copyFrom(i.toArray)
 
-  def data(i: Int): Data = {
+  def int2Data(i: Int): Data = {
     int32ToData(i)
-  }
-
-  def data(b: Byte): Data = {
-    ByteString.copyFrom(Array(b))
   }
 
   def int(d: Data): Int = {

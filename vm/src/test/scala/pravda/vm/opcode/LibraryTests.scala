@@ -19,8 +19,8 @@ object LibraryTests extends TestSuite {
       val sum3 = program
         .opcode(LCALL).put("Math").put("sum").put(3)
 
-      exec(sum2) ==> stack(data(1), data(50))
-      exec(sum3) ==> stack(data(51))
+      exec(sum2) ==> stack(int2Data(1), int2Data(50))
+      exec(sum3) ==> stack(int2Data(51))
 
     }
 
@@ -57,9 +57,9 @@ object LibraryTests extends TestSuite {
       val plus2 = program.opcode(LCALL).put(address2).put("plus").put(2)
       val mult1 = program.opcode(LCALL).put(address1).put("mult").put(2)
 
-      exec(plus1, wState) ==> stack(data(15))
-      exec(plus2, wState) ==> stack(data(28))
-      exec(mult1, wState) ==> stack(data(56))
+      exec(plus1, wState) ==> stack(int2Data(15))
+      exec(plus2, wState) ==> stack(int2Data(28))
+      exec(mult1, wState) ==> stack(int2Data(56))
 
     }
 
@@ -83,7 +83,7 @@ object LibraryTests extends TestSuite {
         .opcode(PUSHX).put(7)
         .opcode(LCALL).put(address).put("func").put(1)
 
-      exec(double, wState) ==> stack(data(15))
+      exec(double, wState) ==> stack(int2Data(15))
 
     }
   }

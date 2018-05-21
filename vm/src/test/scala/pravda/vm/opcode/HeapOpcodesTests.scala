@@ -13,7 +13,7 @@ object HeapOpcodesTests extends TestSuite {
         .opcode(PUSHX).put(24)
         .opcode(MPUT)
       exec(program).length ==> 1
-      exec(program.opcode(MGET)) ==> stack(data(24))
+      exec(program.opcode(MGET)) ==> stack(int2Data(24))
     }
   }
 
