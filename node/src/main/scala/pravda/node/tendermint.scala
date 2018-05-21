@@ -11,6 +11,8 @@ import json._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import pravda.common.{bytes => byteUtils}
+
 object tendermint {
 
   private final val GoWireAddressHeader =
@@ -113,12 +115,12 @@ object tendermint {
       val privValidatorFile = new File(configDir, "priv_validator.json")
       if (config.isValidator && !privValidatorFile.exists()) {
         writeFile(privValidatorFile) {
-          val pubKey = utils.bytes2hex(config.paymentWallet.address)
-          val privKey = utils.bytes2hex(config.paymentWallet.privateKey)
+          val pubKey = byteUtils.byteString2hex(config.paymentWallet.address)
+          val privKey = byteUtils.byteString2hex(config.paymentWallet.privateKey)
           val address = {
             val withType = packAddress(config.paymentWallet.address)
             val hash = ripemd160.getHash(withType.toByteArray)
-            utils.bytes2hex(hash)
+            byteUtils.bytes2hex(hash)
           }
           s"""
             |{

@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets
 import state.Data
 import com.google.protobuf.ByteString
 
+import pravda.common.bytes._
+
 final case class ProgramStub(bytes: Vector[Byte] = Vector.empty[Byte], stack: Vector[Data] = Vector.empty[Data]) {
   lazy val buffer: ByteBuffer =
     ByteBuffer.wrap(stack.flatMap(w => Array(Opcodes.PUSHX) ++ bytesToWord(w.toByteArray)).toArray ++ bytes)
@@ -44,13 +46,13 @@ final case class ProgramStub(bytes: Vector[Byte] = Vector.empty[Byte], stack: Ve
   def length: Int = bytes.length
   def + (p: ProgramStub): ProgramStub = copy(bytes = bytes ++ p.bytes, stack = stack ++ p.stack)
 
-  // FIXME
-//  override def toString: String = {
-//    s"""
-//       |program: ${hex(bytes)}
-//       |init stack:
-//       |  ${stack.reverse.map(x => x.toHex).mkString("\n\t")}
-//     """.stripMargin
-//  }
+  def show: String = {
+    s"""
+       |program: ${bytes2hex(bytes.toArray)}
+       |init stack:
+       |  ${stack.reverse.map(byteString2hex).mkString("\n\t")}
+     """.stripMargin
+  }
+
 }
 

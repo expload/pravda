@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import pravda.node.contrib.ripemd160
 import supertagged.TaggedType
-import pravda.node.utils._
+import pravda.common.bytes._
 
 import scala.util.Try
 

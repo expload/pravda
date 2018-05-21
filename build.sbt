@@ -23,10 +23,20 @@ val commonSettings = Seq(
   )
 ) ++ scalafixSettings
 
-lazy val vmVersion = "0.0.1"
+lazy val common = (project in file("common")).
+  settings(
+    normalizedName := "pravda-common"
+  ).
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
+      "com.google.protobuf" % "protobuf-java" % "3.5.0"
+    )
+  )
+
 lazy val vmApi = (project in file("vm-api")).
   settings(
-    normalizedName := "sood-api",
+    normalizedName := "pravda-vm-api",
   ).
   settings( commonSettings: _* ).
   settings(
@@ -38,7 +48,8 @@ lazy val vmApi = (project in file("vm-api")).
 lazy val vm = (project in file("vm")).
   settings(normalizedName := "pravda-vm").
   settings( commonSettings: _* ).
-	dependsOn(vmApi)
+	dependsOn(vmApi).
+  dependsOn(common)
 
 lazy val `vm-asm` = (project in file("vm-asm")).
   dependsOn(vmApi).
@@ -170,6 +181,7 @@ lazy val node = (project in file("node"))
 		connectInput in run := true,
 		outputStrategy in run := Some(OutputStrategy.StdoutOutput)
 	)
+  .dependsOn(common)
 	.dependsOn(`node-db`)
 	.dependsOn(vm)
   .dependsOn(`vm-asm`)

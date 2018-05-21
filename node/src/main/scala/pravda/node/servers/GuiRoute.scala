@@ -9,6 +9,7 @@ import pravda.node.data.common.{Address, Mytc, TransactionId}
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.{Config, utils}
+import pravda.common.{bytes => byteUtils}
 import korolev.Context
 import korolev.akkahttp._
 import korolev.execution._
@@ -54,10 +55,10 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   }
 
   private def mono(s: ByteString): Node =
-    'span ('class /= "hash", utils.bytes2hex(s))
+    'span ('class /= "hash", byteUtils.byteString2hex(s))
 
   private def mono(s: Array[Byte]): Node =
-    'span ('class /= "hash", utils.bytes2hex(s))
+    'span ('class /= "hash", byteUtils.bytes2hex(s))
 
   private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
     def localKey(key: String) = key.substring(key.lastIndexOf(':') + 1)
@@ -232,14 +233,14 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       'margin         @= 10,
                       addressField,
                       'placeholder /= "Address",
-                      'value       /= utils.bytes2hex(Config.timeChainConfig.paymentWallet.address)),
+                      'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.address)),
               'input (
                 'class  /= "input",
                 'margin @= 10,
                 pkField,
                 'placeholder /= "Private key",
                 'type        /= "password",
-                'value       /= utils.bytes2hex(Config.timeChainConfig.paymentWallet.privateKey)
+                'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.privateKey)
               ),
               'div (
                 'button (
@@ -303,7 +304,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           val compiler = pravda.forth.Compiler()
                           val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
                           compiler.compile(hackCode) flatMap { data =>
-                            compiler.compile(s"$$x${utils.bytes2hex(data)} pcreate") map { data =>
+                            compiler.compile(s"$$x${byteUtils.bytes2hex(data)} pcreate") map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                    TransactionData @@ ByteString.copyFrom(data),
                                                                    Mytc.fromString(fee),

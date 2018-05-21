@@ -26,6 +26,8 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
+import pravda.common.{bytes => byteUtils}
+
 class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
 
@@ -190,21 +192,21 @@ object Abci {
       private final class WsProgramStorage(dbPath: DbPath) extends Storage {
 
         def get(key: state.Address): Option[state.Data] = {
-          val hexKey = utils.bytes2hex(key)
+          val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.get(hexKey)
           effects += StorageRead(dbPath.mkKey(hexKey), value)
           value.map(ba => ByteString.copyFrom(ba))
         }
 
         def put(key: state.Address, value: state.Data): Unit = {
-          val hexKey = utils.bytes2hex(key)
+          val hexKey = byteUtils.byteString2hex(key)
           effects += StorageWrite(dbPath.mkKey(hexKey), value.toByteArray)
-          dbPath.put(utils.bytes2hex(key), value)(dataWriter) // FIXME remove explicit writer
+          dbPath.put(byteUtils.byteString2hex(key), value)(dataWriter) // FIXME remove explicit writer
         }
 
         def delete(key: state.Address): Unit = {
-          val hexKey = utils.bytes2hex(key)
-          val value = dbPath.remove(utils.bytes2hex(key))
+          val hexKey = byteUtils.byteString2hex(key)
+          val value = dbPath.remove(byteUtils.byteString2hex(key))
           effects += StorageRemove(dbPath.mkKey(hexKey), value)
         }
       }
@@ -216,7 +218,7 @@ object Abci {
         val address = Address @@ ByteString.copyFrom(addressBytes)
         val sp = StoredProgram(code, Address @@ owner)
 
-        programsPath.put(utils.bytes2hex(addressBytes), sp)
+        programsPath.put(byteUtils.bytes2hex(addressBytes), sp)
 
         effects += ProgramCreate(address, code.toByteArray)
         address
@@ -225,12 +227,12 @@ object Abci {
       def updateProgram(address: state.Address, code: Data): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
         val sp = oldSb.copy(code = code)
-        programsPath.put(utils.bytes2hex(address), sp)
+        programsPath.put(byteUtils.byteString2hex(address), sp)
         effects += ProgramUpdate(Address @@ address, code.toByteArray)
       }
 
       private def getStoredProgram(address: ByteString) =
-        programsPath.get(utils.bytes2hex(address)) map { serializedProgram =>
+        programsPath.get(byteUtils.byteString2hex(address)) map { serializedProgram =>
           transcode(Bson @@ serializedProgram).to[StoredProgram]
         }
 
@@ -245,7 +247,7 @@ object Abci {
           new ProgramContext {
             def code: ByteBuffer = ByteBuffer.wrap(program.code.toByteArray)
             def storage: Storage = {
-              val newPath = programsPath :+ utils.bytes2hex(address)
+              val newPath = programsPath :+ byteUtils.byteString2hex(address)
               new WsProgramStorage(newPath)
             }
           }
