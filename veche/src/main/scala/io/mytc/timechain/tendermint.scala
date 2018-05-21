@@ -25,12 +25,11 @@ object tendermint {
   def packAddress(address: Address): ByteString =
     GoWireAddressHeader.concat(address)
 
-  def selectTendermintExecutable(name: OperationSystem, arch: CpuArchitecture) =
-  {
+  def selectTendermintExecutable(name: OperationSystem, arch: CpuArchitecture) = {
     val exeName = s"tendermint_${name.toString.toLowerCase}_$arch"
     name match {
       case OperationSystem.Windows => exeName + ".exe"
-      case _ => exeName
+      case _                       => exeName
     }
   }
 

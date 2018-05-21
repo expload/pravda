@@ -36,13 +36,12 @@ object launcher extends App {
 
   val server = Server(
     cfg = Server.Config(
-      connectionMethod =
-        if (timeChainConfig.tendermint.useUnixDomainSocket) {
-          val path = new File(timeChainConfig.dataDirectory, "abci.sock").getAbsolutePath
-          ConnectionMethod.UnixSocket(path)
-        } else {
-          ConnectionMethod.Tcp(host = "127.0.0.1", port = timeChainConfig.tendermint.proxyAppPort)
-        }
+      connectionMethod = if (timeChainConfig.tendermint.useUnixDomainSocket) {
+        val path = new File(timeChainConfig.dataDirectory, "abci.sock").getAbsolutePath
+        ConnectionMethod.UnixSocket(path)
+      } else {
+        ConnectionMethod.Tcp(host = "127.0.0.1", port = timeChainConfig.tendermint.proxyAppPort)
+      }
     ),
     api = abci
   )

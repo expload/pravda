@@ -3,7 +3,6 @@ package io.mytc.sood.asm
 import com.google.protobuf.ByteString
 import java.nio.charset.StandardCharsets
 
-
 class ByteCode {
 
   import io.mytc.sood.vm
@@ -277,8 +276,8 @@ class ByteCode {
       case Op.PCall =>
         code += VM.PCALL
 
-      case Op.SGet => code += VM.SGET
-      case Op.SPut => code += VM.SPUT
+      case Op.SGet  => code += VM.SGET
+      case Op.SPut  => code += VM.SPUT
       case Op.SExst => code += VM.SEXIST
 
       case Op.Label(n) ⇒ {}
@@ -365,8 +364,8 @@ class ByteCode {
                       wordToInt32(ubuf)
                     )))
 
-        case VM.int.SGET => obuf += ((pos, Op.SGet))
-        case VM.int.SPUT => obuf += ((pos, Op.SPut))
+        case VM.int.SGET   => obuf += ((pos, Op.SGet))
+        case VM.int.SPUT   => obuf += ((pos, Op.SPut))
         case VM.int.SEXIST => obuf += ((pos, Op.SExst))
       }
     }

@@ -73,7 +73,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
     Future.successful {
       `try` match {
         case Success(encodedStack) =>
-            result(TxStatusOk, encodedStack)
+          result(TxStatusOk, encodedStack)
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized

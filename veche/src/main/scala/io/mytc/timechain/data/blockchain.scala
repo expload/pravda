@@ -18,12 +18,21 @@ object blockchain {
 
   object Transaction {
 
-    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc, nonce: Int) extends Transaction
-
-    final case class SignedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc, nonce: Int)
+    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc, nonce: Int)
         extends Transaction
 
-    final case class AuthorizedTransaction(from: Address, program: TransactionData, signature: ByteString, fee: Mytc, nonce: Int)
+    final case class SignedTransaction(from: Address,
+                                       program: TransactionData,
+                                       signature: ByteString,
+                                       fee: Mytc,
+                                       nonce: Int)
+        extends Transaction
+
+    final case class AuthorizedTransaction(from: Address,
+                                           program: TransactionData,
+                                           signature: ByteString,
+                                           fee: Mytc,
+                                           nonce: Int)
         extends Transaction
   }
 

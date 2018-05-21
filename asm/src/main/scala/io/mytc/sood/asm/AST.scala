@@ -53,7 +53,7 @@ object Op {
   case object I32LT extends Op { override def toAsm = "i32lt" }
   case object I32GT extends Op { override def toAsm = "i32gt" }
 
-  case object Eq extends Op { override def toAsm = "eq" }
+  case object Eq  extends Op { override def toAsm = "eq" }
   case object Nop extends Op { override def toAsm = "nop" }
 
   case object Dupn    extends Op { override def toAsm = "dupn" }
@@ -68,7 +68,7 @@ object Op {
     override def toAsm = s"lcall $address $func $argsNum"
   }
 
-  case object SGet extends Op { override def toAsm = "sget" }
-  case object SPut extends Op { override def toAsm = "sput" }
+  case object SGet  extends Op { override def toAsm = "sget" }
+  case object SPut  extends Op { override def toAsm = "sput" }
   case object SExst extends Op { override def toAsm = "sexist" }
 }

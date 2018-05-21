@@ -43,7 +43,8 @@ object common {
 
     def forEncodedTransaction(tx: ByteString): TransactionId = {
       // go-wire encoding
-      val buffer = ByteBuffer.allocate(3 + tx.size)
+      val buffer = ByteBuffer
+        .allocate(3 + tx.size)
         .put(0x02.toByte) // size of size
         .putShort(tx.size.toShort) // size
         .put(tx.toByteArray) // data

@@ -2,7 +2,6 @@ package io.mytc.sood.forth
 
 import com.google.protobuf.ByteString
 
-
 class Compiler {
 
   def compile(code: String, useStdLib: Boolean = true): Either[String, Array[Byte]] = {
@@ -13,10 +12,14 @@ class Compiler {
     val prog = if (useStdLib) StdLib.defs ++ code else code
     parser.parse(prog) match {
       case Right(forthAst) ⇒ {
-        scala.util.Try {
-          val asmAst = transl.translate(forthAst, useStdLib)
-          assemb.compile(asmAst)
-        }.map(Right(_)).recover{ case err => Left(err.getMessage) }.get
+        scala.util
+          .Try {
+            val asmAst = transl.translate(forthAst, useStdLib)
+            assemb.compile(asmAst)
+          }
+          .map(Right(_))
+          .recover { case err => Left(err.getMessage) }
+          .get
       }
       case Left(err) ⇒ Left(err)
     }

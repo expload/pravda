@@ -19,7 +19,7 @@ object Application {
     val byteCode = (new java.math.BigInteger(hexCode, 16).toByteArray)
     val asm = Assembler()
     val asmCode = asm.decompile(byteCode)
-    asmCode.map{ case (no, op) => "%06X:\t%s".format(no, op.toAsm) }.mkString("\n")
+    asmCode.map { case (no, op) => "%06X:\t%s".format(no, op.toAsm) }.mkString("\n")
   }
 
   def compile(filename: String): Either[String, Array[Byte]] = {
@@ -42,7 +42,7 @@ object Application {
     }
 
     if (config.disasm) {
-      println( decompile(fileName) )
+      println(decompile(fileName))
     } else {
       compile(fileName) match {
         case Right(code) ⇒ {

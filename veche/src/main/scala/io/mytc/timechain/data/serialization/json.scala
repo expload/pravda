@@ -237,7 +237,8 @@ object json {
     jsonReader[RpcTxResponse.Result] {
       describe {
         ReaderBuilder[RpcTxResponse.Result]
-          .extract(_.tx).as[String](x => ByteString.copyFrom(Base64.Decoder(x).toByteArray))
+          .extract(_.tx)
+          .as[String](x => ByteString.copyFrom(Base64.Decoder(x).toByteArray))
       }
     }
 

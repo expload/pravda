@@ -117,8 +117,8 @@ class AbciClient(port: Int)(implicit
 object AbciClient {
 
   final case class RpcException(error: RpcError) extends Exception(s"${error.message}: ${error.data}")
-  final case class RpcHttpException(httpCode: Int) extends
-    Exception(s"RPC request to Tendermint failed with HTTP code $httpCode")
+  final case class RpcHttpException(httpCode: Int)
+      extends Exception(s"RPC request to Tendermint failed with HTTP code $httpCode")
 
   final case class TxSyncResult(check_tx: TxResult)
   final case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)

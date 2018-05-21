@@ -2,7 +2,6 @@ package io.mytc.sood.asm
 
 import com.google.protobuf.ByteString
 
-
 class Assembler {
 
   def decompile(bcode: ByteString): Seq[(Int, Op)] = {
