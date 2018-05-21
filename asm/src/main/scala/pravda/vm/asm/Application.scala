@@ -1,4 +1,4 @@
-package io.mytc.sood.asm
+package pravda.vm.asm
 
 object Application {
 

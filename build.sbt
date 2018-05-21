@@ -51,7 +51,7 @@ lazy val asm = (project in file("asm")).
   ).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
-  settings( mainClass in Compile := Some("io.mytc.sood.asm.Application") ).
+  settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).
   settings(
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt"      % "3.7.0",

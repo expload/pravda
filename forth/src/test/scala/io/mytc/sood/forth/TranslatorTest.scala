@@ -6,8 +6,8 @@ import utest._
 object TranslatorTest extends TestSuite {
 
   import Statement._
-  import io.mytc.sood.asm.Op
-  import io.mytc.sood.asm.Datum
+  import pravda.vm.asm.Op
+  import pravda.vm.asm.Datum
 
   def tests = Tests {
     "A translator must correctly translate word definitions" - {

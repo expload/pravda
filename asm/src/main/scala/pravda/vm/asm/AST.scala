@@ -1,4 +1,4 @@
-package io.mytc.sood.asm
+package pravda.vm.asm
 
 sealed trait Op {
   def toAsm: String

@@ -19,7 +19,7 @@ import pravda.node.persistence.implicits._
 import cats.data.OptionT
 import cats.implicits._
 import com.google.protobuf.ByteString
-import io.mytc.sood.asm.{Assembler, Op}
+import pravda.vm.asm.{Assembler, Op}
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.cryptography

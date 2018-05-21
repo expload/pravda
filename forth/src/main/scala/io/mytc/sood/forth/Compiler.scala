@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 class Compiler {
 
   def compile(code: String, useStdLib: Boolean = true): Either[String, Array[Byte]] = {
-    import io.mytc.sood.asm.Assembler
+    import pravda.vm.asm.Assembler
     val parser = Parser()
     val assemb = Assembler()
     val transl = Translator()

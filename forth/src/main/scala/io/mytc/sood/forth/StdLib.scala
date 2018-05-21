@@ -2,8 +2,8 @@ package io.mytc.sood.forth
 
 object StdLib {
 
-  import io.mytc.sood.asm.Op
-  import io.mytc.sood.asm.Datum
+  import pravda.vm.asm.Op
+  import pravda.vm.asm.Datum
 
   def defs: String = { """
     : + add ;

@@ -2,7 +2,7 @@ package io.mytc.sood.cil
 
 import java.nio.charset.StandardCharsets
 
-import io.mytc.sood.asm._
+import pravda.vm.asm._
 import io.mytc.sood.cil.CIL._
 import io.mytc.sood.cil.TablesData._
 import pravda.vm._
