@@ -1,9 +1,9 @@
-package io.mytc.sood.vm
+package pravda.vm
 
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm.state._
+import pravda.vm.state._
 import serialization._
 
 object VmUtils {

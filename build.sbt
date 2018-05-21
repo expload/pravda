@@ -2,7 +2,6 @@ import java.nio.file.Files
 
 resolvers += "jitpack" at "https://jitpack.io"
 
-
 val commonSettings = Seq(
   organization := "io.mytc",
   version := "0.0.1",
@@ -37,21 +36,16 @@ lazy val vmApi = (project in file("vm-api")).
   )
 
 lazy val vm = (project in file("vm")).
-  settings(
-    normalizedName := "sood",
-  ).
+  settings(normalizedName := "pravda-vm").
   settings( commonSettings: _* ).
 	dependsOn(vmApi)
 
-lazy val asm = (project in file("asm")).
+lazy val `vm-asm` = (project in file("vm-asm")).
   dependsOn(vmApi).
-  settings(
-    normalizedName := "asm",
-    version := "0.0.1"
-  ).
+  settings(normalizedName := "pravda-vm-asm").
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
-  settings( mainClass in Compile := Some("io.mytc.sood.asm.Application") ).
+  settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).
   settings(
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt"      % "3.7.0",
@@ -60,14 +54,11 @@ lazy val asm = (project in file("asm")).
   )
 
 lazy val forth = (project in file("forth")).
-  settings(
-    normalizedName := "forth",
-    version := "0.0.1"
-  ).
-  dependsOn(asm).
+  settings(normalizedName := "pravda-forth").
+  dependsOn(`vm-asm`).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
-  settings( mainClass in Compile := Some("io.mytc.sood.forth.Application") ).
+  settings( mainClass in Compile := Some("pravda.forth.Application") ).
   settings(
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt"      % "3.7.0",
@@ -75,14 +66,11 @@ lazy val forth = (project in file("forth")).
     )
   )
 
-lazy val tests = (project in file("tests")).
+lazy val `forth-vm-integration-test` = (project in file("testkit/forth-vm-integration")).
   dependsOn(vm).
-  dependsOn(asm).
+  dependsOn(`vm-asm`).
   dependsOn(forth).
-  settings(
-    normalizedName := "tests",
-    version := "0.0.1"
-  ).
+  settings(normalizedName := "pravda-testkit-forth-vm-integration").
   settings( commonSettings: _* )
 
 lazy val vmcli = (project in file("vmcli")).
@@ -100,7 +88,7 @@ lazy val vmcli = (project in file("vmcli")).
   )
 
 lazy val cil = (project in file("cil-translator")).
-  dependsOn(asm).
+  dependsOn(`vm-asm`).
   settings(
     normalizedName := "cil-translator",
     version := "0.0.1"
@@ -115,19 +103,18 @@ lazy val cil = (project in file("cil-translator")).
 
 val `tendermint-version` = "0.16.0"
 
-lazy val keyvalue = (project in file("keyvalue"))
+lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
   .settings(
-    normalizedName := "keyvalue",
-    version      := "0.1.0-SNAPSHOT",
+    normalizedName := "pravda-node-db",
     libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
   )
 
-lazy val veche = (project in file("veche"))
+lazy val node = (project in file("node"))
 	.enablePlugins(JavaAppPackaging)
 	.settings( commonSettings: _* )
 	.settings(
-		normalizedName := "veche",
+		normalizedName := "pravda-node",
 		libraryDependencies ++= Seq(
 		  // Networking
 		  "com.typesafe.akka" %% "akka-actor" % "2.5.8",
@@ -183,9 +170,9 @@ lazy val veche = (project in file("veche"))
 		connectInput in run := true,
 		outputStrategy in run := Some(OutputStrategy.StdoutOutput)
 	)
-	.dependsOn(keyvalue)
+	.dependsOn(`node-db`)
 	.dependsOn(vm)
-  .dependsOn(asm)
+  .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
 lazy val pravda = (project in file("pravda")).

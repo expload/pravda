@@ -1,9 +1,0 @@
-.DS_Store
-.idea*
-target/
-.cache
-.classpath
-.project
-.settings/
-*.iml
-development.conf

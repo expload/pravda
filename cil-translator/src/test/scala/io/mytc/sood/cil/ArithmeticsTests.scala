@@ -79,8 +79,8 @@ object ArithmeticsTests extends TestSuite {
         List(LdcI4S(10), StSFld(FieldData(22, "x", hex"0x0608")), Ret)
       )
 
-      import io.mytc.sood.asm.Datum._
-      import io.mytc.sood.asm.Op._
+      import pravda.vm.asm.Datum._
+      import pravda.vm.asm.Op._
 
       opCodes.map(os => Translator.translate(Translator.CilContext(os))) ==>
         List(

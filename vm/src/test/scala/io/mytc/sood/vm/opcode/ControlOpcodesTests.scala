@@ -1,8 +1,8 @@
-package io.mytc.sood.vm
+package pravda.vm
 package opcode
 
 import VmUtils._
-import io.mytc.sood.vm.Opcodes.int._
+import pravda.vm.Opcodes.int._
 
 import utest._
 
