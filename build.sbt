@@ -43,10 +43,10 @@ lazy val vm = (project in file("vm")).
   settings( commonSettings: _* ).
 	dependsOn(vmApi)
 
-lazy val asm = (project in file("asm")).
+lazy val `vm-asm` = (project in file("vm-asm")).
   dependsOn(vmApi).
   settings(
-    normalizedName := "asm",
+    normalizedName := "pravda-vm-asm",
     version := "0.0.1"
   ).
   enablePlugins(JavaAppPackaging).
@@ -64,7 +64,7 @@ lazy val forth = (project in file("forth")).
     normalizedName := "forth",
     version := "0.0.1"
   ).
-  dependsOn(asm).
+  dependsOn(`vm-asm`).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.forth.Application") ).
@@ -77,7 +77,7 @@ lazy val forth = (project in file("forth")).
 
 lazy val tests = (project in file("tests")).
   dependsOn(vm).
-  dependsOn(asm).
+  dependsOn(`vm-asm`).
   dependsOn(forth).
   settings(
     normalizedName := "tests",
@@ -100,7 +100,7 @@ lazy val vmcli = (project in file("vmcli")).
   )
 
 lazy val cil = (project in file("cil-translator")).
-  dependsOn(asm).
+  dependsOn(`vm-asm`).
   settings(
     normalizedName := "cil-translator",
     version := "0.0.1"
@@ -184,7 +184,7 @@ lazy val node = (project in file("node"))
 	)
 	.dependsOn(`node-db`)
 	.dependsOn(vm)
-  .dependsOn(asm)
+  .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
 lazy val pravda = (project in file("pravda")).
