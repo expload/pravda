@@ -42,7 +42,7 @@ class AbciClient(port: Int)(implicit
         entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
           val json = body.utf8String
           mode match {
-            case "commit" ⇒
+            case "commit" =>
               transcode(Json @@ json)
                 .to[RpcCommitResponse]
                 .result
@@ -51,7 +51,7 @@ class AbciClient(port: Int)(implicit
                 .split(',')
                 .toList
                 .map(s => PbByteString.copyFrom(Base64.getDecoder.decode(s)))
-            case _ ⇒
+            case _ =>
               Nil
           }
         }

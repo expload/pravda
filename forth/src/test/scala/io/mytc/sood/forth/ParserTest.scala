@@ -25,7 +25,7 @@ object ParserTest extends TestSuite {
     "Parser must parse byte arrays correcltly" - {
       val p = Parser()
       p.parse("$xFF2F00") match {
-        case Right(Seq(Hexar(v))) ⇒ {
+        case Right(Seq(Hexar(v))) => {
           assert( v.size == 3 )
           assert( v(0) == 0xFF.toByte )
           assert( v(1) == 0x2F.toByte )

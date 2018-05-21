@@ -45,7 +45,7 @@ object Application {
       println(decompile(fileName))
     } else {
       compile(fileName) match {
-        case Right(code) ⇒ {
+        case Right(code) => {
           if (config.hexDump) {
             val hexStr = code.map("%02X" format _).mkString
             println(hexStr)
@@ -55,7 +55,7 @@ object Application {
             out.close()
           }
         }
-        case Left(err) ⇒ {
+        case Left(err) => {
           System.err.println(err)
           System.exit(1)
         }

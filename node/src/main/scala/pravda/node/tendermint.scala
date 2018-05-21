@@ -70,10 +70,10 @@ object tendermint {
           out.flush()
         }
       } finally {
-        fileOut.foreach { s ⇒
+        fileOut.foreach { s =>
           s.close()
         }
-        resourceInput.foreach { s ⇒
+        resourceInput.foreach { s =>
           s.close()
         }
       }

@@ -11,7 +11,7 @@ class Compiler {
     val transl = Translator()
     val prog = if (useStdLib) StdLib.defs ++ code else code
     parser.parse(prog) match {
-      case Right(forthAst) ⇒ {
+      case Right(forthAst) => {
         scala.util
           .Try {
             val asmAst = transl.translate(forthAst, useStdLib)
@@ -21,7 +21,7 @@ class Compiler {
           .recover { case err => Left(err.getMessage) }
           .get
       }
-      case Left(err) ⇒ Left(err)
+      case Left(err) => Left(err)
     }
   }
 

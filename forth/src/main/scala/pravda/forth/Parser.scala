@@ -29,40 +29,40 @@ class Parser {
     val numbrStmt = P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?)
     val chrarStmt = P("\"" ~/ (strChars | escape).rep.! ~ "\"")
 
-    val hexarStmt = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str ⇒
-      str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).toByte).toArray
+    val hexarStmt = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str =>
+      str.sliding(2, 2).map(x => java.lang.Integer.valueOf(x, 16).toByte).toArray
     }
     val identStmt = P((digit.rep ~ alpha ~ aldig.rep) | (aldig.rep ~ alpha ~ aldig.rep))
     val dwordStmt = P(":" ~ delim ~ identStmt.! ~ delim ~ blockStmt ~ delim ~ ";")
     val ifStmt = P("if" ~ delim ~ blockStmt ~ delim ~ "then")
 
     val blockStmt: P[Seq[Statement]] = P(
-      dwordStmt.map { case (n, b) ⇒ Statement.Dword(n, b) } |
-        ifStmt.map(b ⇒ Statement.If(b, Seq())) |
-        numbrStmt.!.map(v ⇒ Statement.Float(v.toDouble)) |
-        integStmt.!.map(v ⇒ Statement.Integ(v.toInt)) |
-        hexarStmt.map { v ⇒
+      dwordStmt.map { case (n, b) => Statement.Dword(n, b) } |
+        ifStmt.map(b => Statement.If(b, Seq())) |
+        numbrStmt.!.map(v => Statement.Float(v.toDouble)) |
+        integStmt.!.map(v => Statement.Integ(v.toInt)) |
+        hexarStmt.map { v =>
           Statement.Hexar(v)
         } |
-        chrarStmt.map { v ⇒
+        chrarStmt.map { v =>
           Statement.Chrar(v)
         } |
-        (!keyword ~ identStmt).!.map(v ⇒ Statement.Ident(v))
+        (!keyword ~ identStmt).!.map(v => Statement.Ident(v))
     ).rep(sep = delim)
 
     val forthUnit = P(Start ~ delim.? ~ blockStmt ~ delim.? ~ End)
   }
 
   def lex(code: String): Either[String, Seq[Statement]] = grammar.forthUnit.parse(code) match {
-    case fastparse.all.Parsed.Success(ast, idx) ⇒ Right(ast)
-    case e: fastparse.all.Parsed.Failure        ⇒ Left(e.extra.traced.trace)
+    case fastparse.all.Parsed.Success(ast, idx) => Right(ast)
+    case e: fastparse.all.Parsed.Failure        => Left(e.extra.traced.trace)
   }
 
   def parse(code: String): Either[String, Seq[Statement]] = {
 
     lex(code) match {
-      case Right(seq) ⇒ Right(seq)
-      case Left(err)  ⇒ Left(err)
+      case Right(seq) => Right(seq)
+      case Left(err)  => Left(err)
     }
 
   }

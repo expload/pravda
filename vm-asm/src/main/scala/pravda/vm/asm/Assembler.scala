@@ -18,8 +18,8 @@ class Assembler {
     val parser = Parser()
     val bc = ByteCode()
     parser.parse(code) match {
-      case Right(ast) ⇒ Right(bc.gen(ast))
-      case Left(err)  ⇒ Left(err)
+      case Right(ast) => Right(bc.gen(ast))
+      case Left(err)  => Left(err)
     }
   }
 

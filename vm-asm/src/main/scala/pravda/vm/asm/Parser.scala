@@ -17,17 +17,17 @@ class Parser {
 
     val delim = P(CharIn(" \t\r\n").rep(1))
 
-    val hexs = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str ⇒
-      Datum.Rawbytes(str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).toByte).toArray)
+    val hexs = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str =>
+      Datum.Rawbytes(str.sliding(2, 2).map(x => java.lang.Integer.valueOf(x, 16).toByte).toArray)
     }
 
-    val hexw = P("0x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map(x ⇒ java.lang.Integer.valueOf(x, 16))
-    val word = P(CharIn('0' to '9').rep(1)).!.map(x ⇒ java.lang.Integer.valueOf(x, 16))
+    val hexw = P("0x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map(x => java.lang.Integer.valueOf(x, 16))
+    val word = P(CharIn('0' to '9').rep(1)).!.map(x => java.lang.Integer.valueOf(x, 16))
 
-    val integ = P(hexw | word).map(x ⇒ Datum.Integral(x))
+    val integ = P(hexw | word).map(x => Datum.Integral(x))
 
     val numbr =
-      P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?).!.map(x ⇒ Datum.Floating(java.lang.Double.valueOf(x)))
+      P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?).!.map(x => Datum.Floating(java.lang.Double.valueOf(x)))
 
     // val alpha = P( CharIn('a' to 'z') | CharIn('A' to 'Z') | CharIn("_") )
     // val digit = P( CharIn('0' to '9') )
@@ -74,39 +74,39 @@ class Parser {
 
     val opseq: P[Seq[Op]] = P(
       (
-        label.map(n ⇒ Op.Label(n)) |
-          stop.!.map(_ ⇒ Op.Stop) |
-          jump.map(n ⇒ Op.Jump(n)) |
-          jumpi.map(n ⇒ Op.JumpI(n)) |
-          pop.!.map(_ ⇒ Op.Pop) |
-          push.map(x ⇒ Op.Push(x)) |
-          dup.map(_ ⇒ Op.Dup) |
-          swap.map(_ ⇒ Op.Swap) |
+        label.map(n => Op.Label(n)) |
+          stop.!.map(_ => Op.Stop) |
+          jump.map(n => Op.Jump(n)) |
+          jumpi.map(n => Op.JumpI(n)) |
+          pop.!.map(_ => Op.Pop) |
+          push.map(x => Op.Push(x)) |
+          dup.map(_ => Op.Dup) |
+          swap.map(_ => Op.Swap) |
 
-          call.map(n ⇒ Op.Call(n)) |
-          ret.!.map(_ ⇒ Op.Ret) |
+          call.map(n => Op.Call(n)) |
+          ret.!.map(_ => Op.Ret) |
 
-          mput.!.map(_ ⇒ Op.MPut) |
-          mget.!.map(_ ⇒ Op.MGet) |
+          mput.!.map(_ => Op.MPut) |
+          mget.!.map(_ => Op.MGet) |
 
-          add.!.map(_ ⇒ Op.I32Add) |
-          mul.!.map(_ ⇒ Op.I32Mul) |
-          div.!.map(_ ⇒ Op.I32Div) |
-          mod.!.map(_ ⇒ Op.I32Mod) |
+          add.!.map(_ => Op.I32Add) |
+          mul.!.map(_ => Op.I32Mul) |
+          div.!.map(_ => Op.I32Div) |
+          mod.!.map(_ => Op.I32Mod) |
 
-          clt.!.map(_ ⇒ Op.I32LT) |
-          cgt.!.map(_ ⇒ Op.I32GT) |
+          clt.!.map(_ => Op.I32LT) |
+          cgt.!.map(_ => Op.I32GT) |
 
-          eqls.!.map(_ ⇒ Op.Eq) |
-          conc.!.map(_ ⇒ Op.Concat) |
-          from.!.map(_ ⇒ Op.From) |
-          pcrt.!.map(_ ⇒ Op.PCreate) |
-          pupd.!.map(_ ⇒ Op.PUpdate) |
+          eqls.!.map(_ => Op.Eq) |
+          conc.!.map(_ => Op.Concat) |
+          from.!.map(_ => Op.From) |
+          pcrt.!.map(_ => Op.PCreate) |
+          pupd.!.map(_ => Op.PUpdate) |
 
-          fadd.!.map(_ ⇒ Op.FAdd) |
-          fmul.!.map(_ ⇒ Op.FMul) |
-          fdiv.!.map(_ ⇒ Op.FDiv) |
-          fmod.!.map(_ ⇒ Op.FMod) |
+          fadd.!.map(_ => Op.FAdd) |
+          fmul.!.map(_ => Op.FMul) |
+          fdiv.!.map(_ => Op.FDiv) |
+          fmod.!.map(_ => Op.FMod) |
           pcall.map(_ => Op.PCall) |
           lcall.map(Op.LCall.tupled)
       ).rep(sep = delim))
@@ -115,8 +115,8 @@ class Parser {
   }
 
   def parse(code: String): Either[String, Seq[Op]] = grammar.unit.parse(code) match {
-    case fastparse.all.Parsed.Success(ast, idx) ⇒ Right(ast)
-    case e: fastparse.all.Parsed.Failure        ⇒ Left(e.extra.traced.trace)
+    case fastparse.all.Parsed.Success(ast, idx) => Right(ast)
+    case e: fastparse.all.Parsed.Failure        => Left(e.extra.traced.trace)
   }
 }
 

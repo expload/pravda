@@ -15,8 +15,8 @@ object Datum {
   final case class Rawbytes(value: Array[Byte]) extends Datum {
     override def toString = s"Rawbytes(${value.mkString(", ")})"
     override def equals(other: Any): Boolean = other match {
-      case Rawbytes(array) ⇒ this.value.deep == array.deep
-      case _               ⇒ false
+      case Rawbytes(array) => this.value.deep == array.deep
+      case _               => false
     }
     override def toAsm = value.map("%02X".format(_)).mkString(" ")
   }
