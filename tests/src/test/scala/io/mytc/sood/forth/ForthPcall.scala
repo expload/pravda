@@ -2,7 +2,7 @@ package io.mytc.sood.forth
 
 import com.google.protobuf.ByteString
 import io.mytc.sood.forth.ForthTestUtils._
-import io.mytc.sood.vm.serialization._
+import pravda.vm.serialization._
 import utest._
 
 object ForthPcall extends TestSuite {

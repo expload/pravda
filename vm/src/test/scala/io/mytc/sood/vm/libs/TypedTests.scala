@@ -1,9 +1,9 @@
-package io.mytc.sood.vm.libs
+package pravda.vm.libs
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm._
-import io.mytc.sood.vm.VmUtils._
-import io.mytc.sood.vm.Opcodes._
+import pravda.vm._
+import pravda.vm.VmUtils._
+import pravda.vm.Opcodes._
 import serialization._
 
 import utest._

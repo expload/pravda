@@ -1,4 +1,4 @@
-package io.mytc.sood.vm
+package pravda.vm
 package serialize
 
 import VmUtils.{binaryData, emptyState}

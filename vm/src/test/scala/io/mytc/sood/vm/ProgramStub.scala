@@ -1,4 +1,4 @@
-package io.mytc.sood.vm
+package pravda.vm
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets

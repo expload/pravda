@@ -1,11 +1,11 @@
-package io.mytc.sood.vm
+package pravda.vm
 
 import utest.TestSuite
 import utest._
 import VmUtils._
 import Opcodes._
-import io.mytc.sood.vm.state.VmError._
-import io.mytc.sood.vm.state.{Environment, VmError, VmErrorException}
+import pravda.vm.state.VmError._
+import pravda.vm.state.{Environment, VmError, VmErrorException}
 
 object ErrorTests extends TestSuite {
 

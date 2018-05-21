@@ -3,9 +3,9 @@ package io.mytc.sood.forth
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm.Vm
-import io.mytc.sood.vm.state._
-import io.mytc.sood.vm.serialization._
+import pravda.vm.Vm
+import pravda.vm.state._
+import pravda.vm.serialization._
 
 import scala.collection.mutable
 

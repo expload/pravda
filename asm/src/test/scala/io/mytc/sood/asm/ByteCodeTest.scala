@@ -5,7 +5,7 @@ import utest._
 
 object ByteCodeTest extends TestSuite {
 
-  import io.mytc.sood.vm
+  import pravda.vm
   import java.nio.ByteBuffer
 
   def raw(v: Int): Datum = {

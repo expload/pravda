@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 import io.mytc.sood.asm._
 import io.mytc.sood.cil.CIL._
 import io.mytc.sood.cil.TablesData._
-import io.mytc.sood.vm._
+import pravda.vm._
 import serialization._
 
 object Translator {

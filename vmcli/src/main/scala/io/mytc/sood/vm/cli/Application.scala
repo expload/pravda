@@ -1,16 +1,16 @@
-package io.mytc.sood.vm.cli
+package pravda.vm.cli
 
 object Application {
 
-  import io.mytc.sood.vm.Vm
-  import io.mytc.sood.vm.state.Data
-  import io.mytc.sood.vm.state.Memory
-  import io.mytc.sood.vm.state.Address
-  import io.mytc.sood.vm.state.Storage
-  import io.mytc.sood.vm.state.Environment
-  import io.mytc.sood.vm.state.StackTrace
-  import io.mytc.sood.vm.state.ProgramContext
-  import io.mytc.sood.vm.state.VmErrorException
+  import pravda.vm.Vm
+  import pravda.vm.state.Data
+  import pravda.vm.state.Memory
+  import pravda.vm.state.Address
+  import pravda.vm.state.Storage
+  import pravda.vm.state.Environment
+  import pravda.vm.state.StackTrace
+  import pravda.vm.state.ProgramContext
+  import pravda.vm.state.VmErrorException
 
   import com.google.protobuf.ByteString
 

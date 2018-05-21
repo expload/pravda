@@ -3,7 +3,7 @@ package io.mytc.sood.forth
 import utest._
 import ForthTestUtils._
 import com.google.protobuf.ByteString
-import io.mytc.sood.vm.serialization._
+import pravda.vm.serialization._
 
 object ForthSmartProgramTest extends TestSuite {
 

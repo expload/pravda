@@ -9,8 +9,8 @@ import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import io.mytc.keyvalue.serialyzer.ValueWriter
 import io.mytc.keyvalue.{DB, Operation}
-import io.mytc.sood.vm.{Vm, state}
-import io.mytc.sood.vm.state.{Data, Environment, ProgramContext, Storage}
+import pravda.vm.{Vm, state}
+import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
 import pravda.node.data.common.{ApplicationStateInfo, TransactionId}

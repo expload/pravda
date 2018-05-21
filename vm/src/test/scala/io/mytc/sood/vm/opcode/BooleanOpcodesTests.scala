@@ -1,4 +1,4 @@
-package io.mytc.sood.vm
+package pravda.vm
 package opcode
 
 import VmUtils._

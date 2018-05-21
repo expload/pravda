@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 
 class ByteCode {
 
-  import io.mytc.sood.vm
+  import pravda.vm
   import vm.{Opcodes ⇒ VM}
   import scala.collection.mutable.ArrayBuffer
 
