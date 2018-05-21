@@ -11,14 +11,14 @@ object Parser extends OptionParser[Config]("pravda") {
   cmd("gen")
     .children(
       cmd("address")
-        .action((_, _) => Config.GenWallet())
+        .action((_, _) => Config.GenAddress())
         .children(
-        opt[File]('o', "output").action {
-          case (file, Config.GenWallet(_)) =>
-            Config.GenWallet(Config.Output.OsFile(file.getAbsolutePath))
-          case (_, otherwise) => otherwise
-        }
-      )
+          opt[File]('o', "output").action {
+            case (file, Config.GenAddress(_)) =>
+              Config.GenAddress(Config.Output.OsFile(file.getAbsolutePath))
+            case (_, otherwise) => otherwise
+          }
+        )
     )
   //      opt[Unit]('g', "genkey")
   //        .action { (_, c) =>
