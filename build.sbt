@@ -115,11 +115,10 @@ lazy val cil = (project in file("cil-translator")).
 
 val `tendermint-version` = "0.16.0"
 
-lazy val keyvalue = (project in file("keyvalue"))
+lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
   .settings(
-    normalizedName := "keyvalue",
-    version      := "0.1.0-SNAPSHOT",
+    normalizedName := "pravda-node-db",
     libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
   )
 
@@ -183,7 +182,7 @@ lazy val node = (project in file("node"))
 		connectInput in run := true,
 		outputStrategy in run := Some(OutputStrategy.StdoutOutput)
 	)
-	.dependsOn(keyvalue)
+	.dependsOn(`node-db`)
 	.dependsOn(vm)
   .dependsOn(asm)
   .dependsOn(forth)
