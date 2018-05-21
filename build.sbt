@@ -2,7 +2,6 @@ import java.nio.file.Files
 
 resolvers += "jitpack" at "https://jitpack.io"
 
-
 val commonSettings = Seq(
   organization := "io.mytc",
   version := "0.0.1",
@@ -37,18 +36,13 @@ lazy val vmApi = (project in file("vm-api")).
   )
 
 lazy val vm = (project in file("vm")).
-  settings(
-    normalizedName := "sood",
-  ).
+  settings(normalizedName := "pravda-vm").
   settings( commonSettings: _* ).
 	dependsOn(vmApi)
 
 lazy val `vm-asm` = (project in file("vm-asm")).
   dependsOn(vmApi).
-  settings(
-    normalizedName := "pravda-vm-asm",
-    version := "0.0.1"
-  ).
+  settings(normalizedName := "pravda-vm-asm").
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).
@@ -60,10 +54,7 @@ lazy val `vm-asm` = (project in file("vm-asm")).
   )
 
 lazy val forth = (project in file("forth")).
-  settings(
-    normalizedName := "forth",
-    version := "0.0.1"
-  ).
+  settings(normalizedName := "pravda-forth").
   dependsOn(`vm-asm`).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
@@ -75,14 +66,11 @@ lazy val forth = (project in file("forth")).
     )
   )
 
-lazy val tests = (project in file("tests")).
+lazy val `forth-vm-integration-test` = (project in file("testkit/forth-vm-integration")).
   dependsOn(vm).
   dependsOn(`vm-asm`).
   dependsOn(forth).
-  settings(
-    normalizedName := "tests",
-    version := "0.0.1"
-  ).
+  settings(normalizedName := "pravda-testkit-forth-vm-integration").
   settings( commonSettings: _* )
 
 lazy val vmcli = (project in file("vmcli")).
