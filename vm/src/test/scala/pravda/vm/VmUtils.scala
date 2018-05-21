@@ -4,7 +4,6 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import pravda.vm.state._
-import serialization._
 
 object VmUtils {
 
@@ -40,20 +39,8 @@ object VmUtils {
     bs.map(hex).mkString(" ")
   }
 
-  def float2Data(v: Double): Data = {
-    doubleToData(v)
-  }
-
   def data(i: Byte*): Data =
     ByteString.copyFrom(i.toArray)
-
-  def int2Data(i: Int): Data = {
-    int32ToData(i)
-  }
-
-  def int(d: Data): Int = {
-    dataToInt32(d)
-  }
 
   def environment(accs: (Address, ProgramStub)*): Environment = new Environment {
 
