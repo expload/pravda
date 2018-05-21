@@ -1,4 +1,4 @@
-package io.mytc.sood.forth
+package pravda.forth
 
 object StdLib {
 

@@ -1,4 +1,4 @@
-package io.mytc.sood.forth
+package pravda.forth
 
 final case class NamedFunction[T, V](f: T => V, name: String) extends (T => V) {
   def apply(t: T) = f(t)

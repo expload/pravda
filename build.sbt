@@ -67,7 +67,7 @@ lazy val forth = (project in file("forth")).
   dependsOn(asm).
   enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
-  settings( mainClass in Compile := Some("io.mytc.sood.forth.Application") ).
+  settings( mainClass in Compile := Some("pravda.forth.Application") ).
   settings(
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt"      % "3.7.0",

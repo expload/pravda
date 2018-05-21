@@ -1,7 +1,7 @@
-package io.mytc.sood.forth
+package pravda.forth
 
 import com.google.protobuf.ByteString
-import io.mytc.sood.forth.ForthTestUtils._
+import pravda.forth.ForthTestUtils._
 import pravda.vm.serialization._
 import utest._
 

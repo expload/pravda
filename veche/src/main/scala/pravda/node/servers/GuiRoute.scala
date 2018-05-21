@@ -258,7 +258,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           pk <- access.valueOf(pkField)
                         } yield {
                           val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
-                          io.mytc.sood.forth.Compiler().compile(hackCode) map { data =>
+                          pravda.forth.Compiler().compile(hackCode) map { data =>
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                  TransactionData @@ ByteString.copyFrom(data),
                                                                  Mytc.fromString(fee),
@@ -300,7 +300,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
-                          val compiler = io.mytc.sood.forth.Compiler()
+                          val compiler = pravda.forth.Compiler()
                           val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
                           compiler.compile(hackCode) flatMap { data =>
                             compiler.compile(s"$$x${utils.bytes2hex(data)} pcreate") map { data =>
