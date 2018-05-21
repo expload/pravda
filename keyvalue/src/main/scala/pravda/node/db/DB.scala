@@ -1,4 +1,4 @@
-package io.mytc.keyvalue
+package pravda.node.db
 
 import java.io.File
 
@@ -6,7 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 import serialyzer._
 import hash.utils._
-import io.mytc.keyvalue.utils.ByteArray
+import pravda.node.db.utils.ByteArray
 import org.iq80.leveldb._
 import org.iq80.leveldb.impl.Iq80DBFactory._
 

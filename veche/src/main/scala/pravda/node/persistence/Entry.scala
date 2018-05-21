@@ -1,8 +1,8 @@
 package pravda.node.persistence
 
-import io.mytc.keyvalue.DB
-import io.mytc.keyvalue.Operation.{Delete, Put}
-import io.mytc.keyvalue.serialyzer.{KeyWriter, ValueReader, ValueWriter}
+import pravda.node.db.DB
+import pravda.node.db.Operation.{Delete, Put}
+import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
 import shapeless.{::, HNil}
 
 import scala.concurrent.Future

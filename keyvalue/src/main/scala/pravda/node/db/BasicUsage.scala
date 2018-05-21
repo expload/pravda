@@ -1,6 +1,6 @@
-package io.mytc.keyvalue
+package pravda.node.db
 
-import io.mytc.keyvalue.serialyzer._
+import pravda.node.db.serialyzer._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await

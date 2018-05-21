@@ -2,7 +2,7 @@ package pravda.node
 
 package persistence
 
-import io.mytc.keyvalue.serialyzer.{KeyWriter, ValueReader, ValueWriter}
+import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
 import pravda.node.data.serialization.{Bson, BsonTranscoder, CompositeTranscoder}
 import data.serialization._
 

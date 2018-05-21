@@ -7,8 +7,8 @@ import java.util.Base64
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
-import io.mytc.keyvalue.serialyzer.ValueWriter
-import io.mytc.keyvalue.{DB, Operation}
+import pravda.node.db.serialyzer.ValueWriter
+import pravda.node.db.{DB, Operation}
 import pravda.vm.{Vm, state}
 import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
 import pravda.node.clients.AbciClient

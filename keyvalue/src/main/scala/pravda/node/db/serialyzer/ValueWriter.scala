@@ -1,4 +1,4 @@
-package io.mytc.keyvalue.serialyzer
+package pravda.node.db.serialyzer
 
 trait ValueWriter[A] extends ByteWriter[A]
 

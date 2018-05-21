@@ -4,7 +4,7 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import io.mytc.keyvalue.DB
+import pravda.node.db.DB
 import io.mytc.tendermint.abci.Server
 import io.mytc.tendermint.abci.Server.ConnectionMethod
 import pravda.node.clients.AbciClient

@@ -3,7 +3,7 @@ package pravda.node.servers
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import io.mytc.keyvalue.DB
+import pravda.node.db.DB
 import pravda.node.clients.AbciClient
 import pravda.node.data.common.{Address, Mytc, TransactionId}
 import pravda.node.persistence.FileStore

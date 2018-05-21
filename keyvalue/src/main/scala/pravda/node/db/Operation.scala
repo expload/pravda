@@ -1,6 +1,6 @@
-package io.mytc.keyvalue
+package pravda.node.db
 
-import io.mytc.keyvalue.serialyzer.{KeyWriter, ValueWriter}
+import pravda.node.db.serialyzer.{KeyWriter, ValueWriter}
 
 import scala.concurrent.Future
 

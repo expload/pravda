@@ -1,4 +1,4 @@
-package io.mytc.keyvalue.hash
+package pravda.node.db.hash
 
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets

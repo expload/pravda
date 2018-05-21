@@ -1,4 +1,4 @@
-package io.mytc.keyvalue.serialyzer
+package pravda.node.db.serialyzer
 
 trait ValueReader[A] extends ByteReader[A]
 

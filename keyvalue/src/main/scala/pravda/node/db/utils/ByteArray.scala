@@ -1,4 +1,4 @@
-package io.mytc.keyvalue.utils
+package pravda.node.db.utils
 
 final case class ByteArray(value: Array[Byte]) extends Ordered[ByteArray] {
   override def hashCode(): Int = java.util.Arrays.hashCode(value)

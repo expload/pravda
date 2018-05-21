@@ -1,6 +1,6 @@
 package pravda.node.persistence
 
-import io.mytc.keyvalue.DB
+import pravda.node.db.DB
 import pravda.node.data.domain._
 import scala.concurrent.Future
 
