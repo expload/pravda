@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
-import pravda.node.utils
+import pravda.common.bytes._
 import shapeless.{::, HList, HNil, Lazy}
 import supertagged.{Tagged, lifterF}
 
@@ -42,10 +42,9 @@ trait CompositeTranscoder {
 
   implicit val stringWriter: CompositeEncoder[String] = Composite @@ toBytes(_)
 
-  implicit val bytesWrite: CompositeEncoder[Array[Byte]] = (arr: Array[Byte]) =>
-    Composite @@ toBytes(utils.bytes2hex(arr))
+  implicit val bytesWrite: CompositeEncoder[Array[Byte]] = (arr: Array[Byte]) => Composite @@ toBytes(bytes2hex(arr))
 
-  implicit val byteWrite: CompositeEncoder[Byte] = (b: Byte) => Composite @@ toBytes(utils.bytes2hex(Array(b)))
+  implicit val byteWrite: CompositeEncoder[Byte] = (b: Byte) => Composite @@ toBytes(bytes2hex(Array(b)))
 
   implicit val longWriter: CompositeEncoder[Long] = v => {
     val b = ByteBuffer.allocate(8)

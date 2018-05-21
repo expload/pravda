@@ -1,4 +1,4 @@
-package pravda.node.utils
+package pravda.common.bytes
 
 import java.io.InputStream
 

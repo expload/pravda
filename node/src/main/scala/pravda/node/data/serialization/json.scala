@@ -5,7 +5,7 @@ import fastparse.utils.Base64
 import pravda.node.clients.AbciClient._
 import pravda.node.data.TimechainConfig
 import pravda.node.data.common.ApplicationStateInfo
-import pravda.node.utils
+import pravda.common.bytes._
 import tethys._
 import tethys.derivation.builder._
 import tethys.derivation.semiauto._
@@ -35,10 +35,10 @@ object json {
   //----------------------------------------------------------------------
 
   implicit val protobufByteStringReader: JsonReader[ByteString] =
-    JsonReader.stringReader.map(utils.hex2byteString)
+    JsonReader.stringReader.map(hex2byteString)
 
   implicit val protobufByteStringWriter: JsonWriter[ByteString] =
-    JsonWriter.stringWriter.contramap(utils.bytes2hex)
+    JsonWriter.stringWriter.contramap(byteString2hex)
 
   //---------------------------------------------------------------------------
   // Json4s AST support

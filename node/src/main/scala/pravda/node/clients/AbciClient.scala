@@ -16,7 +16,7 @@ import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
-import pravda.node.utils.bytes2hex
+import pravda.common.bytes._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
@@ -64,7 +64,7 @@ class AbciClient(port: Int)(implicit
   def readTransaction(id: TransactionId): Future[SignedTransaction] = {
 
     val uri = Uri(s"http://127.0.0.1:$port/tx")
-      .withQuery(Uri.Query("hash" -> ("0x" + bytes2hex(id))))
+      .withQuery(Uri.Query("hash" -> ("0x" + byteString2hex(id))))
 
     Http()
       .singleRequest(HttpRequest(uri = uri))

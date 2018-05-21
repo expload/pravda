@@ -11,9 +11,8 @@ import pravda.node.data.common.Address
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 
-import pravda.node.utils.hex2bytes
+import pravda.common.bytes._
 import supertagged.TaggedType
-import pravda.node.utils._
 
 object cryptography {
 
@@ -40,8 +39,8 @@ object cryptography {
   ) {
 
     def mkString: String = {
-      val hashString = bytes2hex(passwordHash)
-      val saltString = bytes2hex(passwordSalt)
+      val hashString = byteString2hex(passwordHash)
+      val saltString = byteString2hex(passwordSalt)
       s"$passwordAlgorithm:$passwordIterations:$saltString:$hashString"
     }
   }
