@@ -86,20 +86,6 @@ lazy val `forth-vm-integration-test` = (project in file("testkit/forth-vm-integr
   settings(normalizedName := "pravda-testkit-forth-vm-integration").
   settings( commonSettings: _* )
 
-lazy val vmcli = (project in file("vmcli")).
-  dependsOn(vm).
-	enablePlugins(JavaAppPackaging).
-  settings(
-    normalizedName := "vmcli",
-    version := "0.0.1"
-  ).
-  settings( commonSettings: _* ).
-  settings(
-    libraryDependencies ++= Seq (
-      "com.github.scopt" %% "scopt"      % "3.7.0"
-    )
-  )
-
 lazy val cil = (project in file("cil-translator")).
   dependsOn(`vm-asm`).
   settings(
@@ -189,14 +175,11 @@ lazy val node = (project in file("node"))
   .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
-lazy val pravda = (project in file("pravda")).
+lazy val cli = (project in file("cli")).
 	enablePlugins(JavaAppPackaging).
+  settings( commonSettings: _*).
   settings(
-    normalizedName := "pravda",
-    version := "0.0.1"
-  ).
-  settings( commonSettings: _* ).
-  settings(
+		normalizedName := "pravda-cli",
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt" % "3.7.0",
       "org.whispersystems" % "curve25519-java" % "0.4.1"

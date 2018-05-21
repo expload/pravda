@@ -2,7 +2,6 @@ package pravda.forth
 
 import utest._
 
-
 object ParserTest extends TestSuite {
 
   import Statement._
