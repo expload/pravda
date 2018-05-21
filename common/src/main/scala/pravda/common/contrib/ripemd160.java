@@ -1,4 +1,4 @@
-package pravda.node.contrib;
+package pravda.common.contrib;
 
 /*
  * Bitcoin cryptography library

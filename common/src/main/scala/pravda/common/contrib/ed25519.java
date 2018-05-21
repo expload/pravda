@@ -1,4 +1,4 @@
-package pravda.node.contrib;
+package pravda.common.contrib;
 
 import org.whispersystems.curve25519.java.*;
 

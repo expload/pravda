@@ -31,7 +31,8 @@ lazy val common = (project in file("common")).
   settings(
     libraryDependencies ++= Seq (
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "com.propensive" %% "contextual" % "1.1.0"
+      "com.propensive" %% "contextual" % "1.1.0",
+      "org.whispersystems" % "curve25519-java" % "0.4.1"
     )
   )
 
@@ -126,8 +127,6 @@ lazy val node = (project in file("node"))
 		  "io.mytc" %% "scala-abci-server" % "0.9.2",
 		  "com.github.pureconfig" %% "pureconfig" % "0.9.0",
 		  "org.typelevel" %% "cats-core" % "1.0.1",
-		  // Cryptography
-		  "org.whispersystems" % "curve25519-java" % "0.4.1",
 		  // Marshalling
 		  "com.tethys-json" %% "tethys" % "0.6.2",
 		  "org.json4s" %%	"json4s-ast" % "3.5.3",
@@ -175,14 +174,15 @@ lazy val node = (project in file("node"))
   .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
-lazy val cli = (project in file("cli")).
-	enablePlugins(JavaAppPackaging).
-  settings( commonSettings: _*).
-  settings(
+lazy val cli = (project in file("cli"))
+  .enablePlugins(JavaAppPackaging)
+  .settings( commonSettings: _*)
+  .settings(
 		normalizedName := "pravda-cli",
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt" % "3.7.0",
-      "org.whispersystems" % "curve25519-java" % "0.4.1"
+      "org.typelevel" %% "cats-core" % "1.0.1",
     )
   )
+  .dependsOn(common)
 

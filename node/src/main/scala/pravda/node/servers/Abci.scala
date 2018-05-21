@@ -18,7 +18,7 @@ import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.persistence.implicits._
 import pravda.node.persistence.FileStore
-import pravda.node.contrib.ripemd160
+import pravda.common.contrib.ripemd160
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.common.Address
 

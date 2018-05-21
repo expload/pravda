@@ -11,13 +11,13 @@ object ParserSuite extends TestSuite {
     "gen address" - assert {
       Parser
         .parse(Array("gen", "address"), Nope)
-        .contains(GenWallet())
+        .contains(GenAddress())
     }
 
     "gen address -o /dev/null" - assert {
       Parser
         .parse(Array("gen", "address", "-o", "/dev/null"), Config.Nope)
-        .contains(GenWallet(output = Output.OsFile("/dev/null")))
+        .contains(GenAddress(output = Output.OsFile("/dev/null")))
     }
   }
 }
