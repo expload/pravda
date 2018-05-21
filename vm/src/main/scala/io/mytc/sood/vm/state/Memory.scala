@@ -1,4 +1,5 @@
 package io.mytc.sood.vm
+
 package state
 
 import io.mytc.sood.vm.state.VmError.StackUnderflow
@@ -9,6 +10,7 @@ final case class Memory(
     stack: ArrayBuffer[Data],
     heap: ArrayBuffer[Data]
 ) {
+
   def pop(): Data = {
     if (stack.isEmpty) {
       throw VmErrorException(StackUnderflow)

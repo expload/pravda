@@ -1,9 +1,12 @@
 package io.mytc.sood
+
 package vm
 
 import java.nio.ByteBuffer
 
-import scala.annotation.{switch, tailrec, strictfp}
+import com.google.protobuf.ByteString
+
+import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
@@ -15,33 +18,45 @@ object Vm {
 
   val loader: Loader = DefaultLoader
 
-  def runTransaction(program: ByteBuffer, worldState: WorldState): Memory = {
-
-    val initMemory = Memory.empty
-    program.rewind()
-    run(program, worldState, initMemory, None, None, 0, isLibrary = false)
-
-  }
+  def runRaw(program: ByteString, executor: Address, environment: Environment): Memory = run(
+    program = ByteBuffer.wrap(program.toByteArray),
+    environment = environment,
+    memory = Memory.empty,
+    executor = executor,
+    progAddress = None,
+    progStorage = None,
+    depth = 0,
+    isLibrary = false
+  )
 
   def runProgram(programAddress: Address,
                  initMemory: Memory = Memory.empty,
-                 worldState: WorldState,
+                 executor: Address,
+                 environment: Environment,
                  depth: Int = 0): Memory = {
 
-    val account = worldState.get(programAddress)
+    val account = environment.getProgram(programAddress)
     if (account.isEmpty) throw VmErrorException(NoSuchProgram)
 
-    val program = account.get.program
+    val program = account.get.code
     program.rewind()
-    run(program, worldState, initMemory, Some(programAddress), Some(account.get.storage), depth, isLibrary = false)
-
+    run(program,
+        environment,
+        initMemory,
+        executor,
+        Some(programAddress),
+        Some(account.get.storage),
+        depth,
+        isLibrary = false)
   }
 
+  // TODO @fomkin: looks like isLibrary and emptiness of storage are the same things.
   private def run(
       program: ByteBuffer,
-      worldState: WorldState,
+      environment: Environment,
       memory: Memory,
-      execAddress: Option[Address],
+      executor: Address,
+      progAddress: Option[Address],
       progStorage: Option[Storage],
       depth: Int,
       isLibrary: Boolean
@@ -86,10 +101,21 @@ object Vm {
             if (isLibrary) {
               throw VmErrorException(OperationDenied)
             }
-            val address = wordToData(program)
-            val num = wordToInt32(program)
-            val mem = runProgram(address, memory.top(num), worldState, depth + 1)
+            val num = dataToInt32(memory.pop())
+            val address = memory.pop()
+            val mem = runProgram(address, memory.top(num), executor, environment, depth + 1)
             memory ++= mem
+            aux()
+          case PCREATE =>
+            memory.push(environment.createProgram(executor, memory.pop()))
+            aux()
+          case PUPDATE =>
+            val address = memory.pop()
+            val code = memory.pop()
+            if (address != executor) {
+              throw VmErrorException(OperationDenied)
+            }
+            environment.updateProgram(address, code)
             aux()
           case LCALL =>
             val address = wordToData(program)
@@ -97,7 +123,7 @@ object Vm {
             val num = wordToInt32(program)
             val callData = memory.top(num)
 
-            loader.lib(address, worldState) match {
+            loader.lib(address, environment) match {
               case None => throw VmErrorException(NoSuchLibrary)
               case Some(library) =>
                 library.func(func) match {
@@ -106,7 +132,14 @@ object Vm {
                     function match {
                       case f: StdFunction => memory ++= f(callData)
                       case UserDefinedFunction(f) =>
-                        memory ++= run(f, worldState, callData, Some(address), None, depth + 1, isLibrary = true)
+                        memory ++= run(f,
+                                       environment,
+                                       callData,
+                                       executor,
+                                       Some(address),
+                                       None,
+                                       depth + 1,
+                                       isLibrary = true)
                     }
                 }
             }
@@ -116,8 +149,8 @@ object Vm {
             program.position(dataToInt32(memory.pop()))
             aux()
           case JUMPI =>
-            val condition = memory.pop()
             val position = memory.pop()
+            val condition = memory.pop()
             if (dataToBool(condition))
               program.position(dataToInt32(position))
             aux()
@@ -125,13 +158,13 @@ object Vm {
             memory.push(wordToData(program))
             aux()
           case SLICE =>
-            val from = wordToInt32(program).toLong
-            val until = wordToInt32(program).toLong
+            val from = wordToInt32(program)
+            val until = wordToInt32(program)
             val word = memory.pop()
-            memory.push(word.slice(from, until))
+            memory.push(word.substring(from, until))
             aux()
           case CONCAT =>
-            memory.push(memory.pop() ++ memory.pop())
+            memory.push(memory.pop().concat(memory.pop()))
             aux()
           case POP =>
             memory.pop()
@@ -177,10 +210,17 @@ object Vm {
             storage.put(key, value)
             aux()
           case SGET =>
-            memory.push(storage.get(memory.pop()).get)
+            val valOpt = storage.get(memory.pop())
+            if (valOpt.isEmpty) {
+              throw VmErrorException(NoSuchElement)
+            }
+            memory.push(valOpt.get)
             aux()
           case SDROP =>
             storage.delete(memory.pop())
+            aux()
+          case SEXIST =>
+            memory.push(boolToData(storage.get(memory.pop()).isDefined))
             aux()
           case I32ADD =>
             memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))
@@ -243,6 +283,9 @@ object Vm {
             val d2 = dataToInt32(memory.pop())
             memory.push(boolToData(d1 > d2))
             aux()
+          case FROM =>
+            memory.push(executor)
+            aux()
           case STOP => memory
         }
       } else {
@@ -252,9 +295,12 @@ object Vm {
     try {
       aux()
     } catch {
-      case err: VmErrorException => throw err.addToTrace(Point(callStack, currentPosition, execAddress))
+      case err: VmErrorException =>
+        err.printStackTrace()
+        throw err.addToTrace(Point(callStack, currentPosition, progAddress))
       case other: Exception =>
-        throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), execAddress))
+        other.printStackTrace()
+        throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), progAddress))
     }
 
   }

@@ -1,9 +1,10 @@
 package io.mytc.sood.vm
+
 package std.libs
 
 import serialization._
 
-object Math extends std.Lib {
+object Math extends std.NativeLibrary {
 
   private val sum = std.Func("sum", mem => {
     val sum = mem.stack.map(dataToInt32).sum

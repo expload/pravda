@@ -12,6 +12,7 @@ object VmError {
   case object NoSuchProgram   extends VmError { val code = 300 }
   case object NoSuchLibrary   extends VmError { val code = 301 }
   case object NoSuchMethod    extends VmError { val code = 302 }
+  case object NoSuchElement   extends VmError { val code = 400 }
 
   final case class SomethingWrong(ex: Exception) extends VmError { val code = 999 }
 
@@ -22,12 +23,14 @@ final case class VmErrorException(error: VmError, stackTrace: StackTrace = Stack
 }
 
 final case class StackTrace(stackTrace: Seq[Point]) {
+
   def +(p: Point): StackTrace = {
     copy(stackTrace = p +: stackTrace)
   }
 }
 
 object StackTrace {
+
   def apply(p: Point): StackTrace = {
     StackTrace(List(p))
   }

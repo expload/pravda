@@ -3,12 +3,21 @@ package io.mytc.sood.forth
 object StdLib {
 
   import io.mytc.sood.asm.Op
+  import io.mytc.sood.asm.Datum
 
   def defs: String = { """
-  : + add ;
-  : * mul ;
-  : / div ;
-  : % mod ;
+    : + add ;
+    : - -1 mul add ;
+    : * mul ;
+    : / div ;
+    : % mod ;
+    : == eq ;
+    : != neq ;
+    : < lt ;
+    : > gt ;
+    : <= gt not ;
+    : >= lt not ;
+    : dup dup1 ;
   """ }
 
   def words: Seq[Op] =
@@ -20,7 +29,28 @@ object StdLib {
       fadd,
       fmul,
       fdiv,
-      fmod
+      fmod,
+      eqls,
+      neq,
+      lt,
+      gt,
+      not,
+      dup(1),
+      dup(2),
+      dup(3),
+      dup(4),
+      dup(5),
+      sget,
+      sput,
+      sexst,
+      concat,
+      from,
+      pcall,
+      pcreate,
+      pupdate,
+      swap,
+      pcall,
+      pop
     ).flatten
 
   val fadd: Seq[Op] = Seq(
@@ -71,4 +101,101 @@ object StdLib {
     Op.Ret
   )
 
+  val sget: Seq[Op] = Seq(
+    Op.Label("sget"),
+    Op.SGet,
+    Op.Ret
+  )
+
+  val sput: Seq[Op] = Seq(
+    Op.Label("sput"),
+    Op.SPut,
+    Op.Ret
+  )
+
+  val sexst: Seq[Op] = Seq(
+    Op.Label("sexst"),
+    Op.SExst,
+    Op.Ret
+  )
+
+  val eqls: Seq[Op] = Seq(
+    Op.Label("eq"),
+    Op.Eq,
+    Op.Ret
+  )
+
+  val neq: Seq[Op] = Seq(
+    Op.Label("neq"),
+    Op.Eq,
+    Op.Not,
+    Op.Ret
+  )
+
+  val lt: Seq[Op] = Seq(
+    Op.Label("lt"),
+    Op.I32LT,
+    Op.Ret
+  )
+
+  val gt: Seq[Op] = Seq(
+    Op.Label("gt"),
+    Op.I32GT,
+    Op.Ret
+  )
+
+  val not: Seq[Op] = Seq(
+    Op.Label("not"),
+    Op.Not,
+    Op.Ret
+  )
+
+  val concat: Seq[Op] = Seq(
+    Op.Label("concat"),
+    Op.Concat,
+    Op.Ret
+  )
+
+  val from: Seq[Op] = Seq(
+    Op.Label("from"),
+    Op.From,
+    Op.Ret
+  )
+
+  val pcreate: Seq[Op] = Seq(
+    Op.Label("pcreate"),
+    Op.PCreate,
+    Op.Ret
+  )
+
+  val pupdate: Seq[Op] = Seq(
+    Op.Label("pupdate"),
+    Op.PUpdate,
+    Op.Ret
+  )
+
+  val pcall: Seq[Op] = Seq(
+    Op.Label("pcall"),
+    Op.PCall,
+    Op.Ret
+  )
+
+  val swap: Seq[Op] = Seq(
+    Op.Label("swap"),
+    Op.Swap,
+    Op.Ret
+  )
+
+  def dup(n: Int): Seq[Op] = Seq(
+    Op.Label(s"dup${n}"),
+    Op.Push(Datum.Integral(n)),
+    Op.Dupn,
+    Op.Ret
+  )
+
+  def pop: Seq[Op] = Seq(
+    Op.Label("pop"),
+    Op.Pop,
+    Op.Ret
+  )
 }

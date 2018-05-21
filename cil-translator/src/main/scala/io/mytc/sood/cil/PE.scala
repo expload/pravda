@@ -8,6 +8,7 @@ import io.mytc.sood.cil.utils._
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
 //   page 303
 object PE {
+
   object Info {
     final case class PeFileHeader(sectionNumber: Int,
                                   optionHeaderSize: Int /*probably non necessary*/,

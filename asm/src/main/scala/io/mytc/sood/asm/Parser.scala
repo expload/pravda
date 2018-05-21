@@ -1,6 +1,7 @@
 package io.mytc.sood.asm
 
 class Parser {
+
   object grammar {
     import fastparse.all._
 
@@ -16,10 +17,15 @@ class Parser {
 
     val delim = P(CharIn(" \t\r\n").rep(1))
 
+    val hexs = P("$x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map { str ⇒
+      Datum.Rawbytes(str.sliding(2, 2).map(x ⇒ java.lang.Integer.valueOf(x, 16).toByte).toArray)
+    }
+
     val hexw = P("0x" ~ CharIn("0123456789ABCDEFabcdef").rep(1).!).map(x ⇒ java.lang.Integer.valueOf(x, 16))
     val word = P(CharIn('0' to '9').rep(1)).!.map(x ⇒ java.lang.Integer.valueOf(x, 16))
 
     val integ = P(hexw | word).map(x ⇒ Datum.Integral(x))
+
     val numbr =
       P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?).!.map(x ⇒ Datum.Floating(java.lang.Double.valueOf(x)))
 
@@ -34,9 +40,9 @@ class Parser {
     val jumpi = P(IgnoreCase("jmpi") ~ delim ~ "@" ~ ident.!)
 
     val pop = P(IgnoreCase("pop"))
-    val push = P(IgnoreCase("push") ~ delim ~ (integ | numbr))
+    val push = P(IgnoreCase("push") ~ delim ~ (integ | numbr | hexs))
     val dup = P(IgnoreCase("dup"))
-    val swap = P(IgnoreCase("swp"))
+    val swap = P(IgnoreCase("swap"))
 
     val call = P(IgnoreCase("call") ~ delim ~ "@" ~ ident.!)
     val ret = P(IgnoreCase("ret"))
@@ -57,7 +63,14 @@ class Parser {
     val fdiv = P(IgnoreCase("fdiv"))
     val fmod = P(IgnoreCase("fmod"))
 
+    val eqls = P(IgnoreCase("eq"))
+    val conc = P(IgnoreCase("concat"))
+    val from = P(IgnoreCase("from"))
+    val pcrt = P(IgnoreCase("pcreate"))
+    val pupd = P(IgnoreCase("pupdate"))
+
     val lcall = P(IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue))
+    val pcall = P(IgnoreCase("pcall"))
 
     val opseq: P[Seq[Op]] = P(
       (
@@ -84,10 +97,17 @@ class Parser {
           clt.!.map(_ ⇒ Op.I32LT) |
           cgt.!.map(_ ⇒ Op.I32GT) |
 
+          eqls.!.map(_ ⇒ Op.Eq) |
+          conc.!.map(_ ⇒ Op.Concat) |
+          from.!.map(_ ⇒ Op.From) |
+          pcrt.!.map(_ ⇒ Op.PCreate) |
+          pupd.!.map(_ ⇒ Op.PUpdate) |
+
           fadd.!.map(_ ⇒ Op.FAdd) |
           fmul.!.map(_ ⇒ Op.FMul) |
           fdiv.!.map(_ ⇒ Op.FDiv) |
           fmod.!.map(_ ⇒ Op.FMod) |
+          pcall.map(_ => Op.PCall) |
           lcall.map(Op.LCall.tupled)
       ).rep(sep = delim))
 

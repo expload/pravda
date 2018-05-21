@@ -1,6 +1,7 @@
 package io.mytc.sood.vm
 
 object Opcodes {
+
   // Control
   final val STOP = int.STOP.toByte
   final val JUMP = int.JUMP.toByte
@@ -10,6 +11,8 @@ object Opcodes {
 
   final val PCALL = int.PCALL.toByte
   final val LCALL = int.LCALL.toByte
+  final val PCREATE = int.PCREATE.toByte
+  final val PUPDATE = int.PUPDATE.toByte
 
   // Stack
   final val POP = int.POP.toByte
@@ -30,6 +33,7 @@ object Opcodes {
   final val SPUT = int.SPUT.toByte
   final val SGET = int.SGET.toByte
   final val SDROP = int.SDROP.toByte
+  final val SEXIST = int.SEXIST.toByte
 
   // Int32 operations
   final val I32ADD = int.I32ADD.toByte
@@ -54,6 +58,9 @@ object Opcodes {
 
   final val FTBL = int.FTBL.toByte
 
+  // Specials
+  final val FROM = int.FROM.toByte
+
   object int {
     // Control
     final val STOP = 0x00
@@ -64,6 +71,9 @@ object Opcodes {
 
     final val PCALL = 0x06
     final val LCALL = 0x07
+
+    final val PCREATE = 0x08
+    final val PUPDATE = 0x09
 
     // Stack
     final val POP = 0x10
@@ -84,6 +94,7 @@ object Opcodes {
     final val SPUT = 0x50
     final val SGET = 0x51
     final val SDROP = 0x52
+    final val SEXIST = 0x53
 
     // Int32 operations
     final val I32ADD = 0x60
@@ -108,5 +119,7 @@ object Opcodes {
 
     final val FTBL = 0xfa
 
+    // Specials
+    final val FROM = 0xa0
   }
 }

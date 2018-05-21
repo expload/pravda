@@ -1,9 +1,9 @@
 package io.mytc.sood.vm
 
-import scodec.bits.ByteVector
+import com.google.protobuf.ByteString
 
 trait Library {
 
-  def func(name: ByteVector): Option[Function]
+  def func(name: ByteString): Option[Function]
 
 }
