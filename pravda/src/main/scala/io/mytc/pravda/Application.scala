@@ -14,8 +14,8 @@ object Application {
     val pubKey = new Array[Byte](32)
     secureRandom.nextBytes(secKey)
     ed25519.generateKey(pubKey, secKey)
-    val secHexKey = secKey.map(x => (x & 0xFF).toHexString).mkString
-    val pubHexKey = pubKey.map(x => (x & 0xFF).toHexString).mkString
+    val secHexKey = secKey.map("%02X".format(_)).mkString
+    val pubHexKey = pubKey.map("%02X".format(_)).mkString
     (secHexKey, pubHexKey)
   }
 
