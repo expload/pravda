@@ -123,11 +123,11 @@ lazy val keyvalue = (project in file("keyvalue"))
     libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
   )
 
-lazy val veche = (project in file("veche"))
+lazy val node = (project in file("node"))
 	.enablePlugins(JavaAppPackaging)
 	.settings( commonSettings: _* )
 	.settings(
-		normalizedName := "veche",
+		normalizedName := "pravda-node",
 		libraryDependencies ++= Seq(
 		  // Networking
 		  "com.typesafe.akka" %% "akka-actor" % "2.5.8",
