@@ -32,7 +32,7 @@ object ErrorTests extends TestSuite {
 
       'complex - {
 
-        val address = binaryData(13, 15, 66, 78)
+        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
         val storedProg = prog.opcode(PUSHX).put(111)
 
         val wState = environment(address -> storedProg)
@@ -49,8 +49,8 @@ object ErrorTests extends TestSuite {
 
     'noSuchProgram - {
 
-      val address = binaryData(13, 15, 66, 78)
-      val wrongAddress = binaryData(13, 15, 0, 78)
+      val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+      val wrongAddress = data(13.toByte, 15.toByte, 0.toByte, 78.toByte)
 
       val storedProg = prog.opcode(PUSHX).put(111)
 
@@ -64,8 +64,8 @@ object ErrorTests extends TestSuite {
     'noSuchLibrary - {
 
       'notExists - {
-        val address = binaryData(13, 15, 66, 78)
-        val wrongAddress = binaryData(13, 15, 0, 78)
+        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+        val wrongAddress = data(13.toByte, 15.toByte, 0.toByte, 78.toByte)
 
         val storedProg = prog.opcode(PUSHX).put(111)
 
@@ -78,7 +78,7 @@ object ErrorTests extends TestSuite {
 
       'notLibrary - {
 
-        val address = binaryData(13, 15, 66, 78)
+        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
 
         val regularProgram = prog.opcode(PUSHX).put(111)
 
@@ -92,7 +92,7 @@ object ErrorTests extends TestSuite {
     }
 
     'externalError - {
-        val address = binaryData(13, 15, 66, 78)
+        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
 
         val storedProg = prog.opcode(POP)
 
@@ -106,7 +106,7 @@ object ErrorTests extends TestSuite {
 
       'noSuchMethod - {
 
-        val address = binaryData(13, 15, 66, 78)
+        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
 
         val libraryMethod = prog.opcode(FTBL).put(1).put("meth1").put(10)
 

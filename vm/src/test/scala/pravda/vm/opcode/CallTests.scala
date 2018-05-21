@@ -8,9 +8,9 @@ import utest._
 
 object CallTests extends TestSuite {
 
-  val address1 = binaryData(4, 5, 66, 78)
-  val address2 = binaryData(43, 15, 66, 78)
-  val address3 = binaryData(13, 15, 66, 78)
+  val address1 = data(4.toByte, 5.toByte, 66.toByte, 78.toByte)
+  val address2 = data(43.toByte, 15.toByte, 66.toByte, 78.toByte)
+  val address3 = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
 
 
   val tests = Tests {

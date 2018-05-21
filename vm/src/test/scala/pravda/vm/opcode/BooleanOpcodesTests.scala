@@ -38,11 +38,11 @@ object BooleanOpcodesTests extends TestSuite {
     }
 
     'and {
-      exec(and(bytes(1), bytes(1))) ==> stack(binaryData(1))
-      exec(and(bytes(1, 0), bytes(1))) ==> stack(binaryData(1))
-      exec(and(bytes(1, 0, 0), bytes(0, 0))) ==> stack(binaryData(0))
-      exec(and(bytes(0, 1, 0), bytes(1, 0, 0, 0))) ==> stack(binaryData(1))
-      exec(and(bytes(0, 0, 0), bytes(0, 0))) ==> stack(binaryData(0))
+      exec(and(bytes(1), bytes(1))) ==> stack(data(1.toByte))
+      exec(and(bytes(1, 0), bytes(1))) ==> stack(data(1.toByte))
+      exec(and(bytes(1, 0, 0), bytes(0, 0))) ==> stack(data(0.toByte))
+      exec(and(bytes(0, 1, 0), bytes(1, 0, 0, 0))) ==> stack(data(1.toByte))
+      exec(and(bytes(0, 0, 0), bytes(0, 0))) ==> stack(data(0.toByte))
     }
 
 
@@ -59,20 +59,20 @@ object BooleanOpcodesTests extends TestSuite {
     }
 
     'or - {
-      exec(or(bytes(1), bytes(1))) ==> stack(binaryData(1))
-      exec(or(bytes(1, 0), bytes(1))) ==> stack(binaryData(1))
-      exec(or(bytes(1, 0, 0), bytes(0, 0))) ==> stack(binaryData(1))
-      exec(or(bytes(0, 1, 0), bytes(1, 0, 0, 0))) ==> stack(binaryData(1))
-      exec(or(bytes(0, 0, 0), bytes(0, 0))) ==> stack(binaryData(0))
+      exec(or(bytes(1), bytes(1))) ==> stack(data(1.toByte))
+      exec(or(bytes(1, 0), bytes(1))) ==> stack(data(1.toByte))
+      exec(or(bytes(1, 0, 0), bytes(0, 0))) ==> stack(data(1.toByte))
+      exec(or(bytes(0, 1, 0), bytes(1, 0, 0, 0))) ==> stack(data(1.toByte))
+      exec(or(bytes(0, 0, 0), bytes(0, 0))) ==> stack(data(0.toByte))
     }
 
     'xor - {
-      exec(xor(bytes(1), bytes(1))) ==> stack(binaryData(0))
-      exec(xor(bytes(1, 0), bytes(1))) ==> stack(binaryData(0))
-      exec(xor(bytes(1, 0, 0), bytes(0, 0))) ==> stack(binaryData(1))
-      exec(xor(bytes(0, 0, 0), bytes(0, 1))) ==> stack(binaryData(1))
-      exec(xor(bytes(0, 1, 0), bytes(1, 0, 0, 0))) ==> stack(binaryData(0))
-      exec(xor(bytes(0, 0, 0), bytes(0, 0))) ==> stack(binaryData(0))
+      exec(xor(bytes(1), bytes(1))) ==> stack(data(0.toByte))
+      exec(xor(bytes(1, 0), bytes(1))) ==> stack(data(0.toByte))
+      exec(xor(bytes(1, 0, 0), bytes(0, 0))) ==> stack(data(1.toByte))
+      exec(xor(bytes(0, 0, 0), bytes(0, 1))) ==> stack(data(1.toByte))
+      exec(xor(bytes(0, 1, 0), bytes(1, 0, 0, 0))) ==> stack(data(0.toByte))
+      exec(xor(bytes(0, 0, 0), bytes(0, 0))) ==> stack(data(0.toByte))
     }
   }
 }

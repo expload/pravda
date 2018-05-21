@@ -25,10 +25,10 @@ object StackOpcodesTests extends TestSuite {
 
       // 1 Byte
       val programm5 = prog.opcode(PUSHX).put(0xAB.toByte)
-      exec(programm5).head ==> binaryData(0xAB)
+      exec(programm5).head ==> data(0xAB.toByte)
 
       val programm6 = prog.opcode(PUSHX).put(0x00.toByte)
-      exec(programm6).head ==> binaryData(0x00)
+      exec(programm6).head ==> data(0x00.toByte)
 
     }
 
@@ -92,12 +92,12 @@ object StackOpcodesTests extends TestSuite {
 
     'slice {
       val program = prog.opcode(PUSHX).put(bytes(13, 17, 43, 53)).opcode(SLICE).put(1).put(3)
-      exec(program) ==> stack(binaryData(17, 43))
+      exec(program) ==> stack(data(17.toByte, 43.toByte))
     }
 
     'concat - {
       val program = prog.opcode(PUSHX).put(bytes(43, 53)).opcode(PUSHX).put(bytes(13, 17)).opcode(CONCAT)
-      exec(program) ==> stack(binaryData(13, 17, 43, 53))
+      exec(program) ==> stack(data(13.toByte, 17.toByte, 43.toByte, 53.toByte))
     }
     
   }

@@ -44,10 +44,8 @@ object VmUtils {
     doubleToData(v)
   }
 
-  // FIXME lead to bugs
-  /** They are NOT integers, they are bytes! */
-  def binaryData(i: Int*): Data =
-    ByteString.copyFrom(i.map(_.toByte).toArray)
+  def data(i: Byte*): Data =
+    ByteString.copyFrom(i.toArray)
 
   def data(i: Int): Data = {
     int32ToData(i)

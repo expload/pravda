@@ -44,8 +44,8 @@ object LibraryTests extends TestSuite {
         .opcode(RET)
 
 
-      val address1 = binaryData(4, 5, 66, 78)
-      val address2 = binaryData(4, 6, 66, 78)
+      val address1 = data(4.toByte, 5.toByte, 66.toByte, 78.toByte)
+      val address2 = data(4.toByte, 6.toByte, 66.toByte, 78.toByte)
 
       val wState = environment(address1 -> udflib1, address2 -> udflib2)
 
@@ -68,7 +68,7 @@ object LibraryTests extends TestSuite {
       val plusLen = prog.put("plus").length
       val funcLen = prog.put("func").length
 
-      val address = binaryData(4, 5, 66, 78)
+      val address = data(4.toByte, 5.toByte, 66.toByte, 78.toByte)
 
       val udflib = prog.opcode(FTBL)
         .put(2)

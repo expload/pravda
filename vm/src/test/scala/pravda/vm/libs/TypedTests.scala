@@ -24,9 +24,9 @@ object TypedTests extends TestSuite {
         .put("typedI32")
         .put(3)
 
-      exec(typedi32) ==> stack(binaryData(1, 0, 0, 0, 2),
-        binaryData(1, 0, 0, 0, 3),
-        binaryData(1, 0x0a, 0xbc, 0xde, 0xf1))
+      exec(typedi32) ==> stack(data(1.toByte, 0.toByte, 0.toByte, 0.toByte, 2.toByte),
+        data(1.toByte, 0.toByte, 0.toByte, 0.toByte, 3.toByte),
+        data(1.toByte, 0x0a.toByte, 0xbc.toByte, 0xde.toByte, 0xf1.toByte))
     }
 
     'typedR64 - {
@@ -36,8 +36,8 @@ object TypedTests extends TestSuite {
         .opcode(PUSHX)
         .put(math.Pi)
 
-      exec(program) ==> stack(binaryData(0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
-        binaryData(0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
+      exec(program) ==> stack(data(0x3f.toByte, 0xf0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte),
+        data(0x40.toByte, 0x09.toByte, 0x21.toByte, 0xfb.toByte, 0x54.toByte, 0x44.toByte, 0x2d.toByte, 0x18.toByte))
 
       val typedr64 = program
         .opcode(LCALL)
@@ -45,8 +45,8 @@ object TypedTests extends TestSuite {
         .put("typedR64")
         .put(2)
 
-      exec(typedr64) ==> stack(binaryData(2, 0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
-        binaryData(2, 0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
+      exec(typedr64) ==> stack(data(2.toByte, 0x3f.toByte, 0xf0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte),
+        data(2.toByte, 0x40.toByte, 0x09.toByte, 0x21.toByte, 0xfb.toByte, 0x54.toByte, 0x44.toByte, 0x2d.toByte, 0x18.toByte))
     }
 
     def testTypedArithmetics(i1: Int,
