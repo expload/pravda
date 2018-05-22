@@ -42,7 +42,7 @@ of each subproject.
 For those who are not familiar with SBT and native packager plugin, just run the
 specified command. Than find <module>.zip archive in the `target` directory
 of the subproject you are installing and unpack it to your programs folder. Than
-just add it's `bin` directory to your `$PATH`.
+just add its `bin` directory to your `$PATH`.
 
 We suggest to add all `bin` directories of Pravda tools to $PATH for easy usage
 in scripts and pipes.
