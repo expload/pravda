@@ -9,7 +9,7 @@ import pravda.common.{bytes, crypto}
 
 import scala.language.higherKinds
 
-class GenAddress[F[_]: Monad](output: IoLanguage[F], random: RandomLanguage[F]) {
+class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
 
   import Config.Output._
 
@@ -24,8 +24,8 @@ class GenAddress[F[_]: Monad](output: IoLanguage[F], random: RandomLanguage[F]) 
       json = s"""{"address":"${bytes.byteString2hex(pub)}","privateKey":"${bytes.byteString2hex(sec)}"}"""
       outputBytes = ByteString.copyFromUtf8(json)
       _ <- config.output match {
-        case Stdout       => output.writeToStdout(outputBytes)
-        case OsFile(path) => output.saveToFile(path, outputBytes)
+        case Stdout       => io.writeToStdout(outputBytes)
+        case OsFile(path) => io.saveToFile(path, outputBytes)
       }
     } yield ()
 }

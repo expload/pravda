@@ -11,14 +11,10 @@ object Config {
     final case class OsFile(path: String) extends Output
   }
 
-  sealed trait Input
-
-  object Input {
-    case object Stdin                     extends Input
-    final case class OsFile(path: String) extends Input
-  }
-
-  case object Nope                                                                          extends Config
-  final case class GenAddress(output: Output = Output.Stdout)                               extends Config
-  final case class TestBytecode(storage: Option[String] = None, input: Input = Input.Stdin) extends Config
+  case object Nope                                            extends Config
+  final case class GenAddress(output: Output = Output.Stdout) extends Config
+  final case class RunBytecode(storage: Option[String] = None,
+                               input: Option[String] = None,
+                               executor: String = "e74b91ee9dda326116a08703eb387cc27a47e5d832072346fd65c40b89629b86")
+      extends Config
 }

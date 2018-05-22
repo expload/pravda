@@ -6,6 +6,8 @@ object ParserSuite extends TestSuite {
 
   import Config._
 
+  final val Address = "0000000000000000000000000000000000000000000000000000000000000000"
+
   val tests: Tests = Tests {
     "gen" - {
       "address" - assert {
@@ -22,25 +24,33 @@ object ParserSuite extends TestSuite {
         }
       }
     }
-    "test" - {
+    "run" - {
       "-i a.out" - {
         assert {
           Parser
-            .parse(Array("test", "-i", "a.out"), Config.Nope)
-            .collect { case TestBytecode(_, Input.OsFile(file)) if file.endsWith("a.out") => () }
+            .parse(Array("run", "-i", "a.out"), Config.Nope)
+            .collect { case RunBytecode(_, Some(file), _) if file.endsWith("a.out") => () }
             .nonEmpty
         }
       }
       "--storage db" - assert {
         Parser
-          .parse(Array("test", "--storage", "db"), Config.Nope)
-          .collect { case TestBytecode(Some(file), _) if file.endsWith("db") => () }
+          .parse(Array("run", "--storage", "db"), Config.Nope)
+          .collect { case RunBytecode(Some(file), _, _) if file.endsWith("db") => () }
           .nonEmpty
+      }
+      "--executor <address>" - assert {
+        Parser
+          .parse(Array("run", "--executor", Address), Config.Nope)
+          .exists {
+            case config: RunBytecode => config.executor == Address
+            case _ => false
+          }
       }
       assert {
         Parser
-          .parse(Array("test"), Config.Nope)
-          .contains(TestBytecode())
+          .parse(Array("run"), Config.Nope)
+          .contains(RunBytecode())
       }
     }
   }
