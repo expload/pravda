@@ -16,7 +16,7 @@ sudo mkdir /usr/local/pravda
 sudo unzip -d /usr/local/pravda node/target/universal/pravda-node-0.0.1.zip
 sudo unzip -d /usr/local/pravda forth/target/universal/forth-0.0.1.zip
 
-# Add to .bashrc (or you favourite shell profile)
+# Add to .bashrc (or your favourite shell profile)
 export PATH=/usr/local/pravda/forth-0.0.1/bin:$PATH
 export PATH=/usr/local/pravda/pravda-node-0.0.1/bin:$PATH
 
@@ -27,12 +27,12 @@ pravda-node
 
 ### 2. Start the node.
 
-Use `start-bobo.sh` script to start the node. Change any options in the
-script if you need.
+Use `start-bobo.sh` script to start the node. Change any option in the
+script if you need to (if, for example, one of the used ports is busy).
 
-After starting the script the following will happen (node will):
+After starting the script the node will:
 	
-1. Create a folder for tendermint and initialize storage.
+1. Create a folder for tendermint and initialize a storage.
 2. Run tendermint passing configuration to it.
 3. Start ABCI server.
 4. Tendermint will connect to the ABCI server and start interactions.

@@ -15,10 +15,10 @@ pravda-node
 
     Start pravda node.
 
-    Environment variables (override values in default config)
+    Environment variables (override values from a default config)
 
     TC_CONFIG_FILE
-        Path to configuration file.
+        Path to a configuration file.
 
     TC_P2P_PORT
         Port to listen on for incoming peer connections. Passed to
@@ -40,20 +40,20 @@ pravda-node
         API host.
 
     TC_API_PORT
-        API port. There is a block explorer GUI listening on
+        API port. There is a GUI listening on
         http://$TC_API_HOST:$TC_API_PORT/ui .
 
     TC_IS_VALIDATOR
-        Boolean flag. If this node is a validator.
+        Boolean flag. Indicates that this node is a validator.
 
     TC_DISTRIBUTION
-        Boolean flag. If this node used in initial distribution.
+        Boolean flag. Indicates that this node is used in initial distribution.
 
     TC_DATA
         Data directory path. Pravda keeps storage and configs in it.
 
     TC_SEEDS
-        P2P seeds delimited by comma in format host:port.
+        P2P seeds delimited by comma in host:port format.
 
     TC_GENESIS_TIME
         Genesis block date time, e.g.: 0001-01-01T00:00:00Z
