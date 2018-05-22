@@ -2,131 +2,231 @@ package io.mytc.sood.cil
 
 import fastparse.byte.all._
 import io.mytc.sood.cil.CIL._
+import io.mytc.sood.cil.Signatures.Info.SigType._
+import io.mytc.sood.cil.Signatures.Info._
 import io.mytc.sood.cil.TablesData._
-
 import utest._
 
 object SmartProgramTests extends TestSuite {
+
   val tests = Tests {
     'smartProgramParse - {
-      val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("smart_program.exe")
+      val Right((_, cilData, methods)) = PeParsersUtils.parsePe("smart_program.exe")
 
       cilData.tables ==> TablesData(
-        List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608"), FieldData(6, "fb", hex"0x0608")),
+        List(FieldData(1, "balances", hex"0x0615121402121808"), FieldData(1, "sender", hex"0x061218")),
         List(
           MemberRefData(9, ".ctor", hex"0x20010108"),
           MemberRefData(17, ".ctor", hex"0x200001"),
           MemberRefData(25, ".ctor", hex"0x2001011111"),
+          MemberRefData(12, "get", hex"0x200113011300"),
+          MemberRefData(12, "getDefault", hex"0x2002130113001301"),
+          MemberRefData(12, "put", hex"0x20020113001301"),
           MemberRefData(41, ".ctor", hex"0x200001"),
           MemberRefData(49, ".ctor", hex"0x200001")
         ),
         List(
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
-          MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
+          MethodDefData(0, 134, "balanceOf", hex"0x2001081218", List(ParamData(0, 1, "tokenOwner"))),
           MethodDefData(0,
-            134,
-            "receive",
-            hex"0x200301080808",
-            List(ParamData(0, 1, "mode"), ParamData(0, 2, "a"), ParamData(0, 3, "b"))),
-          MethodDefData(0, 134, "otherFunc", hex"0x2002010808", List(ParamData(0, 1, "arg1"), ParamData(0, 2, "arg2"))),
+                        134,
+                        "transfer",
+                        hex"0x200201121808",
+                        List(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
           MethodDefData(0, 150, "Main", hex"0x000001", List()),
           MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
-          MethodDefData(0, 6289, ".cctor", hex"0x000001", List())
+          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
+          MethodDefData(0, 1478, "get", hex"0x200113011300", List(ParamData(0, 1, "key"))),
+          MethodDefData(0, 1478, "exists", hex"0x2001021300", List(ParamData(0, 1, "key"))),
+          MethodDefData(0, 1478, "put", hex"0x20020113001301", List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+          MethodDefData(0,
+                        1478,
+                        "getDefault",
+                        hex"0x2002130113001301",
+                        List(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
+          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
+          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
+          MethodDefData(0, 6278, ".ctor", hex"0x200001", List())
         ),
-        List(ParamData(0, 1, "a"),
-          ParamData(0, 2, "b"),
-          ParamData(0, 1, "mode"),
-          ParamData(0, 2, "a"),
-          ParamData(0, 3, "b"),
-          ParamData(0, 1, "arg1"),
-          ParamData(0, 2, "arg2")),
+        List(
+          ParamData(0, 1, "tokenOwner"),
+          ParamData(0, 1, "to"),
+          ParamData(0, 2, "tokens"),
+          ParamData(0, 1, "key"),
+          ParamData(0, 1, "key"),
+          ParamData(0, 1, "key"),
+          ParamData(0, 2, "value"),
+          ParamData(0, 1, "key"),
+          ParamData(0, 2, "def")
+        ),
         List(
           TypeDefData(
             0,
             "<Module>",
             "",
             Ignored,
-            List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608")),
-            List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))
-          ),
-          TypeDefData(
-            1048577,
-            "Program",
-            "",
-            Ignored,
-            List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608")),
-            List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))
+            List(),
+            List()
           ),
           TypeDefData(
             1048576,
             "MyProgram",
             "",
             Ignored,
-            List(FieldData(22, "counter", hex"0x0608"), FieldData(6, "fa", hex"0x0608")),
-            List(MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))
-          )
-        )
+            List(FieldData(1, "balances", hex"0x0615121402121808"), FieldData(1, "sender", hex"0x061218")),
+            List(
+              MethodDefData(0, 134, "balanceOf", hex"0x2001081218", List(ParamData(0, 1, "tokenOwner"))),
+              MethodDefData(0,
+                            134,
+                            "transfer",
+                            hex"0x200201121808",
+                            List(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+              MethodDefData(0, 6278, ".ctor", hex"0x200001", List())
+            )
+          ),
+          TypeDefData(
+            1048576,
+            "MainClass",
+            "",
+            Ignored,
+            List(),
+            List(MethodDefData(0, 150, "Main", hex"0x000001", List()),
+                 MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))
+          ),
+          TypeDefData(1048577,
+                      "Program",
+                      "io.mytc.pravda",
+                      Ignored,
+                      List(),
+                      List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))),
+          TypeDefData(
+            161,
+            "Mapping`2",
+            "io.mytc.pravda",
+            Ignored,
+            List(),
+            List(
+              MethodDefData(0, 1478, "get", hex"0x200113011300", List(ParamData(0, 1, "key"))),
+              MethodDefData(0, 1478, "exists", hex"0x2001021300", List(ParamData(0, 1, "key"))),
+              MethodDefData(0,
+                            1478,
+                            "put",
+                            hex"0x20020113001301",
+                            List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+              MethodDefData(0,
+                            1478,
+                            "getDefault",
+                            hex"0x2002130113001301",
+                            List(ParamData(0, 1, "key"), ParamData(0, 2, "def")))
+            )
+          ),
+          TypeDefData(1048577,
+                      "Address",
+                      "io.mytc.pravda",
+                      Ignored,
+                      List(),
+                      List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))),
+          TypeDefData(1048577,
+                      "Data",
+                      "io.mytc.pravda",
+                      Ignored,
+                      List(),
+                      List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))),
+          TypeDefData(1048577, "Word", "io.mytc.pravda", Ignored, List(), List())
+        ),
+        List(StandAloneSigData(LocalVarSig(Seq(LocalVar(I4, false)))),
+             StandAloneSigData(LocalVarSig(Seq(LocalVar(Boolean, false)))))
       )
-
-      opCodes ==> List(
-        List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret),
-        List(Nop, LdArg0, LdArg1, Add, StLoc0, BrS(0), LdLoc0, Ret),
-        List(
-          Nop,
-          LdArg1,
-          StLoc0,
-          LdLoc0,
-          LdcI41,
-          Sub,
-          Switch(Seq(2, 13, 24, 40)),
-          BrS(66),
-          LdArg0,
-          LdArg2,
-          LdArg3,
-          Add,
-          StFld(FieldData(6, "fa", hex"0x0608")),
-          BrS(55),
-          LdArg0,
-          LdArg2,
-          LdArg3,
-          Add,
-          StFld(FieldData(6, "fb", hex"0x0608")),
-          BrS(44),
-          LdArg0,
-          LdArg2,
-          StFld(FieldData(6, "fa", hex"0x0608")),
-          LdArg0,
-          LdArg3,
-          StFld(FieldData(6, "fb", hex"0x0608")),
-          BrS(28),
-          LdArg0,
-          LdArg2,
-          LdArg3,
-          Call(MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
-          StFld(FieldData(6, "fa", hex"0x0608")),
-          LdArg0,
-          LdArg2,
-          LdArg3,
-          Call(MethodDefData(0, 150, "doSmth", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
-          StFld(FieldData(6, "fb", hex"0x0608")),
-          BrS(0),
-          Ret
+      println(methods)
+      methods ==> List(
+        Method(
+          List(Nop,
+               LdArg0,
+               LdFld(FieldData(1, "balances", hex"0x0615121402121808")),
+               LdArg1,
+               CallVirt(MemberRefData(12, "get", hex"0x200113011300")),
+               StLoc0,
+               BrS(0),
+               LdLoc0,
+               Ret),
+          2,
+          LocalVarSig(Seq(LocalVar(I4, false)))
         ),
-        List(Nop, Ret),
-        List(Nop, Ret),
-        List(
-          LdArg0,
-          LdcI40,
-          StFld(FieldData(6, "fa", hex"0x0608")),
-          LdArg0,
-          LdcI40,
-          StFld(FieldData(6, "fb", hex"0x0608")),
-          LdArg0,
-          Call(MemberRefData(49, ".ctor", hex"0x200001")),
-          Nop,
-          Ret
+        Method(
+          List(
+            Nop,
+            LdArg0,
+            LdFld(FieldData(1, "balances", hex"0x0615121402121808")),
+            LdArg0,
+            LdFld(FieldData(1, "sender", hex"0x061218")),
+            LdcI40,
+            CallVirt(MemberRefData(12, "getDefault", hex"0x2002130113001301")),
+            LdArg2,
+            Clt,2
+            LdcI40,
+            Ceq,
+            StLoc0,
+            LdLoc0,
+            BrFalseS(68),
+            Nop,
+            LdArg0,
+            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdArg0,
+            LdFld(FieldData(1, sender, hex"0x061218")),
+            LdArg0,
+            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdArg0,
+            LdFld(FieldData(1, sender, hex"0x061218")),
+            LdcI40,
+            CallVirt(MemberRefData(12, getDefault, hex"0x2002130113001301")),
+            LdArg2,
+            Sub,
+            CallVirt(MemberRefData(12, put, hex"0x20020113001301")),
+            Nop,
+            LdArg0,
+            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdArg1,
+            LdArg0,
+            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdArg1,
+            LdcI40,
+            CallVirt(MemberRefData(12, getDefault, hex"0x2002130113001301")),
+            LdArg2,
+            Add,
+            CallVirt(MemberRefData(12, put, hex"0x20020113001301")),
+            Nop,
+            Nop,
+            Ret
+          ),
+          5,
+          LocalVarSig(Seq(LocalVar(Boolean, false)))
         ),
-        List(LdcI40, StSFld(FieldData(22, "counter", hex"0x0608")), Ret)
+        Method(
+          List(
+            LdArg0,
+            LdNull,
+            StFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdArg0,
+            LdNull,
+            StFld(FieldData(1, sender, hex"0x061218")),
+            LdArg0,
+            Call(MemberRefData(41, ".ctor", hex"0x200001")),
+            Nop,
+            Ret
+          ),
+          0,
+          LocalVarSig(List())
+        ),
+        Method(List(Nop, Ret), 0, LocalVarSig(List())),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
+        Method(List(LdArg0, Call(MemberRefData(49, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
+        Method(List(), 0, LocalVarSig(List())),
+        Method(List(), 0, LocalVarSig(List())),
+        Method(List(), 0, LocalVarSig(List())),
+        Method(List(), 0, LocalVarSig(List())),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List()))
       )
     }
   }

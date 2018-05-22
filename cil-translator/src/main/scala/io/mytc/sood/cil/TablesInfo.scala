@@ -9,7 +9,8 @@ final case class TablesInfo(
     memberRefTable: Seq[TablesInfo.MemberRefRow] = Seq.empty,
     methodDefTable: Seq[TablesInfo.MethodDefRow] = Seq.empty,
     paramTable: Seq[TablesInfo.ParamRow] = Seq.empty,
-    typeDefTable: Seq[TablesInfo.TypeDefRow] = Seq.empty
+    typeDefTable: Seq[TablesInfo.TypeDefRow] = Seq.empty,
+    standAloneSigTable: Seq[TablesInfo.StandAloneSigRow] = Seq.empty
 )
 
 object TablesInfo {
@@ -104,7 +105,7 @@ object TablesInfo {
   case object PropertyRow                                          extends TableRowInfo
   case object PropertyMapRow                                       extends TableRowInfo
 
-  case object StandAloneSigRow extends TableRowInfo
+  final case class StandAloneSigRow(sigIdx: Long) extends TableRowInfo
 
   final case class TypeDefRow(flags: Int,
                               nameIdx: Long,
@@ -228,8 +229,8 @@ object TablesInfo {
   def propertyMapRow(indexes: TableIndexes): P[PropertyMapRow.type] =
     P(AnyBytes(indexes.typeDef.size + indexes.property.size)).map(_ => PropertyMapRow)
 
-  def standAloneSigRow(indexes: TableIndexes): P[StandAloneSigRow.type] =
-    P(AnyBytes(indexes.blobHeap.size)).map(_ => StandAloneSigRow)
+  def standAloneSigRow(indexes: TableIndexes): P[StandAloneSigRow] =
+    P(indexes.blobHeap.parser).map(StandAloneSigRow)
 
   def typeDefRow(indexes: TableIndexes): P[TypeDefRow] =
     P(Int32 ~ indexes.stringHeap.parser ~ indexes.stringHeap.parser ~ indexes.typeDefOrRef.parser ~ indexes.field.parser ~ indexes.methodDef.parser)
@@ -251,22 +252,22 @@ object TablesInfo {
     num match {
       case 0 => tablesId(moduleRow)
       case 1 => tablesId(typeRefRow)
-      case 2 => tableRep(typeDefRow).map(r => validated(t => t.copy(typeDefTable = r)))
+      case 2 => tableRep(typeDefRow).map(r => validated(_.copy(typeDefTable = r)))
       // 3
-      case 4 => tableRep(fieldRow).map(r => validated(t => t.copy(fieldTable = r)))
+      case 4 => tableRep(fieldRow).map(r => validated(_.copy(fieldTable = r)))
       // 5
-      case 6 => tableRep(methodDefRow).map(r => validated(t => t.copy(methodDefTable = r)))
+      case 6 => tableRep(methodDefRow).map(r => validated(_.copy(methodDefTable = r)))
       // 7
-      case 8  => tableRep(paramRow).map(r => validated(t => t.copy(paramTable = r)))
+      case 8  => tableRep(paramRow).map(r => validated(_.copy(paramTable = r)))
       case 9  => tablesId(interfaceImplRow)
-      case 10 => tableRep(memberRefRow).map(r => validated(t => t.copy(memberRefTable = r)))
+      case 10 => tableRep(memberRefRow).map(r => validated(_.copy(memberRefTable = r)))
       case 11 => tablesId(constantRow)
       case 12 => tablesId(customAttributeRow)
       case 13 => tablesId(fieldMarshalRow)
       case 14 => tablesId(declSecurityRow)
       case 15 => tablesId(classLayoutRow)
       case 16 => tablesId(fieldLayoutRow)
-      case 17 => tablesId(standAloneSigRow)
+      case 17 => tableRep(standAloneSigRow).map(r => validated(_.copy(standAloneSigTable = r)))
       case 18 => tablesId(eventMapRow)
       // 19
       case 20 => tablesId(eventRow)

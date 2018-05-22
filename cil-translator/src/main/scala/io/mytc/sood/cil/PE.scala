@@ -68,7 +68,7 @@ object PE {
       override val codeBytes: Bytes = Bytes.empty
     }
     final case class TinyMethodHeader(codeBytes: Bytes) extends MethodHeader
-    final case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Int, codeBytes: Bytes)
+    final case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Long, codeBytes: Bytes)
         extends MethodHeader
 
     final case class PeData(stringHeap: Bytes,
@@ -229,7 +229,7 @@ object PE {
                 P(Int8).map(b2 => (b.toInt + ((b2 & 0xf) << 8) /*flags*/, (b2 & 0x0f) >> 4) /*size*/ )
               val maxStack = UInt16
               val codeSize = UInt32
-              val localVarSigTok = Int32
+              val localVarSigTok = UInt32
 
               P(flagsAndSize ~ maxStack ~ codeSize ~ localVarSigTok).flatMap {
                 case (f, s, ms, cs, lTok) =>

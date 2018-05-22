@@ -15,7 +15,7 @@ object Datum {
   final case class Rawbytes(value: Array[Byte]) extends Datum {
     override def toString = s"Rawbytes(${value.mkString(", ")})"
     override def equals(other: Any): Boolean = other match {
-      case Rawbytes(array) => this.value.deep == array.deep
+      case Rawbytes(array) => this.value sameElements array
       case _               => false
     }
     override def toAsm = value.map("%02X".format(_)).mkString(" ")
@@ -33,6 +33,7 @@ object Op {
   final case class Push(d: Datum) extends Op { override def toAsm = "push " + d.toAsm }
   case object Dup                 extends Op { override def toAsm = "dup" }
   case object Swap                extends Op { override def toAsm = "swap" }
+  case object SwapN               extends Op { override def toAsm = "swapn" }
 
   final case class Call(name: String) extends Op { override def toAsm = "call @" + name }
   case object Ret                     extends Op { override def toAsm = "ret" }

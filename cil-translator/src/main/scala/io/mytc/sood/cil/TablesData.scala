@@ -9,7 +9,8 @@ final case class TablesData(
     memberRefTable: Seq[TablesData.MemberRefData] = Seq.empty,
     methodDefTable: Seq[TablesData.MethodDefData] = Seq.empty,
     paramTable: Seq[TablesData.ParamData] = Seq.empty,
-    typeDefTable: Seq[TablesData.TypeDefData] = Seq.empty
+    typeDefTable: Seq[TablesData.TypeDefData] = Seq.empty,
+    standAloneSigTable: Seq[TablesData.StandAloneSigData] = Seq.empty
 ) {
 
   def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
@@ -18,6 +19,7 @@ final case class TablesData(
     case 6  => Some(methodDefTable)
     case 8  => Some(paramTable)
     case 10 => Some(memberRefTable)
+    case 17 => Some(standAloneSigTable)
     case _  => None
   }
 }
@@ -38,18 +40,28 @@ object TablesData {
                                fields: Seq[FieldData],
                                methods: Seq[MethodDefData])
       extends TableRowData
-  case object Ignored extends TableRowData
+  final case class StandAloneSigData(signature: Signatures.Signature) extends TableRowData
+  case object Ignored                                                      extends TableRowData
 
   def fromInfo(peData: PeData): Validated[TablesData] = {
 
-    def generateNextIds(ids: Seq[Long]): Map[Long, Long] =
+    def sizesFromIds(ids: Seq[Long]): Seq[Long] =
       ids match {
         case rest :+ last =>
-          (for {
+          val sizes = for {
             i <- rest.indices
-          } yield ids(i) -> ids(i + 1)).toMap + (last -> ids.length.toLong)
-        case _ => Map.empty
+          } yield ids(i + 1) - ids(i)
+          sizes :+ (ids.length - last)
+        case _ => Seq.empty
       }
+
+    val standAlongSigListV = peData.tables.standAloneSigTable.map {
+      case StandAloneSigRow(blobIdx) =>
+        for {
+          localVarSigBytes <- Heaps.blob(peData.blobHeap, blobIdx)
+          localVarSig <- Signatures.localVarSig.parse(localVarSigBytes).toValidated
+        } yield StandAloneSigData(localVarSig)
+    }.sequence
 
     val paramListV = peData.tables.paramTable.map {
       case ParamRow(flags, seq, nameIdx) =>
@@ -75,43 +87,40 @@ object TablesData {
     }.sequence
 
     def methodListV(paramList: Seq[ParamData]): Validated[Seq[MethodDefData]] = {
-      val paramListNextIdx = generateNextIds(peData.tables.methodDefTable.map(_.paramListIdx))
+      val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx))
 
-      peData.tables.methodDefTable.map {
-        case MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx) =>
+      peData.tables.methodDefTable.zipWithIndex.map {
+        case (MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx), i) =>
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
             signature <- Heaps.blob(peData.blobHeap, signatureIdx)
-            nextIdx <- paramListNextIdx
-              .get(paramListIdx)
-              .fold[Either[String, Long]](Left("Wrong paramList value"))(Right(_))
           } yield
-            MethodDefData(implFlags, flags, name, signature, paramList.slice(paramListIdx.toInt - 1, nextIdx.toInt - 1))
+            MethodDefData(implFlags,
+                          flags,
+                          name,
+                          signature,
+                          paramList.slice(paramListIdx.toInt - 1, paramListIdx.toInt + paramListSizes(i).toInt - 1))
       }.sequence
     }
 
     def typeDefListV(fieldList: Seq[FieldData], methodList: Seq[MethodDefData]): Validated[Seq[TypeDefData]] = {
-      val fieldListNextIdx = generateNextIds(peData.tables.typeDefTable.map(_.fieldListIdx))
-      val methodListNextIdx = generateNextIds(peData.tables.typeDefTable.map(_.methodListIdx))
+      val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
+      val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
 
-      peData.tables.typeDefTable.map {
-        case TypeDefRow(flags, nameIdx, namespaceIdx, parent, fieldListIdx, methodListIdx) =>
+      peData.tables.typeDefTable.zipWithIndex.map {
+        case (TypeDefRow(flags, nameIdx, namespaceIdx, parent, fieldListIdx, methodListIdx), i) =>
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
             namespace <- Heaps.string(peData.stringHeap, namespaceIdx)
-            fieldNextIdx <- fieldListNextIdx
-              .get(fieldListIdx)
-              .fold[Either[String, Long]](Left("Wrong fieldList value"))(Right(_))
-            methodNextIdx <- methodListNextIdx
-              .get(methodListIdx)
-              .fold[Either[String, Long]](Left("Wrong methodList value"))(Right(_))
           } yield
-            TypeDefData(flags,
-                        name,
-                        namespace,
-                        Ignored,
-                        fieldList.slice(fieldListIdx.toInt - 1, fieldNextIdx.toInt - 1),
-                        methodList.slice(methodListIdx.toInt - 1, methodNextIdx.toInt - 1))
+            TypeDefData(
+              flags,
+              name,
+              namespace,
+              Ignored,
+              fieldList.slice(fieldListIdx.toInt - 1, fieldListIdx.toInt + fieldListSizes(i).toInt - 1),
+              methodList.slice(methodListIdx.toInt - 1, methodListIdx.toInt + methodListSizes(i).toInt - 1)
+            )
       }.sequence
     }
 
@@ -121,6 +130,7 @@ object TablesData {
       memberRefList <- memberRefListV
       methodList <- methodListV(paramList)
       typeDefList <- typeDefListV(fieldList, methodList)
-    } yield TablesData(fieldList, memberRefList, methodList, paramList, typeDefList)
+      standAlongSigList <- standAlongSigListV
+    } yield TablesData(fieldList, memberRefList, methodList, paramList, typeDefList, standAlongSigList)
   }
 }

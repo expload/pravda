@@ -1,50 +1,49 @@
 using System;
+using io.mytc.pravda;
 
-// our special attribute, it will be a simple library
-public class Program : Attribute {}
+namespace io.mytc.pravda {
+
+    // our special attribute, it will be a simple library
+    public class Program : Attribute {}
+
+    // access to the storage
+    public interface Mapping<K, V> {
+       V get(K key);
+       bool exists(K key);
+       void put(K key, V value);
+
+       V getDefault(K key, V def); /*{
+          if (!this.exists(k)) {
+              return def;
+          } else {
+              return this.get(k);
+          }
+       }*/
+    }
+
+    public class Address {}
+    public class Data {}
+    public class Word {}
+}
 
 [Program]
 class MyProgram {
+    Mapping<Address, int> balances = null;
+    Address sender = null;
 
-    // static fields are stored in heap as always
-    public static int counter = 0;
-
-    // static functions don't call any special op-codes
-    public static int doSmth(int a, int b) {
-        return a + b;
+    public int balanceOf(Address tokenOwner) {
+        return balances.get(tokenOwner);
     }
 
-    // all fields are stored in the persistent storage
-    public int fa = 0;
-    public int fb = 0;
-
-    // receive code is stored in a separate account
-    // when receive is called it translates to RUN op-code
-    public void receive(int mode, int a, int b) {
-        switch (mode) {
-            case 1:
-                fa = a + b;
-                break;
-            case 2:
-                fb = a + b;
-                break;
-            case 3:
-                fa = a;
-                fb = b;
-                break;
-            case 4:
-                fa = MyProgram.doSmth(a, b);
-                fb = MyProgram.doSmth(a, b);
-                break;
+    public void transfer(Address to, int tokens) {
+        if (balances.getDefault(sender, 0) >= tokens) {
+            balances.put(sender, balances.getDefault(sender, 0) - tokens);
+            balances.put(to, balances.getDefault(to, 0) + tokens);
         }
     }
+}
 
-    // other functions are forbidden
-    public void otherFunc(int arg1, int arg2) { // error
-    }
-
-    // all other stuff is also forbidden
-    // to define
+class MainClass {
     public static void Main() {
     }
 }

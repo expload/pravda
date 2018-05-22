@@ -38,7 +38,14 @@ package object utils {
 
     def toValidated: Validated[T] = p match {
       case Success(t, _)        => Right(t)
-      case f @ Failure(_, _, _) => Left(s"An error occurred during parsing: ${f.msg}")
+      case f @ Failure(_, _, _) => Left(s"An error occurred during parsing: ${f.extra.traced.traceParsers}")
+    }
+  }
+
+  private[cil] implicit class OptionOps[T](o: Option[T]) {
+    def toValidated(err: String): Validated[T] = o match {
+      case Some(x) => Right(x)
+      case None => Left(err)
     }
   }
 }
