@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 
 import scala.language.higherKinds
 
-trait OutputLanguage[F[_]] {
+trait IoLanguage[F[_]] {
   def writeToStdout(data: ByteString): F[Unit]
   def saveToFile(path: String, data: ByteString): F[Unit]
 }

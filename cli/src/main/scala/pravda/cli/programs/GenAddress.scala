@@ -4,12 +4,12 @@ import cats._
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.languages.{OutputLanguage, RandomLanguage}
+import pravda.cli.languages.{IoLanguage, RandomLanguage}
 import pravda.common.{bytes, crypto}
 
 import scala.language.higherKinds
 
-class GenAddress[F[_]: Monad](output: OutputLanguage[F], random: RandomLanguage[F]) {
+class GenAddress[F[_]: Monad](output: IoLanguage[F], random: RandomLanguage[F]) {
 
   import Config.Output._
 

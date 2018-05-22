@@ -13,19 +13,33 @@ object Parser extends OptionParser[Config]("pravda") {
       cmd("address")
         .action((_, _) => Config.GenAddress())
         .children(
-          opt[File]('o', "output").action {
-            case (file, Config.GenAddress(_)) =>
-              Config.GenAddress(Config.Output.OsFile(file.getAbsolutePath))
-            case (_, otherwise) => otherwise
-          }
+          opt[File]('o', "output")
+            .text("Output file")
+            .action {
+              case (file, Config.GenAddress(_)) =>
+                Config.GenAddress(Config.Output.OsFile(file.getAbsolutePath))
+              case (_, otherwise) => otherwise
+            }
         )
     )
-  //      opt[Unit]('g', "genkey")
-  //        .action { (_, c) =>
-  //          c.copy(generateKeyPair = true)
-  //        }
-  //        .text("Generate ED25519 key pair")
-  //
-  //      help("help").text("Unified CLI tool")
+
+  cmd("test")
+    .action((_, _) => Config.TestBytecode())
+    .children(
+      opt[File]('i', "input")
+        .text("Input file")
+        .action {
+          case (file, config: Config.TestBytecode) =>
+            config.copy(input = Config.Input.OsFile(file.getAbsolutePath))
+          case (_, otherwise) => otherwise
+        },
+      opt[File]("storage")
+        .text("Storage name")
+        .action {
+          case (file, config: Config.TestBytecode) =>
+            config.copy(storage = Some(file.getAbsolutePath))
+          case (_, otherwise) => otherwise
+        }
+    )
 
 }

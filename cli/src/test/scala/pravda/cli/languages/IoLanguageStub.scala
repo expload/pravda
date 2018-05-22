@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 
 import scala.collection.mutable
 
-final class OutputLanguageStub extends OutputLanguage[Id] {
+final class IoLanguageStub extends IoLanguage[Id] {
 
   val stdout: mutable.Buffer[ByteString] =
     mutable.Buffer.empty

@@ -17,14 +17,14 @@ object GenAddressSuite extends TestSuite {
 
   val tests = Tests {
     "generate to stdout" - {
-      val output = new OutputLanguageStub()
+      val output = new IoLanguageStub()
       val random = new PredictableRandomLanguage(Seed)
       val program = new GenAddress(output, random)
       program(Config.GenAddress())
       assert(output.stdout.headOption.contains(JsonBytes))
     }
     "generate to file" - {
-      val output = new OutputLanguageStub()
+      val output = new IoLanguageStub()
       val random = new PredictableRandomLanguage(Seed)
       val program = new GenAddress(output, random)
       program(Config.GenAddress(Output.OsFile(FileName)))
