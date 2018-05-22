@@ -1,6 +1,18 @@
 #!/bin/sh
 
-# Use default configuration with overrides following in env vars
+# -----------------------------------------------------------------------------
+# This script starts a single node testnet.
+
+# The testnet is a simple small, but fully functional blockchain network for
+# experiments: you can run transactions (programs), introspect storage and watch
+# the network state via logs.
+
+# To learn what happens when the testnet is started refer to
+# doc/how-to-single-node.md .
+# -----------------------------------------------------------------------------
+
+
+# Use default configuration with following overrides in env vars
 unset  TC_CONFIG_FILE
 
 export TC_P2P_PORT=5221

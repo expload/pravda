@@ -1,4 +1,10 @@
-# How to run single node test net
+# How to run a single node testnet
+
+The testnet is a simple small, but fully functional blockchain network for
+experiments: you can run transactions (programs), introspect storage and watch
+the node state via logs.
+
+![Pravda structural scheme](./pravda-arch.svg)
 
 ### 1. Build and install tools:
 

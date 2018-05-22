@@ -1,4 +1,4 @@
-asm is a command line tool to compile Pravda programs written in Pravda
+`asm` is a command line tool to compile Pravda programs written in Pravda
 assembly language to Pravda bytecode.
 ```
 Usage:

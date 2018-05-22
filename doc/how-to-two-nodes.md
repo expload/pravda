@@ -1,4 +1,4 @@
-# How to run two node test net
+# How to run two node testnet
 
 1. Build and install tools:
 

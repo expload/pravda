@@ -1,6 +1,8 @@
 #!/bin/sh
 
-# Use default configuration with overrides following in env vars
+# See examples/single-node/start-bobo.sh for more details on how this works.
+
+# Use default configuration with following overrides in env vars
 unset  TC_CONFIG_FILE
 
 export TC_P2P_PORT=5222
@@ -29,5 +31,4 @@ export TC_PAYMENT_WALLET_PRIVATE_KEY=81CDE6A24D0D73CE90534B62A3DC76A80B448FFA2D7
 
 export TC_GENESIS_VALIDATORS="alice:10:$ALICE_WALLET,bob:10:$BOB_WALLET"
 
-veche
-
+pravda-node

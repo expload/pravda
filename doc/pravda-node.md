@@ -1,4 +1,13 @@
-`pravda-node` is a consensus engine based on Tendermint.
+`pravda-node` is a consensus engine based on Tendermint. It is also a CLI to run
+single node.
+
+pravda-node uses Tendermint to handle low level blockchain operations and P2P
+networking. It depends on our implementation of Tendermint's ABCI server.
+
+[Scala ABCI Server](https://github.com/mytimecoin/scala-abci-server) is a
+generic gateway (or proxy) for Tendermint written on Scala that accepts
+blockchain messages and passes them through to a business layer.
+
 ```
 Usage:
 
@@ -59,5 +68,5 @@ pravda-node
         Node wallet secret key in hex.
 
     TC_GENESIS_VALIDATORS
-        Blockchain block validators in format name:fee:wallet-address
+        Blockchain block validators in name:fee:wallet-address format
 ```

@@ -1,18 +1,12 @@
-# PRAVDA
+# Pravda
 
-Pravda is a blockchain platform for game developers. It's purpose is to
-provide a comprehensive platform and tooling to build blockchain based economy
+Pravda is a blockchain platform for game developers. Its purpose is to
+provide a comprehensive platform and tooling to build blockchain-based economy
 for games.
 
-Pravda is written in Scala. It is JVM based. We use SBT as a build tool.
+Pravda is written on Scala. It is JVM-based. We use SBT as a build tool.
 
-It consists of the following modules, each formed as a subproject:
-
-## Modules
-
-[Scala ABCI Server](https://github.com/mytimecoin/scala-abci-server) is a
-generic gateway (or proxy) for Tendermint written in Scala that accepts
-blockchain messages and passes them through to a business layer.
+## Project structure
 
 [pravda-node](doc/pravda-node.md) is a consensus engine based on Tendermint.
 It handles all the low level stuff, like p2p networking, consensus protocol,
@@ -60,6 +54,24 @@ We hope to start publishing binary releases soon.
 * Work with Forth: [forth how to](doc/how-to-forth.md)
 * Run single node net: [test net: single node](doc/how-to-single-node.md)
 * Run two nodes net locally: [test net: two nodes](doc/how-to-two-nodes.md)
+
+## Participation
+
+We are glad to see any Pull Requests, especially if they solve issues labeled
+`good first issue` or `help wanted`. Also we will accept PRs which fix typos,
+mistakes, broken links, etc. Regardless of the nature of your PR, we have to
+ask you, to digitally sign the Mytime CLA. Please, send us email with GPG signed
+text of CLA to contributing@mytc.io.
+
+If you want to send PR, make sure that this requirements are satisfied:
+
+* You have already sent GPG-signed Mytime CLA to contributing@mytc.io
+* Commits are signed with same GPG-key as CLA
+* Content of Pull Request satisfy Code Of Conduct
+* Any PR should resolve an issue
+* PR name matches "Close/Fix #issue: Summary"
+* PR doesn't contain merge commits
+* Commit message matches "verb in present simple subject (#issue)"
 
 ## Further information
 
