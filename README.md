@@ -4,7 +4,7 @@ Pravda is a blockchain platform for game developers. Its purpose is to
 provide a comprehensive platform and tooling to build blockchain-based economy
 for games.
 
-Pravda is written on Scala. It is JVM-based. We use SBT as a build tool.
+Pravda is written in Scala. It is JVM-based. We use SBT as a build tool.
 
 ## Project structure
 

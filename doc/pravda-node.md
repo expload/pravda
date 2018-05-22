@@ -5,7 +5,7 @@ pravda-node uses Tendermint to handle low level blockchain operations and P2P
 networking. It depends on our implementation of Tendermint's ABCI server.
 
 [Scala ABCI Server](https://github.com/mytimecoin/scala-abci-server) is a
-generic gateway (or proxy) for Tendermint written on Scala that accepts
+generic gateway (or proxy) for Tendermint written in Scala that accepts
 blockchain messages and passes them through to a business layer.
 
 ```
