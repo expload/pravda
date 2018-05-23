@@ -12,14 +12,14 @@ object ParserSuite extends TestSuite {
     "gen" - {
       "address" - assert {
         Parser
-          .parse(Array("gen", "address"), Nope)
+          .parse(Seq("gen", "address"), Nope)
           .contains(GenAddress())
       }
       "address -o a.out" - {
         assert {
           Parser
-            .parse(Array("gen", "address", "-o", "a.out"), Config.Nope)
-            .collect { case Config.GenAddress(Output.OsFile(file)) if file.endsWith("a.out") => () }
+            .parse(Seq("gen", "address", "-o", "a.out"), Config.Nope)
+            .collect { case Config.GenAddress(Some(file)) if file.endsWith("a.out") => () }
             .nonEmpty
         }
       }
@@ -28,20 +28,20 @@ object ParserSuite extends TestSuite {
       "-i a.out" - {
         assert {
           Parser
-            .parse(Array("run", "-i", "a.out"), Config.Nope)
+            .parse(Seq("run", "-i", "a.out"), Config.Nope)
             .collect { case RunBytecode(_, Some(file), _) if file.endsWith("a.out") => () }
             .nonEmpty
         }
       }
       "--storage db" - assert {
         Parser
-          .parse(Array("run", "--storage", "db"), Config.Nope)
+          .parse(Seq("run", "--storage", "db"), Config.Nope)
           .collect { case RunBytecode(Some(file), _, _) if file.endsWith("db") => () }
           .nonEmpty
       }
       "--executor <address>" - assert {
         Parser
-          .parse(Array("run", "--executor", Address), Config.Nope)
+          .parse(Seq("run", "--executor", Address), Config.Nope)
           .exists {
             case config: RunBytecode => config.executor == Address
             case _ => false
@@ -49,8 +49,39 @@ object ParserSuite extends TestSuite {
       }
       assert {
         Parser
-          .parse(Array("run"), Config.Nope)
+          .parse(Seq("run"), Config.Nope)
           .contains(RunBytecode())
+      }
+    }
+    "compile" - {
+      "-i program.forth -o a.out" - assert {
+        Parser
+          .parse(Seq("compile", "asm", "-i", "program.forth", "-o", "a.out"), Config.Nope)
+          .exists {
+            case config: Compile  =>
+              config.input.exists(_.endsWith("program.forth")) &&
+                config.output.exists(_.endsWith("a.out"))
+            case _ => false
+          }
+      }
+      "*" - assert {
+        import PravdaCompile._
+
+        def compile(name: String, compiler: PravdaCompile) = {
+          Parser
+            .parse(Seq("compile", name), Config.Nope)
+            .exists {
+              case config: Compile =>
+                config.compiler == compiler &&
+                config.output.isEmpty &&
+                config.input.isEmpty
+              case _ => false
+            }
+        }
+
+        Seq("asm" -> Asm,"disasm" -> Disasm, "dotnet" -> DotNet, "forth" -> Forth)
+          .map { case (name, compiler) => compile(name, compiler) }
+          .reduce(_ && _)
       }
     }
   }

@@ -2,7 +2,6 @@ package pravda.cli.programs
 
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.Config.Output
 import pravda.cli.languages._
 import utest._
 
@@ -27,7 +26,7 @@ object GenAddressSuite extends TestSuite {
       val output = new IoLanguageStub(None)
       val random = new PredictableRandomLanguage(Seed)
       val program = new GenAddress(output, random)
-      program(Config.GenAddress(Output.OsFile(FileName)))
+      program(Config.GenAddress(Some(FileName)))
       assert(output.files.get(FileName).contains(JsonBytes))
     }
   }

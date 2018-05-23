@@ -11,8 +11,6 @@ import scala.language.higherKinds
 
 class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
 
-  import Config.Output._
-
   /**
     * Generates Pravda address and private key for it.
     * Writes to stdout or file depends on config.
@@ -23,9 +21,6 @@ class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       json = s"""{"address":"${bytes.byteString2hex(pub)}","privateKey":"${bytes.byteString2hex(sec)}"}"""
       outputBytes = ByteString.copyFromUtf8(json)
-      _ <- config.output match {
-        case Stdout       => io.writeToStdout(outputBytes)
-        case OsFile(path) => io.saveToFile(path, outputBytes)
-      }
+      _ <- config.output.fold(io.writeToStdout(outputBytes))(io.saveToFile(_, outputBytes))
     } yield ()
 }
