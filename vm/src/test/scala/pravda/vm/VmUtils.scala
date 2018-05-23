@@ -39,8 +39,11 @@ object VmUtils {
     bs.map(hex).mkString(" ")
   }
 
+  def data(i: Array[Byte]): Data =
+    ByteString.copyFrom(i)
+
   def data(i: Byte*): Data =
-    ByteString.copyFrom(i.toArray)
+    data(i.toArray)
 
   def environment(accs: (Address, ProgramStub)*): Environment = new Environment {
 

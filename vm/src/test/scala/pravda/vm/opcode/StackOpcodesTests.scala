@@ -7,6 +7,8 @@ import utest._
 
 import serialization._
 
+import pravda.common.bytes.hex._
+
 object StackOpcodesTests extends TestSuite {
 
   val tests = Tests {
@@ -93,13 +95,13 @@ object StackOpcodesTests extends TestSuite {
 
 
     'slice {
-      val program = prog.opcode(PUSHX).put(bytes(13, 17, 43, 53)).opcode(SLICE).put(1).put(3)
-      exec(program) ==> stack(data(17.toByte, 43.toByte))
+      val program = prog.opcode(PUSHX).put(hex"0d 11 2b 35").opcode(SLICE).put(1).put(3)
+      exec(program) ==> stack(data(hex"11 2b"))
     }
 
     'concat - {
-      val program = prog.opcode(PUSHX).put(bytes(43, 53)).opcode(PUSHX).put(bytes(13, 17)).opcode(CONCAT)
-      exec(program) ==> stack(data(13.toByte, 17.toByte, 43.toByte, 53.toByte))
+      val program = prog.opcode(PUSHX).put(hex"2b 35").opcode(PUSHX).put(hex"0d 11").opcode(CONCAT)
+      exec(program) ==> stack(data(hex"0d 11 2b 35"))
     }
     
   }

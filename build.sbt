@@ -30,7 +30,8 @@ lazy val common = (project in file("common")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
-      "com.google.protobuf" % "protobuf-java" % "3.5.0"
+      "com.google.protobuf" % "protobuf-java" % "3.5.0",
+      "com.propensive" %% "contextual" % "1.1.0"
     )
   )
 
@@ -43,7 +44,8 @@ lazy val vmApi = (project in file("vm-api")).
     libraryDependencies ++= Seq (
       "com.google.protobuf" % "protobuf-java" % "3.5.0"
     )
-  )
+  ).
+  dependsOn(common)
 
 lazy val vm = (project in file("vm")).
   settings(normalizedName := "pravda-vm").

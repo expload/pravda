@@ -7,6 +7,8 @@ import Opcodes._
 import pravda.vm.state.VmError._
 import pravda.vm.state.{Environment, VmError, VmErrorException}
 
+import pravda.common.bytes.hex._
+
 object ErrorTests extends TestSuite {
 
   val tests = Tests {
@@ -32,7 +34,7 @@ object ErrorTests extends TestSuite {
 
       'complex - {
 
-        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+        val address = data(hex"0d0f424e")
         val storedProg = prog.opcode(PUSHX).put(111)
 
         val wState = environment(address -> storedProg)
@@ -64,8 +66,8 @@ object ErrorTests extends TestSuite {
     'noSuchLibrary - {
 
       'notExists - {
-        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
-        val wrongAddress = data(13.toByte, 15.toByte, 0.toByte, 78.toByte)
+        val address = data(hex"0d0f424e")
+        val wrongAddress  = data(hex"0d0f004e")
 
         val storedProg = prog.opcode(PUSHX).put(111)
 
@@ -78,7 +80,7 @@ object ErrorTests extends TestSuite {
 
       'notLibrary - {
 
-        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+        val address = data(hex"0d0f424e")
 
         val regularProgram = prog.opcode(PUSHX).put(111)
 
@@ -92,7 +94,7 @@ object ErrorTests extends TestSuite {
     }
 
     'externalError - {
-        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+        val address = data(hex"0d0f424e")
 
         val storedProg = prog.opcode(POP)
 
@@ -105,8 +107,7 @@ object ErrorTests extends TestSuite {
 
 
       'noSuchMethod - {
-
-        val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+        val address = data(hex"0d0f424e")
 
         val libraryMethod = prog.opcode(FTBL).put(1).put("meth1").put(10)
 
