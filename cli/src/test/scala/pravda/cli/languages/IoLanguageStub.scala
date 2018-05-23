@@ -29,7 +29,7 @@ final class IoLanguageStub(stdin: Option[ByteString] = None, val files: mutable.
   def writeToStdout(data: ByteString): Id[Unit] =
     stdout += data
 
-  def saveToFile(path: String, data: ByteString): Id[Unit] =
+  def writeToFile(path: String, data: ByteString): Id[Unit] =
     files += (path -> data)
 
   def readFromStdin(): Id[ByteString] =

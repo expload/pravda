@@ -185,5 +185,7 @@ lazy val cli = (project in file("cli"))
     )
   )
   .dependsOn(common)
+  .dependsOn(forth)
+  .dependsOn(`vm-asm`)
   .dependsOn(vm)
 

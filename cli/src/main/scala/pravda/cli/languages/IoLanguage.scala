@@ -11,6 +11,6 @@ trait IoLanguage[F[_]] {
   def writeToStdout(data: ByteString): F[Unit]
   def writeStringToStdout(data: String): F[Unit]
   def writeStringToStderrAndExit(data: String, code: Int = 1): F[Unit]
-  def saveToFile(path: String, data: ByteString): F[Unit]
+  def writeToFile(path: String, data: ByteString): F[Unit]
   def exit(code: Int): F[Unit]
 }

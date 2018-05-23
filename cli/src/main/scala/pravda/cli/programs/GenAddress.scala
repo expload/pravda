@@ -21,6 +21,6 @@ class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       json = s"""{"address":"${bytes.byteString2hex(pub)}","privateKey":"${bytes.byteString2hex(sec)}"}"""
       outputBytes = ByteString.copyFromUtf8(json)
-      _ <- config.output.fold(io.writeToStdout(outputBytes))(io.saveToFile(_, outputBytes))
+      _ <- config.output.fold(io.writeToStdout(outputBytes))(io.writeToFile(_, outputBytes))
     } yield ()
 }
