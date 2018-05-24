@@ -5,6 +5,9 @@ import VmUtils._
 import Opcodes.int._
 import utest._
 
+import serialization._
+
+
 object MathOpcodesTests extends TestSuite {
 
   val tests = Tests {
@@ -12,127 +15,127 @@ object MathOpcodesTests extends TestSuite {
 
       'sum - {
 
-        val program = prog.withStack(data(2), data(3)).opcode(I32ADD)
-        exec(program) ==> stack(data(5))
+        val program = prog.withStack(int32ToData(2), int32ToData(3)).opcode(I32ADD)
+        exec(program) ==> stack(int32ToData(5))
 
         // More bytes in stack
-        val program2 = prog.withStack(data(77), data(880), data(13), data(24))
-        exec(program2.opcode(I32ADD)) ==> stack(data(77), data(880), data(37))
+        val program2 = prog.withStack(int32ToData(77), int32ToData(880), int32ToData(13), int32ToData(24))
+        exec(program2.opcode(I32ADD)) ==> stack(int32ToData(77), int32ToData(880), int32ToData(37))
 
       }
 
       'bigNumbers - {
 
-        exec(prog.withStack(data(257), data(258)).opcode(I32ADD)).last ==> data(515)
-        exec(prog.withStack(data(32534), data(32535)).opcode(I32ADD)).last ==> data(65069)
-        exec(prog.withStack(data(65535), data(65534)).opcode(I32ADD)).last ==> data(131069)
-        exec(prog.withStack(data(1073741823), data(1073741822)).opcode(I32ADD)).last ==> data(2147483645)
+        exec(prog.withStack(int32ToData(257), int32ToData(258)).opcode(I32ADD)).last ==> int32ToData(515)
+        exec(prog.withStack(int32ToData(32534), int32ToData(32535)).opcode(I32ADD)).last ==> int32ToData(65069)
+        exec(prog.withStack(int32ToData(65535), int32ToData(65534)).opcode(I32ADD)).last ==> int32ToData(131069)
+        exec(prog.withStack(int32ToData(1073741823), int32ToData(1073741822)).opcode(I32ADD)).last ==> int32ToData(2147483645)
 
       }
 
       'negativeNumbers - {
 
-        exec(prog.withStack(data(2), data(-3)).opcode(I32ADD)) ==> stack(data(-1))
-        exec(prog.withStack(data(-2), data(-3)).opcode(I32ADD)) ==> stack(data(-5))
-        exec(prog.withStack(data(-2), data(3)).opcode(I32ADD)) ==> stack(data(1))
+        exec(prog.withStack(int32ToData(2), int32ToData(-3)).opcode(I32ADD)) ==> stack(int32ToData(-1))
+        exec(prog.withStack(int32ToData(-2), int32ToData(-3)).opcode(I32ADD)) ==> stack(int32ToData(-5))
+        exec(prog.withStack(int32ToData(-2), int32ToData(3)).opcode(I32ADD)) ==> stack(int32ToData(1))
 
       }
 
       'zero - {
 
-        exec(prog.withStack(data(-2), data(0)).opcode(I32ADD)) ==> stack(data(-2))
-        exec(prog.withStack(data(0), data(0)).opcode(I32ADD)) ==> stack(data(0))
+        exec(prog.withStack(int32ToData(-2), int32ToData(0)).opcode(I32ADD)) ==> stack(int32ToData(-2))
+        exec(prog.withStack(int32ToData(0), int32ToData(0)).opcode(I32ADD)) ==> stack(int32ToData(0))
 
       }
     }
 
     'i32mul - {
-      exec(prog.withStack(data(-3), data(3)).opcode(I32MUL)) ==> stack(data(-9))
-      exec(prog.withStack(data(123), data(-3), data(3)).opcode(I32MUL)) ==> stack(data(123), data(-9))
-      exec(prog.withStack(data(0), data(3)).opcode(I32MUL)) ==> stack(data(0))
-      exec(prog.withStack(data(-3), data(0)).opcode(I32MUL)) ==> stack(data(0))
+      exec(prog.withStack(int32ToData(-3), int32ToData(3)).opcode(I32MUL)) ==> stack(int32ToData(-9))
+      exec(prog.withStack(int32ToData(123), int32ToData(-3), int32ToData(3)).opcode(I32MUL)) ==> stack(int32ToData(123), int32ToData(-9))
+      exec(prog.withStack(int32ToData(0), int32ToData(3)).opcode(I32MUL)) ==> stack(int32ToData(0))
+      exec(prog.withStack(int32ToData(-3), int32ToData(0)).opcode(I32MUL)) ==> stack(int32ToData(0))
     }
 
     'i32div - {
-      exec(prog.withStack(data(-3), data(3)).opcode(I32DIV)) ==> stack(data(-1))
-      exec(prog.withStack(data(123), data(-3), data(3)).opcode(I32DIV)) ==> stack(data(123), data(-1))
-      exec(prog.withStack(data(2), data(0)).opcode(I32DIV)) ==> stack(data(0))
-      exec(prog.withStack(data(2), data(-5)).opcode(I32DIV)) ==> stack(data(-2))
-      exec(prog.withStack(data(2), data(5)).opcode(I32DIV)) ==> stack(data(2))
+      exec(prog.withStack(int32ToData(-3), int32ToData(3)).opcode(I32DIV)) ==> stack(int32ToData(-1))
+      exec(prog.withStack(int32ToData(123), int32ToData(-3), int32ToData(3)).opcode(I32DIV)) ==> stack(int32ToData(123), int32ToData(-1))
+      exec(prog.withStack(int32ToData(2), int32ToData(0)).opcode(I32DIV)) ==> stack(int32ToData(0))
+      exec(prog.withStack(int32ToData(2), int32ToData(-5)).opcode(I32DIV)) ==> stack(int32ToData(-2))
+      exec(prog.withStack(int32ToData(2), int32ToData(5)).opcode(I32DIV)) ==> stack(int32ToData(2))
     }
 
     'i32mod - {
 
-      exec(prog.withStack(data(-3), data(3)).opcode(I32MOD)) ==> stack(data(0))
-      exec(prog.withStack(data(123), data(2), data(3)).opcode(I32MOD)) ==> stack(data(123), data(1))
-      exec(prog.withStack(data(2), data(0)).opcode(I32MOD)) ==> stack(data(0))
-      exec(prog.withStack(data(17), data(16)).opcode(I32MOD)) ==> stack(data(16))
-      exec(prog.withStack(data(17), data(-16)).opcode(I32MOD)) ==> stack(data(-16))
-      exec(prog.withStack(data(-17), data(16)).opcode(I32MOD)) ==> stack(data(16))
-      exec(prog.withStack(data(17), data(33)).opcode(I32MOD)) ==> stack(data(16))
-      exec(prog.withStack(data(17), data(50)).opcode(I32MOD)) ==> stack(data(16))
+      exec(prog.withStack(int32ToData(-3), int32ToData(3)).opcode(I32MOD)) ==> stack(int32ToData(0))
+      exec(prog.withStack(int32ToData(123), int32ToData(2), int32ToData(3)).opcode(I32MOD)) ==> stack(int32ToData(123), int32ToData(1))
+      exec(prog.withStack(int32ToData(2), int32ToData(0)).opcode(I32MOD)) ==> stack(int32ToData(0))
+      exec(prog.withStack(int32ToData(17), int32ToData(16)).opcode(I32MOD)) ==> stack(int32ToData(16))
+      exec(prog.withStack(int32ToData(17), int32ToData(-16)).opcode(I32MOD)) ==> stack(int32ToData(-16))
+      exec(prog.withStack(int32ToData(-17), int32ToData(16)).opcode(I32MOD)) ==> stack(int32ToData(16))
+      exec(prog.withStack(int32ToData(17), int32ToData(33)).opcode(I32MOD)) ==> stack(int32ToData(16))
+      exec(prog.withStack(int32ToData(17), int32ToData(50)).opcode(I32MOD)) ==> stack(int32ToData(16))
 
     }
 
     'fadd - {
       'sum - {
-        val program = prog.withStack(data(1.0), data(2.0)).opcode(FADD)
-        exec(program) ==> stack(data(3.0))
+        val program = prog.withStack(doubleToData(1.0), doubleToData(2.0)).opcode(FADD)
+        exec(program) ==> stack(doubleToData(3.0))
 
         // More bytes in stack
-        val program2 = prog.withStack(data(77.0), data(880.0), data(13.0), data(24.0))
-        exec(program2.opcode(FADD)) ==> stack(data(77.0), data(880.0), data(37.0))
+        val program2 = prog.withStack(doubleToData(77.0), doubleToData(880.0), doubleToData(13.0), doubleToData(24.0))
+        exec(program2.opcode(FADD)) ==> stack(doubleToData(77.0), doubleToData(880.0), doubleToData(37.0))
       }
 
       'bigNumbers  - {
 
-        exec(prog.withStack(data(257.0), data(258.0)).opcode(FADD)).last ==> data(515.0)
-        exec(prog.withStack(data(32534.0), data(32535.0)).opcode(FADD)).last ==> data(65069.0)
-        exec(prog.withStack(data(65535.0), data(65534.0)).opcode(FADD)).last ==> data(131069.0)
-        exec(prog.withStack(data(1073741823.0), data(1073741822.0)).opcode(FADD)).last ==> data(2147483645.0)
+        exec(prog.withStack(doubleToData(257.0), doubleToData(258.0)).opcode(FADD)).last ==> doubleToData(515.0)
+        exec(prog.withStack(doubleToData(32534.0), doubleToData(32535.0)).opcode(FADD)).last ==> doubleToData(65069.0)
+        exec(prog.withStack(doubleToData(65535.0), doubleToData(65534.0)).opcode(FADD)).last ==> doubleToData(131069.0)
+        exec(prog.withStack(doubleToData(1073741823.0), doubleToData(1073741822.0)).opcode(FADD)).last ==> doubleToData(2147483645.0)
 
       }
 
       'negativeNumbers - {
 
-        exec(prog.withStack(data(2.0), data(-3.0)).opcode(FADD)) ==> stack(data(-1.0))
-        exec(prog.withStack(data(-2.0), data(-3.0)).opcode(FADD)) ==> stack(data(-5.0))
-        exec(prog.withStack(data(-2.0), data(3.0)).opcode(FADD)) ==> stack(data(1.0))
+        exec(prog.withStack(doubleToData(2.0), doubleToData(-3.0)).opcode(FADD)) ==> stack(doubleToData(-1.0))
+        exec(prog.withStack(doubleToData(-2.0), doubleToData(-3.0)).opcode(FADD)) ==> stack(doubleToData(-5.0))
+        exec(prog.withStack(doubleToData(-2.0), doubleToData(3.0)).opcode(FADD)) ==> stack(doubleToData(1.0))
 
       }
 
       'zero - {
 
-        exec(prog.withStack(data(-2.0), data(0.0)).opcode(FADD)) ==> stack(data(-2.0))
-        exec(prog.withStack(data(0.0), data(0.0)).opcode(FADD)) ==> stack(data(0.0))
+        exec(prog.withStack(doubleToData(-2.0), doubleToData(0.0)).opcode(FADD)) ==> stack(doubleToData(-2.0))
+        exec(prog.withStack(doubleToData(0.0), doubleToData(0.0)).opcode(FADD)) ==> stack(doubleToData(0.0))
 
       }
     }
 
     'fmul - {
-      exec(prog.withStack(data(-3.0), data(3.0)).opcode(FMUL)) ==> stack(data(-9.0))
-      exec(prog.withStack(data(123.0), data(-3.0), data(3.0)).opcode(FMUL)) ==> stack(data(123.0), data(-9.0))
-      exec(prog.withStack(data(0.0), data(3.0)).opcode(FMUL)) ==> stack(data(0.0))
-      exec(prog.withStack(data(-3.0), data(0.0)).opcode(FMUL)) ==> stack(data(-0.0))
+      exec(prog.withStack(doubleToData(-3.0), doubleToData(3.0)).opcode(FMUL)) ==> stack(doubleToData(-9.0))
+      exec(prog.withStack(doubleToData(123.0), doubleToData(-3.0), doubleToData(3.0)).opcode(FMUL)) ==> stack(doubleToData(123.0), doubleToData(-9.0))
+      exec(prog.withStack(doubleToData(0.0), doubleToData(3.0)).opcode(FMUL)) ==> stack(doubleToData(0.0))
+      exec(prog.withStack(doubleToData(-3.0), doubleToData(0.0)).opcode(FMUL)) ==> stack(doubleToData(-0.0))
     }
 
     'fdiv - {
-      exec(prog.withStack(data(-3.0), data(3.0)).opcode(FDIV)) ==> stack(data(-1.0))
-      exec(prog.withStack(data(123.0), data(-3.0), data(3.0)).opcode(FDIV)) ==> stack(data(123.0), data(-1.0))
-      exec(prog.withStack(data(2.0), data(0.0)).opcode(FDIV)) ==> stack(data(0.0))
-      exec(prog.withStack(data(2.0), data(-5.0)).opcode(FDIV)) ==> stack(data(-2.5))
-      exec(prog.withStack(data(2.0), data(5.0)).opcode(FDIV)) ==> stack(data(2.5))
+      exec(prog.withStack(doubleToData(-3.0), doubleToData(3.0)).opcode(FDIV)) ==> stack(doubleToData(-1.0))
+      exec(prog.withStack(doubleToData(123.0), doubleToData(-3.0), doubleToData(3.0)).opcode(FDIV)) ==> stack(doubleToData(123.0), doubleToData(-1.0))
+      exec(prog.withStack(doubleToData(2.0), doubleToData(0.0)).opcode(FDIV)) ==> stack(doubleToData(0.0))
+      exec(prog.withStack(doubleToData(2.0), doubleToData(-5.0)).opcode(FDIV)) ==> stack(doubleToData(-2.5))
+      exec(prog.withStack(doubleToData(2.0), doubleToData(5.0)).opcode(FDIV)) ==> stack(doubleToData(2.5))
     }
     
     'fmod - {
-      exec(prog.withStack(data(-3), data(3)).opcode(I32MOD)) ==> stack(data(0))
-      exec(prog.withStack(data(123), data(2), data(3)).opcode(I32MOD)) ==> stack(data(123), data(1))
-      exec(prog.withStack(data(2), data(0)).opcode(I32MOD)) ==> stack(data(0))
-      exec(prog.withStack(data(17), data(16)).opcode(I32MOD)) ==> stack(data(16))
-      exec(prog.withStack(data(17), data(-16)).opcode(I32MOD)) ==> stack(data(-16))
-      exec(prog.withStack(data(-17), data(16)).opcode(I32MOD)) ==> stack(data(16))
-      exec(prog.withStack(data(17), data(33)).opcode(I32MOD)) ==> stack(data(16))
-      exec(prog.withStack(data(17), data(50)).opcode(I32MOD)) ==> stack(data(16))
+      exec(prog.withStack(int32ToData(-3), int32ToData(3)).opcode(I32MOD)) ==> stack(int32ToData(0))
+      exec(prog.withStack(int32ToData(123), int32ToData(2), int32ToData(3)).opcode(I32MOD)) ==> stack(int32ToData(123), int32ToData(1))
+      exec(prog.withStack(int32ToData(2), int32ToData(0)).opcode(I32MOD)) ==> stack(int32ToData(0))
+      exec(prog.withStack(int32ToData(17), int32ToData(16)).opcode(I32MOD)) ==> stack(int32ToData(16))
+      exec(prog.withStack(int32ToData(17), int32ToData(-16)).opcode(I32MOD)) ==> stack(int32ToData(-16))
+      exec(prog.withStack(int32ToData(-17), int32ToData(16)).opcode(I32MOD)) ==> stack(int32ToData(16))
+      exec(prog.withStack(int32ToData(17), int32ToData(33)).opcode(I32MOD)) ==> stack(int32ToData(16))
+      exec(prog.withStack(int32ToData(17), int32ToData(50)).opcode(I32MOD)) ==> stack(int32ToData(16))
     }
   }
 }

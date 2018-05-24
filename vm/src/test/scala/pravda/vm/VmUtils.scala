@@ -4,7 +4,6 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import pravda.vm.state._
-import serialization._
 
 object VmUtils {
 
@@ -40,26 +39,11 @@ object VmUtils {
     bs.map(hex).mkString(" ")
   }
 
-  def data(v: Double): Data = {
-    doubleToData(v)
-  }
+  def data(i: Array[Byte]): Data =
+    ByteString.copyFrom(i)
 
-  // FIXME lead to bugs
-  /** They are NOT integers, they are bytes! */
-  def binaryData(i: Int*): Data =
-    ByteString.copyFrom(i.map(_.toByte).toArray)
-
-  def data(i: Int): Data = {
-    int32ToData(i)
-  }
-
-  def data(b: Byte): Data = {
-    ByteString.copyFrom(Array(b))
-  }
-
-  def int(d: Data): Int = {
-    dataToInt32(d)
-  }
+  def data(i: Byte*): Data =
+    data(i.toArray)
 
   def environment(accs: (Address, ProgramStub)*): Environment = new Environment {
 

@@ -4,6 +4,8 @@ package opcode
 import utest._
 import VmUtils._
 import Opcodes.int._
+import serialization._
+
 
 object HeapOpcodesTests extends TestSuite {
 
@@ -13,7 +15,7 @@ object HeapOpcodesTests extends TestSuite {
         .opcode(PUSHX).put(24)
         .opcode(MPUT)
       exec(program).length ==> 1
-      exec(program.opcode(MGET)) ==> stack(data(24))
+      exec(program.opcode(MGET)) ==> stack(int32ToData(24))
     }
   }
 

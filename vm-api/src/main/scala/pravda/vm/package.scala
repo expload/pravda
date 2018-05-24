@@ -33,10 +33,6 @@ package object vm {
     word.getInt()
   }
 
-  def bytes(b: Int*): Array[Byte] = {
-    b.map(_.toByte).toArray
-  }
-
   def lengthToBytes(len: Long): Array[Byte] = {
     assert(len >= 0)
     assert(((len >> 56) & 0xFF) == 0)

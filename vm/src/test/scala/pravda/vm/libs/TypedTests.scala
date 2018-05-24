@@ -8,6 +8,8 @@ import serialization._
 
 import utest._
 
+import pravda.common.bytes.hex._
+
 object TypedTests extends TestSuite {
   val tests = Tests {
     'typedI32 - {
@@ -24,9 +26,9 @@ object TypedTests extends TestSuite {
         .put("typedI32")
         .put(3)
 
-      exec(typedi32) ==> stack(binaryData(1, 0, 0, 0, 2),
-        binaryData(1, 0, 0, 0, 3),
-        binaryData(1, 0x0a, 0xbc, 0xde, 0xf1))
+      exec(typedi32) ==> stack(data(hex"01 00000002"),
+        data(hex"01 00000003"),
+        data(hex"01 0abcdef1"))
     }
 
     'typedR64 - {
@@ -36,8 +38,8 @@ object TypedTests extends TestSuite {
         .opcode(PUSHX)
         .put(math.Pi)
 
-      exec(program) ==> stack(binaryData(0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
-        binaryData(0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
+      exec(program) ==> stack(data(hex"3f f0 00 00 00 00 00 00"),
+        data(hex"40 09 21 fb 54 44 2d 18"))
 
       val typedr64 = program
         .opcode(LCALL)
@@ -45,8 +47,8 @@ object TypedTests extends TestSuite {
         .put("typedR64")
         .put(2)
 
-      exec(typedr64) ==> stack(binaryData(2, 0x3f, 0xf0, 0, 0, 0, 0, 0, 0),
-        binaryData(2, 0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18))
+      exec(typedr64) ==> stack(data(hex"02 3f f0 00 00 00 00 00 00"),
+        data(hex"02 40 09 21 fb 54 44 2d 18"))
     }
 
     def testTypedArithmetics(i1: Int,
