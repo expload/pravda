@@ -2,10 +2,10 @@ package pravda.cli.programs
 
 import cats.Id
 import com.google.protobuf.ByteString
+import pravda.cli.Config
 import pravda.cli.Config.PravdaCompile
 import pravda.cli.languages.{CompilersLanguage, IoLanguageStub}
 import utest._
-import pravda.cli.Config
 
 object CompileSuite extends TestSuite {
 
@@ -23,13 +23,13 @@ object CompileSuite extends TestSuite {
     "asm" - {
       val io = new IoLanguageStub(Some(BinarySource))
       val compilers = new CompilersLanguage[Id] {
-        def asm(source: String): Id[ByteString] =
-          if (source == StringSource) ExpectedBinaryOutput
-          else UnexpectedBinaryOutput
+        def asm(source: String): Id[Either[String, ByteString]] =
+          if (source == StringSource) Right(ExpectedBinaryOutput)
+          else Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def forth(source: String): Id[ByteString] =
-          UnexpectedBinaryOutput
+        def forth(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(Config.Compile(Asm))
@@ -38,13 +38,13 @@ object CompileSuite extends TestSuite {
     "disasm" - {
       val io = new IoLanguageStub(Some(BinarySource))
       val compilers = new CompilersLanguage[Id] {
-        def asm(source: String): Id[ByteString] =
-          UnexpectedBinaryOutput
+        def asm(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
           if (source == BinarySource) ExpectedStringOutput
           else UnexpectedStringOutput
-        def forth(source: String): Id[ByteString] =
-          UnexpectedBinaryOutput
+        def forth(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(Config.Compile(Disasm))
@@ -53,13 +53,13 @@ object CompileSuite extends TestSuite {
     "forth" - {
       val io = new IoLanguageStub(Some(BinarySource))
       val compilers = new CompilersLanguage[Id] {
-        def asm(source: String): Id[ByteString] =
-          UnexpectedBinaryOutput
+        def asm(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def forth(source: String): Id[ByteString] =
-          if (source == StringSource) ExpectedBinaryOutput
-          else UnexpectedBinaryOutput
+        def forth(source: String): Id[Either[String, ByteString]] =
+          if (source == StringSource) Right(ExpectedBinaryOutput)
+          else Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(Config.Compile(Forth))

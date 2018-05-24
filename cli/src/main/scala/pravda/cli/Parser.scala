@@ -11,9 +11,10 @@ object Parser extends OptionParser[Config]("pravda") {
   head("Pravda Command Line Interface")
 
   cmd("gen")
+    .text("Useful stuff generators.")
     .children(
       cmd("address")
-        .text("Generate ed25519 key pair.")
+        .text("Generate ed25519 key pair. It can be used as regualr wallet or validator node identifier.")
         .action((_, _) => Config.GenAddress())
         .children(
           opt[File]('o', "output")
@@ -75,24 +76,28 @@ object Parser extends OptionParser[Config]("pravda") {
           case (_, otherwise) => otherwise
         },
       cmd("asm")
+        .text("Assemble Pravda VM bytecode from text presentation.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.PravdaCompile.Asm)
           case (_, otherwise) => otherwise
         },
       cmd("disasm")
+        .text("Disassemble Pravda VM bytecode to text presentation.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.PravdaCompile.Disasm)
           case (_, otherwise) => otherwise
         },
       cmd("forth")
+        .text("Compile Pravda pseudo-forth to Pravda VM bytecode.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.PravdaCompile.Forth)
           case (_, otherwise) => otherwise
         },
       cmd("dotnet")
+        .text("Compile .exe produced byt .NET compiler to Pravda VM bytecode.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.PravdaCompile.DotNet)

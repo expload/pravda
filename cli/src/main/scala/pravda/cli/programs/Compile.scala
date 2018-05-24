@@ -15,28 +15,28 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
   import PravdaCompile._
 
   def apply(config: Config.Compile): F[Unit] = {
-    val errorOrFinished =
+    val errorOrResult: EitherT[F, String, ByteString] =
       for {
-        input <- EitherT[F, String, ByteString] {
-          config.input.fold[F[Either[String, ByteString]]](io.readFromStdin().map(Right.apply)) { path =>
-            io.readFromFile(path).map(_.toRight(s"`$path` is not found."))
-          }
-        }
+        input <- usePath(config.input)(
+          io.readFromStdin(),
+          path => io.readFromFile(path).map(_.toRight(s"`$path` is not found."))
+        )
         result <- EitherT[F, String, ByteString] {
           config.compiler match {
-            case Asm    => compilers.asm(input.toStringUtf8).map(x => Right(x))
+            case Asm    => compilers.asm(input.toStringUtf8)
             case Disasm => compilers.disasm(input).map(s => Right(ByteString.copyFromUtf8(s)))
-            case Forth  => compilers.forth(input.toStringUtf8).map(s => Right(s))
+            case Forth  => compilers.forth(input.toStringUtf8)
             case DotNet => Monad[F].pure(Left(".NET currently is not supported."))
             case Nope   => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }
-        _ <- EitherT.liftF[F, String, Unit](config.output.fold(io.writeToStdout(result))(io.writeToFile(_, result)))
-      } yield ()
+      } yield {
+        result
+      }
 
-    errorOrFinished.value.flatMap {
-      case Left(error) => io.writeStringToStderrAndExit(s"$error\n")
-      case Right(_)    => io.exit(0)
+    errorOrResult.value.flatMap {
+      case Left(error)   => io.writeStringToStderrAndExit(s"$error\n")
+      case Right(result) => config.output.fold(io.writeToStdout(result))(io.writeToFile(_, result))
     }
   }
 }

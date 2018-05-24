@@ -4,7 +4,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 val commonSettings = Seq(
   organization := "io.mytc",
-  version := "0.0.1",
+  version := "0.1.0",
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
@@ -57,7 +57,6 @@ lazy val vm = (project in file("vm")).
 lazy val `vm-asm` = (project in file("vm-asm")).
   dependsOn(vmApi).
   settings(normalizedName := "pravda-vm-asm").
-  enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).
   settings(
@@ -70,7 +69,6 @@ lazy val `vm-asm` = (project in file("vm-asm")).
 lazy val forth = (project in file("forth")).
   settings(normalizedName := "pravda-forth").
   dependsOn(`vm-asm`).
-  enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.forth.Application") ).
   settings(
@@ -176,9 +174,9 @@ lazy val node = (project in file("node"))
 
 lazy val cli = (project in file("cli"))
   .enablePlugins(JavaAppPackaging)
-  .settings( commonSettings: _*)
+  .settings(commonSettings: _*)
   .settings(
-		normalizedName := "pravda-cli",
+		normalizedName := "pravda",
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt" % "3.7.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
@@ -188,4 +186,5 @@ lazy val cli = (project in file("cli"))
   .dependsOn(forth)
   .dependsOn(`vm-asm`)
   .dependsOn(vm)
+  .dependsOn(node)
 

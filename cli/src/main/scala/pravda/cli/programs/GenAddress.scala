@@ -17,7 +17,7 @@ class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
     */
   def apply(config: Config.GenAddress): F[Unit] =
     for {
-      randomBytes <- random.bytes64()
+      randomBytes <- random.secureBytes64()
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       json = s"""{"address":"${bytes.byteString2hex(pub)}","privateKey":"${bytes.byteString2hex(sec)}"}"""
       outputBytes = ByteString.copyFromUtf8(json)

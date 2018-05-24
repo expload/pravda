@@ -29,14 +29,16 @@ object RunBytecodeSuite extends TestSuite {
     "run using default executor and stdin" - {
       val io = new IoLanguageStub(Some(ProgramFromStdIn))
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String): Id[Memory] =
+        def run(program: ByteString, executor: ByteString, storagePath: String): Id[Either[String, Memory]] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
-              Memory(
-                stack = ArrayBuffer(ProgramFromStdInResult),
-                heap = ArrayBuffer.empty
+              Right(
+                Memory(
+                  stack = ArrayBuffer(ProgramFromStdInResult),
+                  heap = ArrayBuffer.empty
+                )
               )
-            case _ => EmptyMemory
+            case _ => Right(EmptyMemory)
           }
       }
       val program = new RunBytecode[Id](io, vm)
@@ -50,14 +52,16 @@ object RunBytecodeSuite extends TestSuite {
         files = mutable.Map(ProgramFromFileName -> ProgramFromFile)
       )
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String): Id[Memory] =
+        def run(program: ByteString, executor: ByteString, storagePath: String): Id[Either[String, Memory]] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
-              Memory(
-                stack = ArrayBuffer(ProgramFromFileResult),
-                heap = ArrayBuffer.empty
+              Right(
+                Memory(
+                  stack = ArrayBuffer(ProgramFromFileResult),
+                  heap = ArrayBuffer.empty
+                )
               )
-            case _ => EmptyMemory
+            case _ => Right(EmptyMemory)
           }
       }
       val program = new RunBytecode[Id](io, vm)
@@ -68,8 +72,8 @@ object RunBytecodeSuite extends TestSuite {
     "check file not found error" - {
       val io = new IoLanguageStub()
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String): Id[Memory] =
-          EmptyMemory
+        def run(program: ByteString, executor: ByteString, storagePath: String): Id[Either[String, Memory]] =
+          Right(EmptyMemory)
       }
       val program = new RunBytecode[Id](io, vm)
       program(Config.RunBytecode(input = Some(ProgramFromFileName)))

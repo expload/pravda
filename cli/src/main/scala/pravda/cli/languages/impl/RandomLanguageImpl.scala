@@ -1,17 +1,19 @@
 package pravda.cli.languages
 
+package impl
+
+import java.security.SecureRandom
+
 import cats.Id
 import com.google.protobuf.ByteString
 
-import scala.util.Random
+final class RandomLanguageImpl extends RandomLanguage[Id] {
 
-final class PredictableRandomLanguage(seed: Int) extends RandomLanguage[Id] {
-
-  private val random = new Random(seed)
+  private val secureRandom = new SecureRandom()
 
   def secureBytes64(): Id[ByteString] = {
     val bytes = new Array[Byte](64)
-    random.nextBytes(bytes)
+    secureRandom.nextBytes(bytes)
     ByteString.copyFrom(bytes)
   }
 }

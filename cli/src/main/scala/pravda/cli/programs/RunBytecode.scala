@@ -1,8 +1,8 @@
 package pravda.cli.programs
 
 import cats._
+import cats.data.EitherT
 import cats.implicits._
-import com.google.protobuf.ByteString
 import pravda.cli.Config
 import pravda.cli.languages.{IoLanguage, VmLanguage}
 import pravda.common.bytes
@@ -18,25 +18,22 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F], vm: VmLanguage[F]) {
     s"""{"stack":[${stack.mkString(",")}],"heap":[${heap.mkString(",")}]}"""
   }
 
-  def apply(program: ByteString, executor: ByteString, storagePath: String): F[Unit] =
-    for {
-      memory <- vm.run(program, executor, storagePath)
-      json = memoryToJson(memory)
-      _ <- io.writeStringToStdout(json)
-      _ <- io.exit(0)
-    } yield ()
-
-  def apply(config: Config.RunBytecode): F[Unit] =
-    for {
-      storagePath <- config.storage.fold(io.createTmpDir())(path => Monad[F].pure(path))
-      executor = bytes.hex2byteString(config.executor)
-      _ <- config.input match {
-        case None => io.readFromStdin().flatMap(apply(_, executor, storagePath))
-        case Some(path) =>
-          io.readFromFile(path).flatMap {
-            case None          => io.writeStringToStderrAndExit(s"`$path` is not found.\n")
-            case Some(program) => apply(program, executor, storagePath)
-          }
+  def apply(config: Config.RunBytecode): F[Unit] = {
+    val errorOrMemory: EitherT[F, String, Memory] =
+      for {
+        storagePath <- EitherT.liftF(config.storage.fold(io.createTmpDir())(path => Monad[F].pure(path)))
+        executor = bytes.hex2byteString(config.executor)
+        program <- usePath(config.input)(io.readFromStdin(),
+                                         path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.\n")))
+        memory <- EitherT(vm.run(program, executor, storagePath))
+      } yield {
+        memory
       }
-    } yield ()
+    errorOrMemory.value flatMap {
+      case Left(error) => io.writeStringToStderrAndExit(error)
+      case Right(memory) =>
+        val json = memoryToJson(memory)
+        io.writeStringToStdout(json)
+    }
+  }
 }
