@@ -13,16 +13,13 @@ cd pravda
 sbt universal:packageBin
 sudo mkdir /usr/local/pravda
 
-sudo unzip -d /usr/local/pravda node/target/universal/pravda-node-0.0.1.zip
-sudo unzip -d /usr/local/pravda forth/target/universal/forth-0.0.1.zip
+sudo unzip -d /usr/local/pravda node/target/universal/pravda-0.1.0.zip
 
 # Add to .bashrc (or your favourite shell profile)
-export PATH=/usr/local/pravda/forth-0.0.1/bin:$PATH
-export PATH=/usr/local/pravda/pravda-node-0.0.1/bin:$PATH
+export PATH=/usr/local/pravda/pravda-0.1.0/bin:$PATH
 
 # Now you should be able to run from everywhere
-forth
-pravda-node
+pravda
 ```
 
 ### 2. Start the node.
@@ -41,11 +38,15 @@ After starting the script the node will:
 ### 3. Send some transaction (program) to node.
 
 ```
-curl -X POST -H "Content-Type: application/base64" localhost:8081/api/private/broadcast?fee=0 -d $(forth -i -b '2 2 add')
+PRAVDA_PROGRAM=$(echo '2 2 add' | pravda compile forth | base64)
+curl -X POST -H "Content-Type: application/base64" localhost:8081/api/private/broadcast?fee=0 -d $PRAVDA_PROGRAM
 ```
 
-`forth -i -b '2 2 add'` takes the program in command line, compiles it to
+`echo '2 2 add' | pravda compile forth | base64` takes the program in command line, compiles it to
 Pravda bytecode and prints it to standard out base64 encoded.
 
 The program `2 2 add` pushes two integers on the stack and adds them. The
 response to curl command must be `[00000004]`
+
+Watch the logs of the Pravda node to see more.
+

@@ -1,5 +1,4 @@
-`pravda-node` is a consensus engine based on Tendermint. It is also a CLI to run
-single node.
+`pravda-node` is a consensus engine based on Tendermint.
 
 pravda-node uses Tendermint to handle low level blockchain operations and P2P
 networking. It depends on our implementation of Tendermint's ABCI server.
@@ -11,7 +10,7 @@ blockchain messages and passes them through to a business layer.
 ```
 Usage:
 
-pravda-node
+pravda node
 
     Start pravda node.
 
