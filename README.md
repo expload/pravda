@@ -8,7 +8,7 @@ Pravda is written in Scala. It is JVM-based. We use SBT as a build tool.
 
 ## Project structure
 
-* [pravda-node](doc/pravda-node.md) is a consensus engine based on Tendermint.
+* [node](doc/pravda-node.md) is a consensus engine based on Tendermint.
 It handles all the low level stuff, like p2p networking, consensus protocol,
 accepting binary transactions with delivering them to business logic handler and
 persistent storage. It also glues together all the other modules, acting
@@ -25,7 +25,7 @@ language for Pravda Virtual Machine.
 * [forth](doc/ref/cli/pravda-compile-forth.md) is a Forth-like stack based
 language which can be compiled to Pravda bytecode.
 
-* [pravda](doc/ref/cli/main.md) is a unified command line tool to work with Pravda
+* [cli](doc/ref/cli/main.md) is a unified command line tool to work with Pravda
 platform. It can be used to compile programs in Forth, .Net PE, Pravda Assembly
 languages to Pravda bytecode, to execute programs and to control Pravda nodes.
 
