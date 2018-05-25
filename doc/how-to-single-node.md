@@ -48,5 +48,3 @@ Pravda bytecode and prints it to standard out base64 encoded.
 The program `2 2 add` pushes two integers on the stack and adds them. The
 response to curl command must be `[00000004]`
 
-Watch the logs of the Pravda node to see more.
-
