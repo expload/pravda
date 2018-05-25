@@ -104,4 +104,6 @@ object Parser extends OptionParser[Config]("pravda") {
           case (_, otherwise) => otherwise
         },
     )
+
+  override def showUsageOnError: Boolean = false
 }
