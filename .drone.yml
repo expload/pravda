@@ -11,6 +11,6 @@ pipeline:
       - git clone https://github.com/mytimecoin/scala-abci-server.git scala-abci-server --depth 1
       - cd /workdir/code && git status && git log | head
       - cd /workdir/code/scala-abci-server && sbt publishLocal
-      - cd /workdir/code && sbt test
-      - cd /workdir/code && sbt scalafmtCheck
-      - cd /workdir/code && sbt scalafixTest
+      - cd /workdir/code && sbt -mem 2048 test
+      - cd /workdir/code && sbt -mem 2048 scalafmtCheck
+      - cd /workdir/code && sbt -mem 2048 scalafixTest
