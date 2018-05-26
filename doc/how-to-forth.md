@@ -2,6 +2,7 @@
 
 ## How to run simple forth programs
 
-Just use inline mode `--inline` and `--hex` output:
+Use `echo` to feed a source program to `pravda compile forth` and then feed
+compiled binary to `pravda run`:
 
-```forth -i -x '2 2 add' | vmcli```
+```echo '2 2 add' | pravda compile forth | pravda run```
