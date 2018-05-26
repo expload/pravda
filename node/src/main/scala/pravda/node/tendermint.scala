@@ -2,7 +2,7 @@ package pravda.node
 
 import java.io.{File, FileOutputStream, PrintWriter}
 import com.google.protobuf.ByteString
-import pravda.node.contrib.ripemd160
+import pravda.common.contrib.ripemd160
 import pravda.node.data.TimechainConfig
 import pravda.node.data.common.Address
 import pravda.node.utils.{CpuArchitecture, OperationSystem}

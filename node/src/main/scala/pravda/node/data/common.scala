@@ -3,7 +3,7 @@ package pravda.node.data
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.node.contrib.ripemd160
+import pravda.common.contrib.ripemd160
 import supertagged.TaggedType
 import pravda.common.bytes._
 

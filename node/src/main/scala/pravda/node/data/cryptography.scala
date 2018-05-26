@@ -5,7 +5,7 @@ import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{BadPaddingException, Cipher, SecretKeyFactory}
 
 import com.google.protobuf.ByteString
-import pravda.node.contrib.ed25519
+import pravda.common.contrib.ed25519
 import pravda.node.data.blockchain.Transaction
 import pravda.node.data.common.Address
 import pravda.node.data.serialization._

@@ -46,6 +46,10 @@ package object bytes {
     }
   }
 
+  def isHex(s: String): Boolean = {
+    (s.length % 2 == 0) && s.forall(x => HexInputStream.to16(x) > -1)
+  }
+
   def hex2byteString(hex: String): ByteString = {
     if (hex.length > 0) {
       val his = getHexInputStream

@@ -4,7 +4,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 val commonSettings = Seq(
   organization := "io.mytc",
-  version := "0.0.1",
+  version := "0.1.0",
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
@@ -31,7 +31,8 @@ lazy val common = (project in file("common")).
   settings(
     libraryDependencies ++= Seq (
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "com.propensive" %% "contextual" % "1.1.0"
+      "com.propensive" %% "contextual" % "1.1.0",
+      "org.whispersystems" % "curve25519-java" % "0.4.1"
     )
   )
 
@@ -56,7 +57,6 @@ lazy val vm = (project in file("vm")).
 lazy val `vm-asm` = (project in file("vm-asm")).
   dependsOn(vmApi).
   settings(normalizedName := "pravda-vm-asm").
-  enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).
   settings(
@@ -69,7 +69,6 @@ lazy val `vm-asm` = (project in file("vm-asm")).
 lazy val forth = (project in file("forth")).
   settings(normalizedName := "pravda-forth").
   dependsOn(`vm-asm`).
-  enablePlugins(JavaAppPackaging).
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.forth.Application") ).
   settings(
@@ -85,20 +84,6 @@ lazy val `forth-vm-integration-test` = (project in file("testkit/forth-vm-integr
   dependsOn(forth).
   settings(normalizedName := "pravda-testkit-forth-vm-integration").
   settings( commonSettings: _* )
-
-lazy val vmcli = (project in file("vmcli")).
-  dependsOn(vm).
-	enablePlugins(JavaAppPackaging).
-  settings(
-    normalizedName := "vmcli",
-    version := "0.0.1"
-  ).
-  settings( commonSettings: _* ).
-  settings(
-    libraryDependencies ++= Seq (
-      "com.github.scopt" %% "scopt"      % "3.7.0"
-    )
-  )
 
 lazy val cil = (project in file("cil-translator")).
   dependsOn(`vm-asm`).
@@ -140,8 +125,6 @@ lazy val node = (project in file("node"))
 		  "io.mytc" %% "scala-abci-server" % "0.9.2",
 		  "com.github.pureconfig" %% "pureconfig" % "0.9.0",
 		  "org.typelevel" %% "cats-core" % "1.0.1",
-		  // Cryptography
-		  "org.whispersystems" % "curve25519-java" % "0.4.1",
 		  // Marshalling
 		  "com.tethys-json" %% "tethys" % "0.6.2",
 		  "org.json4s" %%	"json4s-ast" % "3.5.3",
@@ -189,17 +172,19 @@ lazy val node = (project in file("node"))
   .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
-lazy val pravda = (project in file("pravda")).
-	enablePlugins(JavaAppPackaging).
-  settings(
-    normalizedName := "pravda",
-    version := "0.0.1"
-  ).
-  settings( commonSettings: _* ).
-  settings(
+lazy val cli = (project in file("cli"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(commonSettings: _*)
+  .settings(
+		normalizedName := "pravda",
     libraryDependencies ++= Seq (
       "com.github.scopt" %% "scopt" % "3.7.0",
-      "org.whispersystems" % "curve25519-java" % "0.4.1"
+      "org.typelevel" %% "cats-core" % "1.0.1",
     )
   )
+  .dependsOn(common)
+  .dependsOn(forth)
+  .dependsOn(`vm-asm`)
+  .dependsOn(vm)
+  .dependsOn(node)
 
