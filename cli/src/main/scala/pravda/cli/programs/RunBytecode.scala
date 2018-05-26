@@ -23,8 +23,8 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F], vm: VmLanguage[F]) {
       for {
         storagePath <- EitherT.liftF(config.storage.fold(io.createTmpDir())(path => Monad[F].pure(path)))
         executor = bytes.hex2byteString(config.executor)
-        program <- usePath(config.input)(io.readFromStdin(),
-                                         path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.\n")))
+        program <- useOption(config.input)(io.readFromStdin(),
+                                           path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.\n")))
         memory <- EitherT(vm.run(program, executor, storagePath))
       } yield {
         memory

@@ -9,6 +9,7 @@ import sys.process.stderr
   */
 object Application extends App {
 
+  lazy val api = new NodeApiLanguageImpl()
   lazy val io = new IoLanguageImpl()
   lazy val compilers = new CompilersLanguageImpl()
   lazy val random = new RandomLanguageImpl()
@@ -17,11 +18,13 @@ object Application extends App {
   lazy val compile = new Compile(io, compilers)
   lazy val genAddress = new GenAddress(io, random)
   lazy val runner = new RunBytecode(io, vm)
+  lazy val broadcast = new Broadcast(io, api, compilers)
 
   Parser.parse(args, Config.Nope) match {
     case Some(config: Config.Compile)     => compile(config)
     case Some(config: Config.RunBytecode) => runner(config)
     case Some(config: Config.GenAddress)  => genAddress(config)
+    case Some(config: Config.Broadcast)   => broadcast(config)
     case _ =>
       stderr.println(Parser.renderTwoColumnsUsage)
       sys.exit(1)

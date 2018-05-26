@@ -65,9 +65,9 @@ object ParserSuite extends TestSuite {
           }
       }
       "*" - assert {
-        import PravdaCompile._
+        import CompileMode._
 
-        def compile(name: String, compiler: PravdaCompile) = {
+        def compile(name: String, compiler: CompileMode) = {
           Parser
             .parse(Seq("compile", name), Config.Nope)
             .exists {

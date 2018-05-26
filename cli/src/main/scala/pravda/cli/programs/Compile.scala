@@ -5,19 +5,19 @@ import cats.implicits._
 import cats.data.EitherT
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.Config.PravdaCompile
+import pravda.cli.Config.CompileMode
 import pravda.cli.languages.{CompilersLanguage, IoLanguage}
 
 import scala.language.higherKinds
 
 class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
 
-  import PravdaCompile._
+  import CompileMode._
 
   def apply(config: Config.Compile): F[Unit] = {
     val errorOrResult: EitherT[F, String, ByteString] =
       for {
-        input <- usePath(config.input)(
+        input <- useOption(config.input)(
           io.readFromStdin(),
           path => io.readFromFile(path).map(_.toRight(s"`$path` is not found."))
         )
