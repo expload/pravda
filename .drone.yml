@@ -7,10 +7,29 @@ workspace:
 pipeline:
   tests:
     image: gcr.io/time-coin/sbt:latest
+    volumes:
+      - /var/lib/sbt-cache:/workdir/sbt
+      - /var/lib/ivy-cache:/workdir/ivy
     commands:
+      - export SBTCMD='sbt -Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
       - git clone https://github.com/mytimecoin/scala-abci-server.git scala-abci-server --depth 1
       - cd /workdir/code && git status && git log | head
-      - cd /workdir/code/scala-abci-server && sbt publishLocal
-      - cd /workdir/code && sbt -mem 2048 test
-      - cd /workdir/code && sbt -mem 2048 scalafmtCheck
-      - cd /workdir/code && sbt -mem 2048 scalafixTest
+      - cd /workdir/code/scala-abci-server && $SBTCMD publishLocal
+      - cd /workdir/code && $SBTCMD -mem 2048 test scalafmtCheck scalafixTest
+  package:
+    image: gcr.io/time-coin/sbt:latest
+    volumes:
+      - /var/lib/sbt-cache:/workdir/sbt
+      - /var/lib/ivy-cache:/workdir/ivy
+    commands:
+      - export SBTCMD='sbt -Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+      - cd /workdir/code && $SBTCMD -mem 2048 cli/universal:packageZipTarball cli/universal:packageBin
+#    when:
+#      event: tag
+#  github_release:
+#    image: plugins/github-release
+#    files: /workdir/code/cli/target/universal/*.tgz
+#    files: /workdir/code/cli/target/universal/*.zip
+#    secrets: [ GITHUB_RELEASE_API_KEY ]
+#    when:
+#      event: tag
