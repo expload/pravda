@@ -4,6 +4,10 @@ import java.nio.ByteBuffer
 
 import pravda.vm.state.Memory
 
-trait Function // FIXME sealed
-trait StdFunction                                      extends (Memory => Memory) with Function
-final case class UserDefinedFunction(code: ByteBuffer) extends Function
+trait Function
+
+trait StdFunction extends (Memory => Memory) with Function
+
+trait UserDefinedFunction extends Function {
+  val code: ByteBuffer
+}

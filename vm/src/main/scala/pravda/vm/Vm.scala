@@ -131,8 +131,8 @@ object Vm {
                   case Some(function) =>
                     function match {
                       case f: StdFunction => memory ++= f(callData)
-                      case UserDefinedFunction(f) =>
-                        memory ++= run(f,
+                      case f: UserDefinedFunction =>
+                        memory ++= run(f.code,
                                        environment,
                                        callData,
                                        executor,

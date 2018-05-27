@@ -35,7 +35,7 @@ object Loader extends Loader {
             table.get(name).map { i =>
               val prog = program.duplicate()
               prog.position(i)
-              UserDefinedFunction(prog)
+              Func(prog)
             }
           }
         }
