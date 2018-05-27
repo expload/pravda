@@ -13,12 +13,6 @@ package object utils {
       .map(bs => byteString2hex(bs))
       .mkString("[", ", ", "]")
 
-  // TODO better naming
-  def padLong(i: Long, digits: Int): String = {
-    val str = i.toString
-    ("0" * (digits - str.length)) + str
-  }
-
   def detectCpuArchitecture(): Future[CpuArchitecture] = Future.successful {
     System.getProperty("os.arch").toLowerCase match {
       case s if s.contains("amd64")  => CpuArchitecture.x86_64

@@ -16,7 +16,8 @@ import korolev.execution._
 import korolev.server.{KorolevServiceConfig, ServerRouter}
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
-import pravda.node.persistence.implicits._
+import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization._
 import cats.data.OptionT
 import cats.implicits._
 import com.google.protobuf.ByteString
@@ -341,9 +342,10 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   )
 
   private def loadBlock(height: Long) = {
-    val key = s"effects:${utils.padLong(height, 10)}"
+    val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
     for {
-      blockInfo <- OptionT(db.getAs[Map[TransactionId, Seq[EnvironmentEffect]]](key))
+      blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
+        transcode(Bson @@ r.bytes).to[Map[TransactionId, Seq[EnvironmentEffect]]])
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {

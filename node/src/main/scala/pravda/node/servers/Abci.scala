@@ -7,7 +7,6 @@ import java.util.Base64
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
-import pravda.node.db.serialyzer.ValueWriter
 import pravda.node.db.{DB, Operation}
 import pravda.vm.{Vm, state}
 import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
@@ -16,7 +15,7 @@ import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
 import pravda.node.data.common.{ApplicationStateInfo, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
-import pravda.node.persistence.implicits._
+import pravda.node.data.serialization.bson._
 import pravda.node.persistence.FileStore
 import pravda.common.contrib.ripemd160
 import pravda.node.data.blockchain.Transaction.SignedTransaction
@@ -145,8 +144,6 @@ object Abci {
 
   final class EnvironmentProvider(db: DB) {
 
-    val dataWriter: ValueWriter[Data] = (value: Data) => value.toByteArray
-
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
     private val cache = mutable.Map.empty[String, Array[Byte]]
@@ -160,20 +157,28 @@ object Abci {
 
       def :+(suffix: String) = new DbPath(mkKey(suffix))
 
-      def get(suffix: String): Option[Array[Byte]] = {
+      def getAs[V: BsonDecoder](suffix: String): Option[V] =
+        getRawBytes(suffix).map(arr => transcode(Bson @@ arr).to[V])
+
+      def getRawBytes(suffix: String): Option[Array[Byte]] = {
         val key = mkKey(suffix)
-        cache.get(key).orElse(db.syncGet(key).map(_.bytes))
+        cache.get(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
       }
 
-      def put[V](suffix: String, value: V)(implicit vw: ValueWriter[V]): Unit = {
+      def put[V: BsonEncoder](suffix: String, value: V): Unit = {
+        val bsonValue: Array[Byte] = transcode(value).to[Bson]
+        putRawBytes(suffix, bsonValue)
+      }
+
+      def putRawBytes(suffix: String, value: Array[Byte]): Unit = {
         val key = mkKey(suffix)
-        cache.put(key, vw.toBytes(value))
-        operations += Operation.Put(key, value)
+        cache.put(key, value)
+        operations += Operation.Put(byteUtils.stringToBytes(key), value)
       }
 
       def remove(suffix: String): Option[Array[Byte]] = {
         val key = mkKey(suffix)
-        operations += Operation.Delete(key)
+        operations += Operation.Delete(byteUtils.stringToBytes(key))
         cache.remove(key)
       }
     }
@@ -193,15 +198,16 @@ object Abci {
 
         def get(key: state.Address): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
-          val value = dbPath.get(hexKey)
+          val value = dbPath.getRawBytes(hexKey)
           effects += StorageRead(dbPath.mkKey(hexKey), value)
           value.map(ba => ByteString.copyFrom(ba))
         }
 
         def put(key: state.Address, value: state.Data): Unit = {
           val hexKey = byteUtils.byteString2hex(key)
-          effects += StorageWrite(dbPath.mkKey(hexKey), value.toByteArray)
-          dbPath.put(byteUtils.byteString2hex(key), value)(dataWriter) // FIXME remove explicit writer
+          val array = value.toByteArray
+          effects += StorageWrite(dbPath.mkKey(hexKey), array)
+          dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
         }
 
         def delete(key: state.Address): Unit = {
@@ -213,7 +219,7 @@ object Abci {
 
       def createProgram(owner: state.Address, code: Data): state.Address = {
         // FIXME fomkin: consider something better
-        val addressBytes = ripemd160.getHash(owner.concat(code))
+        val addressBytes = ripemd160.getHash(owner.concat(code).toByteArray)
 
         val address = Address @@ ByteString.copyFrom(addressBytes)
         val sp = StoredProgram(code, Address @@ owner)
@@ -232,9 +238,7 @@ object Abci {
       }
 
       private def getStoredProgram(address: ByteString) =
-        programsPath.get(byteUtils.byteString2hex(address)) map { serializedProgram =>
-          transcode(Bson @@ serializedProgram).to[StoredProgram]
-        }
+        programsPath.getAs[StoredProgram](byteUtils.byteString2hex(address))
 
       // Effects below are ignored by effect collect
       // because they are inaccessible from user space
@@ -261,10 +265,10 @@ object Abci {
     }
 
     def commit(height: Long): Unit = {
-      import utils.padLong
+
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
-        effectsPath.put(padLong(height, 10), data)
+        effectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
       db.syncBatch(operations: _*)
