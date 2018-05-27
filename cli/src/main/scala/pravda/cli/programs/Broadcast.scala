@@ -29,7 +29,9 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeApiLanguage[F], c
     val errorOrResult: EitherT[F, String, String] =
       for {
         input <- useOption(config.input)(io.readFromStdin(), readFromFile)
-        walletJson <- useOption(config.input)(io.readFromStdin(), readFromFile)
+        walletJson <- EitherT(
+          config.wallet
+            .fold[F[Either[String, ByteString]]](Monad[F].pure(Left("Wallet file should be defined")))(readFromFile))
         wallet = transcode(Json @@ walletJson.toStringUtf8).to[Wallet]
         program <- EitherT[F, String, ByteString] {
           config.mode match {
@@ -59,7 +61,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeApiLanguage[F], c
 
     errorOrResult.value.flatMap {
       case Left(error)   => io.writeStringToStderrAndExit(s"$error\n")
-      case Right(result) => io.writeStringToStdout(result)
+      case Right(result) => io.writeStringToStdout(s"$result\n")
     }
   }
 }

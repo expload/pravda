@@ -10,7 +10,7 @@ package object utils {
 
   def showStack(stack: Seq[ByteString]): String =
     stack
-      .map(bs => byteString2hex(bs))
+      .map(bs => '"' + byteString2hex(bs) + '"')
       .mkString("[", ", ", "]")
 
   def detectCpuArchitecture(): Future[CpuArchitecture] = Future.successful {

@@ -194,41 +194,26 @@ object json {
   implicit val txResultReader: JsonReader[TxResult] =
     jsonReader[TxResult]
 
-  implicit val txResultWriter: JsonWriter[TxResult] =
-    jsonWriter[TxResult]
-
   implicit val txSyncResultReader: JsonReader[TxSyncResult] =
     jsonReader[TxSyncResult]
-
-  implicit val txSyncResultWriter: JsonWriter[TxSyncResult] =
-    jsonWriter[TxSyncResult]
 
   implicit val txCommitResultReader: JsonReader[TxCommitResult] =
     jsonReader[TxCommitResult]
 
-  implicit val txCommitResultWriter: JsonWriter[TxCommitResult] =
-    jsonWriter[TxCommitResult]
-
   implicit val rpcSyncResponseReader: JsonReader[RpcSyncResponse] =
     jsonReader[RpcSyncResponse]
-
-  implicit val rpcSyncResponseWriter: JsonWriter[RpcSyncResponse] =
-    jsonWriter[RpcSyncResponse]
 
   implicit val rpcAsyncResponseReader: JsonReader[RpcAsyncResponse] =
     jsonReader[RpcAsyncResponse]
 
-  implicit val rpcAsyncResponseWriter: JsonWriter[RpcAsyncResponse] =
-    jsonWriter[RpcAsyncResponse]
-
   implicit val rpcCommitResponseReader: JsonReader[RpcCommitResponse] =
     jsonReader[RpcCommitResponse]
 
-  implicit val rpcCommitResponseWriter: JsonWriter[RpcCommitResponse] =
-    jsonWriter[RpcCommitResponse]
-
-  implicit val rpcError: JsonReader[RpcError] =
+  implicit val rpcErrorReader: JsonReader[RpcError] =
     jsonReader[RpcError]
+
+  implicit val rpcErrorWriter: JsonWriter[RpcError] =
+    jsonWriter[RpcError]
 
   implicit val rpcTxResponseReader: JsonReader[RpcTxResponse] =
     jsonReader[RpcTxResponse]
