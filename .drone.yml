@@ -28,8 +28,9 @@ pipeline:
       event: tag
   github_release:
     image: plugins/github-release
-    files: /workdir/code/cli/target/universal/*.tgz
-    files: /workdir/code/cli/target/universal/*.zip
+    files:
+      - /workdir/code/cli/target/universal/*.tgz
+      - /workdir/code/cli/target/universal/*.zip
     secrets: [ GITHUB_RELEASE_API_KEY ]
     when:
       event: tag
