@@ -10,13 +10,9 @@ sealed trait Operation {
 
 object Operation {
 
-  final case class Delete(key: Array[Byte]) extends Operation {
-    def exec(implicit db: DB): Future[Unit] = db.deleteBytes(key)
-  }
+  final case class Delete(key: Array[Byte]) extends Operation
 
-  final case class Put(key: Array[Byte], value: Array[Byte]) extends Operation {
-    def exec(implicit db: DB): Future[Unit] = db.putBytes(key, value)
-  }
+  final case class Put(key: Array[Byte], value: Array[Byte]) extends Operation
 
   object Delete {
 

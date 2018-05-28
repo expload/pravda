@@ -1,5 +1,7 @@
 package pravda.common
 
+import java.nio.charset.{Charset, StandardCharsets}
+
 import com.google.protobuf.ByteString
 
 package object bytes {
@@ -101,5 +103,51 @@ package object bytes {
     his
   }
   // scalafix:on DisableSyntax.keywords.null
+
+  def longToBytes(l: Long): Array[Byte] = {
+    val array = new Array[Byte](8)
+    array(0) = (l >> 56).toByte
+    array(1) = (l >> 48 & 0xff).toByte
+    array(2) = (l >> 40 & 0xff).toByte
+    array(3) = (l >> 32 & 0xff).toByte
+    array(4) = (l >> 24 & 0xff).toByte
+    array(5) = (l >> 16 & 0xff).toByte
+    array(6) = (l >> 8 & 0xff).toByte
+    array(7) = (l & 0xff).toByte
+    array
+  }
+
+  def bytesToLong(array: Array[Byte]): Long = {
+    var l = 0L
+    array.foreach { b =>
+      l = (l << 8) | b
+    }
+    l
+  }
+
+  def intToBytes(l: Int): Array[Byte] = {
+    val array = new Array[Byte](4)
+    array(0) = (l >> 24).toByte
+    array(1) = (l >> 16 & 0xff).toByte
+    array(2) = (l >> 8 & 0xff).toByte
+    array(3) = (l & 0xff).toByte
+    array
+  }
+
+  def bytesToInt(array: Array[Byte]): Int = {
+    var i = 0
+    array.foreach { b =>
+      i = (i << 8) | b
+    }
+    i
+  }
+
+  def stringToBytes(str: String, charset: Charset = StandardCharsets.UTF_8): Array[Byte] = {
+    str.getBytes(charset)
+  }
+
+  def bytesToString(array: Array[Byte], charset: Charset = StandardCharsets.UTF_8): String = {
+    new String(array, charset)
+  }
 
 }
