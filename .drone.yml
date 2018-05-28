@@ -24,12 +24,12 @@ pipeline:
     commands:
       - export SBTCMD='sbt -Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
       - cd /workdir/code && $SBTCMD -mem 2048 cli/universal:packageZipTarball cli/universal:packageBin
-#    when:
-#      event: tag
-#  github_release:
-#    image: plugins/github-release
-#    files: /workdir/code/cli/target/universal/*.tgz
-#    files: /workdir/code/cli/target/universal/*.zip
-#    secrets: [ GITHUB_RELEASE_API_KEY ]
-#    when:
-#      event: tag
+    when:
+      event: tag
+  github_release:
+    image: plugins/github-release
+    files: /workdir/code/cli/target/universal/*.tgz
+    files: /workdir/code/cli/target/universal/*.zip
+    secrets: [ GITHUB_RELEASE_API_KEY ]
+    when:
+      event: tag
