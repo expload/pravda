@@ -17,7 +17,7 @@ pipeline:
     # - cd /workdir/code/scala-abci-server && $SBTCMD publishLocal
       - cd /workdir/code && $SBTCMD -mem 2048 test scalafmtCheck scalafixTest
   package:
-    image: gcr.io/time-coin/builder-java-sbt:0.1
+    image: gcr.io/time-coin/sbt:latest
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
       - /var/lib/ivy-cache:/workdir/ivy
