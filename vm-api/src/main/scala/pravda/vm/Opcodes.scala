@@ -14,6 +14,8 @@ object Opcodes {
   final val PCREATE = int.PCREATE.toByte
   final val PUPDATE = int.PUPDATE.toByte
 
+  final val PADDR = int.PADDR.toByte
+
   // Stack
   final val POP = int.POP.toByte
   final val PUSHX = int.PUSHX.toByte
@@ -60,6 +62,8 @@ object Opcodes {
 
   // Specials
   final val FROM = int.FROM.toByte
+  final val TRANSFER = int.TRANSFER.toByte
+  final val PTRANSFER = int.PTRANSFER.toByte
 
   object int {
     // Control
@@ -74,6 +78,8 @@ object Opcodes {
 
     final val PCREATE = 0x08
     final val PUPDATE = 0x09
+
+    final val PADDR = 0x0a
 
     // Stack
     final val POP = 0x10
@@ -121,5 +127,7 @@ object Opcodes {
 
     // Specials
     final val FROM = 0xa0
+    final val TRANSFER = 0xa1
+    final val PTRANSFER = 0xa2
   }
 }
