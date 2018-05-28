@@ -85,12 +85,9 @@ lazy val `forth-vm-integration-test` = (project in file("testkit/forth-vm-integr
   settings(normalizedName := "pravda-testkit-forth-vm-integration").
   settings( commonSettings: _* )
 
-lazy val cil = (project in file("cil-translator")).
+lazy val dotnet = (project in file("dotnet")).
   dependsOn(`vm-asm`).
-  settings(
-    normalizedName := "cil-translator",
-    version := "0.0.1"
-  ).
+  settings(normalizedName := "pravda-dotnet").
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (

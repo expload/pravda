@@ -1,8 +1,8 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import fastparse.byte.all._
 import LE._
-import io.mytc.sood.cil.utils._
+import pravda.dotnet.utils._
 
 final case class TablesInfo(
     fieldTable: Seq[TablesInfo.FieldRow] = Seq.empty,

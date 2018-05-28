@@ -1,11 +1,11 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import java.nio.charset.StandardCharsets
 
 import pravda.vm.asm._
-import io.mytc.sood.cil.CIL._
-import io.mytc.sood.cil.Signatures.LocalVarSig
-import io.mytc.sood.cil.TablesData._
+import pravda.dotnet.Signatures.LocalVarSig
+import pravda.dotnet.TablesData._
+import pravda.dotnet.CIL._
 import pravda.vm._
 import serialization._
 

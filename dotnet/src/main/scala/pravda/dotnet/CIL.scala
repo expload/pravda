@@ -1,8 +1,8 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import fastparse.byte.all._
 import LE._
-import io.mytc.sood.cil.utils._
+import pravda.dotnet.utils._
 
 object CIL {
   final case class CilData(stringHeap: Bytes,

@@ -1,4 +1,4 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 //import fastparse.byte.all._
 //import io.mytc.sood.cil.CIL._
@@ -179,7 +179,6 @@ object ArithmeticsTests extends TestSuite {
 //          Jump("stop"),
 //          Label("stop")
 //        )
->>>>>>> Smart program signatures tests, others are commented
     }
   }
 }

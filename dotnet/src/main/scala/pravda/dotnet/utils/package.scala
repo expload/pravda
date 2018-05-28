@@ -1,20 +1,20 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import fastparse.byte.all._
 import fastparse.core.Parsed._
 
 package object utils {
-  private[cil] def nullTerminatedString(len: Int): P[String] =
+  private[dotnet] def nullTerminatedString(len: Int): P[String] =
     AnyBytes(len).!.map(bs => new String(bs.takeWhile(_ != 0).toArray))
 
-  private[cil] val nullTerminatedString: P[String] =
+  private[dotnet] val nullTerminatedString: P[String] =
     P(BytesWhile(_ != 0, min = 0).! ~ BS(0)).map(bs => new String(bs.toArray))
 
-  private[cil] type Validated[T] = Either[String, T]
-  private[cil] def validationError(msg: String): Validated[Nothing] = Left(msg)
-  private[cil] def validated[T](t: T): Validated[T] = Right(t)
+  private[dotnet] type Validated[T] = Either[String, T]
+  private[dotnet] def validationError(msg: String): Validated[Nothing] = Left(msg)
+  private[dotnet] def validated[T](t: T): Validated[T] = Right(t)
 
-  private[cil] implicit class ValidatedSeqOps[T](vs: Seq[Validated[T]]) {
+  private[dotnet] implicit class ValidatedSeqOps[T](vs: Seq[Validated[T]]) {
 
     def sequence: Validated[Seq[T]] = {
       val res = Seq.newBuilder[T]
@@ -34,7 +34,7 @@ package object utils {
     }
   }
 
-  private[cil] implicit class ParserOps[T](p: Parsed[T]) {
+  private[dotnet] implicit class ParserOps[T](p: Parsed[T]) {
 
     def toValidated: Validated[T] = p match {
       case Success(t, _)        => Right(t)
@@ -42,7 +42,7 @@ package object utils {
     }
   }
 
-  private[cil] implicit class OptionOps[T](o: Option[T]) {
+  private[dotnet] implicit class OptionOps[T](o: Option[T]) {
     def toValidated(err: String): Validated[T] = o match {
       case Some(x) => Right(x)
       case None => Left(err)

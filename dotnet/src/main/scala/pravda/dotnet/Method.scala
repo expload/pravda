@@ -1,8 +1,8 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
-import io.mytc.sood.cil.CIL.OpCode
-import io.mytc.sood.cil.PE.Info._
-import io.mytc.sood.cil.utils.{Validated, _}
+import CIL.OpCode
+import PE.Info._
+import pravda.dotnet.utils.{Validated, _}
 
 
 final case class Method(opcodes: Seq[OpCode], maxStack: Int, localVarSigIdx: Option[Long])

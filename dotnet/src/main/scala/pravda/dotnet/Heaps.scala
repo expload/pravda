@@ -1,7 +1,7 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import fastparse.byte.all._
-import io.mytc.sood.cil.utils._
+import pravda.dotnet.utils._
 
 object Heaps {
   private val blobBytes: P[Bytes] = P(Int8).flatMap(b => {

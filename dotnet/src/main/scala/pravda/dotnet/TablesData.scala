@@ -1,6 +1,6 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
-import io.mytc.sood.cil.PE.Info._
+import pravda.dotnet.PE.Info._
 import utils._
 
 final case class TablesData(

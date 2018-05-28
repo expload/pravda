@@ -1,9 +1,9 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
-import io.mytc.sood.cil.CIL._
-import io.mytc.sood.cil.Signatures.SigType._
-import io.mytc.sood.cil.Signatures._
-import io.mytc.sood.cil.TablesData._
+import pravda.dotnet.CIL._
+import pravda.dotnet.Signatures.SigType._
+import pravda.dotnet.Signatures._
+import pravda.dotnet.TablesData._
 import utest._
 
 object SmartProgramTests extends TestSuite {

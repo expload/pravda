@@ -1,11 +1,11 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import java.nio.file.{Files, Paths}
 
 import fastparse.byte.all._
-import io.mytc.sood.cil.CIL.CilData
-import io.mytc.sood.cil.PE.Info.Pe
-import io.mytc.sood.cil.utils._
+import pravda.dotnet.PE.Info.Pe
+import pravda.dotnet.utils._
+import pravda.dotnet.CIL.CilData
 
 object PeParsersUtils {
   def parsePe(file: String): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {

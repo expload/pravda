@@ -1,9 +1,9 @@
-package io.mytc.sood.cil
+package pravda.dotnet
 
 import fastparse.byte.all._
-import io.mytc.sood.cil.CIL.CilData
-import io.mytc.sood.cil.TablesData.TableRowData
-import io.mytc.sood.cil.utils._
+import pravda.dotnet.CIL.CilData
+import pravda.dotnet.TablesData.TableRowData
+import pravda.dotnet.utils._
 
 object Signatures {
 
