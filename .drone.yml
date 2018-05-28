@@ -6,18 +6,18 @@ workspace:
   path: code
 pipeline:
   tests:
-    image: gcr.io/time-coin/sbt:latest
+    image: gcr.io/time-coin/builder-java-sbt:0.1
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
       - /var/lib/ivy-cache:/workdir/ivy
     commands:
       - export SBTCMD='sbt -Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - git clone https://github.com/mytimecoin/scala-abci-server.git scala-abci-server --depth 1
-      - cd /workdir/code && git status && git log | head
-      - cd /workdir/code/scala-abci-server && $SBTCMD publishLocal
+    # - git clone https://github.com/mytimecoin/scala-abci-server.git scala-abci-server --depth 1
+    # - cd /workdir/code && git status && git log | head
+    # - cd /workdir/code/scala-abci-server && $SBTCMD publishLocal
       - cd /workdir/code && $SBTCMD -mem 2048 test scalafmtCheck scalafixTest
   package:
-    image: gcr.io/time-coin/sbt:latest
+    image: gcr.io/time-coin/builder-java-sbt:0.1
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
       - /var/lib/ivy-cache:/workdir/ivy
