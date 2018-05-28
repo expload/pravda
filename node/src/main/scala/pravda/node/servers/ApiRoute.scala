@@ -14,7 +14,7 @@ import pravda.common.bytes
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common.{Address, Mytc}
+import pravda.node.data.common.{Address, NativeCoins}
 import pravda.node.data.serialization.json._
 
 import scala.concurrent.duration._
@@ -55,11 +55,12 @@ class ApiRoute(abciClient: AbciClient) {
                'signature.as(hexUnmarshaller),
                'nonce.as(intUnmarshaller).?,
                'fee.as(bigDecimalUnmarshaller),
+               'wattPrice.as(bigDecimalUnmarshaller),
                'mode.?)) { (from, signature, maybeNonce, fee, maybeMode) =>
               extractStrictEntity(1.second) { body =>
                 val program = bodyToTransactionData(body)
                 val nonce = maybeNonce.getOrElse(Random.nextInt())
-                val tx = SignedTransaction(Address @@ from, program, signature, Mytc @@ fee, nonce)
+                val tx = SignedTransaction(Address @@ from, program, signature, NativeCoins @@ fee, wattPrice, Random.nextInt)
                 println(Show[SignedTransaction].show(tx))
                 val mode = maybeMode.getOrElse("commit")
                 val result = abciClient.broadcastTransaction(tx, mode)

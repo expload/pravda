@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import pravda.node.db.DB
 import pravda.node.clients.AbciClient
-import pravda.node.data.common.{Address, Mytc, TransactionId}
+import pravda.node.data.common.{Address, NativeCoins, TransactionId}
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.{Config, utils}
@@ -118,6 +118,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private val codeArea = elementId()
   private val feeField = elementId()
+  private val wattPriceField = elementId()
   private val addressField = elementId()
   private val pkField = elementId()
 
@@ -230,6 +231,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          codeArea,
                          'placeholder /= "Place your p-forth code here"),
               'input ('class          /= "input", 'margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
+              'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1.00"),
               'input ('class          /= "input",
                       'margin         @= 10,
                       addressField,
@@ -256,6 +258,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         for {
                           code <- access.valueOf(codeArea)
                           fee <- access.valueOf(feeField)
+                          wattPrice <- access.valueOf(wattPriceField)
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
@@ -263,7 +266,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           pravda.forth.Compiler().compile(hackCode) map { data =>
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                  TransactionData @@ ByteString.copyFrom(data),
-                                                                 Mytc.fromString(fee),
+                                                                 NativeCoins.fromString(fee),
+                                                                 BigDecimal(wattPrice),
                                                                  Random.nextInt())
                             cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                           }
@@ -299,6 +303,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         for {
                           code <- access.valueOf(codeArea)
                           fee <- access.valueOf(feeField)
+                          wattPrice <- access.valueOf(wattPriceField)
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
@@ -308,7 +313,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             compiler.compile(s"$$x${byteUtils.bytes2hex(data)} pcreate") map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                    TransactionData @@ ByteString.copyFrom(data),
-                                                                   Mytc.fromString(fee),
+                                                                   NativeCoins.fromString(fee),
+                                                                   BigDecimal(wattPrice),
                                                                    Random.nextInt())
                               cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                             }

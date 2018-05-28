@@ -11,15 +11,15 @@ import scala.util.Try
 
 object common {
 
-  object Mytc extends TaggedType[BigDecimal] {
+  object NativeCoins extends TaggedType[BigDecimal] {
     val zero = apply(BigDecimal(0))
-    def amount(v: Int) = Mytc(BigDecimal(v))
-    def amount(v: Double) = Mytc(BigDecimal(v))
-    def amount(v: String) = Mytc(BigDecimal(v))
-    def fromString(s: String) = Mytc(BigDecimal(s))
+    def amount(v: Int) = NativeCoins(BigDecimal(v))
+    def amount(v: Double) = NativeCoins(BigDecimal(v))
+    def amount(v: String) = NativeCoins(BigDecimal(v))
+    def fromString(s: String) = NativeCoins(BigDecimal(s))
   }
 
-  type Mytc = Mytc.Type
+  type NativeCoins = NativeCoins.Type
 
   object Address extends TaggedType[ByteString] {
 

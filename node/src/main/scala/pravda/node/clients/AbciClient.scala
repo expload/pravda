@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.{Transaction, TransactionData}
-import pravda.node.data.common.{Address, Mytc, TransactionId}
+import pravda.node.data.common.{Address, NativeCoins, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
@@ -111,9 +111,10 @@ class AbciClient(port: Int)(implicit
                                   privateKey: PrivateKey,
                                   data: TransactionData,
                                   fee: Mytc,
+                                  wattPrice: BigDecimal,
                                   mode: String = "commit"): Future[ErrorOrStack] = {
 
-    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee, Random.nextInt())
+    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee, wattPrice, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)

@@ -8,24 +8,26 @@ import supertagged.TaggedType
 object blockchain {
 
   sealed trait Transaction {
-    def from: Address
-    def program: TransactionData
-    def fee: Mytc
-    def nonce: Int
+    val from: Address
+    val program: TransactionData
+    val fee: NativeCoins
+    val wattPrice: BigDecimal
+    val nonce: Int
 
-    def forSignature: (Address, TransactionData, Mytc, Int) =
-      (from, program, fee, nonce)
+    def forSignature: (Address, TransactionData, NativeCoins, BigDecimal, Int) =
+      (from, program, fee, wattPrice, nonce)
   }
 
   object Transaction {
 
-    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc, nonce: Int)
+    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: NativeCoins, wattPrice: BigDecimal, nonce: Int)
         extends Transaction
 
     final case class SignedTransaction(from: Address,
                                        program: TransactionData,
                                        signature: ByteString,
-                                       fee: Mytc,
+                                       fee: NativeCoins,
+                                       wattPrice: BigDecimal,
                                        nonce: Int)
         extends Transaction
 
@@ -43,7 +45,8 @@ object blockchain {
     final case class AuthorizedTransaction(from: Address,
                                            program: TransactionData,
                                            signature: ByteString,
-                                           fee: Mytc,
+                                           fee: NativeCoins,
+                                           wattPrice: BigDecimal,
                                            nonce: Int)
         extends Transaction
   }
