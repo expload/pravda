@@ -10,6 +10,7 @@ final case class TablesInfo(
     methodDefTable: Seq[TablesInfo.MethodDefRow] = Seq.empty,
     paramTable: Seq[TablesInfo.ParamRow] = Seq.empty,
     typeDefTable: Seq[TablesInfo.TypeDefRow] = Seq.empty,
+    typeRefTable: Seq[TablesInfo.TypeRefRow] = Seq.empty,
     standAloneSigTable: Seq[TablesInfo.StandAloneSigRow] = Seq.empty
 )
 
@@ -114,7 +115,9 @@ object TablesInfo {
                               fieldListIdx: Long,
                               methodListIdx: Long)
       extends TableRowInfo
-  case object TypeRefRow  extends TableRowInfo
+
+  final case class TypeRefRow(resolutionScopeIdx: Long, nameIdx: Long, namespaceIdx: Long) extends TableRowInfo
+
   case object TypeSpecRow extends TableRowInfo
 
   def assemblyRow(indexes: TableIndexes): P[AssemblyRow.type] =
@@ -236,8 +239,8 @@ object TablesInfo {
     P(Int32 ~ indexes.stringHeap.parser ~ indexes.stringHeap.parser ~ indexes.typeDefOrRef.parser ~ indexes.field.parser ~ indexes.methodDef.parser)
       .map(TypeDefRow.tupled)
 
-  def typeRefRow(indexes: TableIndexes): P[TypeRefRow.type] =
-    P(AnyBytes(indexes.resolutionScope.size + indexes.stringHeap.size * 2)).map(_ => TypeRefRow)
+  def typeRefRow(indexes: TableIndexes): P[TypeRefRow] =
+    P(indexes.resolutionScope.parser ~ indexes.stringHeap.parser ~ indexes.stringHeap.parser).map(TypeRefRow.tupled)
 
   def typeSpecRow(indexes: TableIndexes): P[TypeSpecRow.type] =
     P(AnyBytes(indexes.blobHeap.size)).map(_ => TypeSpecRow)
@@ -251,7 +254,7 @@ object TablesInfo {
 
     num match {
       case 0 => tablesId(moduleRow)
-      case 1 => tablesId(typeRefRow)
+      case 1 => tableRep(typeRefRow).map(r => validated(_.copy(typeRefTable = r)))
       case 2 => tableRep(typeDefRow).map(r => validated(_.copy(typeDefTable = r)))
       // 3
       case 4 => tableRep(fieldRow).map(r => validated(_.copy(fieldTable = r)))

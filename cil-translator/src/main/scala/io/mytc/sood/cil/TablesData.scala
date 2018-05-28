@@ -2,18 +2,19 @@ package io.mytc.sood.cil
 
 import io.mytc.sood.cil.PE.Info._
 import utils._
-import fastparse.byte.all._
 
 final case class TablesData(
-    fieldTable: Seq[TablesData.FieldData] = Seq.empty,
-    memberRefTable: Seq[TablesData.MemberRefData] = Seq.empty,
-    methodDefTable: Seq[TablesData.MethodDefData] = Seq.empty,
-    paramTable: Seq[TablesData.ParamData] = Seq.empty,
-    typeDefTable: Seq[TablesData.TypeDefData] = Seq.empty,
-    standAloneSigTable: Seq[TablesData.StandAloneSigData] = Seq.empty
+    fieldTable: Seq[TablesData.FieldData],
+    memberRefTable: Seq[TablesData.MemberRefData],
+    methodDefTable: Seq[TablesData.MethodDefData],
+    paramTable: Seq[TablesData.ParamData],
+    typeDefTable: Seq[TablesData.TypeDefData],
+    typeRefTable: Seq[TablesData.TypeRefData],
+    standAloneSigTable: Seq[TablesData.StandAloneSigData]
 ) {
 
   def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
+    case 1  => Some(typeRefTable)
     case 2  => Some(typeDefTable)
     case 4  => Some(fieldTable)
     case 6  => Some(methodDefTable)
@@ -28,11 +29,15 @@ object TablesData {
   import TablesInfo._
 
   sealed trait TableRowData
-  final case class MethodDefData(implFlags: Short, flags: Short, name: String, signature: Bytes, params: Seq[ParamData])
+  final case class MethodDefData(implFlags: Short,
+                                 flags: Short,
+                                 name: String,
+                                 signatureIdx: Long,
+                                 params: Seq[ParamData])
       extends TableRowData
-  final case class MemberRefData(cls: Long, name: String, signature: Bytes) extends TableRowData
-  final case class FieldData(flags: Short, name: String, signature: Bytes)  extends TableRowData
-  final case class ParamData(flags: Short, seq: Int, name: String)          extends TableRowData
+  final case class MemberRefData(cls: Long, name: String, signatureIdx: Long) extends TableRowData
+  final case class FieldData(flags: Short, name: String, signatureIdx: Long)  extends TableRowData
+  final case class ParamData(flags: Short, seq: Int, name: String)            extends TableRowData
   final case class TypeDefData(flags: Int,
                                name: String,
                                namespace: String,
@@ -40,8 +45,9 @@ object TablesData {
                                fields: Seq[FieldData],
                                methods: Seq[MethodDefData])
       extends TableRowData
-  final case class StandAloneSigData(signature: Signatures.Signature) extends TableRowData
-  case object Ignored                                                      extends TableRowData
+  final case class TypeRefData(resolutionScopeIdx: Long, name: String, namespace: String) extends TableRowData
+  final case class StandAloneSigData(signatureIdx: Long)                                  extends TableRowData
+  case object Ignored                                                                     extends TableRowData
 
   def fromInfo(peData: PeData): Validated[TablesData] = {
 
@@ -55,13 +61,9 @@ object TablesData {
         case _ => Seq.empty
       }
 
-    val standAlongSigListV = peData.tables.standAloneSigTable.map {
-      case StandAloneSigRow(blobIdx) =>
-        for {
-          localVarSigBytes <- Heaps.blob(peData.blobHeap, blobIdx)
-          localVarSig <- Signatures.localVarSig.parse(localVarSigBytes).toValidated
-        } yield StandAloneSigData(localVarSig)
-    }.sequence
+    val standAlongSigList = peData.tables.standAloneSigTable.map {
+      case StandAloneSigRow(blobIdx) => StandAloneSigData(blobIdx)
+    }
 
     val paramListV = peData.tables.paramTable.map {
       case ParamRow(flags, seq, nameIdx) =>
@@ -74,16 +76,14 @@ object TablesData {
       case FieldRow(flags, nameIdx, signatureIdx) =>
         for {
           name <- Heaps.string(peData.stringHeap, nameIdx)
-          signature <- Heaps.blob(peData.blobHeap, signatureIdx)
-        } yield FieldData(flags, name, signature)
+        } yield FieldData(flags, name, signatureIdx)
     }.sequence
 
     val memberRefListV = peData.tables.memberRefTable.map {
       case MemberRefRow(cls, nameIdx, signatureIdx) =>
         for {
           name <- Heaps.string(peData.stringHeap, nameIdx)
-          signature <- Heaps.blob(peData.blobHeap, signatureIdx)
-        } yield MemberRefData(cls, name, signature)
+        } yield MemberRefData(cls, name, signatureIdx)
     }.sequence
 
     def methodListV(paramList: Seq[ParamData]): Validated[Seq[MethodDefData]] = {
@@ -93,15 +93,22 @@ object TablesData {
         case (MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx), i) =>
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
-            signature <- Heaps.blob(peData.blobHeap, signatureIdx)
           } yield
             MethodDefData(implFlags,
                           flags,
                           name,
-                          signature,
+                          signatureIdx,
                           paramList.slice(paramListIdx.toInt - 1, paramListIdx.toInt + paramListSizes(i).toInt - 1))
       }.sequence
     }
+
+    val typeRefListV = peData.tables.typeRefTable.map {
+      case TypeRefRow(rs, nameIdx, namespaceIdx) =>
+        for {
+          name <- Heaps.string(peData.stringHeap, nameIdx)
+          namespace <- Heaps.string(peData.stringHeap, namespaceIdx)
+        } yield TypeRefData(rs, name, namespace)
+    }.sequence
 
     def typeDefListV(fieldList: Seq[FieldData], methodList: Seq[MethodDefData]): Validated[Seq[TypeDefData]] = {
       val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
@@ -130,7 +137,7 @@ object TablesData {
       memberRefList <- memberRefListV
       methodList <- methodListV(paramList)
       typeDefList <- typeDefListV(fieldList, methodList)
-      standAlongSigList <- standAlongSigListV
-    } yield TablesData(fieldList, memberRefList, methodList, paramList, typeDefList, standAlongSigList)
+      typeRefList <- typeRefListV
+    } yield TablesData(fieldList, memberRefList, methodList, paramList, typeDefList, typeRefList, standAlongSigList)
   }
 }

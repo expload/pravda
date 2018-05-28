@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 
 import pravda.vm.asm._
 import io.mytc.sood.cil.CIL._
+import io.mytc.sood.cil.Signatures.LocalVarSig
 import io.mytc.sood.cil.TablesData._
 import pravda.vm._
 import serialization._
@@ -11,35 +12,39 @@ import serialization._
 object Translator {
   private def resolveRVI(opcodes: Seq[OpCode]): Seq[OpCode] = {
 
-    val offsets = opcodes.foldLeft((0, Set.empty[Int])) {
-      case ((curOffset, offsets), opcode) =>
-        val newOffsets = opcode match {
-          case BrS(t) if t != 0      => Seq(curOffset + t + 2)
-          case BrFalseS(t) if t != 0 => Seq(curOffset + t + 2)
-          case BrTrueS(t) if t != 0  => Seq(curOffset + t + 2)
-          //case Switch(ts)            => ts.filter(_ != 0).map(_ + curOffset + 1)
-          case _                     => Seq.empty
-        }
-        (curOffset + opcode.size, offsets ++ newOffsets)
-    }._2
+    val offsets = opcodes
+      .foldLeft((0, Set.empty[Int])) {
+        case ((curOffset, offsets), opcode) =>
+          val newOffsets = opcode match {
+            case BrS(t) if t != 0      => Seq(curOffset + t + 2)
+            case BrFalseS(t) if t != 0 => Seq(curOffset + t + 2)
+            case BrTrueS(t) if t != 0  => Seq(curOffset + t + 2)
+            //case Switch(ts)            => ts.filter(_ != 0).map(_ + curOffset + 1)
+            case _ => Seq.empty
+          }
+          (curOffset + opcode.size, offsets ++ newOffsets)
+      }
+      ._2
 
     def mkLabel(i: Int): String = "br" + i.toString
 
-    val opcodesWithLabels = opcodes.foldLeft((0, Seq.empty[OpCode])) {
-      case ((curOffset, opcodes), opcode) =>
-        val newOpcodes = opcode match {
-          case BrS(0) => List(Nop)
-          case BrTrueS(0) => List(Nop)
-          case BrFalseS(0) => List(Nop)
-          case BrS(t) => List(Jump(mkLabel(curOffset + t + 2)))
-          case BrFalseS(t) => List(Not, JumpI(mkLabel(curOffset + t + 2)))
-          case BrTrueS(t) => List(JumpI(mkLabel(curOffset + t + 2)))
-          //case Switch(ts) => ts.filter(_ != 0).map(t => Label(mkLabel(curOffset + t + 1))) // FIXME switch
-          case opcode if offsets.contains(curOffset) => List(Label(mkLabel(curOffset)), opcode)
-          case opcode => List(opcode)
-        }
-        (curOffset + opcode.size, opcodes ++ newOpcodes)
-    }._2
+    val opcodesWithLabels = opcodes
+      .foldLeft((0, Seq.empty[OpCode])) {
+        case ((curOffset, opcodes), opcode) =>
+          val newOpcodes = opcode match {
+            case BrS(0)      => List(Nop)
+            case BrTrueS(0)  => List(Nop)
+            case BrFalseS(0) => List(Nop)
+            case BrS(t)      => List(Jump(mkLabel(curOffset + t + 2)))
+            case BrFalseS(t) => List(Not, JumpI(mkLabel(curOffset + t + 2)))
+            case BrTrueS(t)  => List(JumpI(mkLabel(curOffset + t + 2)))
+            //case Switch(ts) => ts.filter(_ != 0).map(t => Label(mkLabel(curOffset + t + 1))) // FIXME switch
+            case opcode if offsets.contains(curOffset) => List(Label(mkLabel(curOffset)), opcode)
+            case opcode                                => List(opcode)
+          }
+          (curOffset + opcode.size, opcodes ++ newOpcodes)
+      }
+      ._2
 
     opcodesWithLabels
   }
@@ -80,26 +85,26 @@ object Translator {
       // FIXME when we store args?
 
       opcode match {
-        case LdcI40    => (1, Seq(pushTypedInt(0)))
-        case LdcI41    => (1, Seq(pushTypedInt(1)))
-        case LdcI42    => (1, Seq(pushTypedInt(2)))
-        case LdcI43    => (1, Seq(pushTypedInt(3)))
-        case LdcI44    => (1, Seq(pushTypedInt(4)))
-        case LdcI45    => (1, Seq(pushTypedInt(5)))
-        case LdcI46    => (1, Seq(pushTypedInt(6)))
-        case LdcI47    => (1, Seq(pushTypedInt(7)))
-        case LdcI4M1   => (1, Seq(pushTypedInt(-1)))
+        case LdcI40     => (1, Seq(pushTypedInt(0)))
+        case LdcI41     => (1, Seq(pushTypedInt(1)))
+        case LdcI42     => (1, Seq(pushTypedInt(2)))
+        case LdcI43     => (1, Seq(pushTypedInt(3)))
+        case LdcI44     => (1, Seq(pushTypedInt(4)))
+        case LdcI45     => (1, Seq(pushTypedInt(5)))
+        case LdcI46     => (1, Seq(pushTypedInt(6)))
+        case LdcI47     => (1, Seq(pushTypedInt(7)))
+        case LdcI4M1    => (1, Seq(pushTypedInt(-1)))
         case LdcI4(num) => (1, Seq(pushTypedInt(num)))
-        case LdcI4S(v) => (1, Seq(pushTypedInt(v.toInt)))
-        case LdcR4(f)  => (1, Seq(pushTypedFloat(f.toDouble)))
-        case LdcR8(d)  => (1, Seq(pushTypedFloat(d)))
-        case Add       => (-1, Seq(Op.LCall("Typed", "typedAdd", 2)))
-        case Mull      => (-1, Seq(Op.LCall("Typed", "typedMull", 2)))
-        case Div       => (-1, Seq(Op.LCall("Typed", "typedDiv", 2)))
-        case Rem       => (-1, Seq(Op.LCall("Typed", "typedMod", 2)))
-        case Clt       => (-1, Seq(Op.LCall("Typed", "typedClt", 2)))
-        case Cgt       => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
-        case Not       => (0, Seq(Op.Not))
+        case LdcI4S(v)  => (1, Seq(pushTypedInt(v.toInt)))
+        case LdcR4(f)   => (1, Seq(pushTypedFloat(f.toDouble)))
+        case LdcR8(d)   => (1, Seq(pushTypedFloat(d)))
+        case Add        => (-1, Seq(Op.LCall("Typed", "typedAdd", 2)))
+        case Mull       => (-1, Seq(Op.LCall("Typed", "typedMull", 2)))
+        case Div        => (-1, Seq(Op.LCall("Typed", "typedDiv", 2)))
+        case Rem        => (-1, Seq(Op.LCall("Typed", "typedMod", 2)))
+        case Clt        => (-1, Seq(Op.LCall("Typed", "typedClt", 2)))
+        case Cgt        => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
+        case Not        => (0, Seq(Op.Not))
 
         case LdSFld(FieldData(_, name, _)) =>
           (1,
@@ -171,7 +176,7 @@ object Translator {
       Seq(Op.Jump("stop"))
   }
 
-  def translate(methods: Seq[Method], cilData: CilData): Seq[Op] = {
+  def translate(methods: Seq[Method], cilData: CilData, signatures: Map[Long, Signatures.Signature]): Seq[Op] = {
     val jumpToMethod = methods.zipWithIndex.flatMap {
       case (m, i) =>
         val name = cilData.tables.methodDefTable(i).name
@@ -185,10 +190,18 @@ object Translator {
 
     val methodsOps = methods.zipWithIndex.flatMap {
       case (m, i) =>
-        translateMethod(cilData.tables.methodDefTable(i).params.length,
-                        m.localVarSig.types.length,
-                        cilData.tables.methodDefTable(i).name,
-                        resolveRVI(m.opcodes))
+        val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
+        translateMethod(
+          cilData.tables.methodDefTable(i).params.length,
+          localVarSig
+            .map {
+              case LocalVarSig(types) => types.length
+              case _                  => 0
+            }
+            .getOrElse(0),
+          cilData.tables.methodDefTable(i).name,
+          resolveRVI(m.opcodes)
+        )
     }
 
     jumpToMethod ++ Seq(Op.Jump("stop")) ++ methodsOps ++ Seq(Op.Label("stop"))

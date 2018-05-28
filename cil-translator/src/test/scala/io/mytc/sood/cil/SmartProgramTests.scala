@@ -1,9 +1,8 @@
 package io.mytc.sood.cil
 
-import fastparse.byte.all._
 import io.mytc.sood.cil.CIL._
-import io.mytc.sood.cil.Signatures.Info.SigType._
-import io.mytc.sood.cil.Signatures.Info._
+import io.mytc.sood.cil.Signatures.SigType._
+import io.mytc.sood.cil.Signatures._
 import io.mytc.sood.cil.TablesData._
 import utest._
 
@@ -11,42 +10,34 @@ object SmartProgramTests extends TestSuite {
 
   val tests = Tests {
     'smartProgramParse - {
-      val Right((_, cilData, methods)) = PeParsersUtils.parsePe("smart_program.exe")
+      val Right((_, cilData, methods, signatures)) = PeParsersUtils.parsePe("smart_program.exe")
 
       cilData.tables ==> TablesData(
-        List(FieldData(1, "balances", hex"0x0615121402121808"), FieldData(1, "sender", hex"0x061218")),
+        List(FieldData(1, "balances", 65L), FieldData(1, "sender", 74L)),
         List(
-          MemberRefData(9, ".ctor", hex"0x20010108"),
-          MemberRefData(17, ".ctor", hex"0x200001"),
-          MemberRefData(25, ".ctor", hex"0x2001011111"),
-          MemberRefData(12, "get", hex"0x200113011300"),
-          MemberRefData(12, "getDefault", hex"0x2002130113001301"),
-          MemberRefData(12, "put", hex"0x20020113001301"),
-          MemberRefData(41, ".ctor", hex"0x200001"),
-          MemberRefData(49, ".ctor", hex"0x200001")
+          MemberRefData(9, ".ctor", 1L),
+          MemberRefData(17, ".ctor", 6L),
+          MemberRefData(25, ".ctor", 10L),
+          MemberRefData(12, "get", 28L),
+          MemberRefData(12, "getDefault", 39L),
+          MemberRefData(12, "put", 48L),
+          MemberRefData(41, ".ctor", 6L),
+          MemberRefData(49, ".ctor", 6L)
         ),
         List(
-          MethodDefData(0, 134, "balanceOf", hex"0x2001081218", List(ParamData(0, 1, "tokenOwner"))),
-          MethodDefData(0,
-                        134,
-                        "transfer",
-                        hex"0x200201121808",
-                        List(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
-          MethodDefData(0, 150, "Main", hex"0x000001", List()),
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
-          MethodDefData(0, 1478, "get", hex"0x200113011300", List(ParamData(0, 1, "key"))),
-          MethodDefData(0, 1478, "exists", hex"0x2001021300", List(ParamData(0, 1, "key"))),
-          MethodDefData(0, 1478, "put", hex"0x20020113001301", List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
-          MethodDefData(0,
-                        1478,
-                        "getDefault",
-                        hex"0x2002130113001301",
-                        List(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List()),
-          MethodDefData(0, 6278, ".ctor", hex"0x200001", List())
+          MethodDefData(0, 134, "balanceOf", 78L, List(ParamData(0, 1, "tokenOwner"))),
+          MethodDefData(0, 134, "transfer", 84L, List(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+          MethodDefData(0, 6278, ".ctor", 6L, List()),
+          MethodDefData(0, 150, "Main", 91L, List()),
+          MethodDefData(0, 6278, ".ctor", 6L, List()),
+          MethodDefData(0, 6278, ".ctor", 6L, List()),
+          MethodDefData(0, 1478, "get", 28L, List(ParamData(0, 1, "key"))),
+          MethodDefData(0, 1478, "exists", 95L, List(ParamData(0, 1, "key"))),
+          MethodDefData(0, 1478, "put", 48L, List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+          MethodDefData(0, 1478, "getDefault", 39L, List(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
+          MethodDefData(0, 6278, ".ctor", 6L, List()),
+          MethodDefData(0, 6278, ".ctor", 6L, List()),
+          MethodDefData(0, 6278, ".ctor", 6L, List())
         ),
         List(
           ParamData(0, 1, "tokenOwner"),
@@ -73,15 +64,11 @@ object SmartProgramTests extends TestSuite {
             "MyProgram",
             "",
             Ignored,
-            List(FieldData(1, "balances", hex"0x0615121402121808"), FieldData(1, "sender", hex"0x061218")),
+            List(FieldData(1, "balances", 65L), FieldData(1, "sender", 74L)),
             List(
-              MethodDefData(0, 134, "balanceOf", hex"0x2001081218", List(ParamData(0, 1, "tokenOwner"))),
-              MethodDefData(0,
-                            134,
-                            "transfer",
-                            hex"0x200201121808",
-                            List(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
-              MethodDefData(0, 6278, ".ctor", hex"0x200001", List())
+              MethodDefData(0, 134, "balanceOf", 78L, List(ParamData(0, 1, "tokenOwner"))),
+              MethodDefData(0, 134, "transfer", 84L, List(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+              MethodDefData(0, 6278, ".ctor", 6L, List())
             )
           ),
           TypeDefData(
@@ -90,15 +77,14 @@ object SmartProgramTests extends TestSuite {
             "",
             Ignored,
             List(),
-            List(MethodDefData(0, 150, "Main", hex"0x000001", List()),
-                 MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))
+            List(MethodDefData(0, 150, "Main", 91L, List()), MethodDefData(0, 6278, ".ctor", 6L, List()))
           ),
           TypeDefData(1048577,
                       "Program",
                       "io.mytc.pravda",
                       Ignored,
                       List(),
-                      List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))),
+                      List(MethodDefData(0, 6278, ".ctor", 6L, List()))),
           TypeDefData(
             161,
             "Mapping`2",
@@ -106,18 +92,10 @@ object SmartProgramTests extends TestSuite {
             Ignored,
             List(),
             List(
-              MethodDefData(0, 1478, "get", hex"0x200113011300", List(ParamData(0, 1, "key"))),
-              MethodDefData(0, 1478, "exists", hex"0x2001021300", List(ParamData(0, 1, "key"))),
-              MethodDefData(0,
-                            1478,
-                            "put",
-                            hex"0x20020113001301",
-                            List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
-              MethodDefData(0,
-                            1478,
-                            "getDefault",
-                            hex"0x2002130113001301",
-                            List(ParamData(0, 1, "key"), ParamData(0, 2, "def")))
+              MethodDefData(0, 1478, "get", 28L, List(ParamData(0, 1, "key"))),
+              MethodDefData(0, 1478, "exists", 95L, List(ParamData(0, 1, "key"))),
+              MethodDefData(0, 1478, "put", 48L, List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+              MethodDefData(0, 1478, "getDefault", 39L, List(ParamData(0, 1, "key"), ParamData(0, 2, "def")))
             )
           ),
           TypeDefData(1048577,
@@ -125,44 +103,53 @@ object SmartProgramTests extends TestSuite {
                       "io.mytc.pravda",
                       Ignored,
                       List(),
-                      List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))),
+                      List(MethodDefData(0, 6278, ".ctor", 6L, List()))),
           TypeDefData(1048577,
                       "Data",
                       "io.mytc.pravda",
                       Ignored,
                       List(),
-                      List(MethodDefData(0, 6278, ".ctor", hex"0x200001", List()))),
+                      List(MethodDefData(0, 6278, ".ctor", 6L, List()))),
           TypeDefData(1048577, "Word", "io.mytc.pravda", Ignored, List(), List())
         ),
-        List(StandAloneSigData(LocalVarSig(Seq(LocalVar(I4, false)))),
-             StandAloneSigData(LocalVarSig(Seq(LocalVar(Boolean, false)))))
+        List(
+          TypeRefData(6L, "CompilationRelaxationsAttribute", "System.Runtime.CompilerServices"),
+          TypeRefData(6L, "RuntimeCompatibilityAttribute", "System.Runtime.CompilerServices"),
+          TypeRefData(6, "DebuggableAttribute", "System.Diagnostics"),
+          TypeRefData(15, "DebuggingModes", ""),
+          TypeRefData(6, "Object", "System"),
+          TypeRefData(6, "Attribute", "System")
+        ),
+        List(StandAloneSigData(16L), StandAloneSigData(35L))
       )
-      println(methods)
+
       methods ==> List(
         Method(
-          List(Nop,
-               LdArg0,
-               LdFld(FieldData(1, "balances", hex"0x0615121402121808")),
-               LdArg1,
-               CallVirt(MemberRefData(12, "get", hex"0x200113011300")),
-               StLoc0,
-               BrS(0),
-               LdLoc0,
-               Ret),
+          List(
+            Nop,
+            LdArg0,
+            LdFld(FieldData(1, "balances", 65L)),
+            LdArg1,
+            CallVirt(MemberRefData(12, "get", 28L)),
+            StLoc0,
+            BrS(0),
+            LdLoc0,
+            Ret
+          ),
           2,
-          LocalVarSig(Seq(LocalVar(I4, false)))
+          Some(16L)
         ),
         Method(
           List(
             Nop,
             LdArg0,
-            LdFld(FieldData(1, "balances", hex"0x0615121402121808")),
+            LdFld(FieldData(1, "balances", 65L)),
             LdArg0,
-            LdFld(FieldData(1, "sender", hex"0x061218")),
+            LdFld(FieldData(1, "sender", 74L)),
             LdcI40,
-            CallVirt(MemberRefData(12, "getDefault", hex"0x2002130113001301")),
+            CallVirt(MemberRefData(12, "getDefault", 39L)),
             LdArg2,
-            Clt,2
+            Clt,
             LdcI40,
             Ceq,
             StLoc0,
@@ -170,63 +157,160 @@ object SmartProgramTests extends TestSuite {
             BrFalseS(68),
             Nop,
             LdArg0,
-            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdFld(FieldData(1, "balances", 65L)),
             LdArg0,
-            LdFld(FieldData(1, sender, hex"0x061218")),
+            LdFld(FieldData(1, "sender", 74L)),
             LdArg0,
-            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdFld(FieldData(1, "balances", 65L)),
             LdArg0,
-            LdFld(FieldData(1, sender, hex"0x061218")),
+            LdFld(FieldData(1, "sender", 74L)),
             LdcI40,
-            CallVirt(MemberRefData(12, getDefault, hex"0x2002130113001301")),
+            CallVirt(MemberRefData(12, "getDefault", 39L)),
             LdArg2,
             Sub,
-            CallVirt(MemberRefData(12, put, hex"0x20020113001301")),
+            CallVirt(MemberRefData(12, "put", 48L)),
             Nop,
             LdArg0,
-            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdFld(FieldData(1, "balances", 65L)),
             LdArg1,
             LdArg0,
-            LdFld(FieldData(1, balances, hex"0x0615121402121808")),
+            LdFld(FieldData(1, "balances", 65L)),
             LdArg1,
             LdcI40,
-            CallVirt(MemberRefData(12, getDefault, hex"0x2002130113001301")),
+            CallVirt(MemberRefData(12, "getDefault", 39L)),
             LdArg2,
             Add,
-            CallVirt(MemberRefData(12, put, hex"0x20020113001301")),
+            CallVirt(MemberRefData(12, "put", 48L)),
             Nop,
             Nop,
             Ret
           ),
           5,
-          LocalVarSig(Seq(LocalVar(Boolean, false)))
+          Some(35L)
         ),
         Method(
           List(
             LdArg0,
             LdNull,
-            StFld(FieldData(1, balances, hex"0x0615121402121808")),
+            StFld(FieldData(1, "balances", 65L)),
             LdArg0,
             LdNull,
-            StFld(FieldData(1, sender, hex"0x061218")),
+            StFld(FieldData(1, "sender", 74L)),
             LdArg0,
-            Call(MemberRefData(41, ".ctor", hex"0x200001")),
+            Call(MemberRefData(41, ".ctor", 6L)),
             Nop,
             Ret
           ),
           0,
-          LocalVarSig(List())
+          None
         ),
-        Method(List(Nop, Ret), 0, LocalVarSig(List())),
-        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
-        Method(List(LdArg0, Call(MemberRefData(49, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
-        Method(List(), 0, LocalVarSig(List())),
-        Method(List(), 0, LocalVarSig(List())),
-        Method(List(), 0, LocalVarSig(List())),
-        Method(List(), 0, LocalVarSig(List())),
-        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
-        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List())),
-        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret), 0, LocalVarSig(List()))
+        Method(List(Nop, Ret), 0, None),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", 6L)), Nop, Ret), 0, None),
+        Method(List(LdArg0, Call(MemberRefData(49, ".ctor", 6L)), Nop, Ret), 0, None),
+        Method(List(), 0, None),
+        Method(List(), 0, None),
+        Method(List(), 0, None),
+        Method(List(), 0, None),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", 6L)), Nop, Ret), 0, None),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", 6L)), Nop, Ret), 0, None),
+        Method(List(LdArg0, Call(MemberRefData(41, ".ctor", 6L)), Nop, Ret), 0, None)
+      )
+
+      signatures ==> Map(
+        10 -> MethodRefDefSig(true,
+                              false,
+                              false,
+                              false,
+                              0,
+                              Tpe(Void, false),
+                              List(Tpe(ValueTpe(TypeRefData(15, "DebuggingModes", "")), false))),
+        78 -> MethodRefDefSig(
+          true,
+          false,
+          false,
+          false,
+          0,
+          Tpe(I4, false),
+          List(
+            Tpe(Cls(
+                  TypeDefData(1048577,
+                              "Address",
+                              "io.mytc.pravda",
+                              Ignored,
+                              List(),
+                              List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                false))
+        ),
+        84 -> MethodRefDefSig(
+          true,
+          false,
+          false,
+          false,
+          0,
+          Tpe(Void, false),
+          List(Tpe(Cls(
+                     TypeDefData(1048577,
+                                 "Address",
+                                 "io.mytc.pravda",
+                                 Ignored,
+                                 List(),
+                                 List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                   false),
+               Tpe(I4, false))
+        ),
+        1 -> MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false))),
+        74 -> FieldSig(
+          Cls(
+            TypeDefData(1048577,
+                        "Address",
+                        "io.mytc.pravda",
+                        Ignored,
+                        List(),
+                        List(MethodDefData(0, 6278, ".ctor", 6, List()))))),
+        6 -> MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List()),
+        28 -> MethodRefDefSig(true, false, false, false, 0, Tpe(Var(1), false), List(Tpe(Var(0), false))),
+        65 -> FieldSig(
+          Generic(
+            Cls(TypeDefData(
+              161,
+              "Mapping`2",
+              "io.mytc.pravda",
+              Ignored,
+              List(),
+              List(
+                MethodDefData(0, 1478, "get", 28, List(ParamData(0, 1, "key"))),
+                MethodDefData(0, 1478, "exists", 95, List(ParamData(0, 1, "key"))),
+                MethodDefData(0, 1478, "put", 48, List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+                MethodDefData(0, 1478, "getDefault", 39, List(ParamData(0, 1, "key"), ParamData(0, 2, "def")))
+              )
+            )),
+            List(Cls(
+                   TypeDefData(1048577,
+                               "Address",
+                               "io.mytc.pravda",
+                               Ignored,
+                               List(),
+                               List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                 I4)
+          )),
+        39 -> MethodRefDefSig(true,
+                              false,
+                              false,
+                              false,
+                              0,
+                              Tpe(Var(1), false),
+                              List(Tpe(Var(0), false), Tpe(Var(1), false))),
+        91 -> MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()),
+        35 -> LocalVarSig(List(LocalVar(Boolean, false))),
+        48 -> MethodRefDefSig(true,
+                              false,
+                              false,
+                              false,
+                              0,
+                              Tpe(Void, false),
+                              List(Tpe(Var(0), false), Tpe(Var(1), false))),
+        95 -> MethodRefDefSig(true, false, false, false, 0, Tpe(Boolean, false), List(Tpe(Var(0), false))),
+        16 -> LocalVarSig(List(LocalVar(I4, false)))
       )
     }
   }

@@ -8,7 +8,7 @@ import io.mytc.sood.cil.PE.Info.Pe
 import io.mytc.sood.cil.utils._
 
 object PeParsersUtils {
-  def parsePe(file: String): Validated[(Pe, CilData, Seq[Method])] = {
+  def parsePe(file: String): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
     val fileBytes = Files.readAllBytes(Paths.get(this.getClass.getResource(s"/$file").getPath))
     val peV = PE.parseInfo(Bytes(fileBytes))
 
@@ -16,6 +16,7 @@ object PeParsersUtils {
       pe <- peV
       cilData <- CIL.fromPeData(pe.peData)
       methods <- pe.methods.map(Method.parse(pe.peData, _)).sequence
-    } yield (pe, cilData, methods)
+      signatures <- Signatures.collectSignatures(cilData)
+    } yield (pe, cilData, methods, signatures)
   }
 }

@@ -2,11 +2,10 @@ package io.mytc.sood.cil
 
 import io.mytc.sood.cil.CIL.OpCode
 import io.mytc.sood.cil.PE.Info._
-import io.mytc.sood.cil.Signatures.Info.LocalVarSig
 import io.mytc.sood.cil.utils.{Validated, _}
 
 
-final case class Method(opcodes: Seq[OpCode], maxStack: Int, localVarSig: LocalVarSig)
+final case class Method(opcodes: Seq[OpCode], maxStack: Int, localVarSigIdx: Option[Long])
 
 object Method {
   def parse(peData: PeData, header: MethodHeader): Validated[Method] = {
@@ -18,22 +17,19 @@ object Method {
           val localVarSigIdx = (localVarSigTok & 0x00ffffff) - 1
           for {
             cilData <- CIL.fromPeData(peData)
-            localVarSig <- cilData.tables.standAloneSigTable(localVarSigIdx.toInt).signature match {
-              case l: LocalVarSig => validated(l)
-              case e => validationError(s"Wrong signature: $e")
-            }
+            localVarSig = cilData.tables.standAloneSigTable(localVarSigIdx.toInt).signatureIdx
             codeParser = CIL.code(cilData)
             code <- codeParser.parse(header.codeBytes).toValidated.joinRight
-          } yield Method(code, maxStack, localVarSig)
+          } yield Method(code, maxStack, Some(localVarSig))
         }
       case TinyMethodHeader(codeBytes) =>
         for {
           cilData <- CIL.fromPeData(peData)
           codeParser = CIL.code(cilData)
           code <- codeParser.parse(header.codeBytes).toValidated.joinRight
-        } yield Method(code, 0, LocalVarSig(Seq.empty))
+        } yield Method(code, 0, None)
       case EmptyHeader =>
-        validated(Method(Seq.empty, 0, LocalVarSig(Seq.empty)))
+        validated(Method(Seq.empty, 0, None))
     }
   }
 }
