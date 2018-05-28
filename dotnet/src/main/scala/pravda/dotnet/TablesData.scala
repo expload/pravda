@@ -10,18 +10,20 @@ final case class TablesData(
     paramTable: Seq[TablesData.ParamData],
     typeDefTable: Seq[TablesData.TypeDefData],
     typeRefTable: Seq[TablesData.TypeRefData],
+    typeSpecTable: Seq[TablesData.TypeSpecData],
     standAloneSigTable: Seq[TablesData.StandAloneSigData]
 ) {
 
   def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
-    case 1  => Some(typeRefTable)
-    case 2  => Some(typeDefTable)
-    case 4  => Some(fieldTable)
-    case 6  => Some(methodDefTable)
-    case 8  => Some(paramTable)
-    case 10 => Some(memberRefTable)
-    case 17 => Some(standAloneSigTable)
-    case _  => None
+    case 0x1  => Some(typeRefTable)
+    case 0x2  => Some(typeDefTable)
+    case 0x4  => Some(fieldTable)
+    case 0x6  => Some(methodDefTable)
+    case 0x8  => Some(paramTable)
+    case 0xA  => Some(memberRefTable)
+    case 0x11 => Some(standAloneSigTable)
+    case 0x1B => Some(typeSpecTable)
+    case _    => None
   }
 }
 
@@ -35,9 +37,9 @@ object TablesData {
                                  signatureIdx: Long,
                                  params: Seq[ParamData])
       extends TableRowData
-  final case class MemberRefData(cls: Long, name: String, signatureIdx: Long) extends TableRowData
-  final case class FieldData(flags: Short, name: String, signatureIdx: Long)  extends TableRowData
-  final case class ParamData(flags: Short, seq: Int, name: String)            extends TableRowData
+  final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends TableRowData
+  final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
+  final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData
   final case class TypeDefData(flags: Int,
                                name: String,
                                namespace: String,
@@ -46,8 +48,10 @@ object TablesData {
                                methods: Seq[MethodDefData])
       extends TableRowData
   final case class TypeRefData(resolutionScopeIdx: Long, name: String, namespace: String) extends TableRowData
-  final case class StandAloneSigData(signatureIdx: Long)                                  extends TableRowData
-  case object Ignored                                                                     extends TableRowData
+  final case class TypeSpecData(signatureIdx: Long)                                       extends TableRowData
+
+  final case class StandAloneSigData(signatureIdx: Long) extends TableRowData
+  case object Ignored                                    extends TableRowData
 
   def fromInfo(peData: PeData): Validated[TablesData] = {
 
@@ -65,6 +69,10 @@ object TablesData {
       case StandAloneSigRow(blobIdx) => StandAloneSigData(blobIdx)
     }
 
+    val typeSpecList = peData.tables.typeSpecTable.map {
+      case TypeSpecRow(idx) => TypeSpecData(idx)
+    }
+
     val paramListV = peData.tables.paramTable.map {
       case ParamRow(flags, seq, nameIdx) =>
         for {
@@ -77,13 +85,6 @@ object TablesData {
         for {
           name <- Heaps.string(peData.stringHeap, nameIdx)
         } yield FieldData(flags, name, signatureIdx)
-    }.sequence
-
-    val memberRefListV = peData.tables.memberRefTable.map {
-      case MemberRefRow(cls, nameIdx, signatureIdx) =>
-        for {
-          name <- Heaps.string(peData.stringHeap, nameIdx)
-        } yield MemberRefData(cls, name, signatureIdx)
     }.sequence
 
     def methodListV(paramList: Seq[ParamData]): Validated[Seq[MethodDefData]] = {
@@ -131,13 +132,30 @@ object TablesData {
       }.sequence
     }
 
+    def memberRefListV(typeDefTable: Seq[TypeDefData], typeRefTable: Seq[TypeRefData]): Validated[Seq[MemberRefData]] =
+      peData.tables.memberRefTable.map {
+        case MemberRefRow(clsIdx, nameIdx, signatureIdx) =>
+          for {
+            name <- Heaps.string(peData.stringHeap, nameIdx)
+            cls <- CodedIndexes.memberRefParent(clsIdx, typeDefTable, typeRefTable, typeSpecList)
+          } yield MemberRefData(cls, name, signatureIdx)
+      }.sequence
+
     for {
       paramList <- paramListV
       fieldList <- fieldListV
-      memberRefList <- memberRefListV
       methodList <- methodListV(paramList)
       typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
-    } yield TablesData(fieldList, memberRefList, methodList, paramList, typeDefList, typeRefList, standAlongSigList)
+      memberRefList <- memberRefListV(typeDefList, typeRefList)
+    } yield
+      TablesData(fieldList,
+                 memberRefList,
+                 methodList,
+                 paramList,
+                 typeDefList,
+                 typeRefList,
+                 typeSpecList,
+                 standAlongSigList)
   }
 }

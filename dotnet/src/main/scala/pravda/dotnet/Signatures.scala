@@ -49,6 +49,7 @@ object Signatures {
                                    retType: Tpe,
                                    params: Seq[Tpe])
       extends Signature
+  final case class TypeSig(tpe: Tpe) extends Signature
 
   private val compressedUInt: P[Long] = P(Int8).flatMap(b => {
     if ((b & 0x80) == 0) {
@@ -184,7 +185,9 @@ object Signatures {
       cilData.tables.methodDefTable.map(m =>
         m.signatureIdx -> parseSignature(m.signatureIdx, methodRefDefSig(cilData.tables))) ++
       cilData.tables.standAloneSigTable.map(s =>
-        s.signatureIdx -> parseSignature(s.signatureIdx, localVarSig(cilData.tables))) // FIXME there could be not only local vars signatures
+        s.signatureIdx -> parseSignature(s.signatureIdx, localVarSig(cilData.tables))) ++
+      cilData.tables.typeSpecTable.map(s =>
+        s.signatureIdx -> parseSignature(s.signatureIdx, tpe(cilData.tables).map(_.map(TypeSig))))
 
     idxToSig.map(_._2).sequence.map(idxToSig.map(_._1).zip(_)).map(_.toMap)
   }

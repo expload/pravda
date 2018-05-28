@@ -2,12 +2,12 @@ package pravda.dotnet
 
 import java.nio.charset.StandardCharsets
 
-import pravda.vm.asm._
-import pravda.dotnet.Signatures.LocalVarSig
-import pravda.dotnet.TablesData._
 import pravda.dotnet.CIL._
-import pravda.vm._
-import serialization._
+import pravda.dotnet.Signatures.SigType.{Cls, Generic}
+import pravda.dotnet.Signatures._
+import pravda.dotnet.TablesData._
+import pravda.vm.asm._
+import pravda.vm.serialization._
 
 object Translator {
   private def resolveRVI(opcodes: Seq[OpCode]): Seq[OpCode] = {
@@ -49,7 +49,12 @@ object Translator {
     opcodesWithLabels
   }
 
-  private def translateMethod(argsCount: Int, localsCount: Int, name: String, opcodes: Seq[OpCode]): Seq[Op] = {
+  private def translateMethod(argsCount: Int,
+                              localsCount: Int,
+                              name: String,
+                              opcodes: Seq[OpCode],
+                              signatures: Map[Long, Signatures.Signature],
+                              local: Boolean): Seq[Op] = {
     def translateOpcode(opcode: OpCode, stackOffest: Int): (Int, Seq[Op]) = {
       def pushTypedInt(i: Int): Op =
         Op.Push(Datum.Rawbytes(Array(1.toByte) ++ int32ToData(i).toByteArray))
@@ -57,24 +62,114 @@ object Translator {
       def pushTypedFloat(d: Double): Op =
         Op.Push(Datum.Rawbytes(Array(2.toByte) ++ doubleToData(d).toByteArray))
 
+      def computeLocalOffset(num: Int): Int =
+        (localsCount - num - 1) + stackOffest + (if (local) 0 else 1)
+
+      def computeArgOffset(num: Int): Int =
+        (argsCount - num - 1) + stackOffest + localsCount + 1 + (if (local) 0 else 1)
+
       def storeLocal(num: Int): Seq[Op] =
         Seq(
-          Op.Push(Datum.Integral((localsCount - num - 1) + stackOffest + 1)),
+          Op.Push(Datum.Integral(computeLocalOffset(num))),
           Op.SwapN,
           Op.Pop
         )
 
       def loadLocal(num: Int): Seq[Op] =
         Seq(
-          Op.Push(Datum.Integral((localsCount - num - 1) + stackOffest + 1)),
+          Op.Push(Datum.Integral(computeLocalOffset(num))),
           Op.Dupn
         )
 
       def loadArg(num: Int): Seq[Op] =
         Seq(
-          Op.Push(Datum.Integral((argsCount - num - 1) + stackOffest + localsCount + 1 + 1)),
+          Op.Push(Datum.Integral(computeArgOffset(num))),
           Op.Dupn
         )
+
+      def loadField(name: String, sigIdx: Long): (Int, Seq[Op]) = { // FIXME should process static fields too
+        lazy val defaultLoad = (0,
+                                Seq(
+                                  Op.Pop,
+                                  Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
+                                  Op.SGet
+                                ))
+
+        signatures.get(sigIdx) match {
+          case Some(FieldSig(tpe)) =>
+            tpe match {
+              case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
+                (0, Seq(Op.Pop, Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
+              case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
+                (0, Seq(Op.Pop, Op.From))
+              case _ => defaultLoad
+            }
+          case _ => defaultLoad
+        }
+      }
+
+      def storeField(name: String, sigIdx: Long): (Int, Seq[Op]) = { // FIXME should process static fields too
+        lazy val defaultStore = (0,
+                                 Seq(
+                                   Op.Pop,
+                                   Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
+                                   Op.SPut
+                                 ))
+
+        signatures.get(sigIdx) match {
+          case Some(FieldSig(tpe)) =>
+            tpe match {
+              case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
+                (0, Seq(Op.Pop, Op.Stop)) // error user shouldn't modify mappings
+              case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
+                (0, Seq(Op.Pop, Op.Stop)) // error user shouldn't modify sender address
+              case _ => defaultStore
+            }
+          case _ => defaultStore
+        }
+      }
+
+      def callVirt(name: String, parentSigIdx: Long, methodSigIdx: Long): (Int, Seq[Op]) = {
+        val resO = for {
+          parentSig <- signatures.get(parentSigIdx)
+          methodSig <- signatures.get(methodSigIdx)
+        } yield {
+          lazy val defaultCall = methodSig match {
+            case MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params) =>
+              tpe match {
+                case SigType.Void => (-params.length, Seq.fill(params.length)(Op.Pop))
+                case _ =>
+                  (-params.length + 1, Seq.fill(params.length)(Op.Pop) :+ Op.Push(Datum.Rawbytes(Array[Byte](0))))
+              }
+            case _ => (0, Seq.empty)
+          }
+
+          parentSig match {
+            case TypeSig(Tpe(Generic(Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)), _), _)) =>
+              name match {
+                case "get" => (-1, Seq(Op.Swap, Op.Concat, Op.SGet))
+                case "getDefault" =>
+                  (-2, Seq(Op.Call("method_getDefault")))
+                // FIXME we need some way to distinguish local functions and methods of program
+                case "exists" => (-1, Seq(Op.Swap, Op.Concat, Op.SExst))
+                case "put" =>
+                  (-3,
+                   Seq(Op.Push(Datum.Integral(2)),
+                       Op.Dupn,
+                       Op.Push(Datum.Integral(4)),
+                       Op.Dupn,
+                       Op.Concat,
+                       Op.Swap,
+                       Op.SPut,
+                       Op.Pop,
+                       Op.Pop))
+              }
+            case _ => defaultCall
+          }
+        }
+
+        resO.getOrElse((0, Seq.empty))
+      }
 
 //      def storeArg(num: Int): Seq[Op] =
 //        Seq(
@@ -106,30 +201,14 @@ object Translator {
         case Cgt        => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
         case Not        => (0, Seq(Op.Not))
 
-        case LdSFld(FieldData(_, name, _)) =>
-          (1,
-           Seq(
-             Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-             Op.SGet
-           ))
-        case LdFld(FieldData(_, name, _)) =>
-          (1,
-           Seq(
-             Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-             Op.SGet
-           ))
-        case StSFld(FieldData(_, name, _)) =>
-          (-1,
-           Seq(
-             Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-             Op.SPut
-           ))
-        case StFld(FieldData(_, name, _)) =>
-          (-1,
-           Seq(
-             Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-             Op.SPut
-           ))
+        case LdSFld(FieldData(_, name, sig)) =>
+          loadField(name, sig)
+        case LdFld(FieldData(_, name, sig)) =>
+          loadField(name, sig)
+        case StSFld(FieldData(_, name, sig)) =>
+          storeField(name, sig)
+        case StFld(FieldData(_, name, sig)) =>
+          storeField(name, sig)
 
         case LdArg0      => (1, loadArg(0))
         case LdArg1      => (1, loadArg(1))
@@ -158,6 +237,9 @@ object Translator {
         case JumpI(label) => (-1, Seq(Op.JumpI(label)))
         case Label(label) => (0, Seq(Op.Label(label)))
 
+        case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
+          callVirt(name, parentSigIdx, methodSigIdx)
+
         case _ => (0, Seq.empty)
       }
     }
@@ -170,10 +252,10 @@ object Translator {
       }
       ._1
 
-    Seq(Op.Label("method" + name)) ++
+    Seq(Op.Label("method_" + name)) ++
       Seq.fill(localsCount)(Op.Push(Datum.Integral(0))) ++ // FIXME Should be replaced by proper value for local var type
       ops ++
-      Seq(Op.Jump("stop"))
+      (if (local) Seq(Op.Ret) else Seq(Op.Jump("stop")))
   }
 
   def translate(methods: Seq[Method], cilData: CilData, signatures: Map[Long, Signatures.Signature]): Seq[Op] = {
@@ -184,8 +266,19 @@ object Translator {
           Op.Dup,
           Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
           Op.Eq,
-          Op.JumpI("method" + name)
+          Op.JumpI("method_" + name)
         )
+    }
+
+    val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
+      case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
+    }.toMap
+
+    def isLocal(methodIdx: Int): Boolean = {
+      methodsToTypes.get(methodIdx) match {
+        case Some(TypeDefData(_, _, "io.mytc.pravda", _, _, _)) => true
+        case _ => false
+      }
     }
 
     val methodsOps = methods.zipWithIndex.flatMap {
@@ -200,7 +293,9 @@ object Translator {
             }
             .getOrElse(0),
           cilData.tables.methodDefTable(i).name,
-          resolveRVI(m.opcodes)
+          resolveRVI(m.opcodes),
+          signatures,
+          isLocal(i)
         )
     }
 

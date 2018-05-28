@@ -7,18 +7,18 @@ namespace io.mytc.pravda {
     public class Program : Attribute {}
 
     // access to the storage
-    public interface Mapping<K, V> {
-       V get(K key);
-       bool exists(K key);
-       void put(K key, V value);
+    public abstract class Mapping<K, V> {
+       public abstract V get(K key);
+       public abstract bool exists(K key);
+       public abstract void put(K key, V value);
 
-       V getDefault(K key, V def); /*{
-          if (!this.exists(k)) {
+       public V getDefault(K key, V def) {
+          if (!this.exists(key)) {
               return def;
           } else {
-              return this.get(k);
+              return this.get(key);
           }
-       }*/
+       }
     }
 
     public class Address {}
