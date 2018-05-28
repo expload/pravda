@@ -35,7 +35,6 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   var proposedHeight = 0L
   val consensusEnv = new EnvironmentProvider(applicationStateDb)
-  // FIXME fomkin: mempool should work without data base
   val mempoolEnv = new EnvironmentProvider(applicationStateDb)
 
   def info(request: RequestInfo): Future[ResponseInfo] = {
