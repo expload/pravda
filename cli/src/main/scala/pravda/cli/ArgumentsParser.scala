@@ -6,7 +6,7 @@ import pravda.cli.Config.CompileMode
 import pravda.common.bytes
 import scopt.OptionParser
 
-object Parser extends OptionParser[Config]("pravda") {
+object ArgumentsParser extends OptionParser[Config]("pravda") {
 
   head("Pravda Command Line Interface")
 
@@ -151,8 +151,8 @@ object Parser extends OptionParser[Config]("pravda") {
       opt[String]('e', "endpoint")
         .text("Node endpoint (http://localhost:8080/api/public/broadcast by default).")
         .action {
-          case (endpoint, config: Config.Compile) =>
-            config.copy(input = Some(endpoint))
+          case (endpoint, config: Config.Broadcast) =>
+            config.copy(endpoint = endpoint)
           case (_, otherwise) => otherwise
         },
     )

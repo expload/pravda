@@ -11,13 +11,13 @@ object ParserSuite extends TestSuite {
   val tests: Tests = Tests {
     "gen" - {
       "address" - assert {
-        Parser
+        ArgumentsParser
           .parse(Seq("gen", "address"), Nope)
           .contains(GenAddress())
       }
       "address -o a.out" - {
         assert {
-          Parser
+          ArgumentsParser
             .parse(Seq("gen", "address", "-o", "a.out"), Config.Nope)
             .collect { case Config.GenAddress(Some(file)) if file.endsWith("a.out") => () }
             .nonEmpty
@@ -27,20 +27,20 @@ object ParserSuite extends TestSuite {
     "run" - {
       "-i a.out" - {
         assert {
-          Parser
+          ArgumentsParser
             .parse(Seq("run", "-i", "a.out"), Config.Nope)
             .collect { case RunBytecode(_, Some(file), _) if file.endsWith("a.out") => () }
             .nonEmpty
         }
       }
       "--storage db" - assert {
-        Parser
+        ArgumentsParser
           .parse(Seq("run", "--storage", "db"), Config.Nope)
           .collect { case RunBytecode(Some(file), _, _) if file.endsWith("db") => () }
           .nonEmpty
       }
       "--executor <address>" - assert {
-        Parser
+        ArgumentsParser
           .parse(Seq("run", "--executor", Address), Config.Nope)
           .exists {
             case config: RunBytecode => config.executor == Address
@@ -48,14 +48,14 @@ object ParserSuite extends TestSuite {
           }
       }
       assert {
-        Parser
+        ArgumentsParser
           .parse(Seq("run"), Config.Nope)
           .contains(RunBytecode())
       }
     }
     "compile" - {
       "-i program.forth -o a.out" - assert {
-        Parser
+        ArgumentsParser
           .parse(Seq("compile", "asm", "-i", "program.forth", "-o", "a.out"), Config.Nope)
           .exists {
             case config: Compile  =>
@@ -68,7 +68,7 @@ object ParserSuite extends TestSuite {
         import CompileMode._
 
         def compile(name: String, compiler: CompileMode) = {
-          Parser
+          ArgumentsParser
             .parse(Seq("compile", name), Config.Nope)
             .exists {
               case config: Compile =>
@@ -82,6 +82,17 @@ object ParserSuite extends TestSuite {
         Seq("asm" -> Asm,"disasm" -> Disasm, "dotnet" -> DotNet, "forth" -> Forth)
           .map { case (name, compiler) => compile(name, compiler) }
           .reduce(_ && _)
+      }
+    }
+    "broadcast" - {
+      "run -e http://example.com -w hw.json" - assert {
+        ArgumentsParser
+          .parse(Seq("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), Config.Nope)
+          .exists {
+            case Broadcast(Broadcast.Mode.Run, Some(wallet), None, "http://example.com")
+              if wallet.endsWith("hw.json") => true
+            case _ => false
+          }
       }
     }
   }

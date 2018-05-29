@@ -30,14 +30,15 @@ object Application extends App {
   lazy val runner = new RunBytecode(io, vm)
   lazy val broadcast = new Broadcast(io, api, compilers)
 
-  val eventuallyExitCode = Parser.parse(args, Config.Nope) match {
+  // FIXME programs should be composed by another one
+  val eventuallyExitCode = ArgumentsParser.parse(args, Config.Nope) match {
     case Some(config: Config.Compile)     => compile(config).map(_ => 0)
     case Some(config: Config.RunBytecode) => runner(config).map(_ => 0)
     case Some(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
     case Some(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
     case _ =>
       Future {
-        stderr.println(Parser.renderTwoColumnsUsage)
+        stderr.println(ArgumentsParser.renderTwoColumnsUsage)
         1 // every non zero exit code says about error
       }
   }
