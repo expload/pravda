@@ -3,6 +3,7 @@ package pravda.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
+import pravda.common.domain.Address
 import pravda.vm.state._
 
 object VmUtils {
@@ -11,15 +12,15 @@ object VmUtils {
     def getProgram(address: Address): Option[ProgramContext] = None
     def getProgramOwner(address: Address): Option[Address] = ???
     def createProgram(owner: Address, code: Data): Address = ???
-    def updateProgram(address: Data, code: Data): Unit = ???
+    def updateProgram(address: Address, code: Data): Unit = ???
   }
 
   def exec(p: ProgramStub): Array[Data] = {
-    Vm.runRaw(p.byteString, ByteString.EMPTY, emptyState).stack.toArray
+    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, emptyState).stack.toArray
   }
 
   def exec(p: ProgramStub, worldState: Environment): Array[Data] = {
-    Vm.runRaw(p.byteString, ByteString.EMPTY, worldState).stack.toArray
+    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, worldState).stack.toArray
   }
 
   def stack(item: Data*): Array[Data] =  item.toArray
@@ -62,7 +63,7 @@ object VmUtils {
 
     def createProgram(owner: Address, code: Data): Address = ???
 
-    def updateProgram(address: Data, code: Data): Unit = ???
+    def updateProgram(address: Address, code: Data): Unit = ???
 
   }
 

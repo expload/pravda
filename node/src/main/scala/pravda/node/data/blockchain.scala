@@ -2,7 +2,7 @@ package pravda.node.data
 
 import cats.Show
 import com.google.protobuf.ByteString
-import common._
+import pravda.common.domain._
 import supertagged.TaggedType
 
 object blockchain {
@@ -20,7 +20,11 @@ object blockchain {
 
   object Transaction {
 
-    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: NativeCoins, wattPrice: BigDecimal, nonce: Int)
+    final case class UnsignedTransaction(from: Address,
+                                         program: TransactionData,
+                                         fee: NativeCoins,
+                                         wattPrice: BigDecimal,
+                                         nonce: Int)
         extends Transaction
 
     final case class SignedTransaction(from: Address,

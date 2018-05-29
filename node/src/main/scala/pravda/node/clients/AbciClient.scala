@@ -10,13 +10,14 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.{Transaction, TransactionData}
-import pravda.node.data.common.{Address, NativeCoins, TransactionId}
+import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
+import pravda.common.domain.{Address, NativeCoins}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random

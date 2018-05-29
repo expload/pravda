@@ -14,7 +14,7 @@ import pravda.common.bytes
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common.{Address, NativeCoins}
+import pravda.common.domain.{Address, NativeCoins}
 import pravda.node.data.serialization.json._
 
 import scala.concurrent.duration._

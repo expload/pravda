@@ -1,8 +1,7 @@
 package pravda.node
 
 import com.google.protobuf.ByteString
-import pravda.node.data.common.Address
-import pravda.node.data.serialization.Bson
+import pravda.common.domain.Address
 import pravda.node.servers.Abci.StoredProgram
 import utest._
 

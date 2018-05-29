@@ -3,6 +3,7 @@ package pravda.cli.languages
 package impl
 
 import com.google.protobuf.ByteString
+import pravda.common.domain.Address
 import pravda.node.data.common.TransactionId
 import pravda.node.db.DB
 import pravda.node.servers
@@ -17,7 +18,7 @@ final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends 
     try {
       val envProvider = new servers.Abci.EnvironmentProvider(DB(storagePath, None))
       val env = envProvider.transactionEnvironment(TransactionId.forEncodedTransaction(program))
-      val memory = Vm.runRaw(program, executor, env)
+      val memory = Vm.runRaw(program, Address @@ executor, env)
       envProvider.commit(0) // TODO retrieve block height from db
       Right(memory)
     } catch {

@@ -1,5 +1,7 @@
 package pravda.vm.state
 
+import pravda.common.domain.Address
+
 sealed trait VmError {
   val code: Int
 }

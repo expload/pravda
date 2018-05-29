@@ -5,7 +5,8 @@ package udf
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import state.{Address, Environment}
+import pravda.common.domain.Address
+import state.Environment
 
 import scala.collection.mutable
 

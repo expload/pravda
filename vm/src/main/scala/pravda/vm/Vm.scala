@@ -5,6 +5,8 @@ package vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
+import pravda.common.domain.Address
+import pravda.vm.watt.WattHandler
 
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable.ArrayBuffer
@@ -102,7 +104,7 @@ object Vm {
               throw VmErrorException(OperationDenied)
             }
             val num = dataToInt32(memory.pop())
-            val address = memory.pop()
+            val address = Address @@ memory.pop()
             val mem = runProgram(address, memory.top(num), executor, environment, depth + 1)
             memory ++= mem
             aux()
@@ -110,7 +112,7 @@ object Vm {
             memory.push(environment.createProgram(executor, memory.pop()))
             aux()
           case PUPDATE =>
-            val address = memory.pop()
+            val address = Address @@ memory.pop()
             val code = memory.pop()
             if (address != executor) {
               throw VmErrorException(OperationDenied)
@@ -118,7 +120,7 @@ object Vm {
             environment.updateProgram(address, code)
             aux()
           case LCALL =>
-            val address = wordToData(program)
+            val address = Address @@ wordToData(program)
             val func = wordToData(program)
             val num = wordToInt32(program)
             val callData = memory.top(num)
@@ -206,21 +208,21 @@ object Vm {
             aux()
           case SPUT =>
             val value = memory.pop()
-            val key = memory.pop()
+            val key = Address @@ memory.pop()
             storage.put(key, value)
             aux()
           case SGET =>
-            val valOpt = storage.get(memory.pop())
+            val valOpt = storage.get(Address @@ memory.pop())
             if (valOpt.isEmpty) {
               throw VmErrorException(NoSuchElement)
             }
             memory.push(valOpt.get)
             aux()
           case SDROP =>
-            storage.delete(memory.pop())
+            storage.delete(Address @@ memory.pop())
             aux()
           case SEXIST =>
-            memory.push(boolToData(storage.get(memory.pop()).isDefined))
+            memory.push(boolToData(storage.get(Address @@ memory.pop()).isDefined))
             aux()
           case I32ADD =>
             memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))

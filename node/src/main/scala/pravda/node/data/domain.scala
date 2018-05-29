@@ -1,6 +1,6 @@
 package pravda.node.data
 
-import pravda.node.data.common._
+import pravda.common.domain.Address
 import pravda.node.data.cryptography.EncryptedPrivateKey
 
 object domain {

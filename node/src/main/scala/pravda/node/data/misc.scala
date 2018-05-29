@@ -1,6 +1,6 @@
 package pravda.node.data
 
-import pravda.node.data.common.Address
+import pravda.common.domain.Address
 
 object misc {
 

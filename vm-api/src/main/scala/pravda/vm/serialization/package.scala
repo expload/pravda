@@ -3,7 +3,8 @@ package pravda.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import state.{Address, Data}
+import pravda.common.domain.Address
+import state.Data
 
 package object serialization {
 
@@ -25,7 +26,7 @@ package object serialization {
     int32ToByteString(i)
 
   def int32ToAddress(i: Int): Address =
-    int32ToByteString(i)
+    Address @@ int32ToByteString(i)
 
   def doubleToData(v: Double): Data = {
     val buf = ByteBuffer.allocate(8)
@@ -57,5 +58,5 @@ package object serialization {
     bytesToByteString(ints: _*)
 
   def bytesToAddress(ints: Int*): Address =
-    bytesToByteString(ints: _*)
+    Address @@ bytesToByteString(ints: _*)
 }

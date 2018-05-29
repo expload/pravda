@@ -1,17 +1,16 @@
 package pravda.node.data
 
 import java.security.SecureRandom
+
 import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{BadPaddingException, Cipher, SecretKeyFactory}
-
 import com.google.protobuf.ByteString
 import pravda.common.contrib.ed25519
 import pravda.node.data.blockchain.Transaction
-import pravda.node.data.common.Address
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
-
 import pravda.common.bytes._
+import pravda.common.domain.Address
 import supertagged.TaggedType
 
 object cryptography {

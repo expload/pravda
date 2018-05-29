@@ -5,7 +5,9 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import pravda.node.db.DB
 import pravda.node.clients.AbciClient
-import pravda.node.data.common.{Address, NativeCoins, TransactionId}
+import pravda.node.data.common.TransactionId
+import pravda.common.domain.{Address, NativeCoins}
+
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.{Config, utils}

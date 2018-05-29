@@ -2,7 +2,8 @@ package pravda.vm
 
 package std
 
-import state.{Environment, Address}
+import pravda.common.domain.Address
+import state.Environment
 
 object Loader extends Loader {
 

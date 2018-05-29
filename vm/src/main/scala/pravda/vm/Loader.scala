@@ -1,6 +1,7 @@
 package pravda.vm
 
-import state.{Address, Environment}
+import pravda.common.domain.Address
+import state.Environment
 
 trait Loader {
 

@@ -38,7 +38,8 @@ lazy val common = (project in file("common")).
     libraryDependencies ++= Seq (
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
       "com.propensive" %% "contextual" % "1.1.0",
-      "org.whispersystems" % "curve25519-java" % "0.4.1"
+      "org.whispersystems" % "curve25519-java" % "0.4.1",
+      "org.rudogma" %% "supertagged" % "1.4"
     )
   )
 

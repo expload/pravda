@@ -3,17 +3,16 @@ package opcode
 
 import VmUtils._
 import Opcodes.int._
-
+import pravda.common.domain.Address
 import utest._
-
 import serialization._
 
 
 object CallTests extends TestSuite {
 
-  val address1 = data(4.toByte, 5.toByte, 66.toByte, 78.toByte)
-  val address2 = data(43.toByte, 15.toByte, 66.toByte, 78.toByte)
-  val address3 = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
+  val address1 = Address.fromByteArray(Array(4.toByte, 5.toByte, 66.toByte, 78.toByte))
+  val address2 = Address.fromByteArray(Array(43.toByte, 15.toByte, 66.toByte, 78.toByte))
+  val address3 = Address.fromByteArray(Array(13.toByte, 15.toByte, 66.toByte, 78.toByte))
 
 
   val tests = Tests {

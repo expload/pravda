@@ -6,8 +6,7 @@ import VmUtils._
 import Opcodes._
 import pravda.vm.state.VmError._
 import pravda.vm.state.{Environment, VmError, VmErrorException}
-
-import pravda.common.bytes.hex._
+import pravda.common.domain.Address
 
 object ErrorTests extends TestSuite {
 
@@ -34,7 +33,7 @@ object ErrorTests extends TestSuite {
 
       'complex - {
 
-        val address = data(hex"0d0f424e")
+        val address = Address.fromHex("0d0f424e")
         val storedProg = prog.opcode(PUSHX).put(111)
 
         val wState = environment(address -> storedProg)
@@ -51,8 +50,8 @@ object ErrorTests extends TestSuite {
 
     'noSuchProgram - {
 
-      val address = data(13.toByte, 15.toByte, 66.toByte, 78.toByte)
-      val wrongAddress = data(13.toByte, 15.toByte, 0.toByte, 78.toByte)
+      val address = Address.fromByteArray(Array(13.toByte, 15.toByte, 66.toByte, 78.toByte))
+      val wrongAddress = Address.fromByteArray(Array(13.toByte, 15.toByte, 0.toByte, 78.toByte))
 
       val storedProg = prog.opcode(PUSHX).put(111)
 
@@ -66,8 +65,8 @@ object ErrorTests extends TestSuite {
     'noSuchLibrary - {
 
       'notExists - {
-        val address = data(hex"0d0f424e")
-        val wrongAddress  = data(hex"0d0f004e")
+        val address = Address.fromHex("0d0f424e")
+        val wrongAddress  = Address.fromHex("0d0f004e")
 
         val storedProg = prog.opcode(PUSHX).put(111)
 
@@ -80,7 +79,7 @@ object ErrorTests extends TestSuite {
 
       'notLibrary - {
 
-        val address = data(hex"0d0f424e")
+        val address = Address.fromHex("0d0f424e")
 
         val regularProgram = prog.opcode(PUSHX).put(111)
 
@@ -94,7 +93,7 @@ object ErrorTests extends TestSuite {
     }
 
     'externalError - {
-        val address = data(hex"0d0f424e")
+        val address = Address.fromHex("0d0f424e")
 
         val storedProg = prog.opcode(POP)
 
@@ -107,7 +106,7 @@ object ErrorTests extends TestSuite {
 
 
       'noSuchMethod - {
-        val address = data(hex"0d0f424e")
+        val address = Address.fromHex("0d0f424e")
 
         val libraryMethod = prog.opcode(FTBL).put(1).put("meth1").put(10)
 

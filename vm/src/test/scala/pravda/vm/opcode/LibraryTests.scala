@@ -2,13 +2,10 @@ package pravda.vm
 package opcode
 
 import utest._
-
 import VmUtils._
 import Opcodes._
-
+import pravda.common.domain.Address
 import serialization._
-
-import pravda.common.bytes.hex._
 
 object LibraryTests extends TestSuite {
 
@@ -48,8 +45,8 @@ object LibraryTests extends TestSuite {
         .opcode(RET)
 
 
-      val address1 = data(hex"0405424e")
-      val address2 = data(hex"0406424e")
+      val address1 = Address.fromHex("0405424e")
+      val address2 = Address.fromHex("0406424e")
 
       val wState = environment(address1 -> udflib1, address2 -> udflib2)
 
@@ -72,7 +69,7 @@ object LibraryTests extends TestSuite {
       val plusLen = prog.put("plus").length
       val funcLen = prog.put("func").length
 
-      val address = data(hex"0405424e")
+      val address = Address.fromHex("0405424e")
 
       val udflib = prog.opcode(FTBL)
         .put(2)
