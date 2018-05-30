@@ -55,6 +55,7 @@ object Translator {
                               opcodes: Seq[OpCode],
                               signatures: Map[Long, Signatures.Signature],
                               local: Boolean): Seq[Op] = {
+
     def translateOpcode(opcode: OpCode, stackOffest: Int): (Int, Seq[Op]) = {
       def pushTypedInt(i: Int): Op =
         Op.Push(Datum.Rawbytes(Array(1.toByte) ++ int32ToData(i).toByteArray))
@@ -63,10 +64,12 @@ object Translator {
         Op.Push(Datum.Rawbytes(Array(2.toByte) ++ doubleToData(d).toByteArray))
 
       def computeLocalOffset(num: Int): Int =
-        (localsCount - num - 1) + stackOffest + (if (local) 0 else 1)
+        (localsCount - num - 1) + stackOffest + 1
 
       def computeArgOffset(num: Int): Int =
-        (argsCount - num - 1) + stackOffest + localsCount + 1 + (if (local) 0 else 1)
+        (argsCount - num - 1) + stackOffest + localsCount + 1 + 1
+      // for local there's additional object arg
+      // for not local there's name of the method
 
       def storeLocal(num: Int): Seq[Op] =
         Seq(
@@ -81,16 +84,28 @@ object Translator {
           Op.Dupn
         )
 
-      def loadArg(num: Int): Seq[Op] =
-        Seq(
-          Op.Push(Datum.Integral(computeArgOffset(num))),
-          Op.Dupn
-        )
+      def loadArg(num: Int): (Int, Seq[Op]) =
+        if (local) {
+          (1,
+            Seq(
+              Op.Push(Datum.Integral(computeArgOffset(num))),
+              Op.Dupn
+            ))
+        } else {
+          if (num == 0) {
+            (0, Seq.empty) // skip this reference
+          } else {
+            (1,
+              Seq(
+                Op.Push(Datum.Integral(computeArgOffset(num - 1))),
+                Op.Dupn
+              ))
+          }
+        }
 
       def loadField(name: String, sigIdx: Long): (Int, Seq[Op]) = { // FIXME should process static fields too
-        lazy val defaultLoad = (0,
+        lazy val defaultLoad = (1,
                                 Seq(
-                                  Op.Pop,
                                   Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
                                   Op.SGet
                                 ))
@@ -98,10 +113,12 @@ object Translator {
         signatures.get(sigIdx) match {
           case Some(FieldSig(tpe)) =>
             tpe match {
+              case SigType.Generic(SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)), _) =>
+                (1, Seq(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
               case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
-                (0, Seq(Op.Pop, Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
+                (1, Seq(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
               case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
-                (0, Seq(Op.Pop, Op.From))
+                (1, Seq(Op.From))
               case _ => defaultLoad
             }
           case _ => defaultLoad
@@ -109,9 +126,8 @@ object Translator {
       }
 
       def storeField(name: String, sigIdx: Long): (Int, Seq[Op]) = { // FIXME should process static fields too
-        lazy val defaultStore = (0,
+        lazy val defaultStore = (1,
                                  Seq(
-                                   Op.Pop,
                                    Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
                                    Op.SPut
                                  ))
@@ -120,9 +136,9 @@ object Translator {
           case Some(FieldSig(tpe)) =>
             tpe match {
               case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
-                (0, Seq(Op.Pop, Op.Stop)) // error user shouldn't modify mappings
+                (0, Seq(Op.Stop)) // error user shouldn't modify mappings
               case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
-                (0, Seq(Op.Pop, Op.Stop)) // error user shouldn't modify sender address
+                (0, Seq(Op.Stop)) // error user shouldn't modify sender address
               case _ => defaultStore
             }
           case _ => defaultStore
@@ -198,8 +214,11 @@ object Translator {
         case Div        => (-1, Seq(Op.LCall("Typed", "typedDiv", 2)))
         case Rem        => (-1, Seq(Op.LCall("Typed", "typedMod", 2)))
         case Clt        => (-1, Seq(Op.LCall("Typed", "typedClt", 2)))
-        case Cgt        => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
-        case Not        => (0, Seq(Op.Not))
+        case Sub =>
+          (-1, Seq(Op.Swap, pushTypedInt(-1), Op.LCall("Typed", "typedMull", 2), Op.LCall("Typed", "typedAdd", 2)))
+        case Cgt => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
+        case Ceq => (-1, Seq(Op.Eq))
+        case Not => (0, Seq(Op.Not))
 
         case LdSFld(FieldData(_, name, sig)) =>
           loadField(name, sig)
@@ -210,12 +229,12 @@ object Translator {
         case StFld(FieldData(_, name, sig)) =>
           storeField(name, sig)
 
-        case LdArg0      => (1, loadArg(0))
-        case LdArg1      => (1, loadArg(1))
-        case LdArg2      => (1, loadArg(2))
-        case LdArg3      => (1, loadArg(3))
-        case LdArg(num)  => (1, loadArg(num))
-        case LdArgS(num) => (1, loadArg(num.toInt))
+        case LdArg0      => loadArg(0)
+        case LdArg1      => loadArg(1)
+        case LdArg2      => loadArg(2)
+        case LdArg3      => loadArg(3)
+        case LdArg(num)  => loadArg(num)
+        case LdArgS(num) => loadArg(num.toInt)
 
         case StLoc0      => (-1, storeLocal(0))
         case StLoc1      => (-1, storeLocal(1))
@@ -258,18 +277,7 @@ object Translator {
       (if (local) Seq(Op.Ret) else Seq(Op.Jump("stop")))
   }
 
-  def translate(methods: Seq[Method], cilData: CilData, signatures: Map[Long, Signatures.Signature]): Seq[Op] = {
-    val jumpToMethod = methods.zipWithIndex.flatMap {
-      case (m, i) =>
-        val name = cilData.tables.methodDefTable(i).name
-        Seq(
-          Op.Dup,
-          Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-          Op.Eq,
-          Op.JumpI("method_" + name)
-        )
-    }
-
+  def translate(rawMethods: Seq[Method], cilData: CilData, signatures: Map[Long, Signatures.Signature]): Seq[Op] = {
     val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
       case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
     }.toMap
@@ -277,15 +285,36 @@ object Translator {
     def isLocal(methodIdx: Int): Boolean = {
       methodsToTypes.get(methodIdx) match {
         case Some(TypeDefData(_, _, "io.mytc.pravda", _, _, _)) => true
-        case _ => false
+        case _                                                  => false
       }
     }
 
-    val methodsOps = methods.zipWithIndex.flatMap {
+    val methods = rawMethods.zipWithIndex.filterNot {
+      case (m, i) =>
+        val name = cilData.tables.methodDefTable(i).name
+        name == ".ctor" || name == ".cctor"
+    }
+
+    val jumpToMethod = methods.flatMap {
+      case (m, i) =>
+        if (!isLocal(i)) {
+          val name = cilData.tables.methodDefTable(i).name
+          Seq(
+            Op.Dup,
+            Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
+            Op.Eq,
+            Op.JumpI("method_" + name)
+          )
+        } else {
+          Seq.empty
+        }
+    }
+
+    val methodsOps = methods.flatMap {
       case (m, i) =>
         val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
         translateMethod(
-          cilData.tables.methodDefTable(i).params.length,
+          cilData.tables.methodDefTable(i).params.length, // FIXME should properly handle static methods
           localVarSig
             .map {
               case LocalVarSig(types) => types.length

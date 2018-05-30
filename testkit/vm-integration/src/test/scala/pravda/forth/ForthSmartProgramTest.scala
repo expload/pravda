@@ -1,7 +1,7 @@
 package pravda.forth
 
 import utest._
-import ForthTestUtils._
+import pravda.test.utils.IntegrationUtils._
 import com.google.protobuf.ByteString
 import pravda.vm.serialization._
 
@@ -9,7 +9,7 @@ object ForthSmartProgramTest extends TestSuite {
 
   def tests = Tests {
     "Simple smart-program must run correctly" - {
-      runProgram[ByteString](
+      runForthProgram[ByteString](
         """
           |1 10 10
           |dup3 1 == if dup1 sget dup3 + dup2 sput then
@@ -60,13 +60,13 @@ object ForthSmartProgramTest extends TestSuite {
       val allowed1030 = bytesToAddress(0xa1, 0, 0, 0, 30, 0, 0, 0, 10)
 
       'mode1 - {
-        runProgram[ByteString](s"10 1 $erc20", Seq(balance10 -> int32ToData(100))) ==> Right(
+        runForthProgram[ByteString](s"10 1 $erc20", Seq(balance10 -> int32ToData(100))) ==> Right(
           (
             Seq(10, 1, 100).map(int32ToData),
             Map(balance10 -> int32ToData(100))
           ))
 
-        runProgram[ByteString](s"10 1 $erc20", Seq()) ==> Right(
+        runForthProgram[ByteString](s"10 1 $erc20", Seq()) ==> Right(
           (
             Seq(10, 1, 0).map(int32ToData),
             Map(balance10 -> int32ToData(0))
@@ -74,25 +74,25 @@ object ForthSmartProgramTest extends TestSuite {
       }
 
       'mode2 - {
-        runProgram[ByteString](s"20 5 2 $erc20",
-                               Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
-                               int32ToAddress(10)) ==> Right(
+        runForthProgram[ByteString](s"20 5 2 $erc20",
+                                    Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
+                                    int32ToAddress(10)) ==> Right(
           (
             Seq(20, 5, 2).map(int32ToData),
             Map(balance10 -> int32ToData(95), balance20 -> int32ToData(15))
           ))
 
-        runProgram[ByteString](s"20 500 2 $erc20",
-                               Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
-                               int32ToAddress(10)) ==> Right(
+        runForthProgram[ByteString](s"20 500 2 $erc20",
+                                    Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
+                                    int32ToAddress(10)) ==> Right(
           (
             Seq(20, 500, 2).map(int32ToData),
             Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10))
           ))
 
-        runProgram[ByteString](s"20 -10 2 $erc20",
-                               Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
-                               int32ToAddress(10)) ==> Right(
+        runForthProgram[ByteString](s"20 -10 2 $erc20",
+                                    Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
+                                    int32ToAddress(10)) ==> Right(
           (
             Seq(20, -10, 2).map(int32ToData),
             Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10))
@@ -100,41 +100,41 @@ object ForthSmartProgramTest extends TestSuite {
       }
 
       'mode3 - {
-        runProgram[ByteString](s"10 20 5 3 $erc20",
-                               Seq(balance10 -> int32ToData(100),
-                                   balance20 -> int32ToData(10),
-                                   allowed1030 -> int32ToData(10)),
-                               int32ToAddress(30)) ==> Right(
+        runForthProgram[ByteString](s"10 20 5 3 $erc20",
+                                    Seq(balance10 -> int32ToData(100),
+                                        balance20 -> int32ToData(10),
+                                        allowed1030 -> int32ToData(10)),
+                                    int32ToAddress(30)) ==> Right(
           (
             Seq(10, 20, 5, 3).map(int32ToData),
             Map(balance10 -> int32ToData(95), balance20 -> int32ToData(15), allowed1030 -> int32ToData(5))
           ))
 
-        runProgram[ByteString](s"10 20 20 3 $erc20",
-                               Seq(balance10 -> int32ToData(100),
-                                   balance20 -> int32ToData(10),
-                                   allowed1030 -> int32ToData(10)),
-                               int32ToAddress(30)) ==> Right(
+        runForthProgram[ByteString](s"10 20 20 3 $erc20",
+                                    Seq(balance10 -> int32ToData(100),
+                                        balance20 -> int32ToData(10),
+                                        allowed1030 -> int32ToData(10)),
+                                    int32ToAddress(30)) ==> Right(
           (
             Seq(10, 20, 20, 3).map(int32ToData),
             Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10), allowed1030 -> int32ToData(10))
           ))
 
-        runProgram[ByteString](s"10 20 200 3 $erc20",
-                               Seq(balance10 -> int32ToData(100),
-                                   balance20 -> int32ToData(10),
-                                   allowed1030 -> int32ToData(1000)),
-                               int32ToAddress(30)) ==> Right(
+        runForthProgram[ByteString](s"10 20 200 3 $erc20",
+                                    Seq(balance10 -> int32ToData(100),
+                                        balance20 -> int32ToData(10),
+                                        allowed1030 -> int32ToData(1000)),
+                                    int32ToAddress(30)) ==> Right(
           (
             Seq(10, 20, 200, 3).map(int32ToData),
             Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10), allowed1030 -> int32ToData(1000))
           ))
 
-        runProgram[ByteString](s"10 20 -5 3 $erc20",
-                               Seq(balance10 -> int32ToData(100),
-                                   balance20 -> int32ToData(10),
-                                   allowed1030 -> int32ToData(10)),
-                               int32ToAddress(30)) ==> Right(
+        runForthProgram[ByteString](s"10 20 -5 3 $erc20",
+                                    Seq(balance10 -> int32ToData(100),
+                                        balance20 -> int32ToData(10),
+                                        allowed1030 -> int32ToData(10)),
+                                    int32ToAddress(30)) ==> Right(
           (
             Seq(10, 20, -5, 3).map(int32ToData),
             Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10), allowed1030 -> int32ToData(10))
@@ -142,7 +142,7 @@ object ForthSmartProgramTest extends TestSuite {
       }
 
       'mode4 - {
-        runProgram[ByteString](s"30 5 4 $erc20", Seq(allowed1030 -> int32ToData(10)), int32ToAddress(10)) ==> Right(
+        runForthProgram[ByteString](s"30 5 4 $erc20", Seq(allowed1030 -> int32ToData(10)), int32ToAddress(10)) ==> Right(
           (
             Seq(30, 5, 4).map(int32ToData),
             Map(allowed1030 -> int32ToData(5))
@@ -150,7 +150,7 @@ object ForthSmartProgramTest extends TestSuite {
       }
 
       'mode5 - {
-        runProgram[ByteString](s"10 30 5 $erc20", Seq(allowed1030 -> int32ToData(10))) ==> Right(
+        runForthProgram[ByteString](s"10 30 5 $erc20", Seq(allowed1030 -> int32ToData(10))) ==> Right(
           (
             Seq(10, 30, 5, 10).map(int32ToData),
             Map(allowed1030 -> int32ToData(10))

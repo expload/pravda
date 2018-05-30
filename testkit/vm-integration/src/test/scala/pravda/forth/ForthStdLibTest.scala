@@ -1,7 +1,7 @@
 package pravda.forth
 
 import utest._
-import ForthTestUtils._
+import pravda.test.utils.IntegrationUtils._
 
 
 object ForthStdLibTest extends TestSuite {
@@ -9,7 +9,7 @@ object ForthStdLibTest extends TestSuite {
   def tests = Tests {
     "dup must duplicate the top of the stack" - {
 
-      assert( runWithoutEnviroment[Int]( """
+      assert( runForthWithoutEnviroment[Int]( """
         1 2 3
         dup
       """ ) == Right(
@@ -20,7 +20,7 @@ object ForthStdLibTest extends TestSuite {
 
     "dup1 must duplicate the top of the stack" - {
 
-      assert( runWithoutEnviroment[Int]( """
+      assert( runForthWithoutEnviroment[Int]( """
         1 2 3
         dup1
       """ ) == Right(
@@ -31,7 +31,7 @@ object ForthStdLibTest extends TestSuite {
 
     "dup2 must push the 2nd item of the stack" - {
 
-      assert( runWithoutEnviroment[Int]( """
+      assert( runForthWithoutEnviroment[Int]( """
         1 2 3
         dup2
       """ ) == Right(
@@ -42,7 +42,7 @@ object ForthStdLibTest extends TestSuite {
 
     "dup3 must push the 3rd item of the stack" - {
 
-      assert( runWithoutEnviroment[Int]( """
+      assert( runForthWithoutEnviroment[Int]( """
         1 2 3
         dup3
       """ ) == Right(
@@ -53,7 +53,7 @@ object ForthStdLibTest extends TestSuite {
 
     "eq must push true if 2 top items are equal" - {
 
-      assert( runWithoutEnviroment[Boolean]( """
+      assert( runForthWithoutEnviroment[Boolean]( """
         1 1
         eq
       """ ) == Right(
@@ -64,7 +64,7 @@ object ForthStdLibTest extends TestSuite {
 
     "eq must push false if 2 top items are not equal" - {
 
-      assert( runWithoutEnviroment[Boolean]( """
+      assert( runForthWithoutEnviroment[Boolean]( """
         1 2
         eq
       """ ) == Right(
@@ -75,7 +75,7 @@ object ForthStdLibTest extends TestSuite {
 
     "neq must push false if 2 top items are equal" - {
 
-      assert( runWithoutEnviroment[Boolean]( """
+      assert( runForthWithoutEnviroment[Boolean]( """
         1 1
         neq
       """ ) == Right(
@@ -86,7 +86,7 @@ object ForthStdLibTest extends TestSuite {
 
     "neq must push true if 2 top items are not equal" - {
 
-      assert( runWithoutEnviroment[Boolean]( """
+      assert( runForthWithoutEnviroment[Boolean]( """
         1 2
         neq
       """ ) == Right(
@@ -97,7 +97,7 @@ object ForthStdLibTest extends TestSuite {
 
     "not must push !top of the stack" - {
 
-      assert( runWithoutEnviroment[Boolean]( """
+      assert( runForthWithoutEnviroment[Boolean]( """
         1 2
         eq
         not
@@ -109,7 +109,7 @@ object ForthStdLibTest extends TestSuite {
 
     "concat must take 2 arrays of bytes from top and push concatenation of them" - {
 
-      assert( runWithoutEnviroment[List[Byte]]( """
+      assert( runForthWithoutEnviroment[List[Byte]]( """
         $xFFFF
         $x0000
         concat

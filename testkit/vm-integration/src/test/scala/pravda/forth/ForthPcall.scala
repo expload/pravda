@@ -1,8 +1,8 @@
 package pravda.forth
 
 import com.google.protobuf.ByteString
-import pravda.forth.ForthTestUtils._
 import pravda.vm.serialization._
+import pravda.test.utils.IntegrationUtils._
 import utest._
 
 object ForthPcall extends TestSuite {
@@ -14,7 +14,7 @@ object ForthPcall extends TestSuite {
         useStdLib = true
       )
 
-      val res = runWithEnviroment[ByteString](
+      val res = runForthWithEnviroment[ByteString](
         s"""
             |10 10
             |$$x${code.map("%02X".format(_)).mkString}
@@ -40,7 +40,7 @@ object ForthPcall extends TestSuite {
         useStdLib = true
       )
 
-      val res = runWithEnviroment[ByteString](
+      val res = runForthWithEnviroment[ByteString](
         s"""
            |$$x${code.map("%02X".format(_)).mkString}
            |pcreate
