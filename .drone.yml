@@ -9,8 +9,9 @@ pipeline:
     image: gcr.io/time-coin/sbt:latest
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
-      - /var/lib/ivy-cache:/workdir/ivy
+      - /var/lib/coursier-cache:/workdir/coursier
     commands:
+      - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
       - git clone https://github.com/mytimecoin/scala-abci-server.git scala-abci-server --depth 1
       - cd /workdir/code/scala-abci-server && sbt $SBT_OPTS publishLocal
@@ -19,13 +20,14 @@ pipeline:
     image: gcr.io/time-coin/sbt:latest
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
-      - /var/lib/ivy-cache:/workdir/ivy
+      - /var/lib/coursier-cache:/workdir/coursier
     commands:
-      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/'
+      - export COURSIER_CACHE='/workdir/coursier/'
       - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageBin
     when:
       event: tag
-  github_release:
+  release:
     image: plugins/github-release
     files:
       - /workdir/code/cli/target/universal/*.zip

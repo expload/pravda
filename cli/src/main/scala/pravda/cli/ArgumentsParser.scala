@@ -2,11 +2,11 @@ package pravda.cli
 
 import java.io.File
 
-import pravda.cli.Config.PravdaCompile
+import pravda.cli.Config.CompileMode
 import pravda.common.bytes
 import scopt.OptionParser
 
-object Parser extends OptionParser[Config]("pravda") {
+object ArgumentsParser extends OptionParser[Config]("pravda") {
 
   head("Pravda Command Line Interface")
 
@@ -59,7 +59,7 @@ object Parser extends OptionParser[Config]("pravda") {
     )
 
   cmd("compile")
-    .action((_, _) => Config.Compile(PravdaCompile.Nope))
+    .action((_, _) => Config.Compile(CompileMode.Nope))
     .children(
       opt[File]('i', "input")
         .text("Input file")
@@ -79,28 +79,80 @@ object Parser extends OptionParser[Config]("pravda") {
         .text("Assemble Pravda VM bytecode from text presentation.")
         .action {
           case (_, config: Config.Compile) =>
-            config.copy(compiler = Config.PravdaCompile.Asm)
+            config.copy(compiler = Config.CompileMode.Asm)
           case (_, otherwise) => otherwise
         },
       cmd("disasm")
         .text("Disassemble Pravda VM bytecode to text presentation.")
         .action {
           case (_, config: Config.Compile) =>
-            config.copy(compiler = Config.PravdaCompile.Disasm)
+            config.copy(compiler = Config.CompileMode.Disasm)
           case (_, otherwise) => otherwise
         },
       cmd("forth")
         .text("Compile Pravda pseudo-forth to Pravda VM bytecode.")
         .action {
           case (_, config: Config.Compile) =>
-            config.copy(compiler = Config.PravdaCompile.Forth)
+            config.copy(compiler = Config.CompileMode.Forth)
           case (_, otherwise) => otherwise
         },
       cmd("dotnet")
         .text("Compile .exe produced byt .NET compiler to Pravda VM bytecode.")
         .action {
           case (_, config: Config.Compile) =>
-            config.copy(compiler = Config.PravdaCompile.DotNet)
+            config.copy(compiler = Config.CompileMode.DotNet)
+          case (_, otherwise) => otherwise
+        },
+    )
+
+  cmd("broadcast")
+    .text("Broadcasting program to the network")
+    .children(
+      cmd("run")
+        .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Run))
+        .text("")
+        .action {
+          case (_, config: Config.Broadcast) =>
+            config.copy(mode = Config.Broadcast.Mode.Run)
+          case (_, otherwise) => otherwise
+        },
+      cmd("deploy")
+        .text("")
+        .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Deploy))
+        .action {
+          case (_, config: Config.Broadcast) =>
+            config.copy(mode = Config.Broadcast.Mode.Deploy)
+          case (_, otherwise) => otherwise
+        },
+      cmd("update")
+        .text("")
+        .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Update(None)))
+        .children(
+          opt[String]('p', "program")
+            .action {
+              case (hex, config: Config.Broadcast) =>
+                config.copy(mode = Config.Broadcast.Mode.Update(Some(hex)))
+              case (_, otherwise) => otherwise
+            }
+        ),
+      opt[File]('i', "input")
+        .text("Input file.")
+        .action {
+          case (file, config: Config.Broadcast) =>
+            config.copy(input = Some(file.getAbsolutePath))
+          case (_, otherwise) => otherwise
+        },
+      opt[File]('w', "wallet")
+        .action {
+          case (file, config: Config.Broadcast) =>
+            config.copy(wallet = Some(file.getAbsolutePath))
+          case (_, otherwise) => otherwise
+        },
+      opt[String]('e', "endpoint")
+        .text("Node endpoint (http://localhost:8080/api/public/broadcast by default).")
+        .action {
+          case (endpoint, config: Config.Broadcast) =>
+            config.copy(endpoint = endpoint)
           case (_, otherwise) => otherwise
         },
     )

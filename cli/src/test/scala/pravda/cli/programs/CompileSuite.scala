@@ -3,13 +3,13 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.Config.PravdaCompile
+import pravda.cli.Config.CompileMode
 import pravda.cli.languages.{CompilersLanguage, IoLanguageStub}
 import utest._
 
 object CompileSuite extends TestSuite {
 
-  import PravdaCompile._
+  import CompileMode._
 
   final val UnexpectedBinaryOutput = ByteString.EMPTY
   final val UnexpectedStringOutput = ""

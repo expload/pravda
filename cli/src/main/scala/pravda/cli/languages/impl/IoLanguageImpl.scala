@@ -6,16 +6,18 @@ import java.nio.file.{Files, Paths}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 
-import cats.Id
 import com.google.protobuf.ByteString
+
+import scala.concurrent.{ExecutionContext, Future}
 import scala.sys.process.stdin
 
-class IoLanguageImpl extends IoLanguage[Id] {
+class IoLanguageImpl(implicit executionContext: ExecutionContext) extends IoLanguage[Future] {
 
-  def createTmpDir(): Id[String] =
+  def createTmpDir(): Future[String] = Future {
     Files.createTempDirectory("pravda-cli").toAbsolutePath.toString
+  }
 
-  def readFromStdin(): Id[ByteString] = {
+  def readFromStdin(): Future[ByteString] = Future {
     val buf = ByteBuffer.allocate(65536)
     val channel = Channels.newChannel(stdin)
     while (channel.read(buf) >= 0) ()
@@ -23,7 +25,7 @@ class IoLanguageImpl extends IoLanguage[Id] {
     ByteString.copyFrom(buf)
   }
 
-  def readFromFile(pathString: String): Id[Option[ByteString]] = {
+  def readFromFile(pathString: String): Future[Option[ByteString]] = Future {
     val path = Paths.get(pathString)
     if (Files.exists(path) && !Files.isDirectory(path)) {
       Some(ByteString.copyFrom(Files.readAllBytes(path)))
@@ -32,25 +34,25 @@ class IoLanguageImpl extends IoLanguage[Id] {
     }
   }
 
-  def writeToStdout(data: ByteString): Id[Unit] =
-    sys.process.stdout.write(data.toByteArray)
+  def writeToStdout(data: ByteString): Future[Unit] =
+    Future(sys.process.stdout.write(data.toByteArray))
 
-  def writeStringToStdout(data: String): Id[Unit] =
-    sys.process.stdout.print(data)
+  def writeStringToStdout(data: String): Future[Unit] =
+    Future(sys.process.stdout.print(data))
 
-  def writeStringToStderrAndExit(data: String, code: Int): Id[Unit] = {
+  def writeStringToStderrAndExit(data: String, code: Int): Future[Unit] = Future {
     sys.process.stderr.print(data)
     sys.exit(code)
   }
 
-  def writeToFile(pathString: String, data: ByteString): Id[Unit] = {
+  def writeToFile(pathString: String, data: ByteString): Future[Unit] = Future {
     val path = Paths.get(pathString)
     if (!Files.isDirectory(path)) {
       Files.write(path, data.toByteArray)
     }
   }
 
-  def exit(code: Int): Id[Unit] = {
+  def exit(code: Int): Future[Unit] = Future {
     sys.exit(code)
   }
 }
