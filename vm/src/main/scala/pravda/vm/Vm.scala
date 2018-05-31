@@ -77,6 +77,8 @@ object Vm {
       wattCounter: WattCounter
   ): Memory = {
 
+    if(depth > 1024) throw VmErrorException(ExtCallStackOverflow)
+
     lazy val storage = {
       if (progStorage.isEmpty) throw VmErrorException(OperationDenied)
       new StorageWithCounter(progStorage.get, wattCounter)
@@ -92,6 +94,8 @@ object Vm {
 
     def callPush(pos: Int): Unit = {
       callStack += pos
+
+      if(callStack.size > 1024) throw VmErrorException(CallStackOverflow)
     }
 
     @tailrec
