@@ -157,7 +157,7 @@ object Vm {
                   case None => throw VmErrorException(NoSuchMethod)
                   case Some(function) =>
                     function match {
-                      case f: StdFunction => f(memory)
+                      case f: StdFunction => f(memory, wattCounter)
                       case UserDefinedFunction(f) =>
                         run(f.code,
                            environment,

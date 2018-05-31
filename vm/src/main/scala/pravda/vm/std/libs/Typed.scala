@@ -1,6 +1,7 @@
 package pravda.vm.std.libs
 
 import com.google.protobuf.ByteString
+import pravda.vm.StdFunction
 import pravda.vm.serialization._
 import pravda.vm.state.Data
 import pravda.vm.std.{Func, NativeLibrary}
@@ -17,11 +18,11 @@ object Typed extends NativeLibrary {
   def typedTag(data: Data): Byte =
     data.byteAt(0)
 
-  val typedI32: Func = Func("typedI32", m => {
+  val typedI32: StdFunction = Func("typedI32", m => {
     m.copy(stack = m.stack.map(dataToTyped(Int32Tag, _)))
   })
 
-  val typedR32: Func = Func("typedR64", m => {
+  val typedR32: StdFunction = Func("typedR64", m => {
     m.copy(stack = m.stack.map(dataToTyped(Float64Tag, _)))
   })
 
@@ -89,7 +90,7 @@ object Typed extends NativeLibrary {
                                    ii2i: (Int, Int) => Int,
                                    ff2f: (Double, Double) => Double,
                                    fi2f: (Double, Int) => Double,
-                                   if2f: (Int, Double) => Double): Func =
+                                   if2f: (Int, Double) => Double): StdFunction =
     Func(
       name,
       m => {

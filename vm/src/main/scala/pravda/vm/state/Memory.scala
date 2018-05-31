@@ -64,6 +64,15 @@ final case class Memory(
     stack(i)
   }
 
+  def clear(): Unit = {
+    stackVolume -= all.map(_.size()).sum
+    stack.remove(currentLimit, stack.length - currentLimit)
+  }
+
+  def all: Seq[Data] = {
+    stack.takeRight(stack.length - currentLimit)
+  }
+
   def swap(i: Int, j: Int): Unit = {
     if(i < currentLimit || j < currentLimit || i >= stack.length || j >= stack.length) {
       throw VmErrorException(WrongStackIndex)
