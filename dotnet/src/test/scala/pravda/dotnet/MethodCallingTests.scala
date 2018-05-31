@@ -1,83 +1,79 @@
 package pravda.dotnet
 
-//import fastparse.byte.all._
-//import io.mytc.sood.cil.CIL._
-//import io.mytc.sood.cil.TablesData._
-
+import pravda.dotnet.CIL._
+import pravda.dotnet.Signatures._
+import pravda.dotnet.Signatures.SigType._
+import pravda.dotnet.TablesData._
 import utest._
 
 object MethodCallingTests extends TestSuite {
 
   val tests = Tests {
     'methodCallingParse - {
+      val Right((_, cilData, methods, signatures)) = FileParser.parsePe("method_calling.exe")
+      methods ==> List(
+        Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
+        Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
+        Method(List(Nop, LdArg0, LdArg1, Add, StLoc0, BrS(0), LdLoc0, Ret), 2, Some(16)),
+        Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
+        Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
+        Method(
+          List(
+            Nop,
+            Call(MethodDefData(0, 150, "answer", 39, List())),
+            StLoc0,
+            Call(MethodDefData(0, 145, "secretAnswer", 39, List())),
+            StLoc1,
+            LdLoc0,
+            LdLoc1,
+            Call(MethodDefData(0, 150, "sum", 43, List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
+            StLoc2,
+            NewObj(MethodDefData(0, 6278, ".ctor", 6, List())),
+            StLoc3,
+            LdLoc3,
+            CallVirt(MethodDefData(0, 134, "personalAnswer", 49, List())),
+            StLocS(4),
+            LdLoc3,
+            CallVirt(MethodDefData(0, 129, "personalSecretAnswer", 49, List())),
+            StLocS(5),
+            Ret
+          ),
+          2,
+          Some(20)
+        ),
+        Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
+      )
 
-      // FIXME objects aren't implemented yet
-//      val Right((_, cilData, opCodes)) = PeParsersUtils.parsePe("method_calling.exe")
-//
-//      cilData.tables ==> TablesData(
-//        List(),
-//        List(
-//          MemberRefData(9, ".ctor", hex"0x20010108"),
-//          MemberRefData(17, ".ctor", hex"0x200001"),
-//          MemberRefData(25, ".ctor", hex"0x2001011111"),
-//          MemberRefData(41, ".ctor", hex"0x200001")
-//        ),
-//        List(
-//          MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
-//          MethodDefData(0, 145, "secretAnswer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
-//          MethodDefData(0, 150, "sum", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
-//          MethodDefData(0, 134, "personalAnswer", hex"0x200008", List()),
-//          MethodDefData(0, 129, "personalSecretAnswer", hex"0x200008", List()),
-//          MethodDefData(0, 150, "Main", hex"0x000001", List()),
-//          MethodDefData(0, 6278, ".ctor", hex"0x200001", List())
-//        ),
-//        List(ParamData(0, 1, "a"), ParamData(0, 2, "b")),
-//        List(
-//          TypeDefData(
-//            0,
-//            "<Module>",
-//            "",
-//            Ignored,
-//            List(),
-//            List(MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))),
-//          TypeDefData(
-//            1048577,
-//            "Program",
-//            "",
-//            Ignored,
-//            List(),
-//            List(MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))))
-//        )
-//      )
-//
-//      opCodes ==> List(
-//        List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
-//        List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
-//        List(Nop, LdArg0, LdArg1, Add, StLoc0, BrS(0), LdLoc0, Ret),
-//        List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
-//        List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret),
-//        List(
-//          Nop,
-//          Call(MethodDefData(0, 150, "answer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
-//          StLoc0,
-//          Call(MethodDefData(0, 145, "secretAnswer", hex"0x000008", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
-//          StLoc1,
-//          LdLoc0,
-//          LdLoc1,
-//          Call(MethodDefData(0, 150, "sum", hex"0x0002080808", List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
-//          StLoc2,
-//          NewObj(MethodDefData(0, 6278, ".ctor", hex"0x200001", List())),
-//          StLoc3,
-//          LdLoc3,
-//          CallVirt(MethodDefData(0, 134, "personalAnswer", hex"0x200008", List())),
-//          StLocS(4),
-//          LdLoc3,
-//          CallVirt(MethodDefData(0, 129, "personalSecretAnswer", hex"0x200008", List())),
-//          StLocS(5),
-//          Ret
-//        ),
-//        List(LdArg0, Call(MemberRefData(41, ".ctor", hex"0x200001")), Nop, Ret)
-//      )
+      signatures.toList.sortBy(_._1) ==> List(
+        (1, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+        (6, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+        (10,
+         MethodRefDefSig(true,
+                         false,
+                         false,
+                         false,
+                         0,
+                         Tpe(Void, false),
+                         List(Tpe(ValueTpe(TypeRefData(15, "DebuggingModes", "")), false)))),
+        (16, LocalVarSig(List(LocalVar(I4, false)))),
+        (20,
+         LocalVarSig(
+           List(
+             LocalVar(I4, false),
+             LocalVar(I4, false),
+             LocalVar(I4, false),
+             LocalVar(
+               Cls(TypeDefData(1048577, "Program", "", Ignored, List(), List(MethodDefData(0, 150, "answer", 39, List())))),
+               false),
+             LocalVar(I4, false),
+             LocalVar(I4, false)
+           ))),
+        (39, MethodRefDefSig(false, false, false, false, 0, Tpe(I4, false), List())),
+        (43, MethodRefDefSig(false, false, false, false, 0, Tpe(I4, false), List(Tpe(I4, false), Tpe(I4, false)))),
+        (49, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+        (53, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+      )
+
     }
   }
 }
