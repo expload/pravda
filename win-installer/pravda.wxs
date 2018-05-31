@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+	<Product
+		Id="e257aa60-ffba-4f77-9aba-4bd8503ecd5b"
+		UpgradeCode="352b8593-b82c-4451-989c-cafb56e05bb9"
+		Name="Pravda SDK CLI"
+		Version="0.1.0"
+		Manufacturer="Mytc"
+		Language="1033">
+
+		<Package
+			InstallerVersion="200"
+			Compressed="yes"
+			Platform="x64"
+			Comments="Windows Installer Package"
+		/>
+
+		<Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="INSTALLDIR" Name="mytc">
+					<Directory Id="PravdaCLI" Name="pravda">
+					</Directory>
+				</Directory>
+			</Directory>
+		</Directory>
+
+		<DirectoryRef Id="INSTALLDIR">
+			<Component Id="EnvVarsUsr" Guid="a6712585-43df-433c-a1b1-f8cb7612c7df">
+				<Environment
+					Id="idEnvPathUsr"
+					Name="PATH" Action="set" Part="last" System="no"
+					Value="[INSTALLDIR]pravda\bin"
+					Permanent="no"
+				/>
+			</Component>
+		</DirectoryRef>
+
+		<Feature Id="PravdaCommandLineInterface" Level="1">
+			<ComponentGroupRef Id="PravdaCLIComponent"/>
+			<ComponentRef Id="EnvVarsUsr" />
+		</Feature>
+
+	</Product>
+
+</Wix>
