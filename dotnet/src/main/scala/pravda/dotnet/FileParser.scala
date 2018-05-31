@@ -3,11 +3,11 @@ package pravda.dotnet
 import java.nio.file.{Files, Paths}
 
 import fastparse.byte.all._
+import pravda.dotnet.CIL.CilData
 import pravda.dotnet.PE.Info.Pe
 import pravda.dotnet.utils._
-import pravda.dotnet.CIL.CilData
 
-object PeParsersUtils {
+object FileParser {
   def parsePe(file: String): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
     val fileBytes = Files.readAllBytes(Paths.get(this.getClass.getResource(s"/$file").getPath))
     val peV = PE.parseInfo(Bytes(fileBytes))

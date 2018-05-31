@@ -40,29 +40,35 @@ object DotnetSmartProgramTest extends TestSuite {
       }
 
       'transfer - {
-        val args = Seq(int32ToAddress(20), typedInt(int32ToData(5)), ByteString.copyFrom("transfer".getBytes))
+        val args1 = Seq(int32ToAddress(20), typedInt(int32ToData(5)), ByteString.copyFrom("transfer".getBytes))
 
-        runAsmProgram[ByteString](args.map(pushBytes) ++ program, Seq(balance10 -> typedInt(int32ToData(100)), balance20 -> typedInt(int32ToData(10)))) ==>
+        runAsmProgram[ByteString](args1.map(pushBytes) ++ program,
+                                  Seq(balance10 -> typedInt(int32ToData(100)), balance20 -> typedInt(int32ToData(10))),
+                                  int32ToAddress(10)) ==>
+          ((
+             Seq(),
+             Map(balance10 -> typedInt(int32ToData(95)), balance20 -> typedInt(int32ToData(15)))
+           ))
+
+        val args2 = Seq(int32ToAddress(20), typedInt(int32ToData(500)), ByteString.copyFrom("transfer".getBytes))
+
+        runAsmProgram[ByteString](args2.map(pushBytes) ++ program,
+                                  Seq(balance10 -> typedInt(int32ToData(100)), balance20 -> typedInt(int32ToData(10))),
+                                  int32ToAddress(10)) ==>
+          ((
+             Seq(),
+             Map(balance10 -> typedInt(int32ToData(100)), balance20 -> typedInt(int32ToData(10)))
+           ))
+
+        val args3 = Seq(int32ToAddress(20), typedInt(int32ToData(-10)), ByteString.copyFrom("transfer".getBytes))
+
+        runAsmProgram[ByteString](args3.map(pushBytes) ++ program,
+                                  Seq(balance10 -> typedInt(int32ToData(100)), balance20 -> typedInt(int32ToData(10))),
+                                  int32ToAddress(10)) ==>
           ((
             Seq(),
-            Map(balance10 -> typedInt(int32ToData(95)), balance20 -> typedInt(int32ToData(15)))
+            Map(balance10 -> typedInt(int32ToData(100)), balance20 -> typedInt(int32ToData(10)))
           ))
-//
-//        runForthProgram[ByteString](s"20 500 2 $erc20",
-//          Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
-//          int32ToAddress(10)) ==> Right(
-//          (
-//            Seq(20, 500, 2).map(int32ToData),
-//            Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10))
-//          ))
-//
-//        runForthProgram[ByteString](s"20 -10 2 $erc20",
-//          Seq(balance10 -> int32ToData(100), balance20 -> int32ToData(10)),
-//          int32ToAddress(10)) ==> Right(
-//          (
-//            Seq(20, -10, 2).map(int32ToData),
-//            Map(balance10 -> int32ToData(100), balance20 -> int32ToData(10))
-//          ))
       }
     }
   }

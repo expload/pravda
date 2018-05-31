@@ -32,13 +32,15 @@ class MyProgram {
     Address sender = null;
 
     public int balanceOf(Address tokenOwner) {
-        return balances.get(tokenOwner);
+        return balances.getDefault(tokenOwner, 0);
     }
 
     public void transfer(Address to, int tokens) {
-        if (balances.getDefault(sender, 0) >= tokens) {
-            balances.put(sender, balances.getDefault(sender, 0) - tokens);
-            balances.put(to, balances.getDefault(to, 0) + tokens);
+        if (tokens > 0) {
+            if (balances.getDefault(sender, 0) >= tokens) {
+                balances.put(sender, balances.getDefault(sender, 0) - tokens);
+                balances.put(to, balances.getDefault(to, 0) + tokens);
+            }
         }
     }
 }

@@ -78,12 +78,7 @@ lazy val forth = (project in file("forth")).
     )
   )
 
-lazy val `forth-vm-integration-test` = (project in file("testkit/forth-vm-integration")).
-  dependsOn(vm).
-  dependsOn(`vm-asm`).
-  dependsOn(forth).
-  settings(normalizedName := "pravda-testkit-forth-vm-integration").
-  settings( commonSettings: _* )
+
 
 lazy val dotnet = (project in file("dotnet")).
   dependsOn(`vm-asm`).
@@ -95,6 +90,13 @@ lazy val dotnet = (project in file("dotnet")).
     )
   )
 
+lazy val `vm-integration-test` = (project in file("testkit/vm-integration")).
+	dependsOn(vm).
+	dependsOn(`vm-asm`).
+	dependsOn(forth).
+	dependsOn(dotnet).
+	settings(normalizedName := "pravda-testkit-vm-integration").
+	settings( commonSettings: _* )
 
 val `tendermint-version` = "0.16.0"
 

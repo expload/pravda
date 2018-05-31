@@ -25,6 +25,21 @@ object Typed extends NativeLibrary {
     m.copy(stack = m.stack.map(dataToTyped(Float64Tag, _)))
   })
 
+  val typedBool: Func = Func("typedBool", m => {
+    val b = if (m.stack(0).byteAt(0) == 0) 0 else 1
+    m.stack.clear()
+    m.push(dataToTyped(Int32Tag, int32ToData(b)))
+    m
+  })
+
+  val typedNot: Func = Func("typedNot", m => {
+    val a = dataToInt32(m.stack(0).substring(1))
+    val res = if (a == 0) 1 else 0
+    m.stack.clear()
+    m.push(dataToTyped(Int32Tag, int32ToData(res)))
+    m
+  })
+
   private def createCmpFunc(name: String,
                             ii2b: (Int, Int) => Boolean,
                             ff2b: (Double, Double) => Boolean,
@@ -119,14 +134,16 @@ object Typed extends NativeLibrary {
   val typedCgt: Func = createCmpFunc("typedCgt", _ > _, _ > _, _ > _, _ > _)
 
   override val address: String = "Typed"
-  override val functions: Seq[Func] = Array(
+  override val functions: Seq[Func] = Seq(
     typedI32,
     typedR32,
+    typedBool,
     typedAdd,
     typedMul,
     typedDiv,
     typedMod,
     typedClt,
-    typedCgt
+    typedCgt,
+    typedNot
   )
 }

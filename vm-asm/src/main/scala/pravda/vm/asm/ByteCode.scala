@@ -312,7 +312,7 @@ class ByteCode {
       case Op.From     => code += VM.FROM
       case Op.PCreate  => code += VM.PCREATE
       case Op.PUpdate  => code += VM.PUPDATE
-      case Op.Nop      => code += VM.I32MOD
+      case Op.Nop      =>
     }
 
     code.toArray
