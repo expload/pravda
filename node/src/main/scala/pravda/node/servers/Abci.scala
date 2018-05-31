@@ -60,7 +60,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
-      _ <- env.withdraw(authTx.from, NativeCoins(authTx.wattPrice * authTx.wattLimit))
+      _ <- Try(env.withdraw(authTx.from, NativeCoins(authTx.wattPrice * authTx.wattLimit)))
       encodedStack <- Try {
         Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
           .stack
@@ -125,6 +125,7 @@ object Abci {
 
   final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
   final case class ProgramNotFoundException() extends Exception("Program not found")
+  final case class NotEnoughMoney() extends Exception("Not enough money")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -136,7 +137,7 @@ object Abci {
 
   object EnvironmentEffect {
     final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
-    final case class StorageWrite(key: String, value: Array[Byte])          extends EnvironmentEffect
+    final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte]) extends EnvironmentEffect
     final case class StorageRead(key: String, value: Option[Array[Byte]])   extends EnvironmentEffect
     final case class ProgramCreate(address: Address, program: Array[Byte])  extends EnvironmentEffect
     final case class ProgramUpdate(address: Address, program: Array[Byte])  extends EnvironmentEffect
@@ -168,21 +169,23 @@ object Abci {
         cache.get(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
       }
 
-      def put[V: BsonEncoder](suffix: String, value: V): Unit = {
+      def put[V: BsonEncoder](suffix: String, value: V): Option[Array[Byte]] = {
         val bsonValue: Array[Byte] = transcode(value).to[Bson]
         putRawBytes(suffix, bsonValue)
       }
 
-      def putRawBytes(suffix: String, value: Array[Byte]): Unit = {
+      def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = {
         val key = mkKey(suffix)
+        val prev = getRawBytes(suffix)
         cache.put(key, value)
         operations += Operation.Put(byteUtils.stringToBytes(key), value)
+        prev
       }
 
       def remove(suffix: String): Option[Array[Byte]] = {
         val key = mkKey(suffix)
         operations += Operation.Delete(byteUtils.stringToBytes(key))
-        cache.remove(key)
+        cache.remove(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
       }
     }
 
@@ -203,21 +206,24 @@ object Abci {
           val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.getRawBytes(hexKey)
           effects += StorageRead(dbPath.mkKey(hexKey), value)
-          value.map(ba => ByteString.copyFrom(ba))
+          value.map(ByteString.copyFrom)
         }
 
-        def put(key: state.Data, value: state.Data): Unit = {
+        def put(key: state.Data, value: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val array = value.toByteArray
-          effects += StorageWrite(dbPath.mkKey(hexKey), array)
-          dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
+          val prev = dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
+          effects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
+          prev.map(ByteString.copyFrom)
         }
 
-        def delete(key: state.Data): Unit = {
+        def delete(key: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.remove(byteUtils.byteString2hex(key))
           effects += StorageRemove(dbPath.mkKey(hexKey), value)
+          value.map(ByteString.copyFrom)
         }
+
       }
 
       def createProgram(owner: Address, code: Data): Address = {
@@ -233,18 +239,18 @@ object Abci {
         address
       }
 
-      def updateProgram(address: Address, code: Data): Unit = {
+      def updateProgram(address: Address, code: Data): Data = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
         val sp = oldSb.copy(code = code)
         programsPath.put(byteUtils.byteString2hex(address), sp)
         effects += ProgramUpdate(address, code.toByteArray)
+        sp.code
       }
 
-      def transfer(from: Address, to: Address, amount: NativeCoins): Either[BalanceError, Unit] = {
-        withdraw(from, amount).map{ _ =>
-          put(to, amount)
-          effects += Transfer(from, to, amount)
-        }
+      def transfer(from: Address, to: Address, amount: NativeCoins): Unit = {
+        withdraw(from, amount)
+        put(to, amount)
+        effects += Transfer(from, to, amount)
       }
 
       def balance(address: Address): NativeCoins = {
@@ -253,12 +259,12 @@ object Abci {
         bal
       }
 
-      def withdraw(address: Address, amount: NativeCoins): Either[BalanceError, Unit] = {
+      def withdraw(address: Address, amount: NativeCoins): Unit = {
         val current = balance(address)
         if(current < amount) {
-          Left(NotEnoughMoney)
+          throw NotEnoughMoney()
         } else {
-          Right(balancesPath.put(byteUtils.byteString2hex(address), current - amount))
+          balancesPath.put(byteUtils.byteString2hex(address), current - amount)
         }
       }
 
