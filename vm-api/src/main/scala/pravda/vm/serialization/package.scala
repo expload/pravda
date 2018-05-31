@@ -12,6 +12,10 @@ package object serialization {
     data.asReadOnlyByteBuffer().getInt
   }
 
+  def dataToAddress(data: Data): Address = {
+    Address @@ data
+  }
+
   def dataToDouble(data: Data): Double = {
     data.asReadOnlyByteBuffer().getDouble
   }
@@ -37,6 +41,10 @@ package object serialization {
 
   def wordToData(source: ByteBuffer): Data = {
     ByteString.copyFrom(wordToBytes(source))
+  }
+
+  def wordToAddress(source: ByteBuffer): Address = {
+    Address @@ ByteString.copyFrom(wordToBytes(source))
   }
 
   val FALSE: Data = ByteString.copyFrom(Array[Byte](0))
