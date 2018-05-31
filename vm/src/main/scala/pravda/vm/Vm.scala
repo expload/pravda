@@ -23,22 +23,24 @@ object Vm {
   val loader: Loader = DefaultLoader
 
   def runRaw(program: ByteString, executor: Address, environment: Environment, wattLimit: Long): Memory = {
-    val memory = Memory.empty
+    val wattCounter = new WattCounter(wattLimit)
+    val memory = Memory.empty(wattCounter)
+    val environmentWithCounter = new EnvironmentWithCounter(environment, wattCounter)
     run(
       program = ByteBuffer.wrap(program.toByteArray),
-      environment = environment,
+      environment = environmentWithCounter,
       memory = memory,
       executor = executor,
       progAddress = None,
       progStorage = None,
       depth = 0,
       isLibrary = false,
-      wattCounter = new WattCounter(wattLimit, memory)
+      wattCounter = wattCounter
     )
   }
 
   def runProgram(programAddress: Address,
-                 initMemory: Memory = Memory.empty,
+                 initMemory: Memory,
                  executor: Address,
                  environment: Environment,
                  depth: Int = 0,
@@ -77,7 +79,7 @@ object Vm {
 
     lazy val storage = {
       if (progStorage.isEmpty) throw VmErrorException(OperationDenied)
-      progStorage.get
+      new StorageWithCounter(progStorage.get, wattCounter)
     }
 
     var currentPosition = program.position()
@@ -96,7 +98,6 @@ object Vm {
     @strictfp
     def aux(): Memory =
       if (program.hasRemaining) {
-        wattCounter.check()
         wattCounter.cpuUsage(CPUBasic)
 
         currentPosition = program.position()
@@ -115,7 +116,7 @@ object Vm {
               aux()
             }
           case PCALL =>
-            wattCounter.cpuUsage(CPUStorageUse, CPUExtCall)
+            wattCounter.cpuUsage(CPUExtCall)
 
             if (isLibrary) {
               throw VmErrorException(OperationDenied)
@@ -127,15 +128,9 @@ object Vm {
             memory.dropLimit()
             aux()
           case PCREATE =>
-            wattCounter.cpuUsage(CPUStorageUse)
-            // TODO count storage
-
             memory.push(environment.createProgram(executor, memory.pop()))
             aux()
           case PUPDATE =>
-            wattCounter.cpuUsage(CPUStorageUse)
-            // TODO count storage
-
             val address = dataToAddress(memory.pop())
             val code = memory.pop()
             if (address != executor) {
@@ -159,9 +154,7 @@ object Vm {
                   case Some(function) =>
                     function match {
                       case f: StdFunction => f(memory)
-                      case f: UserDefinedFunction =>
-                        wattCounter.cpuUsage(CPUStorageUse)
-
+                      case UserDefinedFunction(f) =>
                         run(f.code,
                            environment,
                            memory,
@@ -242,16 +235,11 @@ object Vm {
             memory.push(memory.heapGet(i))
             aux()
           case SPUT =>
-            wattCounter.cpuUsage(CPUStorageUse)
-
-            // TODO storage count
             val value = memory.pop()
             val key = memory.pop()
             storage.put(key, value)
             aux()
           case SGET =>
-            wattCounter.cpuUsage(CPUStorageUse)
-
             val valOpt = storage.get(memory.pop())
             if (valOpt.isEmpty) {
               throw VmErrorException(NoSuchElement)
@@ -259,14 +247,9 @@ object Vm {
             memory.push(valOpt.get)
             aux()
           case SDROP =>
-            wattCounter.cpuUsage(CPUStorageUse)
-
-            // TODO storage count
             storage.delete(memory.pop())
             aux()
           case SEXIST =>
-            wattCounter.cpuUsage(CPUStorageUse)
-
             memory.push(boolToData(storage.get(dataToAddress(memory.pop())).isDefined))
             aux()
           case I32ADD =>
@@ -371,7 +354,6 @@ object Vm {
 
     try {
       val memory = aux()
-      wattCounter.check()
       memory
     } catch {
       case err: VmErrorException =>

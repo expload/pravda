@@ -10,6 +10,8 @@ object VmError {
 
   case object StackOverflow   extends VmError { val code = 100 }
   case object StackUnderflow  extends VmError { val code = 101 }
+  case object WrongStackIndex extends VmError { val code = 102 }
+  case object WrongHeapIndex  extends VmError { val code = 103 }
   case object OperationDenied extends VmError { val code = 200 }
   case object NoSuchProgram   extends VmError { val code = 300 }
   case object NoSuchLibrary   extends VmError { val code = 301 }

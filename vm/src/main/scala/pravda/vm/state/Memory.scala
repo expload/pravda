@@ -2,13 +2,15 @@ package pravda.vm
 
 package state
 
-import pravda.vm.state.VmError.StackUnderflow
+import pravda.vm.state.VmError.{StackUnderflow, WrongHeapIndex, WrongStackIndex}
+import pravda.vm.watt.WattCounter
 
 import scala.collection.mutable.ArrayBuffer
 
 final case class Memory(
     stack: ArrayBuffer[Data],
-    heap: ArrayBuffer[Data]
+    heap: ArrayBuffer[Data],
+    wattCounter: WattCounter
 ) {
   private var stackVolume = stack.map(_.size()).sum
   private var heapVolume = heap.map(_.size()).sum
@@ -48,20 +50,23 @@ final case class Memory(
 
   def push(x: Data): Unit = {
     stackVolume += x.size()
-    if(stackVolume > maxStackVolume) maxStackVolume = stackVolume
+    if(stackVolume > maxStackVolume) {
+      maxStackVolume = stackVolume
+      wattCounter.memoryUsage(maxVolume)
+    }
     stack += x
   }
 
   def get(i: Int): Data = {
-    if(i < currentLimit) {
-      // TODO: throw exception
+    if(i < currentLimit || i >= stack.length) {
+      throw VmErrorException(WrongStackIndex)
     }
     stack(i)
   }
 
   def swap(i: Int, j: Int): Unit = {
-    if(i < currentLimit || j < currentLimit) {
-      // TODO: throw exception
+    if(i < currentLimit || j < currentLimit || i >= stack.length || j >= stack.length) {
+      throw VmErrorException(WrongStackIndex)
     }
     val f = stack(i)
     stack(i) = stack(j)
@@ -71,13 +76,19 @@ final case class Memory(
   def length: Int = stack.length
 
   def heapPut(x: Data): Int = {
-    heap += x
     heapVolume += x.size()
-    if(heapVolume > maxHeapVolume) maxHeapVolume = heapVolume
+    if(heapVolume > maxHeapVolume) {
+      maxHeapVolume = heapVolume
+      wattCounter.memoryUsage(maxVolume)
+    }
+    heap += x
     heap.length - 1
   }
 
   def heapGet(idx: Int): Data = {
+    if(idx >= heap.length || idx < 0) {
+      throw VmErrorException(WrongHeapIndex)
+    }
     heap(idx)
   }
 
@@ -86,9 +97,10 @@ final case class Memory(
 
 object Memory {
 
-  def empty: Memory = new Memory(
+  def empty(wattCounter: WattCounter): Memory = new Memory(
     stack = new ArrayBuffer[Data](1024),
-    heap = new ArrayBuffer[Data](1024)
+    heap = new ArrayBuffer[Data](1024),
+    wattCounter = wattCounter
   )
 
 }
