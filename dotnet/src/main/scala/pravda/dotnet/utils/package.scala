@@ -43,9 +43,10 @@ package object utils {
   }
 
   private[dotnet] implicit class OptionOps[T](o: Option[T]) {
+
     def toValidated(err: String): Validated[T] = o match {
       case Some(x) => Right(x)
-      case None => Left(err)
+      case None    => Left(err)
     }
   }
 }

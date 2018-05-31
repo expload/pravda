@@ -232,7 +232,7 @@ object Translator {
         case Rem        => (-1, Seq(Op.LCall("Typed", "typedMod", 2)))
         case Sub =>
           (-1, Seq(pushTypedInt(-1), Op.LCall("Typed", "typedMul", 2), Op.LCall("Typed", "typedAdd", 2)))
-        case Clt        => (-1, Seq(Op.LCall("Typed", "typedClt", 2)))
+        case Clt => (-1, Seq(Op.LCall("Typed", "typedClt", 2)))
         case Cgt => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
         case Ceq => (-1, Seq(Op.Eq, Op.LCall("Typed", "typedBool", 1)))
         case Not => (0, Seq(Op.LCall("Typed", "typedNot", 1)))
@@ -267,7 +267,7 @@ object Translator {
         case LdLoc(num)  => (1, loadLocal(num))
         case LdLocS(num) => (1, loadLocal(num.toInt))
 
-        case Nop => (0, Seq(Op.Nop))
+        case Nop          => (0, Seq(Op.Nop))
         case Ret          => (0, Seq())
         case Jump(label)  => (0, Seq(Op.Jump(label)))
         case JumpI(label) => (-1, Seq(pushTypedInt(1), Op.Eq, Op.JumpI(label)))

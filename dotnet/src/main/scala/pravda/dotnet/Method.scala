@@ -4,10 +4,10 @@ import CIL.OpCode
 import PE.Info._
 import pravda.dotnet.utils.{Validated, _}
 
-
 final case class Method(opcodes: Seq[OpCode], maxStack: Int, localVarSigIdx: Option[Long])
 
 object Method {
+
   def parse(peData: PeData, header: MethodHeader): Validated[Method] = {
     header match {
       case FatMethodHeader(_, _, maxStack, localVarSigTok, codeBytes) =>

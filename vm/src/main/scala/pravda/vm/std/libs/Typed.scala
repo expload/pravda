@@ -58,24 +58,24 @@ object Typed extends NativeLibrary {
         val res = (typedTag(a), typedTag(b)) match {
           case (Int32Tag, Int32Tag) =>
             dataToTyped(Int32Tag,
-              int32ToData(
-                b2i(ii2b(dataToInt32(a.substring(1)), dataToInt32(b.substring(1))))
-              ))
+                        int32ToData(
+                          b2i(ii2b(dataToInt32(a.substring(1)), dataToInt32(b.substring(1))))
+                        ))
           case (Float64Tag, Float64Tag) =>
             dataToTyped(Int32Tag,
-              int32ToData(
-                b2i(ff2b(dataToDouble(a.substring(1)), dataToDouble(b.substring(1))))
-              ))
+                        int32ToData(
+                          b2i(ff2b(dataToDouble(a.substring(1)), dataToDouble(b.substring(1))))
+                        ))
           case (Int32Tag, Float64Tag) =>
             dataToTyped(Int32Tag,
-              int32ToData(
-                b2i(if2b(dataToInt32(a.substring(1)), dataToDouble(b.substring(1))))
-              ))
+                        int32ToData(
+                          b2i(if2b(dataToInt32(a.substring(1)), dataToDouble(b.substring(1))))
+                        ))
           case (Float64Tag, Int32Tag) =>
             dataToTyped(Int32Tag,
-              int32ToData(
-                b2i(fi2b(dataToDouble(a.substring(1)), dataToInt32(b.substring(1))))
-              ))
+                        int32ToData(
+                          b2i(fi2b(dataToDouble(a.substring(1)), dataToInt32(b.substring(1))))
+                        ))
           case (_, _) => int32ToData(0) // FIXME
         }
 
