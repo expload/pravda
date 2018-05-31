@@ -54,13 +54,13 @@ class ApiRoute(abciClient: AbciClient) {
               ('from.as(hexUnmarshaller),
                'signature.as(hexUnmarshaller),
                'nonce.as(intUnmarshaller).?,
-               'fee.as(bigDecimalUnmarshaller),
+               'wattLimit.as[Long],
                'wattPrice.as(bigDecimalUnmarshaller),
                'mode.?)) { (from, signature, maybeNonce, fee, maybeMode) =>
               extractStrictEntity(1.second) { body =>
                 val program = bodyToTransactionData(body)
                 val nonce = maybeNonce.getOrElse(Random.nextInt())
-                val tx = SignedTransaction(Address @@ from, program, signature, NativeCoins @@ fee, wattPrice, Random.nextInt)
+                val tx = SignedTransaction(Address @@ from, program, signature, wattLimit, wattPrice, Random.nextInt)
                 println(Show[SignedTransaction].show(tx))
                 val mode = maybeMode.getOrElse("commit")
                 val result = abciClient.broadcastTransaction(tx, mode)

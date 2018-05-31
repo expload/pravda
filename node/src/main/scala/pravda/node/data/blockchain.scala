@@ -10,27 +10,27 @@ object blockchain {
   sealed trait Transaction {
     val from: Address
     val program: TransactionData
-    val fee: NativeCoins
-    val wattPrice: BigDecimal
+    val wattLimit: Long
+    val wattPrice: NativeCoins
     val nonce: Int
 
-    def forSignature: (Address, TransactionData, NativeCoins, BigDecimal, Int) =
-      (from, program, fee, wattPrice, nonce)
+    def forSignature: (Address, TransactionData, Long, NativeCoins, Int) =
+      (from, program, wattLimit, wattPrice, nonce)
   }
 
   object Transaction {
 
     final case class UnsignedTransaction(from: Address,
                                          program: TransactionData,
-                                         fee: NativeCoins,
-                                         wattPrice: BigDecimal,
+                                         wattLimit: Long,
+                                         wattPrice: NativeCoins,
                                          nonce: Int)
         extends Transaction
 
     final case class SignedTransaction(from: Address,
                                        program: TransactionData,
                                        signature: ByteString,
-                                       fee: NativeCoins,
+                                       wattLimit: Long,
                                        wattPrice: BigDecimal,
                                        nonce: Int)
         extends Transaction
@@ -49,8 +49,8 @@ object blockchain {
     final case class AuthorizedTransaction(from: Address,
                                            program: TransactionData,
                                            signature: ByteString,
-                                           fee: NativeCoins,
-                                           wattPrice: BigDecimal,
+                                           wattLimit: Long,
+                                           wattPrice: NativeCoins,
                                            nonce: Int)
         extends Transaction
   }

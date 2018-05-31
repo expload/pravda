@@ -119,7 +119,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     asmAstToAsm(Assembler().decompile(program))
 
   private val codeArea = elementId()
-  private val feeField = elementId()
+  private val wattLimitField = elementId()
   private val wattPriceField = elementId()
   private val addressField = elementId()
   private val pkField = elementId()
@@ -232,7 +232,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'height @= 400,
                          codeArea,
                          'placeholder /= "Place your p-forth code here"),
-              'input ('class          /= "input", 'margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
+              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Fee", 'value /= "0.00"),
               'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1.00"),
               'input ('class          /= "input",
                       'margin         @= 10,
@@ -259,7 +259,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       val eventuallyErrorOrTransaction =
                         for {
                           code <- access.valueOf(codeArea)
-                          fee <- access.valueOf(feeField)
+                          wattLimit <- access.valueOf(wattLimitField)
                           wattPrice <- access.valueOf(wattPriceField)
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
@@ -268,7 +268,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           pravda.forth.Compiler().compile(hackCode) map { data =>
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                  TransactionData @@ ByteString.copyFrom(data),
-                                                                 NativeCoins.fromString(fee),
+                                                                 wattLimit.toLong,
                                                                  BigDecimal(wattPrice),
                                                                  Random.nextInt())
                             cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
@@ -304,7 +304,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       val eventuallyErrorOrTransaction =
                         for {
                           code <- access.valueOf(codeArea)
-                          fee <- access.valueOf(feeField)
+                          wattLimit <- access.valueOf(wattLimitField)
                           wattPrice <- access.valueOf(wattPriceField)
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
@@ -315,8 +315,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             compiler.compile(s"$$x${byteUtils.bytes2hex(data)} pcreate") map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                    TransactionData @@ ByteString.copyFrom(data),
-                                                                   NativeCoins.fromString(fee),
-                                                                   BigDecimal(wattPrice),
+                                                                   wattLimit.toLong,
+                                                                   NativeCoins.amount(wattPrice),
                                                                    Random.nextInt())
                               cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                             }

@@ -111,11 +111,11 @@ class AbciClient(port: Int)(implicit
   def singAndBroadcastTransaction(from: Address,
                                   privateKey: PrivateKey,
                                   data: TransactionData,
-                                  fee: Mytc,
+                                  wattLimit: Long,
                                   wattPrice: BigDecimal,
                                   mode: String = "commit"): Future[ErrorOrStack] = {
 
-    val unsignedTx = Transaction.UnsignedTransaction(from, data, fee, wattPrice, Random.nextInt())
+    val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)

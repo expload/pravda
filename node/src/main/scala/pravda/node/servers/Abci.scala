@@ -18,7 +18,7 @@ import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.persistence.FileStore
 import pravda.common.contrib.ripemd160
-import pravda.common.domain.Address
+import pravda.common.domain.{Address, NativeCoins}
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 
 import scala.collection.mutable
@@ -60,12 +60,14 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
+      _ <- env.withdraw(authTx.from, NativeCoins(authTx.wattPrice * authTx.wattLimit))
       encodedStack <- Try {
-        Vm.runRaw(authTx.program, authTx.from, env)
+        Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
           .stack
           .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
           .mkString(",")
       }
+      // TODO: distribute coins
     } yield {
       encodedStack
     }
@@ -138,6 +140,8 @@ object Abci {
     final case class StorageRead(key: String, value: Option[Array[Byte]])   extends EnvironmentEffect
     final case class ProgramCreate(address: Address, program: Array[Byte])  extends EnvironmentEffect
     final case class ProgramUpdate(address: Address, program: Array[Byte])  extends EnvironmentEffect
+    final case class Transfer(from: Address, to: Address, amount: NativeCoins) extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoins) extends EnvironmentEffect
   }
 
   final class EnvironmentProvider(db: DB) {
@@ -148,6 +152,7 @@ object Abci {
 
     private lazy val programsPath = new DbPath("program")
     private lazy val effectsPath = new DbPath("effects")
+    private lazy val balancesPath = new DbPath("balance")
 
     private final class DbPath(path: String) {
 
@@ -233,6 +238,33 @@ object Abci {
         val sp = oldSb.copy(code = code)
         programsPath.put(byteUtils.byteString2hex(address), sp)
         effects += ProgramUpdate(address, code.toByteArray)
+      }
+
+      def transfer(from: Address, to: Address, amount: NativeCoins): Either[BalanceError, Unit] = {
+        withdraw(from, amount).map{ _ =>
+          put(to, amount)
+          effects += Transfer(from, to, amount)
+        }
+      }
+
+      def balance(address: Address): NativeCoins = {
+        val bal = balancesPath.getAs[NativeCoins](byteUtils.byteString2hex(address)).getOrElse(NativeCoins.zero)
+        effects += ShowBalance(address, bal)
+        bal
+      }
+
+      def withdraw(address: Address, amount: NativeCoins): Either[BalanceError, Unit] = {
+        val current = balance(address)
+        if(current < amount) {
+          Left(NotEnoughMoney)
+        } else {
+          Right(balancesPath.put(byteUtils.byteString2hex(address), current - amount))
+        }
+      }
+
+      def put(address: Address, amount: NativeCoins): Unit = {
+        val current = balance(address)
+        balancesPath.put(byteUtils.byteString2hex(address), current + amount)
       }
 
       private def getStoredProgram(address: ByteString) =
