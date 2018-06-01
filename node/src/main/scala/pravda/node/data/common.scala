@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import pravda.common.contrib.ripemd160
+import pravda.common.domain.Address
 import supertagged.TaggedType
 
 object common {
@@ -27,5 +28,5 @@ object common {
 
   type TransactionId = TransactionId.Type
 
-  final case class ApplicationStateInfo(blockHeight: Long, appHash: ByteString)
+  final case class ApplicationStateInfo(blockHeight: Long, appHash: ByteString, validators: Vector[Address])
 }

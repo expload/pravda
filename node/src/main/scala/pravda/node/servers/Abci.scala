@@ -5,6 +5,7 @@ package servers
 import java.nio.ByteBuffer
 import java.util.Base64
 
+import cats.data.OptionT
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import pravda.node.db.{DB, Operation}
@@ -25,6 +26,7 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import pravda.common.{bytes => byteUtils}
+import pravda.node.data.misc.BlockChainInfo
 import pravda.vm.watt.WattCounter
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
@@ -32,57 +34,55 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   import Abci._
 
-  var proposedHeight = 0L
   val consensusEnv = new EnvironmentProvider(applicationStateDb)
   val mempoolEnv = new EnvironmentProvider(applicationStateDb)
 
+  var proposedHeight = 0L
+  var validators: Vector[Address] = Vector.empty[Address]
+
   def info(request: RequestInfo): Future[ResponseInfo] = {
     FileStore.readApplicationStateInfoAsync().map { maybeInfo =>
-      val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY))
+      val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
       ResponseInfo(lastBlockHeight = info.blockHeight, lastBlockAppHash = info.appHash)
     }
   }
 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
-    val validators = request
-      .validators
-      .toVector
-      .map(x => tendermint.unpackAddress(x.pubKey))
-    // FIXME: save validators
-
-
-    // Let's make initial token distribution
     val tokenSaleMembers = List(
       /* Alice */ Address.tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45").getOrElse(Address.Void) -> NativeCoin(BigDecimal(100)),
       /*  Bob  */ Address.tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA").getOrElse(Address.Void) -> NativeCoin(BigDecimal(300))
     )
-    Future.sequence(tokenSaleMembers.map {
-      case (address, amount) =>
-        applicationStateDb.put(s"balance:${byteUtils.byteString2hex(address)}", transcode(amount).to[Bson])
-    }).map(_ => ResponseInitChain.defaultInstance)
+
+    validators = request
+      .validators
+      .toVector
+      .map(x => tendermint.unpackAddress(x.pubKey))
+
+    for {
+      _ <- Future.sequence(tokenSaleMembers.map {
+            case (address, amount) =>
+              applicationStateDb.put(s"balance:${byteUtils.byteString2hex(address)}", transcode(amount).to[Bson])
+            }
+           )
+    } yield ResponseInitChain.defaultInstance
+
   }
 
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
+
+    val info = transcode(Bson @@ applicationStateDb.syncGet("info").get.bytes).to[BlockChainInfo]
+    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.pubKey))
+    val absent = request.absentValidators
+    validators = info.validators.zipWithIndex.collect {
+      case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
+    }
+
     Future.successful(ResponseBeginBlock())
   }
 
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: EnvironmentProvider)(
       result: (Int, String) => R): Future[R] = {
-    val validators = Vector.empty[Address] // FIXME: get validators
-
-    def shareCoins(env: Environment, wattCounter: WattCounter, tx: AuthorizedTransaction): Unit = {
-      // TODO: how to share it fairly
-      val spent = wattCounter.total
-      val remaining = tx.wattLimit - spent
-      env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining)))
-      val share = spent / validators.length
-      val rem = spent % validators.length
-      validators.foreach {
-        v => env.accrue(v, NativeCoin(tx.wattPrice * share))
-      }
-      env.accrue(validators(proposedHeight % validators.length), NativeCoin(tx.wattPrice * rem))
-    }
 
     val `try` = for {
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
@@ -93,21 +93,23 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       env = environmentProvider.transactionEnvironment(tid)
       _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
-      _ <- Try(shareCoins(env, execResult.wattCounter, authTx))
-      encodedStack = execResult
-          .memory
-          .stack
-          .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
-          .mkString(",")
-      // Spent coins distribution
+      spent = execResult.wattCounter.total
+      remaining = tx.wattLimit - spent
+      env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
+      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * remaining))
     } yield {
-      encodedStack
+      execResult
     }
 
     Future.successful {
       `try` match {
-        case Success(encodedStack) =>
-          result(TxStatusOk, encodedStack)
+        case Success(executionResult) =>
+          result(TxStatusOk, executionResult
+            .memory
+            .stack
+            .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
+            .mkString(",")
+          )
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
@@ -125,15 +127,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   def endBlock(request: RequestEndBlock): Future[ResponseEndBlock] = {
     proposedHeight = request.height
+    // TODO: Validators update
     Future.successful(ResponseEndBlock.defaultInstance)
   }
 
   def commit(request: RequestCommit): Future[ResponseCommit] = {
-    consensusEnv.commit(proposedHeight)
+    consensusEnv.commit(proposedHeight, validators)
     mempoolEnv.clear()
     val hash = ByteString.copyFrom(applicationStateDb.stateHash)
     FileStore
-      .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, hash))
+      .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, hash, validators))
       .map(_ => ResponseCommit(hash))
   }
 
@@ -151,6 +154,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   def setOption(request: RequestSetOption): Future[ResponseSetOption] = ???
 
   def query(req: RequestQuery): Future[ResponseQuery] = ???
+
 }
 
 object Abci {
@@ -179,6 +183,7 @@ object Abci {
 
   final class EnvironmentProvider(db: DB) {
 
+    private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
     private val cache = mutable.Map.empty[String, Array[Byte]]
@@ -327,13 +332,32 @@ object Abci {
 
     }
 
+    def appendFee(coins: NativeCoin): Unit = {
+      fee += coins
+    }
+
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
       cache.clear()
+      fee = NativeCoin.zero
     }
 
-    def commit(height: Long): Unit = {
+    // TODO: Duplicate
+    def accrue(address: Address, amount: NativeCoin): Unit = {
+      val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
+      balancesPath.put(byteUtils.byteString2hex(address), current + amount)
+    }
+
+    def commit(height: Long, validators: Vector[Address]): Unit = {
+
+      // Share fee
+      val share = NativeCoin @@ (fee / validators.length).setScale(4, BigDecimal.RoundingMode.FLOOR)
+      val remainder = NativeCoin @@ (fee - share * validators.length)
+      validators.foreach {
+        address => accrue(address, share)
+      }
+      accrue(validators(validators.length % height), remainder)
 
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
