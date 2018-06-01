@@ -1,13 +1,13 @@
 package pravda.vm.state
 
-import pravda.common.domain.{Address, NativeCoins}
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.vm.watt.WattCounter
-import pravda.vm.watt.WattCounter.CPUStorageUse
+import pravda.vm.watt.WattCounter.CpuStorageUse
 
 class EnvironmentWithCounter(environment: Environment, wattCounter: WattCounter) extends Environment {
 
   def updateProgram(address: Address, code: Data): Data = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.storageUsage(occupiedBytes = code.size())
 
     val previous = environment.updateProgram(address, code)
@@ -16,46 +16,46 @@ class EnvironmentWithCounter(environment: Environment, wattCounter: WattCounter)
   }
 
   def createProgram(owner: Address, code: Data): Address = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.storageUsage(occupiedBytes = code.size())
 
     environment.createProgram(owner, code)
   }
 
   def getProgram(address: Address): Option[ProgramContext] = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
 
     environment.getProgram(address)
   }
 
   def getProgramOwner(address: Address): Option[Address] = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
 
     environment.getProgramOwner(address)
   }
 
-  def transfer(from: Address, to: Address, amount: NativeCoins): Unit = {
-    wattCounter.cpuUsage(CPUStorageUse)
+  def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
+    wattCounter.cpuUsage(CpuStorageUse)
 
     environment.transfer(from, to, amount)
   }
 
-  def balance(address: Address): NativeCoins = {
-    wattCounter.cpuUsage(CPUStorageUse)
+  def balance(address: Address): NativeCoin = {
+    wattCounter.cpuUsage(CpuStorageUse)
 
     environment.balance(address)
   }
 
-  def withdraw(address: Address, amount: NativeCoins): Unit = {
-    wattCounter.cpuUsage(CPUStorageUse)
+  def withdraw(address: Address, amount: NativeCoin): Unit = {
+    wattCounter.cpuUsage(CpuStorageUse)
 
     environment.withdraw(address, amount)
   }
 
-  def put(address: Address, amount: NativeCoins): Unit = {
-    wattCounter.cpuUsage(CPUStorageUse)
+  def accrue(address: Address, amount: NativeCoin): Unit = {
+    wattCounter.cpuUsage(CpuStorageUse)
 
-    environment.put(address, amount)
+    environment.accrue(address, amount)
   }
 
 }

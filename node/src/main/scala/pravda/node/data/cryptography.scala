@@ -75,7 +75,7 @@ object cryptography {
   private def signTransaction(privateKey: Array[Byte], tx: UnsignedTransaction): SignedTransaction = {
     val message = transcode(tx.forSignature).to[Bson]
     val signature = ed25519.sign(privateKey, message)
-    SignedTransaction(tx.from, tx.program, ByteString.copyFrom(signature), tx.fee, tx.wattPrice, tx.nonce)
+    SignedTransaction(tx.from, tx.program, ByteString.copyFrom(signature), tx.wattLimit, tx.wattPrice, tx.nonce)
   }
 
   def checkTransactionSignature(tx: SignedTransaction): Option[AuthorizedTransaction] = {
@@ -85,7 +85,7 @@ object cryptography {
     val signature = tx.signature.toByteArray
 
     if (ed25519.verify(pubKey, message, signature)) {
-      Some(AuthorizedTransaction(tx.from, tx.program, tx.signature, tx.fee, tx.wattPrice, tx.nonce))
+      Some(AuthorizedTransaction(tx.from, tx.program, tx.signature, tx.wattLimit, tx.wattPrice, tx.nonce))
     } else {
       None
     }

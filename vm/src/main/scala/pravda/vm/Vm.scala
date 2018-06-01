@@ -109,12 +109,12 @@ object Vm {
     @strictfp
     def aux(): Unit =
       if (program.hasRemaining) {
-        wattCounter.cpuUsage(CPUBasic)
+        wattCounter.cpuUsage(CpuBasic)
 
         currentPosition = program.position()
         (program.get() & 0xff: @switch) match {
           case CALL =>
-            wattCounter.cpuUsage(CPUProgControl)
+            wattCounter.cpuUsage(CpuProgControl)
 
             callPush(program.position())
             program.position(dataToInt32(memory.pop()))
@@ -125,7 +125,7 @@ object Vm {
               aux()
             }
           case PCALL =>
-            wattCounter.cpuUsage(CPUExtCall)
+            wattCounter.cpuUsage(CpuExtCall)
 
             if (isLibrary) {
               throw VmErrorException(OperationDenied)
@@ -147,8 +147,26 @@ object Vm {
             }
             environment.updateProgram(address, code)
             aux()
+          case PADDR =>
+            if(progAddress.isEmpty) {
+              throw VmErrorException(OperationDenied)
+            } else {
+              memory.push(addressToData(progAddress.get))
+            }
+          case TRANSFER =>
+            val amount = dataToCoins(memory.pop())
+            val to = dataToAddress(memory.pop())
+            environment.transfer(executor, to, amount)
+          case PTRANSFER =>
+            if(progAddress.isEmpty) {
+              throw VmErrorException(OperationDenied)
+            } else {
+              val amount = dataToCoins(memory.pop())
+              val to = dataToAddress(memory.pop())
+              environment.transfer(progAddress.get, to, amount)
+            }
           case LCALL =>
-            wattCounter.cpuUsage(CPUExtCall)
+            wattCounter.cpuUsage(CpuExtCall)
 
             val address = wordToAddress(program)
             val func = wordToData(program)
@@ -180,12 +198,12 @@ object Vm {
             memory.dropLimit()
             aux()
           case JUMP =>
-            wattCounter.cpuUsage(CPUProgControl)
+            wattCounter.cpuUsage(CpuProgControl)
 
             program.position(dataToInt32(memory.pop()))
             aux()
           case JUMPI =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic, CPUProgControl)
+            wattCounter.cpuUsage(CpuSimpleArithmetic, CpuProgControl)
 
             val position = memory.pop()
             val condition = memory.pop()
@@ -200,7 +218,7 @@ object Vm {
             val until = wordToInt32(program)
             val word = memory.pop()
 
-            wattCounter.cpuUsage(CPUWordOperation(word))
+            wattCounter.cpuUsage(CpuWordOperation(word))
 
             memory.push(word.substring(from, until))
             aux()
@@ -208,7 +226,7 @@ object Vm {
             val word1 = memory.pop()
             val word2 = memory.pop()
 
-            wattCounter.cpuUsage(CPUWordOperation(word1, word2))
+            wattCounter.cpuUsage(CpuWordOperation(word1, word2))
 
             memory.push(word1.concat(word2))
             aux()
@@ -262,52 +280,52 @@ object Vm {
             memory.push(boolToData(storage.get(dataToAddress(memory.pop())).isDefined))
             aux()
           case I32ADD =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))
             aux()
           case I32MUL =>
-            wattCounter.cpuUsage(CPUArithmetic)
+            wattCounter.cpuUsage(CpuArithmetic)
 
             memory.push(int32ToData(dataToInt32(memory.pop()) * dataToInt32(memory.pop())))
             aux()
           case I32DIV =>
-            wattCounter.cpuUsage(CPUArithmetic)
+            wattCounter.cpuUsage(CpuArithmetic)
 
             memory.push(int32ToData(dataToInt32(memory.pop()) / dataToInt32(memory.pop())))
             aux()
           case I32MOD =>
-            wattCounter.cpuUsage(CPUArithmetic)
+            wattCounter.cpuUsage(CpuArithmetic)
 
             memory.push(int32ToData(dataToInt32(memory.pop()) % dataToInt32(memory.pop())))
             aux()
           case FADD =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             memory.push(doubleToData(dataToDouble(memory.pop()) + dataToDouble(memory.pop())))
             aux()
           case FMUL =>
-            wattCounter.cpuUsage(CPUArithmetic)
+            wattCounter.cpuUsage(CpuArithmetic)
 
             memory.push(doubleToData(dataToDouble(memory.pop()) * dataToDouble(memory.pop())))
             aux()
           case FDIV =>
-            wattCounter.cpuUsage(CPUArithmetic)
+            wattCounter.cpuUsage(CpuArithmetic)
 
             memory.push(doubleToData(dataToDouble(memory.pop()) / dataToDouble(memory.pop())))
             aux()
           case FMOD =>
-            wattCounter.cpuUsage(CPUArithmetic)
+            wattCounter.cpuUsage(CpuArithmetic)
 
             memory.push(doubleToData(dataToDouble(memory.pop()) % dataToDouble(memory.pop())))
             aux()
           case NOT =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             memory.push(boolToData(!dataToBool(memory.pop())))
             aux()
           case AND =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             val left = memory.pop()
             val right = memory.pop()
@@ -316,7 +334,7 @@ object Vm {
             )
             aux()
           case OR =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             val left = memory.pop()
             val right = memory.pop()
@@ -325,7 +343,7 @@ object Vm {
             )
             aux()
           case XOR =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             val left = memory.pop()
             val right = memory.pop()
@@ -334,19 +352,19 @@ object Vm {
             )
             aux()
           case EQ =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             memory.push(boolToData(memory.pop() == memory.pop()))
             aux()
           case I32LT =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             val d1 = dataToInt32(memory.pop())
             val d2 = dataToInt32(memory.pop())
             memory.push(boolToData(d1 < d2))
             aux()
           case I32GT =>
-            wattCounter.cpuUsage(CPUSimpleArithmetic)
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
 
             val d1 = dataToInt32(memory.pop())
             val d2 = dataToInt32(memory.pop())

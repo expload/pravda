@@ -3,7 +3,7 @@ package pravda.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.Address
+import pravda.common.domain.{Address, NativeCoin}
 import state.Data
 
 package object serialization {
@@ -15,6 +15,20 @@ package object serialization {
   def dataToAddress(data: Data): Address = {
     Address @@ data
   }
+
+  def addressToData(address: Address): Data = {
+    address
+  }
+
+  def dataToCoins(data: Data): NativeCoin = {
+    NativeCoin.amount(data.toStringUtf8)
+  }
+
+  def coinsToData(coins: NativeCoin): Data = {
+    ByteString.copyFromUtf8(coins.toString)
+  }
+
+
 
   def dataToDouble(data: Data): Double = {
     data.asReadOnlyByteBuffer().getDouble

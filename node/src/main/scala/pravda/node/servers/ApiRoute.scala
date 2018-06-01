@@ -11,6 +11,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.bytes
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.TransactionData

@@ -8,15 +8,15 @@ import scala.util.Try
 
 package object domain {
 
-  object NativeCoins extends TaggedType[BigDecimal] {
+  object NativeCoin extends TaggedType[BigDecimal] {
     val zero = apply(BigDecimal(0))
-    def amount(v: Int) = NativeCoins(BigDecimal(v))
-    def amount(v: Double) = NativeCoins(BigDecimal(v))
-    def amount(v: String) = NativeCoins(BigDecimal(v))
-    def fromString(s: String) = NativeCoins(BigDecimal(s))
+    def amount(v: Int) = NativeCoin(BigDecimal(v))
+    def amount(v: Double) = NativeCoin(BigDecimal(v))
+    def amount(v: String) = NativeCoin(BigDecimal(v))
+    def fromString(s: String) = NativeCoin(BigDecimal(s))
   }
 
-  type NativeCoins = NativeCoins.Type
+  type NativeCoin = NativeCoin.Type
 
   object Address extends TaggedType[ByteString] {
 

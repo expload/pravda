@@ -6,13 +6,13 @@ class StorageWithCounter(storage: Storage, wattCounter: WattCounter) extends  St
   import WattCounter._
 
   override def get(key: Data): Option[Data] = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
 
     storage.get(key)
   }
 
   override def put(key: Data, value: Data): Option[Data] = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.storageUsage(occupiedBytes = value.size() + key.size())
 
     val prev = storage.put(key, value)
@@ -23,7 +23,7 @@ class StorageWithCounter(storage: Storage, wattCounter: WattCounter) extends  St
   }
 
   override def delete(key: Data): Option[Data] = {
-    wattCounter.cpuUsage(CPUStorageUse)
+    wattCounter.cpuUsage(CpuStorageUse)
 
     val prev = storage.delete(key)
     prev.foreach{ d =>

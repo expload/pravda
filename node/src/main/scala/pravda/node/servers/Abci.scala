@@ -18,7 +18,7 @@ import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.persistence.FileStore
 import pravda.common.contrib.ripemd160
-import pravda.common.domain.{Address, NativeCoins}
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 
 import scala.collection.mutable
@@ -68,7 +68,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
-      _ <- Try(env.withdraw(authTx.from, NativeCoins(authTx.wattPrice * authTx.wattLimit)))
+      _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
       encodedStack = execResult
           .memory
@@ -78,14 +78,14 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       // Spent coins distribution
       spent = execResult.wattCounter.total
       remaining = authTx.wattLimit - spent
-       _ <- Try(env.put(authTx.from, NativeCoins(authTx.wattPrice * remaining)))
+       _ <- Try(env.accrue(authTx.from, NativeCoin(authTx.wattPrice * remaining)))
       // TODO: how to split it fairly
       share = spent / validators.length
       rem = spent % validators.length
       validators.foreach {
-        v => env.put(v, NativeCoins(authTx.wattPrice * share))
+        v => env.accrue(v, NativeCoin(authTx.wattPrice * share))
       }
-      env.put(validators(0), NativeCoins(authTx.wattPrice * rem))
+      env.accrue(validators(0), NativeCoin(authTx.wattPrice * rem))
 
     } yield {
       encodedStack
@@ -160,8 +160,8 @@ object Abci {
     final case class StorageRead(key: String, value: Option[Array[Byte]])   extends EnvironmentEffect
     final case class ProgramCreate(address: Address, program: Array[Byte])  extends EnvironmentEffect
     final case class ProgramUpdate(address: Address, program: Array[Byte])  extends EnvironmentEffect
-    final case class Transfer(from: Address, to: Address, amount: NativeCoins) extends EnvironmentEffect
-    final case class ShowBalance(address: Address, amount: NativeCoins) extends EnvironmentEffect
+    final case class Transfer(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
   }
 
   final class EnvironmentProvider(db: DB) {
@@ -266,19 +266,19 @@ object Abci {
         sp.code
       }
 
-      def transfer(from: Address, to: Address, amount: NativeCoins): Unit = {
+      def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
         withdraw(from, amount)
-        put(to, amount)
+        accrue(to, amount)
         effects += Transfer(from, to, amount)
       }
 
-      def balance(address: Address): NativeCoins = {
-        val bal = balancesPath.getAs[NativeCoins](byteUtils.byteString2hex(address)).getOrElse(NativeCoins.zero)
+      def balance(address: Address): NativeCoin = {
+        val bal = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
         effects += ShowBalance(address, bal)
         bal
       }
 
-      def withdraw(address: Address, amount: NativeCoins): Unit = {
+      def withdraw(address: Address, amount: NativeCoin): Unit = {
         val current = balance(address)
         if(current < amount) {
           throw NotEnoughMoney()
@@ -287,7 +287,7 @@ object Abci {
         }
       }
 
-      def put(address: Address, amount: NativeCoins): Unit = {
+      def accrue(address: Address, amount: NativeCoin): Unit = {
         val current = balance(address)
         balancesPath.put(byteUtils.byteString2hex(address), current + amount)
       }

@@ -63,15 +63,15 @@ class WattCounter(wattLimit: Long) {
 
 object WattCounter {
 
-  val CPUBasic = 1
-  val CPUSimpleArithmetic = 5
-  val CPUArithmetic = 10
+  val CpuBasic = 1
+  val CpuSimpleArithmetic = 5
+  val CpuArithmetic = 10
 
-  val CPUProgControl = 5
-  val CPUExtCall = 10
-  val CPUStorageUse = 100
+  val CpuProgControl = 5
+  val CpuExtCall = 10
+  val CpuStorageUse = 20
 
-  private val CPUWordFactor = 1
-  def CPUWordOperation(word: Data*): Int = word.map(_.size()).sum * CPUWordFactor
+  private val CpuWordDelimiter = 64
+  def CpuWordOperation(word: Data*): Int = word.map(_.size()).sum / CpuWordDelimiter
 
 }

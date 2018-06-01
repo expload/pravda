@@ -13,7 +13,7 @@ object Math extends std.NativeLibrary {
       mem.clear()
       mem.push(int32ToData(sum))
     },
-    _.cpuUsage(CPUSimpleArithmetic)
+    _.cpuUsage(CpuSimpleArithmetic)
   )
 
   private val prod = std.Func("prod", mem => {
@@ -21,7 +21,7 @@ object Math extends std.NativeLibrary {
       mem.clear()
       mem.push(int32ToData(product))
     },
-    _.cpuUsage(CPUArithmetic)
+    _.cpuUsage(CpuArithmetic)
   )
 
   override val address: String = "Math"

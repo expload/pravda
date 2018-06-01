@@ -11,10 +11,10 @@ object blockchain {
     val from: Address
     val program: TransactionData
     val wattLimit: Long
-    val wattPrice: NativeCoins
+    val wattPrice: NativeCoin
     val nonce: Int
 
-    def forSignature: (Address, TransactionData, Long, NativeCoins, Int) =
+    def forSignature: (Address, TransactionData, Long, NativeCoin, Int) =
       (from, program, wattLimit, wattPrice, nonce)
   }
 
@@ -23,7 +23,7 @@ object blockchain {
     final case class UnsignedTransaction(from: Address,
                                          program: TransactionData,
                                          wattLimit: Long,
-                                         wattPrice: NativeCoins,
+                                         wattPrice: NativeCoin,
                                          nonce: Int)
         extends Transaction
 
@@ -31,7 +31,7 @@ object blockchain {
                                        program: TransactionData,
                                        signature: ByteString,
                                        wattLimit: Long,
-                                       wattPrice: NativeCoins,
+                                       wattPrice: NativeCoin,
                                        nonce: Int)
         extends Transaction
 
@@ -50,7 +50,7 @@ object blockchain {
                                            program: TransactionData,
                                            signature: ByteString,
                                            wattLimit: Long,
-                                           wattPrice: NativeCoins,
+                                           wattPrice: NativeCoin,
                                            nonce: Int)
         extends Transaction
   }

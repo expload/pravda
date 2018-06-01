@@ -17,7 +17,7 @@ import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
-import pravda.common.domain.{Address, NativeCoins}
+import pravda.common.domain.{Address, NativeCoin}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random

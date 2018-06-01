@@ -6,7 +6,7 @@ import akka.stream.ActorMaterializer
 import pravda.node.db.DB
 import pravda.node.clients.AbciClient
 import pravda.node.data.common.TransactionId
-import pravda.common.domain.{Address, NativeCoins}
+import pravda.common.domain.{Address, NativeCoin}
 
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
