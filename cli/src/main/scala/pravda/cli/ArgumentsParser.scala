@@ -182,6 +182,13 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
               case (_, otherwise) => otherwise
             }
         ),
+      cmd("run")
+        .text("Run initialized node.")
+        .action {
+          case (_, config: Config.Node) =>
+            config.copy(mode = Config.Node.Mode.Run)
+          case (_, otherwise) => otherwise
+        },
       opt[File]('d', "data-dir")
         .action {
           case (dataDir, config: Config.Node) =>

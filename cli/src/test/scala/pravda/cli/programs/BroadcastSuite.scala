@@ -3,7 +3,7 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.languages.{CompilersLanguage, IoLanguageStub, NodeApiLanguageStub}
+import pravda.cli.languages.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
 import utest._
 
 import scala.collection.mutable
@@ -19,7 +19,7 @@ object BroadcastSuite extends TestSuite {
 
   val tests = Tests {
     "run -w w.json" - {
-      val api = new NodeApiLanguageStub(Right("[]"))
+      val api = new NodeLanguageStub(Right("[]"))
       val io = new IoLanguageStub(files = mutable.Map("w.json" -> Wallet))
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
@@ -32,7 +32,7 @@ object BroadcastSuite extends TestSuite {
     }
 
     "run" - {
-      val api = new NodeApiLanguageStub(Right("[]"))
+      val api = new NodeLanguageStub(Right("[]"))
       val io = new IoLanguageStub()
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")

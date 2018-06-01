@@ -5,23 +5,29 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpEntity, HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import akka.util.{ByteString => AkkaByteString}
-
 import com.google.protobuf.ByteString
-import pravda.cli.languages.NodeApiLanguage
+import pravda.cli.languages.NodeLanguage
 import pravda.common.bytes
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.{Address, Mytc}
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
+import pravda.node.launcher
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
 
-final class NodeApiLanguageImpl(implicit system: ActorSystem,
-                                materializer: ActorMaterializer,
-                                executionContext: ExecutionContextExecutor)
-    extends NodeApiLanguage[Future] {
+final class NodeLanguageImpl(implicit system: ActorSystem,
+                             materializer: ActorMaterializer,
+                             executionContext: ExecutionContextExecutor)
+    extends NodeLanguage[Future] {
+
+  def launch(configPath: String): Future[Unit] = Future {
+    sys.props.put("config.file", configPath)
+    launcher.main(Array.empty)
+    Thread.currentThread().join()
+  }
 
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,
