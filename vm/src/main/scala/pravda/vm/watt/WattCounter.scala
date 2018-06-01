@@ -49,10 +49,15 @@ class WattCounter(wattLimit: Long) {
     if (spent > wattLimit) throw OutOfGas()
   }
 
-  def total(): Long = {
+  def total: Long = {
+
     val spentWatts = spent
-    spentWatts - Math.min(refund, spentWatts / 2)
+    if(spentWatts > wattLimit) wattLimit
+    else spentWatts - Math.min(refund, spentWatts / 2)
+
   }
+
+  def limit: Long = wattLimit
 
 }
 

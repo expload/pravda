@@ -43,6 +43,12 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   }
 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
+    val validators = request
+      .validators
+      .toVector
+      .map(x => tendermint.unpackAddress(x.pubKey))
+    // FIXME: save validators
+
     Future.successful(ResponseInitChain.defaultInstance)
   }
 
@@ -53,6 +59,8 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: EnvironmentProvider)(
       result: (Int, String) => R): Future[R] = {
+    val validators = Vector.empty[Address] // FIXME: get validators
+
     val `try` = for {
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       authTx <- cryptography
@@ -61,13 +69,24 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
       _ <- Try(env.withdraw(authTx.from, NativeCoins(authTx.wattPrice * authTx.wattLimit)))
-      encodedStack <- Try {
-        Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
+      execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
+      encodedStack = execResult
+          .memory
           .stack
           .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
           .mkString(",")
+      // Spent coins distribution
+      spent = execResult.wattCounter.total
+      remaining = authTx.wattLimit - spent
+       _ <- Try(env.put(authTx.from, NativeCoins(authTx.wattPrice * remaining)))
+      // TODO: how to split it fairly
+      share = spent / validators.length
+      rem = spent % validators.length
+      validators.foreach {
+        v => env.put(v, NativeCoins(authTx.wattPrice * share))
       }
-      // TODO: distribute coins
+      env.put(validators(0), NativeCoins(authTx.wattPrice * rem))
+
     } yield {
       encodedStack
     }

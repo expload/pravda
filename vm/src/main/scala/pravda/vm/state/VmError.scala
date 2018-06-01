@@ -21,7 +21,7 @@ object VmError {
   case object CallStackOverflow extends VmError { val code = 600 }
   case object ExtCallStackOverflow extends VmError { val code = 601 }
 
-  final case class SomethingWrong(ex: Exception) extends VmError { val code = 999 }
+  final case class SomethingWrong(ex: Throwable) extends VmError { val code = 999 }
 
 }
 

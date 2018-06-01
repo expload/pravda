@@ -1,8 +1,9 @@
 package pravda.vm.state
 
+import pravda.vm.watt.WattCounter
+
 case class ExecutionResult(
                             memory: Memory,
-                            error: Option[VmError],
-                            wattRemaining: Long,
-                            resourcesInfo: ResourcesUsageInfo
+                            error: Option[VmErrorException],
+                            wattCounter: WattCounter
                           )

@@ -31,7 +31,7 @@ object blockchain {
                                        program: TransactionData,
                                        signature: ByteString,
                                        wattLimit: Long,
-                                       wattPrice: BigDecimal,
+                                       wattPrice: NativeCoins,
                                        nonce: Int)
         extends Transaction
 

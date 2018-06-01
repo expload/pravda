@@ -13,8 +13,9 @@ import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
 import state.VmError._
-
 import WattCounter._
+
+import scala.util.{Failure, Success, Try}
 
 object Vm {
 
@@ -22,21 +23,27 @@ object Vm {
 
   val loader: Loader = DefaultLoader
 
-  def runRaw(program: ByteString, executor: Address, environment: Environment, wattLimit: Long): Memory = {
+  def runRaw(program: ByteString, executor: Address, environment: Environment, wattLimit: Long): ExecutionResult = {
     val wattCounter = new WattCounter(wattLimit)
     val memory = Memory.empty(wattCounter)
     val environmentWithCounter = new EnvironmentWithCounter(environment, wattCounter)
-    run(
-      program = ByteBuffer.wrap(program.toByteArray),
-      environment = environmentWithCounter,
-      memory = memory,
-      executor = executor,
-      progAddress = None,
-      progStorage = None,
-      depth = 0,
-      isLibrary = false,
-      wattCounter = wattCounter
-    )
+    Try {
+      run(
+        program = ByteBuffer.wrap(program.toByteArray),
+        environment = environmentWithCounter,
+        memory = memory,
+        executor = executor,
+        progAddress = None,
+        progStorage = None,
+        depth = 0,
+        isLibrary = false,
+        wattCounter = wattCounter
+      )
+    } match {
+      case Success(_) => ExecutionResult(memory, None, wattCounter)
+      case Failure(err: VmErrorException) => ExecutionResult(memory, Some(err), wattCounter)
+      case Failure(err) => ExecutionResult(memory, Some(VmErrorException(SomethingWrong(err))), wattCounter)
+    }
   }
 
   def runProgram(programAddress: Address,
@@ -45,7 +52,7 @@ object Vm {
                  environment: Environment,
                  depth: Int = 0,
                  wattCounter: WattCounter
-                ): Memory = {
+                ): Unit = {
 
     val account = environment.getProgram(programAddress)
     if (account.isEmpty) throw VmErrorException(NoSuchProgram)
@@ -75,7 +82,7 @@ object Vm {
       depth: Int,
       isLibrary: Boolean,
       wattCounter: WattCounter
-  ): Memory = {
+  ): Unit = {
 
     if(depth > 1024) throw VmErrorException(ExtCallStackOverflow)
 
@@ -100,7 +107,7 @@ object Vm {
 
     @tailrec
     @strictfp
-    def aux(): Memory =
+    def aux(): Unit =
       if (program.hasRemaining) {
         wattCounter.cpuUsage(CPUBasic)
 
@@ -113,9 +120,7 @@ object Vm {
             program.position(dataToInt32(memory.pop()))
             aux()
           case RET =>
-            if (callStack.isEmpty) {
-              memory
-            } else {
+            if (callStack.nonEmpty) {
               program.position(callPop())
               aux()
             }
@@ -128,7 +133,7 @@ object Vm {
             val num = dataToInt32(memory.pop())
             val address = dataToAddress(memory.pop())
             memory.limit(num)
-            val mem = runProgram(address, memory, executor, environment, depth + 1, wattCounter)
+            runProgram(address, memory, executor, environment, depth + 1, wattCounter)
             memory.dropLimit()
             aux()
           case PCREATE =>
@@ -350,19 +355,16 @@ object Vm {
           case FROM =>
             memory.push(executor)
             aux()
-          case STOP => memory
+          case STOP => ()
         }
-      } else {
-        memory
       }
 
     try {
-      val memory = aux()
-      memory
+      aux()
     } catch {
       case err: VmErrorException =>
         throw err.addToTrace(Point(callStack, currentPosition, progAddress))
-      case other: Exception =>
+      case other: Throwable =>
         throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), progAddress))
     }
 

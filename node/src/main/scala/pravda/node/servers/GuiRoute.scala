@@ -232,7 +232,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'height @= 400,
                          codeArea,
                          'placeholder /= "Place your p-forth code here"),
-              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Fee", 'value /= "0.00"),
+              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "0.00"),
               'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1.00"),
               'input ('class          /= "input",
                       'margin         @= 10,
