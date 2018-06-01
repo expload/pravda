@@ -10,7 +10,7 @@ object ArithmeticsTests extends TestSuite {
 
   val tests = Tests {
     'arithmepticParse - {
-      val Right((_, _, methods, signatures)) = FileParser.parsePe("arithmetics.exe")
+      val Right((_, _, methods, signatures)) = FileParser.parseFile("arithmetics.exe")
 
       methods ==> List(
         Method(

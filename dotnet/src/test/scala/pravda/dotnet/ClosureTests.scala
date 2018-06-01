@@ -6,7 +6,7 @@ object ClosureTests extends TestSuite {
 
   val tests = Tests {
     'closureParse - {
-      //val Right((_, _, methods, signatures)) = FileParser.parsePe("closure.exe")
+      //val Right((_, _, methods, signatures)) = FileParser.parseFile("closure.exe")
       //FIXME closure types aren't parsed yet
     }
   }

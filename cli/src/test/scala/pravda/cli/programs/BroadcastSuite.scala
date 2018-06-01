@@ -25,6 +25,7 @@ object BroadcastSuite extends TestSuite {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
         def forth(source: String): Id[Either[String, ByteString]] = Left("nope")
+        def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(Config.Broadcast(mode = Config.Broadcast.Mode.Run, wallet = Some("w.json")))
@@ -38,6 +39,7 @@ object BroadcastSuite extends TestSuite {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
         def forth(source: String): Id[Either[String, ByteString]] = Left("nope")
+        def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(Config.Broadcast(mode = Config.Broadcast.Mode.Run))

@@ -12,7 +12,7 @@ object MiscTests extends TestSuite {
 
   val tests = Tests {
     'hello_world_exe - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parsePe("hello_world.exe")
+      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("hello_world.exe")
       methods ==> List(
         Method(List(Nop,
                     LdStr("Hello World!"),

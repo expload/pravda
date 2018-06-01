@@ -10,7 +10,7 @@ object DotnetSmartProgramTest extends TestSuite {
 
   val tests = Tests {
     "Smart-program must run correctly" - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parsePe("smart_program.exe")
+      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("smart_program.exe")
       val program = Translator.translate(methods, cilData, signatures)
 
       val balance10 = ByteString.copyFrom("balances".getBytes ++ Array[Byte](0, 0, 0, 10))

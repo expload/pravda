@@ -9,9 +9,13 @@ import pravda.dotnet.utils._
 
 object FileParser {
 
-  def parsePe(file: String): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
+  def parseFile(file: String): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
     val fileBytes = Files.readAllBytes(Paths.get(this.getClass.getResource(s"/$file").getPath))
-    val peV = PE.parseInfo(Bytes(fileBytes))
+    parsePe(fileBytes)
+  }
+
+  def parsePe(bytes: Array[Byte]): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
+    val peV = PE.parseInfo(Bytes(bytes))
 
     for {
       pe <- peV
