@@ -78,8 +78,6 @@ lazy val forth = (project in file("forth")).
     )
   )
 
-
-
 lazy val dotnet = (project in file("dotnet")).
   dependsOn(`vm-asm`).
   settings(normalizedName := "pravda-dotnet").
@@ -186,4 +184,5 @@ lazy val cli = (project in file("cli"))
   .dependsOn(`vm-asm`)
   .dependsOn(vm)
   .dependsOn(node)
+  .dependsOn(dotnet)
 

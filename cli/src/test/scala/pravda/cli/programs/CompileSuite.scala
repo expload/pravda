@@ -30,6 +30,8 @@ object CompileSuite extends TestSuite {
           UnexpectedStringOutput
         def forth(source: String): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
+        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(Config.Compile(Asm))
@@ -44,6 +46,8 @@ object CompileSuite extends TestSuite {
           if (source == BinarySource) ExpectedStringOutput
           else UnexpectedStringOutput
         def forth(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
+        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
@@ -60,9 +64,29 @@ object CompileSuite extends TestSuite {
         def forth(source: String): Id[Either[String, ByteString]] =
           if (source == StringSource) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
+        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(Config.Compile(Forth))
+      assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
+    }
+
+    "dotnet" - {
+      val io = new IoLanguageStub(Some(BinarySource))
+      val compilers = new CompilersLanguage[Id] {
+        def asm(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
+        def disasm(source: ByteString): Id[String] =
+          UnexpectedStringOutput
+        def forth(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
+        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+          if (source == BinarySource) Right(ExpectedBinaryOutput)
+          else Right(UnexpectedBinaryOutput)
+      }
+      val compile = new Compile[Id](io, compilers)
+      compile(Config.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
   }
