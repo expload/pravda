@@ -25,6 +25,7 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import pravda.common.{bytes => byteUtils}
+import pravda.vm.watt.WattCounter
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
@@ -49,7 +50,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       .map(x => tendermint.unpackAddress(x.pubKey))
     // FIXME: save validators
 
-    Future.successful(ResponseInitChain.defaultInstance)
+
+    // Let's make initial token distribution
+    val tokenSaleMembers = List(
+      /* Alice */ Address.tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45").getOrElse(Address.Void) -> NativeCoin(BigDecimal(100)),
+      /*  Bob  */ Address.tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA").getOrElse(Address.Void) -> NativeCoin(BigDecimal(300))
+    )
+    Future.sequence(tokenSaleMembers.map {
+      case (address, amount) =>
+        applicationStateDb.put(s"balance:${byteUtils.byteString2hex(address)}", transcode(amount).to[Bson])
+    }).map(_ => ResponseInitChain.defaultInstance)
   }
 
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
@@ -61,6 +71,19 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       result: (Int, String) => R): Future[R] = {
     val validators = Vector.empty[Address] // FIXME: get validators
 
+    def shareCoins(env: Environment, wattCounter: WattCounter, tx: AuthorizedTransaction): Unit = {
+      // TODO: how to share it fairly
+      val spent = wattCounter.total
+      val remaining = tx.wattLimit - spent
+      env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining)))
+      val share = spent / validators.length
+      val rem = spent % validators.length
+      validators.foreach {
+        v => env.accrue(v, NativeCoin(tx.wattPrice * share))
+      }
+      env.accrue(validators(proposedHeight % validators.length), NativeCoin(tx.wattPrice * rem))
+    }
+
     val `try` = for {
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       authTx <- cryptography
@@ -70,23 +93,13 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       env = environmentProvider.transactionEnvironment(tid)
       _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
+      _ <- Try(shareCoins(env, execResult.wattCounter, authTx))
       encodedStack = execResult
           .memory
           .stack
           .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
           .mkString(",")
       // Spent coins distribution
-      spent = execResult.wattCounter.total
-      remaining = authTx.wattLimit - spent
-       _ <- Try(env.accrue(authTx.from, NativeCoin(authTx.wattPrice * remaining)))
-      // TODO: how to split it fairly
-      share = spent / validators.length
-      rem = spent % validators.length
-      validators.foreach {
-        v => env.accrue(v, NativeCoin(authTx.wattPrice * share))
-      }
-      env.accrue(validators(0), NativeCoin(authTx.wattPrice * rem))
-
     } yield {
       encodedStack
     }
