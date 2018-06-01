@@ -78,6 +78,12 @@ class ByteCode {
           (Op.Ret, offset)
         }
 
+        case Op.SwapN => {
+          val offset = code.size
+          code += VM.SWAPN
+          (Op.SwapN, offset)
+        }
+
         case Op.MPut => {
           val offset = code.size
           code += VM.MPUT
@@ -285,6 +291,7 @@ class ByteCode {
       case Op.Pop      => code += VM.POP
       case Op.Dup      => code += VM.DUP
       case Op.Swap     => code += VM.SWAP
+      case Op.SwapN    => code += VM.SWAPN
       case Op.Ret      => code += VM.RET
       case Op.MPut     => code += VM.MPUT
       case Op.MGet     => code += VM.MGET
@@ -305,7 +312,7 @@ class ByteCode {
       case Op.From     => code += VM.FROM
       case Op.PCreate  => code += VM.PCREATE
       case Op.PUpdate  => code += VM.PUPDATE
-      case Op.Nop      => code += VM.I32MOD
+      case Op.Nop      =>
     }
 
     code.toArray
@@ -335,6 +342,7 @@ class ByteCode {
         case VM.int.POP     => obuf += ((pos, Op.Pop))
         case VM.int.DUP     => obuf += ((pos, Op.Dup))
         case VM.int.SWAP    => obuf += ((pos, Op.Swap))
+        case VM.int.SWAPN   => obuf += ((pos, Op.SwapN))
         case VM.int.RET     => obuf += ((pos, Op.Ret))
         case VM.int.MPUT    => obuf += ((pos, Op.MPut))
         case VM.int.MGET    => obuf += ((pos, Op.MGet))
