@@ -39,7 +39,11 @@ directory of the `cli` subproject.
 After locating zip-arhive (`pravda-0.1.0.zip`) in the `target` directory unpack it
 to your programs folder. Than just add its `bin` directory to your `$PATH`.
 
-We hope to start publishing binary releases soon.
+## Using prebuild binary packages
+
+We also provide installer (.msi) for Windows and universal binary package for
+all platforms (.zip). Check out the
+[Releases page](https://github.com/mytimecoin/pravda/releases) to download them.
 
 ## How to
 
