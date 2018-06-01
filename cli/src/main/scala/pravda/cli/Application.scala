@@ -19,7 +19,7 @@ object Application extends App {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  lazy val api = new NodeApiLanguageImpl()
+  lazy val nodeLanguage = new NodeLanguageImpl()
   lazy val io = new IoLanguageImpl()
   lazy val compilers = new CompilersLanguageImpl()
   lazy val random = new RandomLanguageImpl()
@@ -28,7 +28,8 @@ object Application extends App {
   lazy val compile = new Compile(io, compilers)
   lazy val genAddress = new GenAddress(io, random)
   lazy val runner = new RunBytecode(io, vm)
-  lazy val broadcast = new Broadcast(io, api, compilers)
+  lazy val broadcast = new Broadcast(io, nodeLanguage, compilers)
+  lazy val nodeProgram = new Node(io, random, nodeLanguage)
 
   // FIXME programs should be composed by another one
   val eventuallyExitCode = ArgumentsParser.parse(args, Config.Nope) match {
@@ -36,6 +37,7 @@ object Application extends App {
     case Some(config: Config.RunBytecode) => runner(config).map(_ => 0)
     case Some(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
     case Some(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
+    case Some(config: Config.Node)        => nodeProgram(config).map(_ => 0)
     case _ =>
       Future {
         stderr.println(ArgumentsParser.renderTwoColumnsUsage)

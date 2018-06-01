@@ -7,6 +7,8 @@ import scala.collection.mutable
 
 final class IoLanguageStub(stdin: Option[ByteString] = None, val files: mutable.Map[String, ByteString] = mutable.Map.empty) extends IoLanguage[Id] {
 
+  import IoLanguageStub._
+
   val stderr: mutable.Buffer[ByteString] =
     mutable.Buffer.empty
 
@@ -40,4 +42,18 @@ final class IoLanguageStub(stdin: Option[ByteString] = None, val files: mutable.
 
   def readFromFile(path: String): Id[Option[ByteString]] =
     files.get(path)
+
+  override def mkdirs(path: String): Id[Unit] = files.put(path, dir)
+
+  override def pwd(): Id[String] = "/"
+
+  override def isDirectory(path: String): Id[Option[Boolean]] =
+    files.get(path).map(_ == dir)
+
+  override def concatPath(parent: String, child: String): Id[String] =
+    s"$parent/$child"
+}
+
+object IoLanguageStub {
+  final val dir: ByteString = ByteString.copyFromUtf8("dir")
 }

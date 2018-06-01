@@ -2,6 +2,7 @@ package pravda.cli.languages
 
 package impl
 
+import java.io.File
 import java.nio.file.{Files, Paths}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
@@ -12,6 +13,24 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.sys.process.stdin
 
 class IoLanguageImpl(implicit executionContext: ExecutionContext) extends IoLanguage[Future] {
+
+  def mkdirs(path: String): Future[Unit] = Future {
+    new File(path).mkdirs()
+  }
+
+  def pwd(): Future[String] = Future {
+    new File("").getAbsolutePath
+  }
+
+  def isDirectory(path: String): Future[Option[Boolean]] = Future {
+    val file = new File(path)
+    if (file.exists()) Some(file.isDirectory)
+    else None
+  }
+
+  def concatPath(parent: String, child: String): Future[String] = Future {
+    new File(new File(parent), child).getAbsolutePath
+  }
 
   def createTmpDir(): Future[String] = Future {
     Files.createTempDirectory("pravda-cli").toAbsolutePath.toString

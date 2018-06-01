@@ -157,5 +157,45 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
         },
     )
 
+  cmd("node")
+    .text("Control Pravda Network Node using CLI.")
+    .action((_, _) => Config.Node(Config.Node.Mode.Nope, None))
+    .children(
+      cmd("init")
+        .text("Initialize node.")
+        .action {
+          case (_, config: Config.Node) =>
+            config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local))
+          case (_, otherwise) => otherwise
+        }
+        .children(
+          opt[Unit]("local")
+            .action {
+              case (_, config: Config.Node) =>
+                config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local))
+              case (_, otherwise) => otherwise
+            },
+          opt[Unit]("testnet")
+            .action {
+              case (_, config: Config.Node) =>
+                config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Testnet))
+              case (_, otherwise) => otherwise
+            }
+        ),
+      cmd("run")
+        .text("Run initialized node.")
+        .action {
+          case (_, config: Config.Node) =>
+            config.copy(mode = Config.Node.Mode.Run)
+          case (_, otherwise) => otherwise
+        },
+      opt[File]('d', "data-dir")
+        .action {
+          case (dataDir, config: Config.Node) =>
+            config.copy(dataDir = Some(dataDir.getAbsolutePath))
+          case (_, otherwise) => otherwise
+        },
+    )
+
   override def showUsageOnError: Boolean = false
 }

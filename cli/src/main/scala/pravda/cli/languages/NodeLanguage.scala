@@ -4,7 +4,9 @@ import com.google.protobuf.ByteString
 
 import scala.language.higherKinds
 
-trait NodeApiLanguage[F[_]] {
+trait NodeLanguage[F[_]] {
+
+  def launch(configPath: String): F[Unit]
 
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,

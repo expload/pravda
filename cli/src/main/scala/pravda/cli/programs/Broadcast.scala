@@ -5,7 +5,7 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.languages.{NodeApiLanguage, CompilersLanguage, IoLanguage}
+import pravda.cli.languages.{NodeLanguage, CompilersLanguage, IoLanguage}
 import pravda.common.bytes
 import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader
@@ -14,7 +14,7 @@ import pravda.node.data.serialization.json._
 
 import scala.language.higherKinds
 
-final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeApiLanguage[F], compilers: CompilersLanguage[F]) {
+final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], compilers: CompilersLanguage[F]) {
 
   import Broadcast._
 
