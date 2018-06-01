@@ -26,7 +26,7 @@ pipeline:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
       - cd /workdir/code/scala-abci-server && sbt $SBT_OPTS publishLocal
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageBin cli/universal:stage
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage
     when:
       event: tag
   build-win-installer:
@@ -36,14 +36,14 @@ pipeline:
     commands:
       - cp -rf /workdir/code/cli/target/universal/stage /workdir/code/win-installer/
       - cd /workdir/code/win-installer && bash build.sh
-      - mv /workdir/code/cli/target/universal/*.zip /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.zip
+      - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
   release:
     image: plugins/github-release
     files:
       - /workdir/code/win-installer/*.msi
-      - /workdir/code/cli/target/universal/*.zip
+      - /workdir/code/cli/target/universal/*.tgz
     secrets: [ GITHUB_RELEASE_API_KEY ]
     when:
       event: tag
