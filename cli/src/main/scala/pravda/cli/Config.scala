@@ -45,4 +45,24 @@ object Config {
                                input: Option[String] = None,
                                executor: String = DefaultExecutor)
       extends Config
+
+  object Node {
+
+    sealed trait Network
+
+    object Network {
+      case object Local   extends Network
+      case object Testnet extends Network
+    }
+
+    sealed trait Mode
+
+    object Mode {
+      case object Nope                        extends Mode
+      final case class Init(network: Network) extends Mode
+      case object Run                         extends Mode
+    }
+  }
+
+  final case class Node(mode: Node.Mode, dataDir: Option[String]) extends Config
 }
