@@ -55,6 +55,10 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
     case _: EnvironmentEffect.StorageRead   => "Read from storage"
     case _: EnvironmentEffect.StorageWrite  => "Write to storage"
+    case _: EnvironmentEffect.Transfer =>
+      "Transfer NC" //(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
+    case _: EnvironmentEffect.ShowBalance =>
+      "Read NC balance" //  final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
   }
 
   private def mono(s: ByteString): Node =
@@ -85,16 +89,29 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           "Key" -> localKey(key),
           "Removed value" -> showOption(value)
         )
-      case EnvironmentEffect.StorageWrite(key, value) =>
+      case EnvironmentEffect.StorageWrite(key, prev, value) =>
         Map(
           "Key" -> localKey(key),
-          "Written value" -> mono(value)
+          "Written value" -> mono(value),
+          "Previous value" -> showOption(prev)
         )
       case EnvironmentEffect.StorageRead(key, value) =>
         Map(
           "Key" -> localKey(key),
           "Readen value" -> showOption(value)
         )
+      case EnvironmentEffect.Transfer(from, to, amount) =>
+        Map(
+          "From" -> mono(from),
+          "To" -> mono(to),
+          "Amount" -> 'span (amount.toString)
+        )
+      case EnvironmentEffect.ShowBalance(address, amount) =>
+        Map(
+          "Address" -> mono(address),
+          "Amount" -> 'span (amount.toString)
+        )
+
     }
   }
 
@@ -269,7 +286,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                  TransactionData @@ ByteString.copyFrom(data),
                                                                  wattLimit.toLong,
-                                                                 BigDecimal(wattPrice),
+                                                                 NativeCoin.amount(wattPrice),
                                                                  Random.nextInt())
                             cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                           }
@@ -316,7 +333,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                    TransactionData @@ ByteString.copyFrom(data),
                                                                    wattLimit.toLong,
-                                                                   NativeCoins.amount(wattPrice),
+                                                                   NativeCoin.amount(wattPrice),
                                                                    Random.nextInt())
                               cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                             }

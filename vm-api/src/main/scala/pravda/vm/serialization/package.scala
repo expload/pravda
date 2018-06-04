@@ -28,8 +28,6 @@ package object serialization {
     ByteString.copyFromUtf8(coins.toString)
   }
 
-
-
   def dataToDouble(data: Data): Double = {
     data.asReadOnlyByteBuffer().getDouble
   }

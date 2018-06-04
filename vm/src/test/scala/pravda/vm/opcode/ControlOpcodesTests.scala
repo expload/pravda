@@ -23,29 +23,29 @@ object ControlOpcodesTests extends TestSuite {
         .opcode(PUSHX).put(7).opcode(CALL) // call 1
         .opcode(PUSHX).put(7).opcode(CALL) // call 2
 
-      assert(exec(program).isEmpty)
-      exec(program1) ==> stack(int32ToData(325))
-      exec(program2) ==> stack(int32ToData(325), int32ToData(325))
+      assert(stackOfExec(program).isEmpty)
+      stackOfExec(program1) ==> stack(int32ToData(325))
+      stackOfExec(program2) ==> stack(int32ToData(325), int32ToData(325))
     }
 
     'stop - {
       val regularProgram = prog
         .opcode(PUSHX).put(31)
         .opcode(PUSHX).put(54)
-      exec(regularProgram) ==> stack(int32ToData(31), int32ToData(54))
+      stackOfExec(regularProgram) ==> stack(int32ToData(31), int32ToData(54))
 
       val programWithDeadCode = prog
         .opcode(PUSHX).put(31)
         .opcode(STOP)
         .opcode(PUSHX).put(54) // DEAD code
-      exec(programWithDeadCode) ==> stack(int32ToData(31))
+      stackOfExec(programWithDeadCode) ==> stack(int32ToData(31))
     }
 
     'jump - {
       val regularProgram = prog
         .opcode(PUSHX).put(31)
         .opcode(PUSHX).put(54)
-      exec(regularProgram) ==> stack(int32ToData(31), int32ToData(54))
+      stackOfExec(regularProgram) ==> stack(int32ToData(31), int32ToData(54))
 
       val programWithJump = prog
         .opcode(PUSHX) // 0
@@ -53,7 +53,7 @@ object ControlOpcodesTests extends TestSuite {
         .opcode(JUMP) // 6
         .opcode(PUSHX).put(31) // 7, 8
         .opcode(PUSHX).put(54) // 13, 14
-      exec(programWithJump) ==> stack(int32ToData(54))
+      stackOfExec(programWithJump) ==> stack(int32ToData(54))
     }
 
     'jumpi - {
@@ -76,15 +76,15 @@ object ControlOpcodesTests extends TestSuite {
         .opcode(PUSHX).put(54) // 15, 16
 
 
-      exec(iprogram(1)) ==> stack(int32ToData(54))
-      exec(iprogram(2)) ==> stack(int32ToData(54))
-      exec(iprogram(0)) ==> stack(int32ToData(31), int32ToData(54))
-      exec(iprogram(-1)) ==> stack(int32ToData(54))
+      stackOfExec(iprogram(1)) ==> stack(int32ToData(54))
+      stackOfExec(iprogram(2)) ==> stack(int32ToData(54))
+      stackOfExec(iprogram(0)) ==> stack(int32ToData(31), int32ToData(54))
+      stackOfExec(iprogram(-1)) ==> stack(int32ToData(54))
 
 
-      exec(bprogram(1)) ==> stack(int32ToData(54))
-      exec(bprogram(2)) ==> stack(int32ToData(54))
-      exec(bprogram(0)) ==> stack(int32ToData(31), int32ToData(54))
+      stackOfExec(bprogram(1)) ==> stack(int32ToData(54))
+      stackOfExec(bprogram(2)) ==> stack(int32ToData(54))
+      stackOfExec(bprogram(0)) ==> stack(int32ToData(31), int32ToData(54))
 
     }
 

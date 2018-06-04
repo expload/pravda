@@ -12,10 +12,10 @@ object BooleanOpcodesTests extends TestSuite {
 
   val tests = Tests {
     'not - {
-      exec(prog.opcode(PUSHX).put(0.toByte).opcode(NOT)) ==> stack(data(1.toByte))
-      exec(prog.opcode(PUSHX).put(1.toByte).opcode(NOT)) ==> stack(data(0.toByte))
-      exec(prog.opcode(PUSHX).put(hex"F00F00FF").opcode(NOT)) ==> stack(data(0.toByte))
-      exec(prog.opcode(PUSHX).put(hex"00000000").opcode(NOT)) ==> stack(data(1.toByte))
+      stackOfExec(prog.opcode(PUSHX).put(0.toByte).opcode(NOT)) ==> stack(data(1.toByte))
+      stackOfExec(prog.opcode(PUSHX).put(1.toByte).opcode(NOT)) ==> stack(data(0.toByte))
+      stackOfExec(prog.opcode(PUSHX).put(hex"F00F00FF").opcode(NOT)) ==> stack(data(0.toByte))
+      stackOfExec(prog.opcode(PUSHX).put(hex"00000000").opcode(NOT)) ==> stack(data(1.toByte))
     }
 
     def op(operation: Byte)(d1: Array[Byte], d2: Array[Byte]) = prog
@@ -29,8 +29,8 @@ object BooleanOpcodesTests extends TestSuite {
 
     'andWithFalse - {
       def with0(d: Array[Byte]) = {
-        exec(and(hex"00", d)) ==> stack(data(0.toByte))
-        exec(and(d, hex"00")) ==> stack(data(0.toByte))
+        stackOfExec(and(hex"00", d)) ==> stack(data(0.toByte))
+        stackOfExec(and(d, hex"00")) ==> stack(data(0.toByte))
       }
 
       with0(hex"00")
@@ -40,18 +40,18 @@ object BooleanOpcodesTests extends TestSuite {
     }
 
     'and {
-      exec(and(hex"01", hex"01")) ==> stack(data(1.toByte))
-      exec(and(hex"0100", hex"01")) ==> stack(data(1.toByte))
-      exec(and(hex"010000", hex"0000")) ==> stack(data(0.toByte))
-      exec(and(hex"000100", hex"010000")) ==> stack(data(1.toByte))
-      exec(and(hex"000000", hex"0000")) ==> stack(data(0.toByte))
+      stackOfExec(and(hex"01", hex"01")) ==> stack(data(1.toByte))
+      stackOfExec(and(hex"0100", hex"01")) ==> stack(data(1.toByte))
+      stackOfExec(and(hex"010000", hex"0000")) ==> stack(data(0.toByte))
+      stackOfExec(and(hex"000100", hex"010000")) ==> stack(data(1.toByte))
+      stackOfExec(and(hex"000000", hex"0000")) ==> stack(data(0.toByte))
     }
 
 
     'orWirhTrue - {
       def with1(d: Array[Byte]) = {
-        exec(or(hex"01", d)) ==> stack(data(1.toByte))
-        exec(or(d, hex"01")) ==> stack(data(1.toByte))
+        stackOfExec(or(hex"01", d)) ==> stack(data(1.toByte))
+        stackOfExec(or(d, hex"01")) ==> stack(data(1.toByte))
       }
 
       with1(hex"00")
@@ -62,20 +62,20 @@ object BooleanOpcodesTests extends TestSuite {
     }
 
     'or - {
-      exec(or(hex"01", hex"01")) ==> stack(data(1.toByte))
-      exec(or(hex"0100", hex"01")) ==> stack(data(1.toByte))
-      exec(or(hex"010000", hex"0000")) ==> stack(data(1.toByte))
-      exec(or(hex"000100", hex"01000000")) ==> stack(data(1.toByte))
-      exec(or(hex"000000", hex"0000")) ==> stack(data(0.toByte))
+      stackOfExec(or(hex"01", hex"01")) ==> stack(data(1.toByte))
+      stackOfExec(or(hex"0100", hex"01")) ==> stack(data(1.toByte))
+      stackOfExec(or(hex"010000", hex"0000")) ==> stack(data(1.toByte))
+      stackOfExec(or(hex"000100", hex"01000000")) ==> stack(data(1.toByte))
+      stackOfExec(or(hex"000000", hex"0000")) ==> stack(data(0.toByte))
     }
 
     'xor - {
-      exec(xor(hex"01", hex"01")) ==> stack(data(0.toByte))
-      exec(xor(hex"0100", hex"01")) ==> stack(data(0.toByte))
-      exec(xor(hex"010000", hex"0000")) ==> stack(data(1.toByte))
-      exec(xor(hex"000000", hex"0001")) ==> stack(data(1.toByte))
-      exec(xor(hex"000100", hex"01000000")) ==> stack(data(0.toByte))
-      exec(xor(hex"000000", hex"0000")) ==> stack(data(0.toByte))
+      stackOfExec(xor(hex"01", hex"01")) ==> stack(data(0.toByte))
+      stackOfExec(xor(hex"0100", hex"01")) ==> stack(data(0.toByte))
+      stackOfExec(xor(hex"010000", hex"0000")) ==> stack(data(1.toByte))
+      stackOfExec(xor(hex"000000", hex"0001")) ==> stack(data(1.toByte))
+      stackOfExec(xor(hex"000100", hex"01000000")) ==> stack(data(0.toByte))
+      stackOfExec(xor(hex"000000", hex"0000")) ==> stack(data(0.toByte))
     }
   }
 }

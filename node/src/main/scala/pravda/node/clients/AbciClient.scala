@@ -112,7 +112,7 @@ class AbciClient(port: Int)(implicit
                                   privateKey: PrivateKey,
                                   data: TransactionData,
                                   wattLimit: Long,
-                                  wattPrice: BigDecimal,
+                                  wattPrice: NativeCoin,
                                   mode: String = "commit"): Future[ErrorOrStack] = {
 
     val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, Random.nextInt())

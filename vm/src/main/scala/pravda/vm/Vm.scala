@@ -6,7 +6,7 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.Address
-import pravda.vm.watt.WattCounter
+import pravda.vm.watt.{EnvironmentWithCounter, MemoryWithCounter, StorageWithCounter, WattCounter}
 
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable.ArrayBuffer
@@ -25,13 +25,12 @@ object Vm {
 
   def runRaw(program: ByteString, executor: Address, environment: Environment, wattLimit: Long): ExecutionResult = {
     val wattCounter = new WattCounter(wattLimit)
-    val memory = Memory.empty(wattCounter)
-    val environmentWithCounter = new EnvironmentWithCounter(environment, wattCounter)
+    val memory = VmMemory.empty
     Try {
       run(
         program = ByteBuffer.wrap(program.toByteArray),
-        environment = environmentWithCounter,
-        memory = memory,
+        environment = EnvironmentWithCounter(environment, wattCounter),
+        memory = MemoryWithCounter(memory, wattCounter),
         executor = executor,
         progAddress = None,
         progStorage = None,
@@ -40,9 +39,9 @@ object Vm {
         wattCounter = wattCounter
       )
     } match {
-      case Success(_) => ExecutionResult(memory, None, wattCounter)
+      case Success(_)                     => ExecutionResult(memory, None, wattCounter)
       case Failure(err: VmErrorException) => ExecutionResult(memory, Some(err), wattCounter)
-      case Failure(err) => ExecutionResult(memory, Some(VmErrorException(SomethingWrong(err))), wattCounter)
+      case Failure(err)                   => ExecutionResult(memory, Some(VmErrorException(SomethingWrong(err))), wattCounter)
     }
   }
 
@@ -51,8 +50,7 @@ object Vm {
                  executor: Address,
                  environment: Environment,
                  depth: Int = 0,
-                 wattCounter: WattCounter
-                ): Unit = {
+                 wattCounter: WattCounter): Unit = {
 
     val account = environment.getProgram(programAddress)
     if (account.isEmpty) throw VmErrorException(NoSuchProgram)
@@ -67,8 +65,7 @@ object Vm {
         Some(account.get.storage),
         depth,
         isLibrary = false,
-        wattCounter = wattCounter
-    )
+        wattCounter = wattCounter)
   }
 
   // TODO @fomkin: looks like isLibrary and emptiness of storage are the same things.
@@ -84,7 +81,7 @@ object Vm {
       wattCounter: WattCounter
   ): Unit = {
 
-    if(depth > 1024) throw VmErrorException(ExtCallStackOverflow)
+    if (depth > 1024) throw VmErrorException(ExtCallStackOverflow)
 
     lazy val storage = {
       if (progStorage.isEmpty) throw VmErrorException(OperationDenied)
@@ -102,7 +99,7 @@ object Vm {
     def callPush(pos: Int): Unit = {
       callStack += pos
 
-      if(callStack.size > 1024) throw VmErrorException(CallStackOverflow)
+      if (callStack.size > 1024) throw VmErrorException(CallStackOverflow)
     }
 
     @tailrec
@@ -148,7 +145,7 @@ object Vm {
             environment.updateProgram(address, code)
             aux()
           case PADDR =>
-            if(progAddress.isEmpty) {
+            if (progAddress.isEmpty) {
               throw VmErrorException(OperationDenied)
             } else {
               memory.push(addressToData(progAddress.get))
@@ -158,7 +155,7 @@ object Vm {
             val to = dataToAddress(memory.pop())
             environment.transfer(executor, to, amount)
           case PTRANSFER =>
-            if(progAddress.isEmpty) {
+            if (progAddress.isEmpty) {
               throw VmErrorException(OperationDenied)
             } else {
               val amount = dataToCoins(memory.pop())
@@ -183,15 +180,14 @@ object Vm {
                       case f: StdFunction => f(memory, wattCounter)
                       case UserDefinedFunction(f) =>
                         run(f.code,
-                           environment,
-                           memory,
-                           executor,
-                           Some(address),
-                           None,
-                           depth + 1,
-                           isLibrary = true,
-                           wattCounter
-                        )
+                            environment,
+                            memory,
+                            executor,
+                            Some(address),
+                            None,
+                            depth + 1,
+                            isLibrary = true,
+                            wattCounter)
                     }
                 }
             }

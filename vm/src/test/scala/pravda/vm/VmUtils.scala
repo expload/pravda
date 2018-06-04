@@ -3,7 +3,8 @@ package pravda.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.Address
+import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.bytes.byteString2hex
 import pravda.vm.state._
 
 object VmUtils {
@@ -12,19 +13,32 @@ object VmUtils {
     def getProgram(address: Address): Option[ProgramContext] = None
     def getProgramOwner(address: Address): Option[Address] = ???
     def createProgram(owner: Address, code: Data): Address = ???
-    def updateProgram(address: Address, code: Data): Unit = ???
+    def updateProgram(address: Address, code: Data): Data = ???
+    def transfer(from: Address, to: Address, amount: NativeCoin): Unit = ???
+    def balance(address: Address): NativeCoin = ???
+    def withdraw(address: Address, amount: NativeCoin): Unit = ???
+    def accrue(address: Address, amount: NativeCoin): Unit = ???
   }
 
-  def exec(p: ProgramStub): Array[Data] = {
-    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, emptyState).stack.toArray
+  def stackOfExec(p: ProgramStub): Array[Data] = {
+    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, emptyState, Long.MaxValue).memory.stack.toArray
   }
 
-  def exec(p: ProgramStub, worldState: Environment): Array[Data] = {
-    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, worldState).stack.toArray
+  def stackOfExec(p: ProgramStub, worldState: Environment): Array[Data] = {
+    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, worldState, Long.MaxValue).memory.stack.toArray
+  }
+
+  def exec(p: ProgramStub): ExecutionResult = {
+    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, emptyState, Long.MaxValue)
+  }
+
+  def exec(p: ProgramStub, worldState: Environment): ExecutionResult = {
+    Vm.runRaw(p.byteString, Address @@ ByteString.EMPTY, worldState, Long.MaxValue)
   }
 
   def stack(item: Data*): Array[Data] =  item.toArray
 
+  def show(seq: Seq[Data]): String = seq.map(byteString2hex).mkString(" ")
   def prog: ProgramStub = ProgramStub()
 
   def hex(b: Byte): String = {
@@ -60,10 +74,13 @@ object VmUtils {
     }
 
     def getProgramOwner(address: Address): Option[Address] = ???
-
     def createProgram(owner: Address, code: Data): Address = ???
+    def updateProgram(address: Address, code: Data): Data = ???
 
-    def updateProgram(address: Address, code: Data): Unit = ???
+    def transfer(from: Address, to: Address, amount: NativeCoin): Unit = ???
+    def balance(address: Address): NativeCoin = ???
+    def withdraw(address: Address, amount: NativeCoin): Unit = ???
+    def accrue(address: Address, amount: NativeCoin): Unit = ???
 
   }
 

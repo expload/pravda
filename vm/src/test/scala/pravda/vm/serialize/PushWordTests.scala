@@ -24,20 +24,20 @@ object PushWordTests extends TestSuite {
 
     'pushOneByteWord - {
       val program = hex"$PUSHX 15"
-      Vm.runRaw(ByteString.copyFrom(program), Address @@ ByteString.EMPTY, emptyState).stack.toArray ==> Array(data(0x15.toByte))
+      Vm.runRaw(ByteString.copyFrom(program), Address @@ ByteString.EMPTY, emptyState, Long.MaxValue).memory.stack.toArray ==> Array(data(0x15.toByte))
     }
 
     'pushThreeByteWord - {
 
       val program = hex"$PUSHX ${withLen(LEN3, 0x20.toByte)} CA AB FE 00"
-      Vm.runRaw(ByteString.copyFrom(program), Address @@ ByteString.EMPTY, emptyState).stack.toArray ==> Array(
+      Vm.runRaw(ByteString.copyFrom(program), Address @@ ByteString.EMPTY, emptyState, Long.MaxValue).memory.stack.toArray ==> Array(
         data(hex"CA AB FE")
       )
     }
 
     'pushFourByteWord - {
       val program = hex"$PUSHX ${withLen(LEN4,  0x20.toByte)} CA AB FE 00"
-      Vm.runRaw(ByteString.copyFrom(program), Address @@ ByteString.EMPTY, emptyState).stack.toArray ==> Array(
+      Vm.runRaw(ByteString.copyFrom(program), Address @@ ByteString.EMPTY, emptyState, Long.MaxValue).memory.stack.toArray ==> Array(
         data(hex"CA AB FE 00")
       )
     }

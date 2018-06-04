@@ -5,7 +5,6 @@ package servers
 import java.nio.ByteBuffer
 import java.util.Base64
 
-import cats.data.OptionT
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import pravda.node.db.{DB, Operation}
@@ -26,8 +25,6 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import pravda.common.{bytes => byteUtils}
-import pravda.node.data.misc.BlockChainInfo
-import pravda.vm.watt.WattCounter
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
@@ -49,21 +46,23 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
     val tokenSaleMembers = List(
-      /* Alice */ Address.tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45").getOrElse(Address.Void) -> NativeCoin(BigDecimal(100)),
-      /*  Bob  */ Address.tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA").getOrElse(Address.Void) -> NativeCoin(BigDecimal(300))
+      /* Alice */ Address
+        .tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45")
+        .getOrElse(Address.Void) -> NativeCoin(BigDecimal(100)),
+      /*  Bob  */ Address
+        .tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA")
+        .getOrElse(Address.Void) -> NativeCoin(BigDecimal(300))
     )
 
-    validators = request
-      .validators
-      .toVector
+    validators = request.validators.toVector
       .map(x => tendermint.unpackAddress(x.pubKey))
 
     for {
       _ <- Future.sequence(tokenSaleMembers.map {
-            case (address, amount) =>
-              applicationStateDb.put(s"balance:${byteUtils.byteString2hex(address)}", transcode(amount).to[Bson])
-            }
-           )
+        case (address, amount) =>
+          applicationStateDb.putBytes(byteUtils.stringToBytes(s"balance:${byteUtils.byteString2hex(address)}"),
+                                      transcode(amount).to[Bson])
+      })
     } yield ResponseInitChain.defaultInstance
 
   }
@@ -71,14 +70,18 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
 
-    val info = transcode(Bson @@ applicationStateDb.syncGet("info").get.bytes).to[BlockChainInfo]
     val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.pubKey))
     val absent = request.absentValidators
-    validators = info.validators.zipWithIndex.collect {
-      case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
-    }
+    FileStore
+      .readApplicationStateInfoAsync()
+      .map { maybeInfo =>
+        val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
+        validators = info.validators.zipWithIndex.collect {
+          case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
+        }
+      }
+      .map(_ => ResponseBeginBlock())
 
-    Future.successful(ResponseBeginBlock())
   }
 
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: EnvironmentProvider)(
@@ -93,23 +96,21 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       env = environmentProvider.transactionEnvironment(tid)
       _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
-      spent = execResult.wattCounter.total
-      remaining = tx.wattLimit - spent
+    } yield {
+      val spent = execResult.wattCounter.total
+      val remaining = tx.wattLimit - spent
       env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
       environmentProvider.appendFee(NativeCoin(authTx.wattPrice * remaining))
-    } yield {
       execResult
     }
 
     Future.successful {
       `try` match {
         case Success(executionResult) =>
-          result(TxStatusOk, executionResult
-            .memory
-            .stack
-            .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
-            .mkString(",")
-          )
+          result(TxStatusOk,
+                 executionResult.memory.stack
+                   .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
+                   .mkString(","))
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
@@ -161,7 +162,7 @@ object Abci {
 
   final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
   final case class ProgramNotFoundException() extends Exception("Program not found")
-  final case class NotEnoughMoney() extends Exception("Not enough money")
+  final case class NotEnoughMoney()           extends Exception("Not enough money")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -173,12 +174,13 @@ object Abci {
 
   object EnvironmentEffect {
     final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
-    final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte]) extends EnvironmentEffect
-    final case class StorageRead(key: String, value: Option[Array[Byte]])   extends EnvironmentEffect
-    final case class ProgramCreate(address: Address, program: Array[Byte])  extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: Array[Byte])  extends EnvironmentEffect
+    final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
+        extends EnvironmentEffect
+    final case class StorageRead(key: String, value: Option[Array[Byte]])     extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Array[Byte])    extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Array[Byte])    extends EnvironmentEffect
     final case class Transfer(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
-    final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin)        extends EnvironmentEffect
   }
 
   final class EnvironmentProvider(db: DB) {
@@ -298,7 +300,7 @@ object Abci {
 
       def withdraw(address: Address, amount: NativeCoin): Unit = {
         val current = balance(address)
-        if(current < amount) {
+        if (current < amount) {
           throw NotEnoughMoney()
         } else {
           balancesPath.put(byteUtils.byteString2hex(address), current - amount)
@@ -333,7 +335,8 @@ object Abci {
     }
 
     def appendFee(coins: NativeCoin): Unit = {
-      fee += coins
+      val newFees = NativeCoin @@ (fee + coins)
+      fee = newFees
     }
 
     def clear(): Unit = {
@@ -354,10 +357,10 @@ object Abci {
       // Share fee
       val share = NativeCoin @@ (fee / validators.length).setScale(4, BigDecimal.RoundingMode.FLOOR)
       val remainder = NativeCoin @@ (fee - share * validators.length)
-      validators.foreach {
-        address => accrue(address, share)
+      validators.foreach { address =>
+        accrue(address, share)
       }
-      accrue(validators(validators.length % height), remainder)
+      accrue(validators((height % validators.length).toInt), remainder)
 
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]

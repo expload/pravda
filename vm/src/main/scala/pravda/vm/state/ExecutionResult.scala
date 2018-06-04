@@ -2,8 +2,8 @@ package pravda.vm.state
 
 import pravda.vm.watt.WattCounter
 
-case class ExecutionResult(
-                            memory: Memory,
-                            error: Option[VmErrorException],
-                            wattCounter: WattCounter
-                          )
+final case class ExecutionResult(
+    memory: VmMemory,
+    error: Option[VmErrorException],
+    wattCounter: WattCounter
+)

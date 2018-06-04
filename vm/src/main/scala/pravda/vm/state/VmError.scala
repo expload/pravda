@@ -8,17 +8,17 @@ sealed trait VmError {
 
 object VmError {
 
-  case object StackOverflow   extends VmError { val code = 100 }
-  case object StackUnderflow  extends VmError { val code = 101 }
-  case object WrongStackIndex extends VmError { val code = 102 }
-  case object WrongHeapIndex  extends VmError { val code = 103 }
-  case object OperationDenied extends VmError { val code = 200 }
-  case object NoSuchProgram   extends VmError { val code = 300 }
-  case object NoSuchLibrary   extends VmError { val code = 301 }
-  case object NoSuchMethod    extends VmError { val code = 302 }
-  case object NoSuchElement   extends VmError { val code = 400 }
-  case object OutOfGas        extends VmError { val code = 500 }
-  case object CallStackOverflow extends VmError { val code = 600 }
+  case object StackOverflow        extends VmError { val code = 100 }
+  case object StackUnderflow       extends VmError { val code = 101 }
+  case object WrongStackIndex      extends VmError { val code = 102 }
+  case object WrongHeapIndex       extends VmError { val code = 103 }
+  case object OperationDenied      extends VmError { val code = 200 }
+  case object NoSuchProgram        extends VmError { val code = 300 }
+  case object NoSuchLibrary        extends VmError { val code = 301 }
+  case object NoSuchMethod         extends VmError { val code = 302 }
+  case object NoSuchElement        extends VmError { val code = 400 }
+  case object OutOfGas             extends VmError { val code = 500 }
+  case object CallStackOverflow    extends VmError { val code = 600 }
   case object ExtCallStackOverflow extends VmError { val code = 601 }
 
   final case class SomethingWrong(ex: Throwable) extends VmError { val code = 999 }

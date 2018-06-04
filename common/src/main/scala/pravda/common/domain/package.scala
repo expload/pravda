@@ -31,7 +31,7 @@ package object domain {
     def fromHex(hex: String): Address =
       Address(hex2byteString(hex))
 
-    def fromByteArray(arr: Array[Byte]) = {
+    def fromByteArray(arr: Array[Byte]): Address = {
       Address(ByteString.copyFrom(arr))
     }
   }

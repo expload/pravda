@@ -1,23 +1,23 @@
-package pravda.vm.state
+package pravda.vm.watt
 
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.vm.watt.WattCounter
+import pravda.vm.state.{Data, Environment, ProgramContext}
 import pravda.vm.watt.WattCounter.CpuStorageUse
 
-class EnvironmentWithCounter(environment: Environment, wattCounter: WattCounter) extends Environment {
+final case class EnvironmentWithCounter(environment: Environment, wattCounter: WattCounter) extends Environment {
 
   def updateProgram(address: Address, code: Data): Data = {
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.size())
+    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
 
     val previous = environment.updateProgram(address, code)
-    wattCounter.storageUsage(releasedBytes = previous.size())
+    wattCounter.storageUsage(releasedBytes = previous.size().toLong)
     previous
   }
 
   def createProgram(owner: Address, code: Data): Address = {
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.size())
+    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
 
     environment.createProgram(owner, code)
   }

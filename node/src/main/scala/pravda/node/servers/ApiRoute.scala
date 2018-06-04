@@ -49,6 +49,7 @@ class ApiRoute(abciClient: AbciClient) {
   val route: Route =
     pathPrefix("public") {
       post {
+<<<<<<< HEAD
         withoutRequestTimeout {
           path("broadcast") {
             parameters(
@@ -61,7 +62,7 @@ class ApiRoute(abciClient: AbciClient) {
               extractStrictEntity(1.second) { body =>
                 val program = bodyToTransactionData(body)
                 val nonce = maybeNonce.getOrElse(Random.nextInt())
-                val tx = SignedTransaction(Address @@ from, program, signature, wattLimit, wattPrice, Random.nextInt)
+                val tx = SignedTransaction(Address @@ from, program, signature, wattLimit, NativeCoin @@ wattPrice, Random.nextInt)
                 println(Show[SignedTransaction].show(tx))
                 val mode = maybeMode.getOrElse("commit")
                 val result = abciClient.broadcastTransaction(tx, mode)

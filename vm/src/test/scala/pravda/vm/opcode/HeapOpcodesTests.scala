@@ -14,8 +14,8 @@ object HeapOpcodesTests extends TestSuite {
       val program = prog
         .opcode(PUSHX).put(24)
         .opcode(MPUT)
-      exec(program).length ==> 1
-      exec(program.opcode(MGET)) ==> stack(int32ToData(24))
+      stackOfExec(program).length ==> 1
+      stackOfExec(program.opcode(MGET)) ==> stack(int32ToData(24))
     }
   }
 

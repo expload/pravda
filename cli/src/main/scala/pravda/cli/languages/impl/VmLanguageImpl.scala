@@ -8,19 +8,19 @@ import pravda.node.data.common.TransactionId
 import pravda.node.db.DB
 import pravda.node.servers
 import pravda.vm.Vm
-import pravda.vm.state.{Memory, VmErrorException}
+import pravda.vm.state.{VmMemory, VmErrorException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends VmLanguage[Future] {
 
-  def run(program: ByteString, executor: ByteString, storagePath: String): Future[Either[String, Memory]] = Future {
+  def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Future[Either[String, Memory]] = Future {
     try {
       val envProvider = new servers.Abci.EnvironmentProvider(DB(storagePath, None))
       val env = envProvider.transactionEnvironment(TransactionId.forEncodedTransaction(program))
-      val memory = Vm.runRaw(program, Address @@ executor, env)
-      envProvider.commit(0) // TODO retrieve block height from db
-      Right(memory)
+      val result = Vm.runRaw(program, Address @@ executor, env, wattLimit)
+      envProvider.commit(0, Vector.empty[Address]) // TODO retrieve block height from db
+      Right(result.memory)
     } catch {
       case VmErrorException(error, stackTrace) =>
         Left(s"$error: \n  ${stackTrace.stackTrace.mkString("\n  ")}")

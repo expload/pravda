@@ -5,7 +5,7 @@ import utest._
 import VmUtils._
 import Opcodes._
 import pravda.vm.state.VmError._
-import pravda.vm.state.{Environment, VmError, VmErrorException}
+import pravda.vm.state.{Environment, VmError}
 import pravda.common.domain.Address
 
 object ErrorTests extends TestSuite {
@@ -13,10 +13,9 @@ object ErrorTests extends TestSuite {
   val tests = Tests {
 
     def assertError(program: ProgramStub, error: VmError, env: Environment = emptyState): Unit = {
-      val e = intercept[VmErrorException] {
-        exec(program, env)
-      }
-      assert(e.error == error)
+      val e = exec(program, env).error
+      assert(e.nonEmpty)
+      assert(e.get.error == error)
     }
 
     'stackUnderflow - {
