@@ -30,9 +30,12 @@ pipeline:
       event: tag
   build-win-installer:
     image: gcr.io/time-coin/wix-builder:0.2
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG##v}
     commands:
       - cp -rf /workdir/code/cli/target/universal/stage /workdir/code/win-installer/
       - cd /workdir/code/win-installer && bash build.sh
+      - mv /workdir/code/cli/target/universal/*.zip /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.zip
     when:
       event: tag
   release:

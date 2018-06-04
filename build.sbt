@@ -2,6 +2,8 @@ import java.nio.file.Files
 
 resolvers += "jitpack" at "https://jitpack.io"
 
+enablePlugins(GitVersioning)
+
 val commonSettings = Seq(
   organization := "io.mytc",
   version := "0.1.0",
