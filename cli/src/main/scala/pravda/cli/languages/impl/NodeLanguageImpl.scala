@@ -32,13 +32,15 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,
                                   privateKey: ByteString,
+                                  wattLimit: Long,
+                                  wattPrice: NativeCoin,
                                   data: ByteString): Future[Either[String, String]] = {
 
     val tx = UnsignedTransaction(
       from = Address @@ address,
       program = TransactionData @@ data,
-      wattLimit = 0L, // TODO
-      wattPrice = NativeCoin.zero, // TODO
+      wattLimit = wattLimit,
+      wattPrice = wattPrice,
       nonce = Random.nextInt()
     )
 
@@ -48,7 +50,8 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
 
     val request = HttpRequest(
       method = HttpMethods.POST,
-      uri = s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&fee=0",
+      uri =
+        s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&wattLimit=${tx.wattLimit}&wattPrice=${tx.wattPrice}",
       entity = HttpEntity(data.toByteArray)
     )
 

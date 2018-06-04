@@ -18,15 +18,15 @@ final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends 
           executor: ByteString,
           storagePath: String,
           wattLimit: Long): Future[Either[String, Memory]] = Future {
-    try {
-      val envProvider = new servers.Abci.EnvironmentProvider(DB(storagePath, None))
-      val env = envProvider.transactionEnvironment(TransactionId.forEncodedTransaction(program))
-      val result = Vm.runRaw(program, Address @@ executor, env, wattLimit)
-      envProvider.commit(0, Vector.empty[Address]) // TODO retrieve block height from db
-      Right(result.memory)
-    } catch {
-      case VmErrorException(error, stackTrace) =>
-        Left(s"$error: \n  ${stackTrace.stackTrace.mkString("\n  ")}")
-    }
+    val envProvider = new servers.Abci.EnvironmentProvider(DB(storagePath, None))
+    val env = envProvider.transactionEnvironment(TransactionId.forEncodedTransaction(program))
+    val result = Vm.runRaw(program, Address @@ executor, env, wattLimit)
+    envProvider.commit(0, Vector(Address @@ executor)) // TODO retrieve block height from db
+    result.error
+      .map {
+        case VmErrorException(error, stackTrace) =>
+          s"$error: \n  ${stackTrace.stackTrace.mkString("\n  ")}"
+      }
+      .toLeft(result.memory)
   }
 }
