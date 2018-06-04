@@ -8,11 +8,11 @@ import supertagged.TaggedType
 object blockchain {
 
   sealed trait Transaction {
-    val from: Address
-    val program: TransactionData
-    val wattLimit: Long
-    val wattPrice: NativeCoin
-    val nonce: Int
+    def from: Address
+    def program: TransactionData
+    def wattLimit: Long
+    def wattPrice: NativeCoin
+    def nonce: Int
 
     def forSignature: (Address, TransactionData, Long, NativeCoin, Int) =
       (from, program, wattLimit, wattPrice, nonce)

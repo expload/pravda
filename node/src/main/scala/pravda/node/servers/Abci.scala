@@ -84,6 +84,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   }
 
+  def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
+    if(tx.wattPrice <= NativeCoin.zero) {
+      Failure(new Exception("Bad transaction parameter: wattPrice"))
+    }  else if(tx.wattLimit <= 0) {
+      Failure(new Exception("Bad transaction parameter: wattLimit"))
+    } else {
+      Success(())
+    }
+  }
+
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: EnvironmentProvider)(
       result: (Int, String) => R): Future[R] = {
 
@@ -92,6 +102,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
+      _ <- checkTransaction(authTx)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
       _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
@@ -346,7 +357,6 @@ object Abci {
       fee = NativeCoin.zero
     }
 
-    // TODO: Duplicate
     def accrue(address: Address, amount: NativeCoin): Unit = {
       val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
       balancesPath.put(byteUtils.byteString2hex(address), current + amount)

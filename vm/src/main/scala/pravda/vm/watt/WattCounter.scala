@@ -4,7 +4,7 @@ import pravda.vm.state.{Data, VmErrorException}
 import pravda.vm.state.VmError.OutOfGas
 
 class WattCounter(wattLimit: Long) {
-  val StorageOccupyFactor = 4L
+  val StorageOccupyFactor = 8L
   val StorageReleaseFactor = 2L
   val CpuFactor = 1L
 
@@ -28,7 +28,10 @@ class WattCounter(wattLimit: Long) {
   }
 
   def memoryUsage(memoryBytesInUse: Long): Unit = {
-    memoryWatts = memoryBytesInUse * memoryBytesInUse // TODO better function
+    val M100 = 100000000L
+    def cube(v: Long) = v * v * v
+    memoryWatts = 100 * cube(memoryBytesInUse / M100 + 1) // TODO better function
+    check()
   }
 
   def cpuUsage(timeUnits: Long*): Unit = {
