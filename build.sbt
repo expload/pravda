@@ -6,7 +6,6 @@ enablePlugins(GitVersioning)
 
 val commonSettings = Seq(
   organization := "io.mytc",
-  version := "0.1.0",
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
