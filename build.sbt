@@ -4,6 +4,11 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 enablePlugins(GitVersioning)
 
+git.gitTagToVersionNumber := { tag: String =>
+  if (tag.length > 0) Some(tag)
+  else None
+}
+
 val commonSettings = Seq(
   organization := "io.mytc",
   crossScalaVersions := Seq("2.12.4"),
