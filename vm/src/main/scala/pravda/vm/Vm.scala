@@ -178,7 +178,7 @@ object Vm {
                   case Some(function) =>
                     function match {
                       case f: StdFunction => f(memory, wattCounter)
-                      case UserDefinedFunction(f) =>
+                      case f: UserDefinedFunction =>
                         run(f.code,
                             environment,
                             memory,

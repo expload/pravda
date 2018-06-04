@@ -42,7 +42,7 @@ object blockchain {
         val from = bytes.byteString2hex(t.from)
         val program = bytes.byteString2hex(t.program)
         val signature = bytes.byteString2hex(t.signature)
-        s"transaction.signed[from=$from,program=$program,signature=$signature,nonce=${t.nonce},fee=${t.fee}]"
+        s"transaction.signed[from=$from,program=$program,signature=$signature,nonce=${t.nonce},wattLmit=${t.wattLimit},wattPrice=${t.wattPrice}]"
       }
     }
 

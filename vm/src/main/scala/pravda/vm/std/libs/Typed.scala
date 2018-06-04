@@ -34,17 +34,15 @@ object Typed extends NativeLibrary {
 
   val typedBool: Func = Func("typedBool", m => {
     val b = if (m.stack(0).byteAt(0) == 0) 0 else 1
-    m.stack.clear()
+    m.clear()
     m.push(dataToTyped(Int32Tag, int32ToData(b)))
-    m
   })
 
   val typedNot: Func = Func("typedNot", m => {
     val a = dataToInt32(m.stack(0).substring(1))
     val res = if (a == 0) 1 else 0
-    m.stack.clear()
+    m.clear()
     m.push(dataToTyped(Int32Tag, int32ToData(res)))
-    m
   })
 
   private def createCmpFunc(name: String,
@@ -58,9 +56,9 @@ object Typed extends NativeLibrary {
     Func(
       name,
       m => {
-        val a = m.stack(0)
-        val b = m.stack(1)
-        m.stack.clear()
+        val a = m.all(0)
+        val b = m.all(1)
+        m.clear()
 
         val res = (typedTag(a), typedTag(b)) match {
           case (Int32Tag, Int32Tag) =>
@@ -87,7 +85,6 @@ object Typed extends NativeLibrary {
         }
 
         m.push(res)
-        m
       }
     )
   }

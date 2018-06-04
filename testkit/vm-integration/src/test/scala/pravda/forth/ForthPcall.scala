@@ -2,7 +2,6 @@ package pravda.forth
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.Address
-import pravda.forth.ForthTestUtils._
 import pravda.vm.serialization._
 import pravda.test.utils.IntegrationUtils._
 import utest._

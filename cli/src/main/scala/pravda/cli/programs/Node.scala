@@ -7,9 +7,9 @@ import com.google.protobuf.ByteString
 import pravda.cli.Config
 import pravda.cli.Config.Node.{Mode, Network}
 import pravda.cli.languages.{IoLanguage, NodeLanguage, RandomLanguage}
+import pravda.common.domain.Address
 import pravda.common.{bytes, crypto}
 import pravda.node.data.TimechainConfig.PaymentWallet
-import pravda.node.data.common.Address
 import pravda.node.data.cryptography.PrivateKey
 
 import scala.language.higherKinds

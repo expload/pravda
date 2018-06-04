@@ -8,9 +8,9 @@ import akka.util.{ByteString => AkkaByteString}
 import com.google.protobuf.ByteString
 import pravda.cli.languages.NodeLanguage
 import pravda.common.bytes
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common.{Address, Mytc}
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.launcher
@@ -37,7 +37,8 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
     val tx = UnsignedTransaction(
       from = Address @@ address,
       program = TransactionData @@ data,
-      Mytc.zero,
+      wattLimit = 0L, // TODO
+      wattPrice = NativeCoin.zero, // TODO
       nonce = Random.nextInt()
     )
 
