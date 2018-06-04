@@ -2,9 +2,15 @@ import java.nio.file.Files
 
 resolvers += "jitpack" at "https://jitpack.io"
 
+enablePlugins(GitVersioning)
+
+git.gitTagToVersionNumber := { tag: String =>
+  if (tag.length > 0) Some(tag)
+  else None
+}
+
 val commonSettings = Seq(
   organization := "io.mytc",
-  version := "0.1.0",
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
