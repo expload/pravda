@@ -150,12 +150,14 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
           case (_, otherwise) => otherwise
         },
       opt[Long]('l', "limit")
+        .text("Watt limit (300 by default).")
         .action {
           case (limit, config: Config.Broadcast) =>
             config.copy(wattLimit = limit)
           case (_, otherwise) => otherwise
         },
       opt[BigDecimal]('p', "price")
+        .text("Watt price (0.01 by default).")
         .action {
           case (price, config: Config.Broadcast) =>
             config.copy(wattPrice = NativeCoin @@ price)

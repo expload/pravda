@@ -54,10 +54,12 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         .getOrElse(Address.Void) -> NativeCoin(BigDecimal(3000))
     )
 
-    validators = request.validators.toVector
+    val initValidators = request.validators.toVector
       .map(x => tendermint.unpackAddress(x.pubKey))
 
     for {
+      _ <- FileStore
+        .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators))
       _ <- Future.sequence(tokenSaleMembers.map {
         case (address, amount) =>
           applicationStateDb.putBytes(byteUtils.stringToBytes(s"balance:${byteUtils.byteString2hex(address)}"),
@@ -81,14 +83,13 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
         }
       }
       .map(_ => ResponseBeginBlock())
-
   }
 
   def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
     if (tx.wattPrice <= NativeCoin.zero) {
-      Failure(new Exception("Bad transaction parameter: wattPrice"))
+      Failure(WrongWattPrice())
     } else if (tx.wattLimit <= 0) {
-      Failure(new Exception("Bad transaction parameter: wattLimit"))
+      Failure(WrongWattLimit())
     } else {
       Success(())
     }
@@ -111,7 +112,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       val spent = execResult.wattCounter.total
       val remaining = tx.wattLimit - spent
       env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
-      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * remaining))
+      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * spent))
       execResult
     }
 
@@ -174,6 +175,8 @@ object Abci {
   final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
   final case class ProgramNotFoundException() extends Exception("Program not found")
   final case class NotEnoughMoney()           extends Exception("Not enough money")
+  final case class WrongWattPrice()           extends Exception("Bad transaction parameter: wattPrice")
+  final case class WrongWattLimit()           extends Exception("Bad transaction parameter: wattLimit")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -187,11 +190,12 @@ object Abci {
     final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
     final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
         extends EnvironmentEffect
-    final case class StorageRead(key: String, value: Option[Array[Byte]])     extends EnvironmentEffect
-    final case class ProgramCreate(address: Address, program: Array[Byte])    extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: Array[Byte])    extends EnvironmentEffect
-    final case class Transfer(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
-    final case class ShowBalance(address: Address, amount: NativeCoin)        extends EnvironmentEffect
+    final case class StorageRead(key: String, value: Option[Array[Byte]])  extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class Withdraw(from: Address, amount: NativeCoin)           extends EnvironmentEffect
+    final case class Accrue(to: Address, amount: NativeCoin)               extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin)     extends EnvironmentEffect
   }
 
   final class EnvironmentProvider(db: DB) {
@@ -300,7 +304,6 @@ object Abci {
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
         withdraw(from, amount)
         accrue(to, amount)
-        effects += Transfer(from, to, amount)
       }
 
       def balance(address: Address): NativeCoin = {
@@ -315,12 +318,14 @@ object Abci {
           throw NotEnoughMoney()
         } else {
           balancesPath.put(byteUtils.byteString2hex(address), current - amount)
+          effects += Withdraw(address, amount)
         }
       }
 
       def accrue(address: Address, amount: NativeCoin): Unit = {
         val current = balance(address)
         balancesPath.put(byteUtils.byteString2hex(address), current + amount)
+        effects += Accrue(address, amount)
       }
 
       private def getStoredProgram(address: ByteString) =

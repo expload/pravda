@@ -55,10 +55,9 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
     case _: EnvironmentEffect.StorageRead   => "Read from storage"
     case _: EnvironmentEffect.StorageWrite  => "Write to storage"
-    case _: EnvironmentEffect.Transfer =>
-      "Transfer NC" //(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
-    case _: EnvironmentEffect.ShowBalance =>
-      "Read NC balance" //  final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
+    case _: EnvironmentEffect.Withdraw      => "Withdraw NC"
+    case _: EnvironmentEffect.Accrue        => "Put NC"
+    case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
   }
 
   private def mono(s: ByteString): Node =
@@ -100,9 +99,13 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           "Key" -> localKey(key),
           "Readen value" -> showOption(value)
         )
-      case EnvironmentEffect.Transfer(from, to, amount) =>
+      case EnvironmentEffect.Withdraw(from, amount) =>
         Map(
           "From" -> mono(from),
+          "Amount" -> 'span (amount.toString)
+        )
+      case EnvironmentEffect.Accrue(to, amount) =>
+        Map(
           "To" -> mono(to),
           "Amount" -> 'span (amount.toString)
         )
@@ -249,8 +252,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'height @= 400,
                          codeArea,
                          'placeholder /= "Place your p-forth code here"),
-              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "0.00"),
-              'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1.00"),
+              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
+              'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "0.01"),
               'input ('class          /= "input",
                       'margin         @= 10,
                       addressField,
