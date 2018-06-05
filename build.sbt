@@ -14,6 +14,8 @@ val commonSettings = Seq(
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
+    "org.typelevel" %% "cats-core" % "1.0.1",
+    "org.rudogma" %% "supertagged" % "1.4",
     "com.lihaoyi" %% "utest" % "0.6.3" % "test"
   ),
   testFrameworks += new TestFramework("utest.runner.Framework"),
@@ -43,14 +45,20 @@ lazy val common = (project in file("common")).
     )
   )
 
-lazy val vmApi = (project in file("vm-api")).
+lazy val `vm-api` = (project in file("vm-api")).
   settings(
     normalizedName := "pravda-vm-api",
   ).
   settings( commonSettings: _* ).
   settings(
-    libraryDependencies ++= Seq (
-      "com.google.protobuf" % "protobuf-java" % "3.5.0"
+    libraryDependencies ++= Seq(
+      "com.google.protobuf" % "protobuf-java" % "3.5.0",
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+    ),
+    testOptions in Test ++= Seq(
+      Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "500")
     )
   ).
   dependsOn(common)
@@ -58,18 +66,16 @@ lazy val vmApi = (project in file("vm-api")).
 lazy val vm = (project in file("vm")).
   settings(normalizedName := "pravda-vm").
   settings( commonSettings: _* ).
-	dependsOn(vmApi).
+	dependsOn(`vm-api`).
   dependsOn(common)
 
 lazy val `vm-asm` = (project in file("vm-asm")).
-  dependsOn(vmApi).
+  dependsOn(`vm-api`).
   settings(normalizedName := "pravda-vm-asm").
-  settings( commonSettings: _* ).
-  settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).
+  settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq (
-      "com.github.scopt" %% "scopt"      % "3.7.0",
-      "com.lihaoyi"      %% "fastparse"  % "1.0.0"
+      "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )
   )
 
@@ -77,11 +83,9 @@ lazy val forth = (project in file("forth")).
   settings(normalizedName := "pravda-forth").
   dependsOn(`vm-asm`).
   settings( commonSettings: _* ).
-  settings( mainClass in Compile := Some("pravda.forth.Application") ).
   settings(
     libraryDependencies ++= Seq (
-      "com.github.scopt" %% "scopt"      % "3.7.0",
-      "com.lihaoyi"      %% "fastparse"  % "1.0.0"
+      "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )
   )
 
@@ -125,10 +129,8 @@ lazy val node = (project in file("node"))
 		  // UI
 		  "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
 		  // Other
-		  "org.rudogma" %% "supertagged" % "1.4",
 		  "io.mytc" %% "scala-abci-server" % "0.9.2",
 		  "com.github.pureconfig" %% "pureconfig" % "0.9.0",
-		  "org.typelevel" %% "cats-core" % "1.0.1",
 		  // Marshalling
 		  "com.tethys-json" %% "tethys" % "0.6.2",
 		  "org.json4s" %%	"json4s-ast" % "3.5.3",
