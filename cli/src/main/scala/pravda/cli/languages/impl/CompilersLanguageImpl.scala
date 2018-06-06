@@ -5,7 +5,6 @@ package impl
 import com.google.protobuf.ByteString
 import pravda.forth.{Compiler => ForthCompiler}
 import pravda.vm.asm.Assembler
-import pravda.dotnet.{Translator => DotnetTranslator, FileParser => DotnetParser}
 
 import scala.concurrent.{ExecutionContext, Future}
 

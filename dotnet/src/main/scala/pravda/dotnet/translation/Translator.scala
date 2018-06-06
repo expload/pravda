@@ -1,17 +1,18 @@
-package pravda.dotnet
+package pravda.dotnet.translation
 
 import java.nio.charset.StandardCharsets
-
-import pravda.dotnet.CIL._
-import pravda.dotnet.Signatures.SigType.{Cls, Generic}
-import pravda.dotnet.Signatures._
-import pravda.dotnet.TablesData._
-import pravda.vm.asm._
-import pravda.vm.serialization._
 
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
+import pravda.dotnet.data.Method
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parsers.Signatures
+import pravda.dotnet.parsers.Signatures.SigType._
+import pravda.dotnet.parsers.Signatures._
+import pravda.vm.asm._
+import pravda.vm.serialization._
 
 object Translator {
 

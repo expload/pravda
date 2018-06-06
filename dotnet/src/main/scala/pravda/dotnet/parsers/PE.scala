@@ -1,8 +1,13 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import fastparse.byte.all._
 import LE._
 import pravda.dotnet.utils._
+import pravda.dotnet.utils
+
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
 
 // See
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
@@ -193,7 +198,7 @@ object PE {
     P(offset ~ size ~ name).map(StreamHeader.tupled)
   }
 
-  val tildeStream: P[Validated[TildeStream]] = {
+  val tildeStream: P[Either[String, TildeStream]] = {
     val heapSizes = Int8
     val valid = Int64
     val sorted = Int64
@@ -268,17 +273,17 @@ object PE {
     bytesFromRva(file, sections, rva).take(streamHeader.size)
   }
 
-  def parseInfo(file: Bytes): Validated[Pe] = {
+  def parseInfo(file: Bytes): Either[String, Pe] = {
     for {
-      header <- peHeader.parse(file).toValidated
+      header <- peHeader.parse(file).toEither
       sections = header.sectionHeaders
 
       fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
 
-      cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toValidated
+      cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toEither
       metadataRva = cliHeader.metadataRva
 
-      metadata <- metadataRoot.parse(fileBytesFromRva(metadataRva)).toValidated
+      metadata <- metadataRoot.parse(fileBytesFromRva(metadataRva)).toEither
       streamHeaders = metadata.streamHeaders
 
       retrieveStream = (name: String) =>
@@ -292,15 +297,16 @@ object PE {
       userStringHeap <- retrieveStream("#US")
       blobHeap <- retrieveStream("#Blob")
 
-      tildeStream <- tildeStream.parse(tildeStreamBytes).toValidated.joinRight
+      tildeStream <- tildeStream.parse(tildeStreamBytes).toEither.joinRight
 
       methods <- tildeStream.tables.methodDefTable
         .map(m =>
           if (m.rva > 0) {
-            method.parse(fileBytesFromRva(m.rva)).toValidated
+            method.parse(fileBytesFromRva(m.rva)).toEither
           } else {
-            validated(EmptyHeader)
+            Right(EmptyHeader)
         })
+        .toList
         .sequence
     } yield
       Pe(header,

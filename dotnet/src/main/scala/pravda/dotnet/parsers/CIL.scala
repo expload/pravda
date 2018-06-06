@@ -1,8 +1,12 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import fastparse.byte.all._
 import LE._
-import pravda.dotnet.utils._
+import pravda.dotnet.data.{Heaps, TablesData}
+
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
 
 object CIL {
   final case class CilData(stringHeap: Bytes,
@@ -11,7 +15,7 @@ object CIL {
                            tableNumbers: Seq[Int],
                            tables: TablesData)
 
-  def fromPeData(peData: PE.Info.PeData): Validated[CilData] =
+  def fromPeData(peData: PE.Info.PeData): Either[String, CilData] =
     TablesData
       .fromInfo(peData)
       .map(tables => CilData(peData.stringHeap, peData.userStringHeap, peData.blobHeap, peData.tableNumbers, tables))
@@ -508,22 +512,22 @@ object CIL {
     override val size = 0
   }
 
-  private def opCode[T](t: T): P[Validated[T]] = PassWith(validated(t))
-  private def opCodeWithUInt8[T](convert: Short => T): P[Validated[T]] = P(UInt8).map(convert.andThen(validated))
-  private def opCodeWithInt8[T](convert: Byte => T): P[Validated[T]] = P(Int8).map(convert.andThen(validated))
-  private def opCodeWithInt32[T](convert: Int => T): P[Validated[T]] = P(Int32).map(convert.andThen(validated))
-  private def opCodeWithToken[T](convert: Token => T, cilData: CilData): P[Validated[T]] = P(Int32).map(
+  private def opCode[T](t: T): P[Either[String, T]] = PassWith(Right(t))
+  private def opCodeWithUInt8[T](convert: Short => T): P[Either[String, T]] = P(UInt8).map(convert.andThen(Right(_)))
+  private def opCodeWithInt8[T](convert: Byte => T): P[Either[String, T]] = P(Int8).map(convert.andThen(Right(_)))
+  private def opCodeWithInt32[T](convert: Int => T): P[Either[String, T]] = P(Int32).map(convert.andThen(Right(_)))
+  private def opCodeWithToken[T](convert: Token => T, cilData: CilData): P[Either[String, T]] = P(Int32).map(
     t => {
       val tableIdx = t >> 24
       val idx = t & 0x00ffffff
       val token = cilData.tables.tableByNum(tableIdx).map(_(idx - 1)).getOrElse(TablesData.Ignored)
-      validated(convert(token))
+      Right(convert(token))
     }
   )
-  private def opCodeWithString[T](convert: String => T, cilData: CilData): P[Validated[T]] = P(Int32).map(
+  private def opCodeWithString[T](convert: String => T, cilData: CilData): P[Either[String, T]] = P(Int32).map(
     t => {
       if ((t >> 24) == 0x07) {
-        validationError(s"wrong token first byte: ${(t >> 24).toHexString}")
+        Left(s"wrong token first byte: ${(t >> 24).toHexString}")
       } else {
         val idx = t & 0x00ffffff
         Heaps.userString(cilData.userStringHeap, idx.toLong).map(convert)
@@ -531,7 +535,7 @@ object CIL {
     }
   )
 
-  def parsers1Byte(cilData: CilData): Map[Int, P[Validated[OpCode]]] = Map(
+  def parsers1Byte(cilData: CilData): Map[Int, P[Either[String, OpCode]]] = Map(
     0x00 -> opCode(Nop),
     0x01 -> opCode(Break),
     0x02 -> opCode(LdArg0),
@@ -565,9 +569,9 @@ object CIL {
     0x1E -> opCode(LdcI48),
     0x1F -> opCodeWithInt8(LdcI4S),
     0x20 -> opCodeWithInt32(LdcI4),
-    0x21 -> P(Int64).map(LdcI8.andThen(validated)),
-    0x22 -> P(Float32).map(LdcR4.andThen(validated)),
-    0x23 -> P(Float64).map(LdcR8.andThen(validated)),
+    0x21 -> P(Int64).map(LdcI8.andThen(Right(_))),
+    0x22 -> P(Float32).map(LdcR4.andThen(Right(_))),
+    0x23 -> P(Float64).map(LdcR8.andThen(Right(_))),
     // 0x24
     0x25 -> opCode(Dup),
     0x26 -> opCode(Pop),
@@ -601,7 +605,7 @@ object CIL {
     0x42 -> opCodeWithInt32(BgtUn),
     0x43 -> opCodeWithInt32(BleUn),
     0x44 -> opCodeWithInt32(BltUn),
-    0x45 -> P(UInt32).flatMap(l => Int32.rep(exactly = l.toInt).map(Switch.andThen(validated))),
+    0x45 -> P(UInt32).flatMap(l => Int32.rep(exactly = l.toInt).map(Switch.andThen(Right(_)))),
     0x46 -> opCode(LdIndI1),
     0x47 -> opCode(LdIndU1),
     0x48 -> opCode(LdIndI2),
@@ -744,7 +748,7 @@ object CIL {
     0xE0 -> opCode(ConvU)
   )
 
-  def parsersAfterFE(cilData: CilData): Map[Int, P[Validated[OpCode]]] = Map(
+  def parsersAfterFE(cilData: CilData): Map[Int, P[Either[String, OpCode]]] = Map(
     0x00 -> opCode(ArgList),
     0x01 -> opCode(Ceq),
     0x02 -> opCode(Cgt),
@@ -777,7 +781,7 @@ object CIL {
     0x1E -> opCode(Readonly)
   )
 
-  def code(cilData: CilData): P[Validated[Seq[OpCode]]] = {
+  def code(cilData: CilData): P[Either[String, List[OpCode]]] = {
     val p1 = parsers1Byte(cilData)
     val p2 = parsersAfterFE(cilData)
 
@@ -788,6 +792,6 @@ object CIL {
       b => p2(b.head & 0xff)
     )
 
-    P((twoBytes | oneByte).rep).map(_.sequence)
+    P((twoBytes | oneByte).rep).map(_.toList.sequence)
   }
 }

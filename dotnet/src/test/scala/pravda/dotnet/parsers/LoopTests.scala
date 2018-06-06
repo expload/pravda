@@ -1,9 +1,10 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
-import pravda.dotnet.CIL._
-import pravda.dotnet.Signatures.SigType._
-import pravda.dotnet.Signatures._
-import pravda.dotnet.TablesData._
+import pravda.dotnet.data.Method
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parsers.Signatures.SigType._
+import pravda.dotnet.parsers.Signatures._
 import utest._
 
 object LoopTests extends TestSuite {

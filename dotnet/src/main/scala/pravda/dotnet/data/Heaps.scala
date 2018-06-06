@@ -1,4 +1,4 @@
-package pravda.dotnet
+package pravda.dotnet.data
 
 import fastparse.byte.all._
 import pravda.dotnet.utils._
@@ -22,17 +22,17 @@ object Heaps {
     }
   })
 
-  def blob(blobHeap: Bytes, idx: Long): Validated[Bytes] = {
-    blobBytes.parse(blobHeap, idx.toInt).toValidated
+  def blob(blobHeap: Bytes, idx: Long): Either[String, Bytes] = {
+    blobBytes.parse(blobHeap, idx.toInt).toEither
   }
 
-  def string(stringHeap: Bytes, idx: Long): Validated[String] =
-    nullTerminatedString.parse(stringHeap, idx.toInt).toValidated
+  def string(stringHeap: Bytes, idx: Long): Either[String, String] =
+    nullTerminatedString.parse(stringHeap, idx.toInt).toEither
 
-  def userString(userStringHeap: Bytes, idx: Long): Validated[String] =
+  def userString(userStringHeap: Bytes, idx: Long): Either[String, String] =
     blobBytes
       .map(bs => new String(bs.dropRight(1L).toArray, "UTF-16LE"))
       .parse(userStringHeap, idx.toInt)
-      .toValidated
+      .toEither
 
 }

@@ -1,7 +1,11 @@
-package pravda.dotnet
+package pravda.dotnet.data
 
-import pravda.dotnet.PE.Info._
-import utils._
+import pravda.dotnet.parsers.PE.Info._
+import pravda.dotnet.parsers.TablesInfo._
+
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
 
 final case class TablesData(
     fieldTable: Seq[TablesData.FieldData],
@@ -28,7 +32,6 @@ final case class TablesData(
 }
 
 object TablesData {
-  import TablesInfo._
 
   sealed trait TableRowData
   final case class MethodDefData(implFlags: Short,
@@ -53,7 +56,7 @@ object TablesData {
   final case class StandAloneSigData(signatureIdx: Long) extends TableRowData
   case object Ignored                                    extends TableRowData
 
-  def fromInfo(peData: PeData): Validated[TablesData] = {
+  def fromInfo(peData: PeData): Either[String, TablesData] = {
 
     def sizesFromIds(ids: Seq[Long]): Seq[Long] =
       ids match {
@@ -87,7 +90,7 @@ object TablesData {
         } yield FieldData(flags, name, signatureIdx)
     }.sequence
 
-    def methodListV(paramList: Seq[ParamData]): Validated[Seq[MethodDefData]] = {
+    def methodListV(paramList: Seq[ParamData]): Either[String, List[MethodDefData]] = {
       val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx))
 
       peData.tables.methodDefTable.zipWithIndex.map {
@@ -111,7 +114,7 @@ object TablesData {
         } yield TypeRefData(rs, name, namespace)
     }.sequence
 
-    def typeDefListV(fieldList: Seq[FieldData], methodList: Seq[MethodDefData]): Validated[Seq[TypeDefData]] = {
+    def typeDefListV(fieldList: Seq[FieldData], methodList: Seq[MethodDefData]): Either[String, List[TypeDefData]] = {
       val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
       val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
 
@@ -132,7 +135,7 @@ object TablesData {
       }.sequence
     }
 
-    def memberRefListV(typeDefTable: Seq[TypeDefData], typeRefTable: Seq[TypeRefData]): Validated[Seq[MemberRefData]] =
+    def memberRefListV(typeDefTable: Seq[TypeDefData], typeRefTable: Seq[TypeRefData]): Either[String, List[MemberRefData]] =
       peData.tables.memberRefTable.map {
         case MemberRefRow(clsIdx, nameIdx, signatureIdx) =>
           for {
