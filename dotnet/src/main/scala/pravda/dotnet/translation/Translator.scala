@@ -385,7 +385,7 @@ object Translator {
         (if (local) List(Op.Ret) else List(Op.Jump("stop")))
   }
 
-  def translate(rawMethods: Seq[Method],
+  def translate(rawMethods: List[Method],
                 cilData: CilData,
                 signatures: Map[Long, Signatures.Signature]): Either[String, List[Op]] = {
     val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
@@ -399,7 +399,7 @@ object Translator {
       }
     }
 
-    val methods = rawMethods.toList.zipWithIndex.filterNot {
+    val methods = rawMethods.zipWithIndex.filterNot {
       case (m, i) =>
         val name = cilData.tables.methodDefTable(i).name
         name == ".ctor" || name == ".cctor"

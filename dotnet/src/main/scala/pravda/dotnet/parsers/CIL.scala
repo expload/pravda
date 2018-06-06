@@ -12,7 +12,7 @@ object CIL {
   final case class CilData(stringHeap: Bytes,
                            userStringHeap: Bytes,
                            blobHeap: Bytes,
-                           tableNumbers: Seq[Int],
+                           tableNumbers: List[Int],
                            tables: TablesData)
 
   def fromPeData(peData: PE.Info.PeData): Either[String, CilData] =
@@ -375,7 +375,7 @@ object CIL {
   case object SubOvf   extends OpCode
   case object SubOvfUn extends OpCode
 
-  final case class Switch(targets: Seq[Int]) extends OpCode {
+  final case class Switch(targets: List[Int]) extends OpCode {
     override val size = 1 + targets.length * 4
   }
 
@@ -605,7 +605,7 @@ object CIL {
     0x42 -> opCodeWithInt32(BgtUn),
     0x43 -> opCodeWithInt32(BleUn),
     0x44 -> opCodeWithInt32(BltUn),
-    0x45 -> P(UInt32).flatMap(l => Int32.rep(exactly = l.toInt).map(Switch.andThen(Right(_)))),
+    0x45 -> P(UInt32).flatMap(l => Int32.rep(exactly = l.toInt).map(_.toList).map(Switch.andThen(Right(_)))),
     0x46 -> opCode(LdIndI1),
     0x47 -> opCode(LdIndU1),
     0x48 -> opCode(LdIndI2),

@@ -3,22 +3,22 @@ package pravda.dotnet.data
 import pravda.dotnet.parsers.PE.Info._
 import pravda.dotnet.parsers.TablesInfo._
 
-import cats.instances.list._
+import cats.instances.vector._
 import cats.instances.either._
 import cats.syntax.traverse._
 
 final case class TablesData(
-    fieldTable: Seq[TablesData.FieldData],
-    memberRefTable: Seq[TablesData.MemberRefData],
-    methodDefTable: Seq[TablesData.MethodDefData],
-    paramTable: Seq[TablesData.ParamData],
-    typeDefTable: Seq[TablesData.TypeDefData],
-    typeRefTable: Seq[TablesData.TypeRefData],
-    typeSpecTable: Seq[TablesData.TypeSpecData],
-    standAloneSigTable: Seq[TablesData.StandAloneSigData]
+    fieldTable: Vector[TablesData.FieldData],
+    memberRefTable: Vector[TablesData.MemberRefData],
+    methodDefTable: Vector[TablesData.MethodDefData],
+    paramTable: Vector[TablesData.ParamData],
+    typeDefTable: Vector[TablesData.TypeDefData],
+    typeRefTable: Vector[TablesData.TypeRefData],
+    typeSpecTable: Vector[TablesData.TypeSpecData],
+    standAloneSigTable: Vector[TablesData.StandAloneSigData]
 ) {
 
-  def tableByNum(num: Int): Option[Seq[TablesData.TableRowData]] = num match {
+  def tableByNum(num: Int): Option[Vector[TablesData.TableRowData]] = num match {
     case 0x1  => Some(typeRefTable)
     case 0x2  => Some(typeDefTable)
     case 0x4  => Some(fieldTable)
@@ -38,7 +38,7 @@ object TablesData {
                                  flags: Short,
                                  name: String,
                                  signatureIdx: Long,
-                                 params: Seq[ParamData])
+                                 params: Vector[ParamData])
       extends TableRowData
   final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends TableRowData
   final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
@@ -47,8 +47,8 @@ object TablesData {
                                name: String,
                                namespace: String,
                                parent: TableRowData,
-                               fields: Seq[FieldData],
-                               methods: Seq[MethodDefData])
+                               fields: Vector[FieldData],
+                               methods: Vector[MethodDefData])
       extends TableRowData
   final case class TypeRefData(resolutionScopeIdx: Long, name: String, namespace: String) extends TableRowData
   final case class TypeSpecData(signatureIdx: Long)                                       extends TableRowData
@@ -58,14 +58,14 @@ object TablesData {
 
   def fromInfo(peData: PeData): Either[String, TablesData] = {
 
-    def sizesFromIds(ids: Seq[Long]): Seq[Long] =
+    def sizesFromIds(ids: Vector[Long]): Vector[Long] =
       ids match {
         case rest :+ last =>
           val sizes = for {
             i <- rest.indices
           } yield ids(i + 1) - ids(i)
-          sizes :+ (ids.length - last)
-        case _ => Seq.empty
+          sizes.toVector :+ (ids.length - last)
+        case _ => Vector.empty
       }
 
     val standAlongSigList = peData.tables.standAloneSigTable.map {
@@ -90,7 +90,7 @@ object TablesData {
         } yield FieldData(flags, name, signatureIdx)
     }.sequence
 
-    def methodListV(paramList: Seq[ParamData]): Either[String, List[MethodDefData]] = {
+    def methodListV(paramList: Vector[ParamData]): Either[String, Vector[MethodDefData]] = {
       val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx))
 
       peData.tables.methodDefTable.zipWithIndex.map {
@@ -114,7 +114,7 @@ object TablesData {
         } yield TypeRefData(rs, name, namespace)
     }.sequence
 
-    def typeDefListV(fieldList: Seq[FieldData], methodList: Seq[MethodDefData]): Either[String, List[TypeDefData]] = {
+    def typeDefListV(fieldList: Vector[FieldData], methodList: Vector[MethodDefData]): Either[String, Vector[TypeDefData]] = {
       val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
       val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
 
@@ -135,7 +135,7 @@ object TablesData {
       }.sequence
     }
 
-    def memberRefListV(typeDefTable: Seq[TypeDefData], typeRefTable: Seq[TypeRefData]): Either[String, List[MemberRefData]] =
+    def memberRefListV(typeDefTable: Vector[TypeDefData], typeRefTable: Vector[TypeRefData]): Either[String, Vector[MemberRefData]] =
       peData.tables.memberRefTable.map {
         case MemberRefRow(clsIdx, nameIdx, signatureIdx) =>
           for {

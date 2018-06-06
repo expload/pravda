@@ -34,7 +34,7 @@ object Signatures {
     case object U                                                   extends SigType
     final case class Cls(typeDefOrRef: TableRowData)                extends SigType
     final case class ValueTpe(typeDefOrRef: TableRowData)           extends SigType
-    final case class Generic(tpe: SigType, tpeParams: Seq[SigType]) extends SigType
+    final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
     final case class Var(num: Long)                                 extends SigType
     // FIXME complex types are ignored
   }
@@ -44,7 +44,7 @@ object Signatures {
   final case class LocalVar(tpe: SigType, byRef: Boolean)
   final case class Tpe(tpe: SigType, byRef: Boolean)
 
-  final case class LocalVarSig(types: Seq[LocalVar]) extends Signature
+  final case class LocalVarSig(types: List[LocalVar]) extends Signature
   final case class FieldSig(tpe: SigType)            extends Signature
   final case class MethodRefDefSig(instance: Boolean,
                                    explicit: Boolean,
@@ -52,7 +52,7 @@ object Signatures {
                                    vararg: Boolean,
                                    generics: Int,
                                    retType: Tpe,
-                                   params: Seq[Tpe])
+                                   params: List[Tpe])
       extends Signature
   final case class TypeSig(tpe: Tpe) extends Signature
 

@@ -169,13 +169,13 @@ object SmartProgramTests extends TestSuite {
                   "Mapping`2",
                   "io.mytc.pravda",
                   Ignored,
-                  List(),
-                  List(
-                    MethodDefData(0, 1478, "get", 71, List(ParamData(0, 1, "key"))),
-                    MethodDefData(0, 1478, "exists", 65, List(ParamData(0, 1, "key"))),
-                    MethodDefData(0, 1478, "put", 42, List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
-                    MethodDefData(0, 134, "getDefault", 28, List(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
-                    MethodDefData(0, 6276, ".ctor", 6, List())
+                  Vector(),
+                  Vector(
+                    MethodDefData(0, 1478, "get", 71, Vector(ParamData(0, 1, "key"))),
+                    MethodDefData(0, 1478, "exists", 65, Vector(ParamData(0, 1, "key"))),
+                    MethodDefData(0, 1478, "put", 42, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+                    MethodDefData(0, 134, "getDefault", 28, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
+                    MethodDefData(0, 6276, ".ctor", 6, Vector())
                   )
                 )),
                 List(Cls(
@@ -183,8 +183,8 @@ object SmartProgramTests extends TestSuite {
                                    "Address",
                                    "io.mytc.pravda",
                                    Ignored,
-                                   List(),
-                                   List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                                   Vector(),
+                                   Vector(MethodDefData(0, 6278, ".ctor", 6, Vector())))),
                      I4)
               ),
               false
@@ -213,13 +213,13 @@ object SmartProgramTests extends TestSuite {
                   "Mapping`2",
                   "io.mytc.pravda",
                   Ignored,
-                  List(),
-                  List(
-                    MethodDefData(0, 1478, "get", 71, List(ParamData(0, 1, "key"))),
-                    MethodDefData(0, 1478, "exists", 65, List(ParamData(0, 1, "key"))),
-                    MethodDefData(0, 1478, "put", 42, List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
-                    MethodDefData(0, 134, "getDefault", 28, List(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
-                    MethodDefData(0, 6276, ".ctor", 6, List())
+                  Vector(),
+                  Vector(
+                    MethodDefData(0, 1478, "get", 71, Vector(ParamData(0, 1, "key"))),
+                    MethodDefData(0, 1478, "exists", 65, Vector(ParamData(0, 1, "key"))),
+                    MethodDefData(0, 1478, "put", 42, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+                    MethodDefData(0, 134, "getDefault", 28, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
+                    MethodDefData(0, 6276, ".ctor", 6, Vector())
                   )
                 )),
                 List(Var(0), Var(1))
@@ -235,13 +235,13 @@ object SmartProgramTests extends TestSuite {
                 "Mapping`2",
                 "io.mytc.pravda",
                 Ignored,
-                List(),
-                List(
-                  MethodDefData(0, 1478, "get", 71, List(ParamData(0, 1, "key"))),
-                  MethodDefData(0, 1478, "exists", 65, List(ParamData(0, 1, "key"))),
-                  MethodDefData(0, 1478, "put", 42, List(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
-                  MethodDefData(0, 134, "getDefault", 28, List(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
-                  MethodDefData(0, 6276, ".ctor", 6, List())
+                Vector(),
+                Vector(
+                  MethodDefData(0, 1478, "get", 71, Vector(ParamData(0, 1, "key"))),
+                  MethodDefData(0, 1478, "exists", 65, Vector(ParamData(0, 1, "key"))),
+                  MethodDefData(0, 1478, "put", 42, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
+                  MethodDefData(0, 134, "getDefault", 28, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
+                  MethodDefData(0, 6276, ".ctor", 6, Vector())
                 )
               )),
               List(Cls(
@@ -249,8 +249,8 @@ object SmartProgramTests extends TestSuite {
                                  "Address",
                                  "io.mytc.pravda",
                                  Ignored,
-                                 List(),
-                                 List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                                 Vector(),
+                                 Vector(MethodDefData(0, 6278, ".ctor", 6, Vector())))),
                    I4)
             )),
           96 -> FieldSig(
@@ -259,8 +259,8 @@ object SmartProgramTests extends TestSuite {
                           "Address",
                           "io.mytc.pravda",
                           Ignored,
-                          List(),
-                          List(MethodDefData(0, 6278, ".ctor", 6, List()))))),
+                          Vector(),
+                          Vector(MethodDefData(0, 6278, ".ctor", 6, Vector()))))),
           100 -> MethodRefDefSig(
             true,
             false,
@@ -274,8 +274,8 @@ object SmartProgramTests extends TestSuite {
                                 "Address",
                                 "io.mytc.pravda",
                                 Ignored,
-                                List(),
-                                List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                                Vector(),
+                                Vector(MethodDefData(0, 6278, ".ctor", 6, Vector())))),
                   false))
           ),
           106 -> MethodRefDefSig(
@@ -290,8 +290,8 @@ object SmartProgramTests extends TestSuite {
                                    "Address",
                                    "io.mytc.pravda",
                                    Ignored,
-                                   List(),
-                                   List(MethodDefData(0, 6278, ".ctor", 6, List())))),
+                                   Vector(),
+                                   Vector(MethodDefData(0, 6278, ".ctor", 6, Vector())))),
                      false),
                  Tpe(I4, false))
           ),

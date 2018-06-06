@@ -5,7 +5,7 @@ import pravda.dotnet.parsers.CIL.OpCode
 import pravda.dotnet.parsers.PE.Info._
 import pravda.dotnet.utils._
 
-final case class Method(opcodes: Seq[OpCode], maxStack: Int, localVarSigIdx: Option[Long])
+final case class Method(opcodes: List[OpCode], maxStack: Int, localVarSigIdx: Option[Long])
 
 object Method {
 
@@ -30,7 +30,7 @@ object Method {
           code <- codeParser.parse(header.codeBytes).toEither.joinRight
         } yield Method(code, 0, None)
       case EmptyHeader =>
-        Right(Method(Seq.empty, 0, None))
+        Right(Method(List.empty, 0, None))
     }
   }
 }

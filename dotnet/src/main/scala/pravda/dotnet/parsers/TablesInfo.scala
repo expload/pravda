@@ -4,14 +4,14 @@ import fastparse.byte.all._
 import LE._
 
 final case class TablesInfo(
-    fieldTable: List[TablesInfo.FieldRow] = List.empty,
-    memberRefTable: List[TablesInfo.MemberRefRow] = List.empty,
-    methodDefTable: List[TablesInfo.MethodDefRow] = List.empty,
-    paramTable: List[TablesInfo.ParamRow] = List.empty,
-    typeDefTable: List[TablesInfo.TypeDefRow] = List.empty,
-    typeRefTable: List[TablesInfo.TypeRefRow] = List.empty,
-    typeSpecTable: List[TablesInfo.TypeSpecRow] = List.empty,
-    standAloneSigTable: List[TablesInfo.StandAloneSigRow] = List.empty
+    fieldTable: Vector[TablesInfo.FieldRow] = Vector.empty,
+    memberRefTable: Vector[TablesInfo.MemberRefRow] = Vector.empty,
+    methodDefTable: Vector[TablesInfo.MethodDefRow] = Vector.empty,
+    paramTable: Vector[TablesInfo.ParamRow] = Vector.empty,
+    typeDefTable: Vector[TablesInfo.TypeDefRow] = Vector.empty,
+    typeRefTable: Vector[TablesInfo.TypeRefRow] = Vector.empty,
+    typeSpecTable: Vector[TablesInfo.TypeSpecRow] = Vector.empty,
+    standAloneSigTable: Vector[TablesInfo.StandAloneSigRow] = Vector.empty
 )
 
 object TablesInfo {
@@ -246,8 +246,8 @@ object TablesInfo {
     P(indexes.blobHeap.parser).map(TypeSpecRow)
 
   def tableParser(num: Int, row: Long, indexes: TableIndexes): P[Either[String, TablesInfo => TablesInfo]] = {
-    def tableRep[T](p: TableIndexes => P[T]): P[List[T]] =
-      p(indexes).rep(exactly = row.toInt).map(_.toList)
+    def tableRep[T](p: TableIndexes => P[T]): P[Vector[T]] =
+      p(indexes).rep(exactly = row.toInt).map(_.toVector)
 
     def tablesId(p: TableIndexes => P[TableRowInfo]): P[Either[String, TablesInfo => TablesInfo]] =
       tableRep(p).map(r => Right(t => t))
@@ -302,10 +302,10 @@ object TablesInfo {
     }
   }
 
-  def validToActualTableNumbers(valid: Long): Seq[Int] =
-    valid.toBinaryString.reverse.zipWithIndex.filter(_._1 == '1').map(_._2)
+  def validToActualTableNumbers(valid: Long): List[Int] =
+    valid.toBinaryString.reverse.zipWithIndex.filter(_._1 == '1').map(_._2).toList
 
-  private def tableIndexes(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): TableIndexes = {
+  private def tableIndexes(heapSizes: Byte, tableNumbers: List[Int], rows: List[Long]): TableIndexes = {
     TableIndexes(
       ShortIndex,
       ShortIndex,
@@ -335,7 +335,7 @@ object TablesInfo {
     ) // FIXME
   }
 
-  def tables(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): P[Either[String, TablesInfo]] = {
+  def tables(heapSizes: Byte, tableNumbers: List[Int], rows: List[Long]): P[Either[String, TablesInfo]] = {
     val indexes = tableIndexes(heapSizes, tableNumbers, rows)
 
     rows
