@@ -1,6 +1,7 @@
 clone:
-  clone-nothing:
+  clone:
     image: plugins/git
+    tags: true
 workspace:
   base: /workdir
   path: code
