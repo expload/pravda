@@ -11,6 +11,7 @@ object LoopTests extends TestSuite {
   val tests = Tests {
     'loopParse - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
+
       methods ==> List(
         Method(
           List(

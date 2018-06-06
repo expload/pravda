@@ -33,7 +33,7 @@ object Typed extends NativeLibrary {
   })
 
   val typedBool: Func = Func("typedBool", m => {
-    val b = if (m.stack(0).byteAt(0) == 0) 0 else 1
+    val b = if (m.stack(0).byteAt(0) == 0) 0 else 1 // FIXME temporary implementation
     m.clear()
     m.push(dataToTyped(Int32Tag, int32ToData(b)))
   })

@@ -95,7 +95,6 @@ object Signatures {
       case 0x18 => simpleType(SigType.I)
       case 0x19 => simpleType(SigType.U)
       case c =>
-        println(c)
         throw new NotImplementedError
     }
   }

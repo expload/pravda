@@ -9,27 +9,42 @@ import pravda.dotnet.TablesData._
 import pravda.vm.asm._
 import pravda.vm.serialization._
 
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
+
 object Translator {
-  private def resolveRVI(opcodes: Seq[OpCode]): Seq[OpCode] = {
+
+  object Constants {
+    val labelStackOffset = 0
+    val jumpStackOffset = 0
+    val jumpIStackOffset = -1
+  }
+
+  private def resolveBranches(opcodes: List[OpCode]): List[OpCode] = {
 
     val offsets = opcodes
-      .foldLeft((0, Set.empty[Int])) {
+      .foldLeft((0, List.empty[Int])) {
         case ((curOffset, offsets), opcode) =>
           val newOffsets = opcode match {
-            case BrS(t) if t != 0 => Seq(curOffset + t + 2)
-            case Br(t) if t != 0  => Seq(curOffset + t + 5)
-            case BrFalseS(t)      => Seq(curOffset + t + 2)
-            case BrFalse(t)       => Seq(curOffset + t + 5)
-            case BrTrueS(t)       => Seq(curOffset + t + 2)
-            case BrTrue(t)        => Seq(curOffset + t + 5)
-            case BltS(t)          => Seq(curOffset + t + 2)
-            case Blt(t)           => Seq(curOffset + t + 5)
-            case BgtS(t)          => Seq(curOffset + t + 2)
-            case Bgt(t)           => Seq(curOffset + t + 5)
-            case BeqS(t)          => Seq(curOffset + t + 2)
-            case Beq(t)           => Seq(curOffset + t + 5)
+            case BrS(t) if t != 0 => List(curOffset + t + 2)
+            case Br(t) if t != 0  => List(curOffset + t + 5)
+            case BrFalseS(t)      => List(curOffset + t + 2)
+            case BrFalse(t)       => List(curOffset + t + 5)
+            case BrTrueS(t)       => List(curOffset + t + 2)
+            case BrTrue(t)        => List(curOffset + t + 5)
+            case BltS(t)          => List(curOffset + t + 2)
+            case Blt(t)           => List(curOffset + t + 5)
+            case BgtS(t)          => List(curOffset + t + 2)
+            case Bgt(t)           => List(curOffset + t + 5)
+            case BleS(t)          => List(curOffset + t + 2)
+            case Ble(t)           => List(curOffset + t + 5)
+            case BgeS(t)          => List(curOffset + t + 2)
+            case Bge(t)           => List(curOffset + t + 5)
+            case BeqS(t)          => List(curOffset + t + 2)
+            case Beq(t)           => List(curOffset + t + 5)
             //case Switch(ts)            => ts.filter(_ != 0).map(_ + curOffset + 1)
-            case _ => Seq.empty
+            case _ => List.empty
           }
           (curOffset + opcode.size, offsets ++ newOffsets)
       }
@@ -38,7 +53,7 @@ object Translator {
     def mkLabel(i: Int): String = "br" + i.toString
 
     val opcodesWithLabels = opcodes
-      .foldLeft((0, Seq.empty[OpCode])) {
+      .foldLeft((0, List.empty[OpCode])) {
         case ((curOffset, opcodes), opcode) =>
           val newOpcodes = opcode match {
             case BrS(0)      => List(Nop)
@@ -52,6 +67,10 @@ object Translator {
             case Blt(t)      => List(Clt, JumpI(mkLabel(curOffset + t + 5)))
             case BgtS(t)     => List(Cgt, JumpI(mkLabel(curOffset + t + 2)))
             case Bgt(t)      => List(Cgt, JumpI(mkLabel(curOffset + t + 5)))
+            case BleS(t)     => List(Cgt, Not, JumpI(mkLabel(curOffset + t + 2)))
+            case Ble(t)      => List(Cgt, Not, JumpI(mkLabel(curOffset + t + 5)))
+            case BgeS(t)     => List(Clt, Not, JumpI(mkLabel(curOffset + t + 2)))
+            case Bge(t)      => List(Clt, Not, JumpI(mkLabel(curOffset + t + 5)))
             case BeqS(t)     => List(Ceq, JumpI(mkLabel(curOffset + t + 2)))
             case Beq(t)      => List(Ceq, JumpI(mkLabel(curOffset + t + 5)))
             //case Switch(ts) => ts.filter(_ != 0).map(t => Label(mkLabel(curOffset + t + 1))) // FIXME switch
@@ -68,61 +87,77 @@ object Translator {
   private def translateMethod(argsCount: Int,
                               localsCount: Int,
                               name: String,
-                              opcodes: Seq[OpCode],
+                              opcodes: List[OpCode],
                               signatures: Map[Long, Signatures.Signature],
                               local: Boolean,
-                              void: Boolean): Seq[Op] = {
+                              void: Boolean): Either[String, List[Op]] = {
 
-    def translateOpcode(opcode: OpCode, stackOffest: Int): (Int, Seq[Op]) = {
+    def translateOpcode(opcode: OpCode, stackOffsetO: Option[Int]): Either[String, (Int, List[Op])] = {
       def pushTypedInt(i: Int): Op =
         Op.Push(Datum.Rawbytes(Array(1.toByte) ++ int32ToData(i).toByteArray))
 
       def pushTypedFloat(d: Double): Op =
         Op.Push(Datum.Rawbytes(Array(2.toByte) ++ doubleToData(d).toByteArray))
 
-      def computeLocalOffset(num: Int): Int =
-        (localsCount - num - 1) + stackOffest + 1
+      def computeLocalOffset(num: Int, stackOffset: Int): Int =
+        (localsCount - num - 1) + stackOffset + 1
 
-      def computeArgOffset(num: Int): Int =
-        (argsCount - num - 1) + stackOffest + localsCount + 1 + 1
+      def computeArgOffset(num: Int, stackOffset: Int): Int =
+        (argsCount - num - 1) + stackOffset + localsCount + 1 + 1
       // for local there's additional object arg
       // for not local there's name of the method
 
-      def storeLocal(num: Int): Seq[Op] =
-        Seq(
-          Op.Push(Datum.Integral(computeLocalOffset(num))),
-          Op.SwapN,
-          Op.Pop
-        )
-
-      def loadLocal(num: Int): Seq[Op] =
-        Seq(
-          Op.Push(Datum.Integral(computeLocalOffset(num))),
-          Op.Dupn
-        )
-
-      def loadArg(num: Int): (Int, Seq[Op]) =
-        if (local) {
-          (1,
-           Seq(
-             Op.Push(Datum.Integral(computeArgOffset(num))),
-             Op.Dupn
-           ))
-        } else {
-          if (num == 0) {
-            (0, Seq.empty) // skip this reference
-          } else {
-            (1,
-             Seq(
-               Op.Push(Datum.Integral(computeArgOffset(num - 1))),
-               Op.Dupn
-             ))
+      def storeLocal(num: Int): Either[String, List[Op]] =
+        stackOffsetO
+          .map { s =>
+            Right(
+              List(
+                Op.Push(Datum.Integral(computeLocalOffset(num, s))),
+                Op.SwapN,
+                Op.Pop
+              ))
           }
-        }
+          .getOrElse(Left("Stack offset is required for storing local variables"))
 
-      def loadField(name: String, sigIdx: Long): (Int, Seq[Op]) = { // FIXME should process static fields too
+      def loadLocal(num: Int): Either[String, List[Op]] =
+        stackOffsetO
+          .map { s =>
+            Right(
+              List(
+                Op.Push(Datum.Integral(computeLocalOffset(num, s))),
+                Op.Dupn
+              ))
+          }
+          .getOrElse(Left("Stack offset is required for loading local variables"))
+
+      def loadArg(num: Int): Either[String, (Int, List[Op])] =
+        stackOffsetO
+          .map { s =>
+            if (local) {
+              Right(
+                (1,
+                 List(
+                   Op.Push(Datum.Integral(computeArgOffset(num, s))),
+                   Op.Dupn
+                 )))
+            } else {
+              if (num == 0) {
+                Right((0, List.empty)) // skip this reference
+              } else {
+                Right(
+                  (1,
+                   List(
+                     Op.Push(Datum.Integral(computeArgOffset(num - 1, s))),
+                     Op.Dupn
+                   )))
+              }
+            }
+          }
+          .getOrElse(Left("Stack offset is required for arguments loading"))
+
+      def loadField(name: String, sigIdx: Long): (Int, List[Op]) = { // FIXME should process static fields too
         lazy val defaultLoad = (1,
-                                Seq(
+                                List(
                                   Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
                                   Op.SGet
                                 ))
@@ -131,20 +166,20 @@ object Translator {
           case Some(FieldSig(tpe)) =>
             tpe match {
               case SigType.Generic(SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)), _) =>
-                (1, Seq(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
+                (1, List(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
               case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
-                (1, Seq(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
+                (1, List(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8)))))
               case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
-                (1, Seq(Op.From))
+                (1, List(Op.From))
               case _ => defaultLoad
             }
           case _ => defaultLoad
         }
       }
 
-      def storeField(name: String, sigIdx: Long): (Int, Seq[Op]) = { // FIXME should process static fields too
+      def storeField(name: String, sigIdx: Long): (Int, List[Op]) = { // FIXME should process static fields too
         lazy val defaultStore = (1,
-                                 Seq(
+                                 List(
                                    Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
                                    Op.SPut
                                  ))
@@ -153,16 +188,16 @@ object Translator {
           case Some(FieldSig(tpe)) =>
             tpe match {
               case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
-                (0, Seq(Op.Stop)) // error user shouldn't modify mappings
+                (0, List(Op.Stop)) // error user shouldn't modify mappings
               case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
-                (0, Seq(Op.Stop)) // error user shouldn't modify sender address
+                (0, List(Op.Stop)) // error user shouldn't modify sender address
               case _ => defaultStore
             }
           case _ => defaultStore
         }
       }
 
-      def callVirt(name: String, parentSigIdx: Long, methodSigIdx: Long): (Int, Seq[Op]) = {
+      def callVirt(name: String, parentSigIdx: Long, methodSigIdx: Long): (Int, List[Op]) = {
         val resO = for {
           parentSig <- signatures.get(parentSigIdx)
           methodSig <- signatures.get(methodSigIdx)
@@ -170,81 +205,74 @@ object Translator {
           lazy val defaultCall = methodSig match {
             case MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params) =>
               tpe match {
-                case SigType.Void => (-params.length, Seq.fill(params.length)(Op.Pop))
+                case SigType.Void => (-params.length, List.fill(params.length)(Op.Pop))
                 case _ =>
-                  (-params.length + 1, Seq.fill(params.length)(Op.Pop) :+ Op.Push(Datum.Rawbytes(Array[Byte](0))))
+                  (-params.length + 1, List.fill(params.length)(Op.Pop) :+ Op.Push(Datum.Rawbytes(Array[Byte](0))))
               }
-            case _ => (0, Seq.empty)
+            case _ => (0, List.empty)
           }
 
           parentSig match {
             case TypeSig(Tpe(Generic(Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)), _), _)) =>
               name match {
-                case "get" => (-1, Seq(Op.Swap, Op.Concat, Op.SGet))
+                case "get" => (-1, List(Op.Swap, Op.Concat, Op.SGet))
                 case "getDefault" =>
-                  (-2, Seq(Op.Call("method_getDefault")))
+                  (-2, List(Op.Call("method_getDefault")))
                 // FIXME we need some way to distinguish local functions and methods of program
-                case "exists" => (-1, Seq(Op.Swap, Op.Concat, Op.SExst, Op.LCall("Typed", "typedBool", 1)))
+                case "exists" => (-1, List(Op.Swap, Op.Concat, Op.SExst, Op.LCall("Typed", "typedBool", 1)))
                 case "put" =>
                   (-3,
-                   Seq(Op.Push(Datum.Integral(2)),
-                       Op.Dupn,
-                       Op.Push(Datum.Integral(4)),
-                       Op.Dupn,
-                       Op.Concat,
-                       Op.Swap,
-                       Op.SPut,
-                       Op.Pop,
-                       Op.Pop))
+                   List(Op.Push(Datum.Integral(2)),
+                        Op.Dupn,
+                        Op.Push(Datum.Integral(4)),
+                        Op.Dupn,
+                        Op.Concat,
+                        Op.Swap,
+                        Op.SPut,
+                        Op.Pop,
+                        Op.Pop))
               }
             case _ => defaultCall
           }
         }
 
-        resO.getOrElse((0, Seq.empty))
+        resO.getOrElse((0, List.empty))
       }
 
-//      def storeArg(num: Int): Seq[Op] =
-//        Seq(
-//          Op.Push(Datum.Integral((argsCount - num - 1) + stackOffest + localsCount + 1 + 1)),
-//          Op.SwapN,
-//          Op.Pop
-//        )
-      // FIXME when we store args?
-
-      opcode match {
-        case LdcI40     => (1, Seq(pushTypedInt(0)))
-        case LdcI41     => (1, Seq(pushTypedInt(1)))
-        case LdcI42     => (1, Seq(pushTypedInt(2)))
-        case LdcI43     => (1, Seq(pushTypedInt(3)))
-        case LdcI44     => (1, Seq(pushTypedInt(4)))
-        case LdcI45     => (1, Seq(pushTypedInt(5)))
-        case LdcI46     => (1, Seq(pushTypedInt(6)))
-        case LdcI47     => (1, Seq(pushTypedInt(7)))
-        case LdcI4M1    => (1, Seq(pushTypedInt(-1)))
-        case LdcI4(num) => (1, Seq(pushTypedInt(num)))
-        case LdcI4S(v)  => (1, Seq(pushTypedInt(v.toInt)))
-        case LdcR4(f)   => (1, Seq(pushTypedFloat(f.toDouble)))
-        case LdcR8(d)   => (1, Seq(pushTypedFloat(d)))
-        case Add        => (-1, Seq(Op.LCall("Typed", "typedAdd", 2)))
-        case Mull       => (-1, Seq(Op.LCall("Typed", "typedMul", 2)))
-        case Div        => (-1, Seq(Op.LCall("Typed", "typedDiv", 2)))
-        case Rem        => (-1, Seq(Op.LCall("Typed", "typedMod", 2)))
+      val translate: PartialFunction[OpCode, Either[String, (Int, List[Op])]] = {
+        case LdcI40     => Right((1, List(pushTypedInt(0))))
+        case LdcI41     => Right((1, List(pushTypedInt(1))))
+        case LdcI42     => Right((1, List(pushTypedInt(2))))
+        case LdcI43     => Right((1, List(pushTypedInt(3))))
+        case LdcI44     => Right((1, List(pushTypedInt(4))))
+        case LdcI45     => Right((1, List(pushTypedInt(5))))
+        case LdcI46     => Right((1, List(pushTypedInt(6))))
+        case LdcI47     => Right((1, List(pushTypedInt(7))))
+        case LdcI48     => Right((1, List(pushTypedInt(8))))
+        case LdcI4M1    => Right((1, List(pushTypedInt(-1))))
+        case LdcI4(num) => Right((1, List(pushTypedInt(num))))
+        case LdcI4S(v)  => Right((1, List(pushTypedInt(v.toInt))))
+        case LdcR4(f)   => Right((1, List(pushTypedFloat(f.toDouble))))
+        case LdcR8(d)   => Right((1, List(pushTypedFloat(d))))
+        case Add        => Right((-1, List(Op.LCall("Typed", "typedAdd", 2))))
+        case Mull       => Right((-1, List(Op.LCall("Typed", "typedMul", 2))))
+        case Div        => Right((-1, List(Op.LCall("Typed", "typedDiv", 2))))
+        case Rem        => Right((-1, List(Op.LCall("Typed", "typedMod", 2))))
         case Sub =>
-          (-1, Seq(pushTypedInt(-1), Op.LCall("Typed", "typedMul", 2), Op.LCall("Typed", "typedAdd", 2)))
-        case Clt => (-1, Seq(Op.LCall("Typed", "typedClt", 2)))
-        case Cgt => (-1, Seq(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
-        case Ceq => (-1, Seq(Op.Eq, Op.LCall("Typed", "typedBool", 1)))
-        case Not => (0, Seq(Op.LCall("Typed", "typedNot", 1)))
+          Right((-1, List(pushTypedInt(-1), Op.LCall("Typed", "typedMul", 2), Op.LCall("Typed", "typedAdd", 2))))
+        case Clt => Right((-1, List(Op.LCall("Typed", "typedClt", 2))))
+        case Cgt => Right((-1, List(Op.Swap, Op.LCall("Typed", "typedClt", 2))))
+        case Ceq => Right((-1, List(Op.Eq, Op.LCall("Typed", "typedBool", 1))))
+        case Not => Right((0, List(Op.LCall("Typed", "typedNot", 1))))
 
         case LdSFld(FieldData(_, name, sig)) =>
-          loadField(name, sig)
+          Right(loadField(name, sig))
         case LdFld(FieldData(_, name, sig)) =>
-          loadField(name, sig)
+          Right(loadField(name, sig))
         case StSFld(FieldData(_, name, sig)) =>
-          storeField(name, sig)
+          Right(storeField(name, sig))
         case StFld(FieldData(_, name, sig)) =>
-          storeField(name, sig)
+          Right(storeField(name, sig))
 
         case LdArg0      => loadArg(0)
         case LdArg1      => loadArg(1)
@@ -253,58 +281,112 @@ object Translator {
         case LdArg(num)  => loadArg(num)
         case LdArgS(num) => loadArg(num.toInt)
 
-        case StLoc0      => (-1, storeLocal(0))
-        case StLoc1      => (-1, storeLocal(1))
-        case StLoc2      => (-1, storeLocal(2))
-        case StLoc3      => (-1, storeLocal(3))
-        case StLoc(num)  => (-1, storeLocal(num))
-        case StLocS(num) => (-1, storeLocal(num.toInt))
+        case StLoc0      => storeLocal(0).map((-1, _))
+        case StLoc1      => storeLocal(1).map((-1, _))
+        case StLoc2      => storeLocal(2).map((-1, _))
+        case StLoc3      => storeLocal(3).map((-1, _))
+        case StLoc(num)  => storeLocal(num).map((-1, _))
+        case StLocS(num) => storeLocal(num.toInt).map((-1, _))
 
-        case LdLoc0      => (1, loadLocal(0))
-        case LdLoc1      => (1, loadLocal(1))
-        case LdLoc2      => (1, loadLocal(2))
-        case LdLoc3      => (1, loadLocal(3))
-        case LdLoc(num)  => (1, loadLocal(num))
-        case LdLocS(num) => (1, loadLocal(num.toInt))
+        case LdLoc0      => loadLocal(0).map((1, _))
+        case LdLoc1      => loadLocal(1).map((1, _))
+        case LdLoc2      => loadLocal(2).map((1, _))
+        case LdLoc3      => loadLocal(3).map((1, _))
+        case LdLoc(num)  => loadLocal(num).map((1, _))
+        case LdLocS(num) => loadLocal(num.toInt).map((1, _))
 
-        case Nop          => (0, Seq(Op.Nop))
-        case Ret          => (0, Seq())
-        case Jump(label)  => (0, Seq(Op.Jump(label)))
-        case JumpI(label) => (-1, Seq(pushTypedInt(1), Op.Eq, Op.JumpI(label)))
-        case Label(label) => (0, Seq(Op.Label(label)))
+        case Nop          => Right((0, List(Op.Nop)))
+        case Ret          => Right((0, List()))
+        case Jump(label)  => Right((Constants.jumpStackOffset, List(Op.Jump(label))))
+        case JumpI(label) => Right((Constants.jumpIStackOffset, List(pushTypedInt(1), Op.Eq, Op.JumpI(label))))
+        case Label(label) => Right((Constants.labelStackOffset, List(Op.Label(label))))
 
         case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
-          callVirt(name, parentSigIdx, methodSigIdx)
+          Right(callVirt(name, parentSigIdx, methodSigIdx))
+      } // FIXME partial function to either
 
-        case op =>
-          println(op)
-          ???
+      translate.lift.andThen(_.map(Right(_)).getOrElse(Left(s"Unknown opcode: $opcode")))(opcode).joinRight
+    }
+
+    def transformStackOffset(op: OpCode,
+                             labelOffsets: Map[String, Int],
+                             stackOffsetO: Option[Int]): Either[String, (Map[String, Int], Option[Int])] = {
+      val unstableStackError = Left("Unsupported sequence of instructions: stack is unstable")
+      def unreachableInstructionsError = Left("Unsupported sequence of instructions: some instructions are unreachable")
+
+
+      op match {
+        case Label(label) =>
+          (labelOffsets.get(label), stackOffsetO) match {
+            case (Some(offset), Some(stackOffset)) if offset != stackOffset + Constants.labelStackOffset =>
+              unstableStackError
+            case (Some(offset), Some(stackOffset)) if offset == stackOffset + Constants.labelStackOffset =>
+              Right((labelOffsets, Some(stackOffset)))
+            case (Some(offset), None)      => Right((labelOffsets, Some(offset)))
+            case (None, Some(stackOffset)) => Right((labelOffsets.updated(label, stackOffset), Some(stackOffset)))
+            case (None, None)              => unreachableInstructionsError
+          }
+        case Jump(label) =>
+          (labelOffsets.get(label), stackOffsetO) match {
+            case (Some(offset), Some(stackOffset)) if offset != stackOffset + Constants.jumpStackOffset =>
+              unstableStackError
+            case (Some(offset), Some(stackOffset)) if offset == stackOffset + Constants.jumpStackOffset =>
+              Right((labelOffsets, None))
+            case (None, Some(stackOffset)) =>
+              Right((labelOffsets.updated(label, stackOffset + Constants.jumpStackOffset), None))
+            case (_, None) => unreachableInstructionsError
+          }
+        case JumpI(label) =>
+          (labelOffsets.get(label), stackOffsetO) match {
+            case (Some(offset), Some(stackOffset)) if offset != stackOffset + Constants.jumpIStackOffset =>
+              unstableStackError
+            case (Some(offset), Some(stackOffset)) if offset == stackOffset + Constants.jumpIStackOffset =>
+              Right((labelOffsets, Some(stackOffset)))
+            case (None, Some(stackOffset)) =>
+              Right((labelOffsets.updated(label, stackOffset + Constants.jumpIStackOffset), Some(stackOffset)))
+            case (_, None) => unreachableInstructionsError
+          }
+        case other =>
+          stackOffsetO match {
+            case s @ Some(stackOffset) => Right((labelOffsets, s))
+            case None                  => unreachableInstructionsError
+          }
       }
     }
 
-    val ops = opcodes
-      .foldLeft((Seq.empty[Op], 0)) {
-        case ((res, stackOffset), op) =>
-          val (deltaOffset, opcode) = translateOpcode(op, stackOffset)
-          (res ++ opcode, stackOffset + deltaOffset)
+    val opsE = opcodes
+      .foldLeft[Either[String, (List[Op], Map[String, Int], Option[Int])]](
+        Right((List.empty[Op], Map.empty[String, Int], Some(0)))) {
+        case (Right((res, labelOffsets, stackOffsetO)), op) =>
+          for {
+            so <- transformStackOffset(op, labelOffsets, stackOffsetO)
+            (newLabelOffsets, newStackOffset) = so
+            t <- translateOpcode(op, newStackOffset)
+            (deltaOffset, opcode) = t
+          } yield (res ++ opcode, newLabelOffsets, newStackOffset.map(_ + deltaOffset))
+        case (other, op) => other
       }
-      ._1
 
     val clear =
       if (void) {
-        Seq.fill(localsCount + argsCount + 1)(Op.Pop)
+        List.fill(localsCount + argsCount + 1)(Op.Pop)
       } else {
-        Seq.fill(localsCount + argsCount + 1)(Seq(Op.Swap, Op.Pop)).flatten
+        List.fill(localsCount + argsCount + 1)(List(Op.Swap, Op.Pop)).flatten
       }
 
-    Seq(Op.Label("method_" + name)) ++
-      Seq.fill(localsCount)(Op.Push(Datum.Integral(0))) ++ // FIXME Should be replaced by proper value for local var type
-      ops ++
-      clear ++
-      (if (local) Seq(Op.Ret) else Seq(Op.Jump("stop")))
+    for {
+      ops <- opsE
+    } yield
+      List(Op.Label("method_" + name)) ++
+        List.fill(localsCount)(Op.Push(Datum.Integral(0))) ++ // FIXME Should be replaced by proper value for local var type
+        ops._1 ++
+        clear ++
+        (if (local) List(Op.Ret) else List(Op.Jump("stop")))
   }
 
-  def translate(rawMethods: Seq[Method], cilData: CilData, signatures: Map[Long, Signatures.Signature]): Seq[Op] = {
+  def translate(rawMethods: Seq[Method],
+                cilData: CilData,
+                signatures: Map[Long, Signatures.Signature]): Either[String, List[Op]] = {
     val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
       case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
     }.toMap
@@ -316,7 +398,7 @@ object Translator {
       }
     }
 
-    val methods = rawMethods.zipWithIndex.filterNot {
+    val methods = rawMethods.toList.zipWithIndex.filterNot {
       case (m, i) =>
         val name = cilData.tables.methodDefTable(i).name
         name == ".ctor" || name == ".cctor"
@@ -326,18 +408,18 @@ object Translator {
       case (m, i) =>
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
-          Seq(
+          List(
             Op.Dup,
             Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
             Op.Eq,
             Op.JumpI("method_" + name)
           )
         } else {
-          Seq.empty
+          List.empty
         }
     }
 
-    val methodsOps = methods.flatMap {
+    val methodsOpsE: Either[String, List[Op]] = methods.map {
       case (m, i) =>
         val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
         cilData.tables.methodDefTable(i) match {
@@ -360,14 +442,16 @@ object Translator {
                 }
                 .getOrElse(0),
               name,
-              resolveRVI(m.opcodes),
+              resolveBranches(m.opcodes.toList),
               signatures,
               isLocal(i),
               isVoid
             )
         }
-    }
+    }.flatSequence
 
-    jumpToMethod ++ Seq(Op.Jump("stop")) ++ methodsOps ++ Seq(Op.Label("stop"))
+    for {
+      methodsOps <- methodsOpsE
+    } yield jumpToMethod ++ List(Op.Jump("stop")) ++ methodsOps ++ List(Op.Label("stop"))
   }
 }
