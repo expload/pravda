@@ -21,7 +21,7 @@ package object serialization {
   }
 
   def dataToCoins(data: Data): NativeCoin = {
-    NativeCoin.amount(data.toStringUtf8)
+    NativeCoin.amount(dataToInt32(data))
   }
 
   def coinsToData(coins: NativeCoin): Data = {

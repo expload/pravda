@@ -28,35 +28,35 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
 
     val errorOrResult: EitherT[F, String, String] =
       for {
-        input <- useOption(config.input)(io.readFromStdin(), readFromFile)
         walletJson <- EitherT(
           config.wallet
             .fold[F[Either[String, ByteString]]](Monad[F].pure(Left("Wallet file should be defined")))(readFromFile))
         wallet = transcode(Json @@ walletJson.toStringUtf8).to[Wallet]
-        program <- EitherT[F, String, ByteString] {
-          config.mode match {
-            case Mode.Run =>
-              Monad[F].pure(Right(input))
-            case Mode.Transfer(Some(address), Some(amount)) if bytes.isHex(address) =>
-              compilers.forth(s"$$x$address $amount transfer")
-            case Mode.Transfer(Some(_), _) =>
-              Monad[F].pure(Left("Invalid payee address"))
-            case Mode.Transfer(None, _) =>
-              Monad[F].pure(Left("Payee address should be defined"))
-            case Mode.Transfer(_, None) =>
-              Monad[F].pure(Left("Amount of native coins should be defined"))
-
-            case Mode.Deploy =>
-              compilers.forth(s"$$x${bytes.byteString2hex(input)} pcreate")
-            case Mode.Update(Some(address)) if bytes.isHex(address) && address.length == 48 =>
-              compilers.forth(s"$$x${bytes.byteString2hex(input)} $$x$address pupdate")
-            case Mode.Update(Some(_)) =>
-              Monad[F].pure(Left("Invalid program address"))
-            case Mode.Update(None) =>
-              Monad[F].pure(Left("Program address should be defined"))
-            case _ =>
-              Monad[F].pure(Left("Broadcast mode should be selected."))
-          }
+        program <- config.mode match {
+          case Mode.Run =>
+            useOption(config.input)(io.readFromStdin(), readFromFile)
+          case Mode.Transfer(Some(address), Some(amount)) if bytes.isHex(address) =>
+            EitherT(compilers.forth(s"$$x$address $amount transfer"))
+          case Mode.Transfer(Some(_), _) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Invalid payee address")))
+          case Mode.Transfer(None, _) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Payee address should be defined")))
+          case Mode.Transfer(_, None) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Amount of native coins should be defined")))
+          case Mode.Deploy =>
+            useOption(config.input)(io.readFromStdin(), readFromFile).flatMap(
+              input =>  EitherT(compilers.forth(s"$$x${bytes.byteString2hex(input)} pcreate"))
+            )
+          case Mode.Update(Some(address)) if bytes.isHex(address) && address.length == 48 =>
+            useOption(config.input)(io.readFromStdin(), readFromFile).flatMap(
+              input =>  EitherT(compilers.forth(s"$$x${bytes.byteString2hex(input)} $$x$address pupdate"))
+            )
+          case Mode.Update(Some(_)) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Invalid program address")))
+          case Mode.Update(None) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Program address should be defined")))
+          case _ =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Broadcast mode should be selected.")))
         }
         result <- EitherT {
           api.singAndBroadcastTransaction(
