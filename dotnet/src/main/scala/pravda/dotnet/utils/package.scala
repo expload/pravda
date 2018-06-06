@@ -11,6 +11,8 @@ package object utils {
     P(BytesWhile(_ != 0, min = 0).! ~ BS(0)).map(bs => new String(bs.toArray))
 
   private[dotnet] type Validated[T] = Either[String, T]
+  // FIXME consider Validated from cats
+  // also consider to not use this unnecessary type alias
   private[dotnet] def validationError(msg: String): Validated[Nothing] = Left(msg)
   private[dotnet] def validated[T](t: T): Validated[T] = Right(t)
 

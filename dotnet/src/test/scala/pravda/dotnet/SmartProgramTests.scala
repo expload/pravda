@@ -5,6 +5,7 @@ import pravda.dotnet.Signatures.SigType._
 import pravda.dotnet.Signatures._
 import pravda.dotnet.TablesData._
 import utest._
+import pravda.common.bytes.hex._
 
 object SmartProgramTests extends TestSuite {
 
@@ -300,9 +301,6 @@ object SmartProgramTests extends TestSuite {
       import pravda.vm.asm.Datum._
       import pravda.vm.asm.Op._
 
-      def bytes(is: Int*): Array[Byte] =
-        Array[Byte](is.map(_.toByte): _*)
-
       DiffUtils.assertEqual(
         Translator.translate(methods, cilData, signatures),
         Right(
@@ -326,7 +324,7 @@ object SmartProgramTests extends TestSuite {
             Push(Rawbytes("balances".getBytes)),
             Push(Integral(4)),
             Dupn,
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Call("method_getDefault"),
             Push(Integral(2)),
             SwapN,
@@ -347,7 +345,7 @@ object SmartProgramTests extends TestSuite {
             Nop,
             Push(Integral(4)),
             Dupn,
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Swap,
             LCall("Typed", "typedClt", 2),
             Push(Integral(3)),
@@ -356,18 +354,18 @@ object SmartProgramTests extends TestSuite {
             Push(Integral(2)),
             Dupn,
             LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(bytes(1, 0, 0, 0, 1))),
+            Push(Rawbytes(hex"01 00 00 00 01")),
             Eq,
             JumpI("br107"),
             Nop,
             Push(Rawbytes("balances".getBytes)),
             From,
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Call("method_getDefault"),
             Push(Integral(5)),
             Dupn,
             LCall("Typed", "typedClt", 2),
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Eq,
             LCall("Typed", "typedBool", 1),
             Push(Integral(2)),
@@ -376,7 +374,7 @@ object SmartProgramTests extends TestSuite {
             Push(Integral(1)),
             Dupn,
             LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(bytes(1, 0, 0, 0, 1))),
+            Push(Rawbytes(hex"01 00 00 00 01")),
             Eq,
             JumpI("br106"),
             Nop,
@@ -384,11 +382,11 @@ object SmartProgramTests extends TestSuite {
             From,
             Push(Rawbytes("balances".getBytes)),
             From,
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Call("method_getDefault"),
             Push(Integral(7)),
             Dupn,
-            Push(Rawbytes(bytes(1, -1, -1, -1, -1))),
+            Push(Rawbytes(hex"01 ff ff ff ff")),
             LCall("Typed", "typedMul", 2),
             LCall("Typed", "typedAdd", 2),
             Push(Integral(2)),
@@ -407,7 +405,7 @@ object SmartProgramTests extends TestSuite {
             Push(Rawbytes("balances".getBytes)),
             Push(Integral(8)),
             Dupn,
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Call("method_getDefault"),
             Push(Integral(7)),
             Dupn,
@@ -465,7 +463,7 @@ object SmartProgramTests extends TestSuite {
             Concat,
             SExst,
             LCall("Typed", "typedBool", 1),
-            Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
+            Push(Rawbytes(hex"01 00 00 00 00")),
             Eq,
             LCall("Typed", "typedBool", 1),
             Push(Integral(3)),
@@ -474,7 +472,7 @@ object SmartProgramTests extends TestSuite {
             Push(Integral(2)),
             Dupn,
             LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(bytes(1, 0, 0, 0, 1))),
+            Push(Rawbytes(hex"01 00 00 00 01")),
             Eq,
             JumpI("br20"),
             Nop,
