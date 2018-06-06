@@ -72,6 +72,8 @@ class Parser {
     val lcall = P(IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue))
     val pcall = P(IgnoreCase("pcall"))
 
+    val transfer = P(IgnoreCase("transfer"))
+
     val opseq: P[Seq[Op]] = P(
       (
         label.map(n => Op.Label(n)) |
@@ -108,7 +110,9 @@ class Parser {
           fdiv.!.map(_ => Op.FDiv) |
           fmod.!.map(_ => Op.FMod) |
           pcall.map(_ => Op.PCall) |
-          lcall.map(Op.LCall.tupled)
+          lcall.map(Op.LCall.tupled) |
+
+          transfer.map(_ => Op.Transfer)
       ).rep(sep = delim))
 
     val unit = P(Start ~ delim.rep ~ opseq ~ delim.rep ~ End)

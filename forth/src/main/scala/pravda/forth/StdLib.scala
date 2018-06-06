@@ -50,6 +50,7 @@ object StdLib {
       pupdate,
       swap,
       pcall,
+      transfer,
       pop
     ).flatten
 
@@ -190,6 +191,12 @@ object StdLib {
     Op.Label(s"dup${n}"),
     Op.Push(Datum.Integral(n)),
     Op.Dupn,
+    Op.Ret
+  )
+
+  val transfer: Seq[Op] = Seq(
+    Op.Label("transfer"),
+    Op.Transfer,
     Op.Ret
   )
 

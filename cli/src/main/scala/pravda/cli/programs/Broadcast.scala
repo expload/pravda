@@ -37,6 +37,15 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
           config.mode match {
             case Mode.Run =>
               Monad[F].pure(Right(input))
+            case Mode.Transfer(Some(address), Some(amount)) if bytes.isHex(address) =>
+              compilers.forth(s"$$x$address $amount transfer")
+            case Mode.Transfer(Some(_), _) =>
+              Monad[F].pure(Left("Invalid payee address"))
+            case Mode.Transfer(None, _) =>
+              Monad[F].pure(Left("Payee address should be defined"))
+            case Mode.Transfer(_, None) =>
+              Monad[F].pure(Left("Amount of native coins should be defined"))
+
             case Mode.Deploy =>
               compilers.forth(s"$$x${bytes.byteString2hex(input)} pcreate")
             case Mode.Update(Some(address)) if bytes.isHex(address) && address.length == 48 =>

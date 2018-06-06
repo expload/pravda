@@ -35,10 +35,11 @@ object Config {
     sealed trait Mode
 
     object Mode {
-      case object Nope                                 extends Mode
-      case object Deploy                               extends Mode
-      case object Run                                  extends Mode
-      final case class Update(program: Option[String]) extends Mode
+      case object Nope                                                    extends Mode
+      case object Deploy                                                  extends Mode
+      case object Run                                                     extends Mode
+      final case class Update(program: Option[String])                    extends Mode
+      final case class Transfer(to: Option[String], amount: Option[Long]) extends Mode
     }
   }
 

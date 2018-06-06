@@ -72,4 +72,7 @@ object Op {
   case object SGet  extends Op { override def toAsm = "sget" }
   case object SPut  extends Op { override def toAsm = "sput" }
   case object SExst extends Op { override def toAsm = "sexist" }
+
+  case object Transfer extends Op { override def toAsm = "transfer" }
+
 }

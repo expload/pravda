@@ -117,6 +117,22 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
             config.copy(mode = Config.Broadcast.Mode.Run)
           case (_, otherwise) => otherwise
         },
+      cmd("transfer")
+        .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Transfer(None, None)))
+        .children(
+          opt[String]('t', "to")
+            .action {
+              case (hex, config @ Config.Broadcast(mode: Config.Broadcast.Mode.Transfer, _, _, _, _, _)) =>
+                config.copy(mode = mode.copy(to = Some(hex)))
+              case (_, otherwise) => otherwise
+            },
+          opt[Long]('a', "amount")
+            .action {
+              case (amount, config @ Config.Broadcast(mode: Config.Broadcast.Mode.Transfer, _, _, _, _, _)) =>
+                config.copy(mode = mode.copy(amount = Some(amount)))
+              case (_, otherwise) => otherwise
+            }
+        ),
       cmd("deploy")
         .text("")
         .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Deploy))
