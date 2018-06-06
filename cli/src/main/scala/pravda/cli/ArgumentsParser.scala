@@ -156,8 +156,8 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
             config.copy(wattLimit = limit)
           case (_, otherwise) => otherwise
         },
-      opt[BigDecimal]('p', "price")
-        .text("Watt price (0.01 by default).")
+      opt[Long]('p', "price")
+        .text("Watt price (1 by default).")
         .action {
           case (price, config: Config.Broadcast) =>
             config.copy(wattPrice = NativeCoin @@ price)

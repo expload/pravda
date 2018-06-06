@@ -8,12 +8,11 @@ import scala.util.Try
 
 package object domain {
 
-  object NativeCoin extends TaggedType[BigDecimal] {
-    val zero = apply(BigDecimal(0))
-    def amount(v: Int) = NativeCoin(BigDecimal(v))
-    def amount(v: Double) = NativeCoin(BigDecimal(v))
-    def amount(v: String) = NativeCoin(BigDecimal(v))
-    def fromString(s: String) = NativeCoin(BigDecimal(s))
+  object NativeCoin extends TaggedType[Long] {
+    val zero = apply(0L)
+    def amount(v: Int) = NativeCoin(v.toLong)
+    def amount(v: String) = NativeCoin(v.toLong)
+    def fromString(s: String) = amount(s)
   }
 
   type NativeCoin = NativeCoin.Type

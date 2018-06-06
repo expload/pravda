@@ -26,7 +26,7 @@ object Config {
                              wallet: Option[String] = None,
                              input: Option[String] = None,
                              wattLimit: Long = 300,
-                             wattPrice: NativeCoin = NativeCoin.amount("0.01"),
+                             wattPrice: NativeCoin = NativeCoin.amount(1),
                              endpoint: String = "http://localhost:8080/api/public/broadcast")
       extends Config
 
