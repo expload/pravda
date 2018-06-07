@@ -14,7 +14,7 @@ object SmartProgramTests extends TestSuite {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("smart_program.exe")
 
       DiffUtils.assertEqual(
-        Translator.translate(methods, cilData, signatures),
+        Translator.translateAsm(methods, cilData, signatures),
         Right(
           List(
             Dup,

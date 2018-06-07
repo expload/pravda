@@ -6,6 +6,7 @@ import pravda.dotnet.utils._
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.data.{Heaps, TablesData}
 
+import cats.instances.vector._
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
@@ -193,6 +194,6 @@ object Signatures {
       cilData.tables.typeSpecTable.map(s =>
         s.signatureIdx -> parseSignature(s.signatureIdx, tpe(cilData.tables).map(_.map(TypeSig))))
 
-    idxToSig.map(_._2).toList.sequence.map(idxToSig.map(_._1).zip(_)).map(_.toMap)
+    idxToSig.map(_._2).sequence.map(idxToSig.map(_._1).zip(_)).map(_.toMap)
   }
 }

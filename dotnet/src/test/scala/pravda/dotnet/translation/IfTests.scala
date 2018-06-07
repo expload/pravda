@@ -13,8 +13,12 @@ object IfTests extends TestSuite {
     'ifParse - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("if.exe")
 
+      for {
+        t <- Translator.translateVerbose(methods, cilData, signatures)
+      } println(TranslationVisualizer.visualize(t))
+
       DiffUtils.assertEqual(
-        Translator.translate(methods, cilData, signatures),
+        Translator.translateAsm(methods, cilData, signatures),
         Right(
           List(
             Dup,

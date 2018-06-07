@@ -22,6 +22,17 @@ object Translator {
     val jumpIStackOffset = -1
   }
 
+  final case class OpCodeTranslation(source: Either[String, OpCode], // some name or actual opcode
+                                     stackOffset: Option[Int],
+                                     asm: List[Op])
+  final case class MethodTranslation(name: String,
+                                     argsCount: Int,
+                                     localsCount: Int,
+                                     local: Boolean,
+                                     void: Boolean,
+                                     opcodes: List[OpCodeTranslation])
+  final case class Translation(jumpToMethods: List[Op], methods: List[MethodTranslation], finishOps: List[Op])
+
   private def resolveBranches(opcodes: List[OpCode]): List[OpCode] = {
 
     val offsets = opcodes
@@ -91,7 +102,7 @@ object Translator {
                               opcodes: List[OpCode],
                               signatures: Map[Long, Signatures.Signature],
                               local: Boolean,
-                              void: Boolean): Either[String, List[Op]] = {
+                              void: Boolean): Either[String, MethodTranslation] = {
 
     def translateOpcode(opcode: OpCode, stackOffsetO: Option[Int]): Either[String, (Int, List[Op])] = {
       def pushTypedInt(i: Int): Op =
@@ -315,7 +326,6 @@ object Translator {
       val unstableStackError = Left("Unsupported sequence of instructions: stack is unstable")
       def unreachableInstructionsError = Left("Unsupported sequence of instructions: some instructions are unreachable")
 
-
       op match {
         case Label(label) =>
           (labelOffsets.get(label), stackOffsetO) match {
@@ -355,18 +365,22 @@ object Translator {
       }
     }
 
-    val opsE = opcodes
-      .foldLeft[Either[String, (List[Op], Map[String, Int], Option[Int])]](
-        Right((List.empty[Op], Map.empty[String, Int], Some(0)))) {
+    val opTranslationsE = opcodes
+      .foldLeft[Either[String, (List[OpCodeTranslation], Map[String, Int], Option[Int])]](
+        Right((List.empty, Map.empty, Some(0)))) {
         case (Right((res, labelOffsets, stackOffsetO)), op) =>
           for {
             so <- transformStackOffset(op, labelOffsets, stackOffsetO)
             (newLabelOffsets, newStackOffset) = so
             t <- translateOpcode(op, newStackOffset)
             (deltaOffset, opcode) = t
-          } yield (res ++ opcode, newLabelOffsets, newStackOffset.map(_ + deltaOffset))
+          } yield
+            (OpCodeTranslation(Right(op), newStackOffset, opcode) :: res,
+             newLabelOffsets,
+             newStackOffset.map(_ + deltaOffset))
         case (other, op) => other
       }
+      .map(_._1.reverse)
 
     val clear =
       if (void) {
@@ -376,18 +390,28 @@ object Translator {
       }
 
     for {
-      ops <- opsE
+      opTranslations <- opTranslationsE
     } yield
-      List(Op.Label("method_" + name)) ++
-        List.fill(localsCount)(Op.Push(Datum.Integral(0))) ++ // FIXME Should be replaced by proper value for local var type
-        ops._1 ++
-        clear ++
-        (if (local) List(Op.Ret) else List(Op.Jump("stop")))
+      MethodTranslation(
+        name,
+        argsCount,
+        localsCount,
+        local,
+        void,
+        List(
+          OpCodeTranslation(Left("method name"), None, List(Op.Label("method_" + name))),
+          OpCodeTranslation(Left("local vars"), None, List.fill(localsCount)(Op.Push(Datum.Integral(0)))) // FIXME Should be replaced by proper value for local var type
+        ) ++ opTranslations ++
+          List(
+            OpCodeTranslation(Left("local vars clearing"), None, clear),
+            OpCodeTranslation(Left("end of a method"), None, if (local) List(Op.Ret) else List(Op.Jump("stop")))
+          )
+      )
   }
 
-  def translate(rawMethods: List[Method],
-                cilData: CilData,
-                signatures: Map[Long, Signatures.Signature]): Either[String, List[Op]] = {
+  def translateVerbose(rawMethods: List[Method],
+                       cilData: CilData,
+                       signatures: Map[Long, Signatures.Signature]): Either[String, Translation] = {
     val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
       case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
     }.toMap
@@ -405,7 +429,7 @@ object Translator {
         name == ".ctor" || name == ".cctor"
     }
 
-    val jumpToMethod = methods.flatMap {
+    val jumpToMethods = methods.flatMap {
       case (m, i) =>
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
@@ -420,7 +444,7 @@ object Translator {
         }
     }
 
-    val methodsOpsE: Either[String, List[Op]] = methods.map {
+    val methodsOpsE: Either[String, List[MethodTranslation]] = methods.map {
       case (m, i) =>
         val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
         cilData.tables.methodDefTable(i) match {
@@ -443,16 +467,23 @@ object Translator {
                 }
                 .getOrElse(0),
               name,
-              resolveBranches(m.opcodes.toList),
+              resolveBranches(m.opcodes),
               signatures,
               isLocal(i),
               isVoid
             )
         }
-    }.flatSequence
+    }.sequence
 
     for {
       methodsOps <- methodsOpsE
-    } yield jumpToMethod ++ List(Op.Jump("stop")) ++ methodsOps ++ List(Op.Label("stop"))
+    } yield Translation(jumpToMethods :+ Op.Jump("stop"), methodsOps, List(Op.Label("stop")))
   }
+
+  def translateAsm(rawMethods: List[Method],
+                   cilData: CilData,
+                   signatures: Map[Long, Signatures.Signature]): Either[String, List[Op]] =
+    for {
+      t <- translateVerbose(rawMethods, cilData, signatures)
+    } yield t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asm)) ++ t.finishOps
 }
