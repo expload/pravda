@@ -172,11 +172,12 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
 object Abci {
 
-  final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
-  final case class ProgramNotFoundException() extends Exception("Program not found")
-  final case class NotEnoughMoney()           extends Exception("Not enough money")
-  final case class WrongWattPrice()           extends Exception("Bad transaction parameter: wattPrice")
-  final case class WrongWattLimit()           extends Exception("Bad transaction parameter: wattLimit")
+  final case class TransactionUnauthorized()   extends Exception("Transaction signature is invalid")
+  final case class ProgramNotFoundException()  extends Exception("Program not found")
+  final case class NotEnoughMoney()            extends Exception("Not enough money")
+  final case class WrongWattPrice()            extends Exception("Bad transaction parameter: wattPrice")
+  final case class WrongWattLimit()            extends Exception("Bad transaction parameter: wattLimit")
+  final case class AmountShouldNotBeNegative() extends Exception("Amount should not be negative")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -313,16 +314,19 @@ object Abci {
       }
 
       def withdraw(address: Address, amount: NativeCoin): Unit = {
+        if (amount < 0) throw AmountShouldNotBeNegative()
+
         val current = balance(address)
-        if (current < amount) {
-          throw NotEnoughMoney()
-        } else {
-          balancesPath.put(byteUtils.byteString2hex(address), current - amount)
-          effects += Withdraw(address, amount)
-        }
+        if (current < amount) throw NotEnoughMoney()
+
+        balancesPath.put(byteUtils.byteString2hex(address), current - amount)
+        effects += Withdraw(address, amount)
+
       }
 
       def accrue(address: Address, amount: NativeCoin): Unit = {
+        if (amount < 0) throw AmountShouldNotBeNegative()
+
         val current = balance(address)
         balancesPath.put(byteUtils.byteString2hex(address), current + amount)
         effects += Accrue(address, amount)
