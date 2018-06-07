@@ -9,7 +9,6 @@ import pravda.node.data.common.TransactionId
 import pravda.common.domain.{Address, NativeCoin}
 
 import pravda.node.persistence.FileStore
-import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.{Config, utils}
 import pravda.common.{bytes => byteUtils}
 import korolev.Context
@@ -300,11 +299,11 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         case Right(tx) =>
                           for {
                             _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
-                            stack <- abciClient.broadcastTransaction(tx)
+                            result <- abciClient.broadcastTransaction(tx)
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(stack.map(utils.showStack).toString)
+                                maybeResult = Some(result.map(utils.showExecInfo).toString)
                               )
                             }
                           } yield {
@@ -348,11 +347,11 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         case Right(tx) =>
                           for {
                             _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
-                            stack <- abciClient.broadcastTransaction(tx)
+                            execInfo <- abciClient.broadcastTransaction(tx)
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(stack.map(utils.showStack).toString)
+                                maybeResult = Some(execInfo.map(utils.showExecInfo).toString)
                               )
                             }
                           } yield {

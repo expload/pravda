@@ -3,10 +3,24 @@ package pravda.node
 import com.google.protobuf.ByteString
 
 import scala.concurrent.Future
-
 import pravda.common.bytes.byteString2hex
+import pravda.node.data.blockchain.ExecutionInfo
 
 package object utils {
+
+  def showExecInfo(info: ExecutionInfo): String = {
+    s"""
+       | Status       : ${info.status}
+       | Watts        : total ${info.totalWatts}, spent ${info.spentWatts}, refund: ${info.refundWatts}
+       | Stack        : ${showStack(info.stack)}
+       | Heap         : ${showHeap(info.heap)}
+     """.stripMargin
+  }
+
+  def showHeap(heap: Seq[ByteString]): String =
+    heap.zipWithIndex
+      .map{case (bs, i) => s"$i: " + byteString2hex(bs) + '"'}
+      .mkString("[", ", ", "]")
 
   def showStack(stack: Seq[ByteString]): String =
     stack

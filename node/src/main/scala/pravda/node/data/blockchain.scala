@@ -3,6 +3,7 @@ package pravda.node.data
 import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.domain._
+import pravda.vm.state.{Data, ExecutionResult}
 import supertagged.TaggedType
 
 object blockchain {
@@ -57,4 +58,31 @@ object blockchain {
 
   object TransactionData extends TaggedType[ByteString]
   type TransactionData = TransactionData.Type
+
+  case class ExecutionInfo(
+                          error: Option[String],
+                          spentWatts: Long,
+                          refundWatts: Long,
+                          totalWatts: Long,
+                          stack: Seq[Data],
+                          heap: Seq[Data]
+                          ) {
+
+    def status: String = error.fold("Ok")(identity)
+
+  }
+
+  object ExecutionInfo {
+    def from(executionResult: ExecutionResult): ExecutionInfo = {
+      ExecutionInfo(
+        error = executionResult.error.map(_.error.toString),
+        spentWatts = executionResult.wattCounter.spent,
+        refundWatts = executionResult.wattCounter.refund,
+        totalWatts = executionResult.wattCounter.total,
+        stack = executionResult.memory.stack,
+        heap = executionResult.memory.heap
+      )
+    }
+  }
+
 }

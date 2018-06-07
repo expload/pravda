@@ -67,7 +67,7 @@ class ApiRoute(abciClient: AbciClient) {
                 val result = abciClient.broadcastTransaction(tx, mode)
 
                 onSuccess(result) {
-                  case Right(stack) => complete(stack)
+                  case Right(info) => complete(info)
                   case Left(error)  => complete(error)
                 }
               }
