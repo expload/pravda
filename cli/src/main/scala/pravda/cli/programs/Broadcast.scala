@@ -45,11 +45,11 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
             EitherT[F, String, ByteString](Monad[F].pure(Left("Amount of native coins should be defined")))
           case Mode.Deploy =>
             useOption(config.input)(io.readFromStdin(), readFromFile).flatMap(
-              input =>  EitherT(compilers.forth(s"$$x${bytes.byteString2hex(input)} pcreate"))
+              input => EitherT(compilers.forth(s"$$x${bytes.byteString2hex(input)} pcreate"))
             )
           case Mode.Update(Some(address)) if bytes.isHex(address) && address.length == 48 =>
             useOption(config.input)(io.readFromStdin(), readFromFile).flatMap(
-              input =>  EitherT(compilers.forth(s"$$x${bytes.byteString2hex(input)} $$x$address pupdate"))
+              input => EitherT(compilers.forth(s"$$x${bytes.byteString2hex(input)} $$x$address pupdate"))
             )
           case Mode.Update(Some(_)) =>
             EitherT[F, String, ByteString](Monad[F].pure(Left("Invalid program address")))
