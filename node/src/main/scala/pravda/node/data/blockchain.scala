@@ -2,7 +2,7 @@ package pravda.node.data
 
 import cats.Show
 import com.google.protobuf.ByteString
-import common._
+import pravda.common.domain._
 import supertagged.TaggedType
 
 object blockchain {
@@ -10,22 +10,28 @@ object blockchain {
   sealed trait Transaction {
     def from: Address
     def program: TransactionData
-    def fee: Mytc
+    def wattLimit: Long
+    def wattPrice: NativeCoin
     def nonce: Int
 
-    def forSignature: (Address, TransactionData, Mytc, Int) =
-      (from, program, fee, nonce)
+    def forSignature: (Address, TransactionData, Long, NativeCoin, Int) =
+      (from, program, wattLimit, wattPrice, nonce)
   }
 
   object Transaction {
 
-    final case class UnsignedTransaction(from: Address, program: TransactionData, fee: Mytc, nonce: Int)
+    final case class UnsignedTransaction(from: Address,
+                                         program: TransactionData,
+                                         wattLimit: Long,
+                                         wattPrice: NativeCoin,
+                                         nonce: Int)
         extends Transaction
 
     final case class SignedTransaction(from: Address,
                                        program: TransactionData,
                                        signature: ByteString,
-                                       fee: Mytc,
+                                       wattLimit: Long,
+                                       wattPrice: NativeCoin,
                                        nonce: Int)
         extends Transaction
 
@@ -36,14 +42,15 @@ object blockchain {
         val from = bytes.byteString2hex(t.from)
         val program = bytes.byteString2hex(t.program)
         val signature = bytes.byteString2hex(t.signature)
-        s"transaction.signed[from=$from,program=$program,signature=$signature,nonce=${t.nonce},fee=${t.fee}]"
+        s"transaction.signed[from=$from,program=$program,signature=$signature,nonce=${t.nonce},wattLmit=${t.wattLimit},wattPrice=${t.wattPrice}]"
       }
     }
 
     final case class AuthorizedTransaction(from: Address,
                                            program: TransactionData,
                                            signature: ByteString,
-                                           fee: Mytc,
+                                           wattLimit: Long,
+                                           wattPrice: NativeCoin,
                                            nonce: Int)
         extends Transaction
   }

@@ -2,13 +2,10 @@ package pravda.vm
 package opcode
 
 import utest._
-
 import VmUtils._
 import Opcodes._
-
+import pravda.common.domain.Address
 import serialization._
-
-import pravda.common.bytes.hex._
 
 object LibraryTests extends TestSuite {
 
@@ -23,8 +20,8 @@ object LibraryTests extends TestSuite {
       val sum3 = program
         .opcode(LCALL).put("Math").put("sum").put(3)
 
-      exec(sum2) ==> stack(int32ToData(1), int32ToData(50))
-      exec(sum3) ==> stack(int32ToData(51))
+      stackOfExec(sum2) ==> stack(int32ToData(1), int32ToData(50))
+      stackOfExec(sum3) ==> stack(int32ToData(51))
 
     }
 
@@ -48,8 +45,8 @@ object LibraryTests extends TestSuite {
         .opcode(RET)
 
 
-      val address1 = data(hex"0405424e")
-      val address2 = data(hex"0406424e")
+      val address1 = Address.fromHex("0405424e")
+      val address2 = Address.fromHex("0406424e")
 
       val wState = environment(address1 -> udflib1, address2 -> udflib2)
 
@@ -61,9 +58,9 @@ object LibraryTests extends TestSuite {
       val plus2 = program.opcode(LCALL).put(address2).put("plus").put(2)
       val mult1 = program.opcode(LCALL).put(address1).put("mult").put(2)
 
-      exec(plus1, wState) ==> stack(int32ToData(15))
-      exec(plus2, wState) ==> stack(int32ToData(28))
-      exec(mult1, wState) ==> stack(int32ToData(56))
+      stackOfExec(plus1, wState) ==> stack(int32ToData(15))
+      stackOfExec(plus2, wState) ==> stack(int32ToData(28))
+      stackOfExec(mult1, wState) ==> stack(int32ToData(56))
 
     }
 
@@ -72,7 +69,7 @@ object LibraryTests extends TestSuite {
       val plusLen = prog.put("plus").length
       val funcLen = prog.put("func").length
 
-      val address = data(hex"0405424e")
+      val address = Address.fromHex("0405424e")
 
       val udflib = prog.opcode(FTBL)
         .put(2)
@@ -87,7 +84,7 @@ object LibraryTests extends TestSuite {
         .opcode(PUSHX).put(7)
         .opcode(LCALL).put(address).put("func").put(1)
 
-      exec(double, wState) ==> stack(int32ToData(15))
+      stackOfExec(double, wState) ==> stack(int32ToData(15))
 
     }
   }

@@ -3,11 +3,13 @@ package pravda.test.utils
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.forth.Compiler
 import pravda.vm.Vm
 import pravda.vm.serialization._
 import pravda.vm.state._
 import pravda.vm.asm
+import pravda.vm.watt.WattCounter
 
 import scala.collection.mutable
 
@@ -38,11 +40,15 @@ object IntegrationUtils {
   def runWithoutEnviroment[T](code: Array[Byte])(implicit stackItem: StackItem[T]): List[T] = {
     val emptyState = new Environment {
       override def getProgram(address: Address): Option[ProgramContext] = ???
-      override def updateProgram(address: Data, code: Data): Unit = ???
+      override def updateProgram(address: Address, code: Data): Data = ???
       override def createProgram(owner: Address, code: Data): Address = ???
       override def getProgramOwner(address: Address): Option[Address] = ???
+      override def transfer(from: Address, to: Address, amount: NativeCoin): Unit = ???
+      override def balance(address: Address): NativeCoin = ???
+      override def withdraw(address: Address, amount: NativeCoin): Unit = ???
+      override def accrue(address: Address, amount: NativeCoin): Unit = ???
     }
-    val stack = Vm.runRaw(ByteString.copyFrom(code), ByteString.EMPTY, emptyState).stack
+    val stack = Vm.runRaw(ByteString.copyFrom(code), Address @@ ByteString.EMPTY, emptyState, Long.MaxValue).memory.stack
     stack.map(stackItem.get).toList
   }
 
@@ -51,15 +57,15 @@ object IntegrationUtils {
 
   def runProgram[T](
       c: Array[Byte],
-      storageItems: Seq[(Address, Data)] = Seq.empty,
-      executor: Address = ByteString.EMPTY)(implicit stackItem: StackItem[T]): (List[T], Map[Address, T]) = {
-    val programAddress = ByteString.copyFrom(Array[Byte](1, 2, 3))
+      storageItems: Seq[(Data, Data)] = Seq.empty,
+      executor: Address = Address @@ ByteString.EMPTY)(implicit stackItem: StackItem[T]): (List[T], Map[Data, T]) = {
+    val programAddress = Address @@ ByteString.copyFrom(Array[Byte](1, 2, 3))
 
-    val programStorageMap = mutable.Map[Address, Data](storageItems: _*)
+    val programStorageMap = mutable.Map[Data, Data](storageItems: _*)
     val programStorage = new Storage {
-      override def get(key: Address): Option[Data] = programStorageMap.get(key)
-      override def put(key: Address, value: Data): Unit = programStorageMap.put(key, value)
-      override def delete(key: Address): Unit = programStorageMap.remove(key)
+      override def get(key: Data): Option[Data] = programStorageMap.get(key)
+      override def put(key: Data, value: Data): Option[Data] = programStorageMap.put(key, value)
+      override def delete(key: Data): Option[Data] = programStorageMap.remove(key)
     }
 
     val stateWithAccount = new Environment {
@@ -73,32 +79,36 @@ object IntegrationUtils {
           None
         }
 
-      override def updateProgram(address: Data, code: Data): Unit = ???
+      override def updateProgram(address: Address, code: Data): Data = ???
       override def createProgram(owner: Address, code: Data): Address = ???
       override def getProgramOwner(address: Address): Option[Address] = ???
+      override def transfer(from: Address, to: Address, amount: NativeCoin): Unit = ???
+      override def balance(address: Address): NativeCoin = ???
+      override def withdraw(address: Address, amount: NativeCoin): Unit = ???
+      override def accrue(address: Address, amount: NativeCoin): Unit = ???
     }
-    val stack = Vm.runProgram(programAddress, Memory.empty, executor, stateWithAccount).stack
-
-    (stack.map(stackItem.get).toList, programStorageMap.mapValues(stackItem.get).toMap)
+    val memory = VmMemory.empty
+    Vm.runProgram(programAddress, memory, executor, stateWithAccount, 0, new WattCounter(Long.MaxValue))
+    (memory.stack.map(stackItem.get).toList, programStorageMap.mapValues(stackItem.get).toMap)
   }
 
   def runForthProgram[T](code: String,
                          storageItems: Seq[(Address, Data)] = Seq.empty,
-                         executor: Address = ByteString.EMPTY)(
-      implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Address, T])] =
+                         executor: Address = Address @@ ByteString.EMPTY)(
+      implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Data, T])] =
     Compiler().compile(code).map(c => runProgram(c, storageItems, executor))
 
   def runAsmProgram[T](code: Seq[asm.Op],
-                       storageItems: Seq[(Address, Data)] = Seq.empty,
-                       executor: Address = ByteString.EMPTY)(
-      implicit stackItem: StackItem[T]): (List[T], Map[Address, T]) =
+                       storageItems: Seq[(Data, Data)] = Seq.empty,
+                       executor: Address = Address @@ ByteString.EMPTY)(
+      implicit stackItem: StackItem[T]): (List[T], Map[Data, T]) =
     runProgram(asm.Assembler().compile(code), storageItems, executor)
 
   def runWithEnviroment[T](code: Array[Byte],
                            from: Address,
-                           env: Map[Address, (String, Map[Address, Data])] = Map.empty)
-    : (Seq[Data], Map[Address, (ByteString, Map[Address, Data])]) = {
-    val enviromentMap = mutable.Map.empty[Address, (ByteBuffer, mutable.Map[Address, Data])]
+                           env: Map[Address, (String, Map[Data, Data])] = Map.empty)
+    : (Seq[Data], Map[Address, (ByteString, Map[Data, Data])]) = {
+    val enviromentMap = mutable.Map.empty[Address, (ByteBuffer, mutable.Map[Data, Data])]
     var addressCounter = 0
 
     val enviroment = new Environment {
@@ -106,29 +116,33 @@ object IntegrationUtils {
         case (accountCode, storageMap) =>
           new ProgramContext {
             override def storage: Storage = new Storage {
-              override def get(key: Address): Option[Data] = storageMap.get(key)
-              override def put(key: Address, value: Data): Unit = storageMap.put(key, value)
-              override def delete(key: Address): Unit = storageMap.remove(key)
+              override def get(key: Data): Option[Data] = storageMap.get(key)
+              override def put(key: Data, value: Data): Option[Data] = storageMap.put(key, value)
+              override def delete(key: Data): Option[Data] = storageMap.remove(key)
             }
             override def code: ByteBuffer = accountCode
           }
       }
-      override def updateProgram(address: Data, code: Data): Unit = ???
+      override def updateProgram(address: Address, code: Data): Data = ???
       override def createProgram(owner: Address, code: Data): Address = {
         addressCounter += 1
-        val address = int32ToByteString(addressCounter)
+        val address = Address @@ int32ToByteString(addressCounter)
         enviromentMap.update(address, (ByteBuffer.wrap(code.toByteArray), mutable.Map.empty))
         address
       }
       override def getProgramOwner(address: Address): Option[Address] = ???
+      override def transfer(from: Address, to: Address, amount: NativeCoin): Unit = ???
+      override def balance(address: Address): NativeCoin = ???
+      override def withdraw(address: Address, amount: NativeCoin): Unit = ???
+      override def accrue(address: Address, amount: NativeCoin): Unit = ???
     }
-    val stack = Vm.runRaw(ByteString.copyFrom(code), from, enviroment).stack
+    val stack = Vm.runRaw(ByteString.copyFrom(code), from, enviroment, Long.MaxValue).memory.stack
     (stack, enviromentMap.mapValues { case (c, m) => (ByteString.copyFrom(c.array()), m.toMap) }.toMap)
   }
 
   def runForthWithEnviroment[T](code: String,
                                 from: Address,
-                                env: Map[Address, (String, Map[Address, Data])] = Map.empty)
-    : Either[String, (Seq[Data], Map[Address, (ByteString, Map[Address, Data])])] =
+                                env: Map[Address, (String, Map[Data, Data])] = Map.empty)
+    : Either[String, (Seq[Data], Map[Address, (ByteString, Map[Data, Data])])] =
     Compiler().compile(code).map(c => runWithEnviroment(c, from, env))
 }

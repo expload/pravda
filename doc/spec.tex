@@ -5,7 +5,7 @@
 \usepackage{tabularx}
 \usepackage{scrextend}
 \usepackage{url}
-\usepackage{mathabx}
+\usepackage{amsmath}
 
 \title{B* Smart-contracts Engine Specification}
 \author{Aleksey Fomkin}
@@ -92,13 +92,13 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 0x13 & CONCAT & $2$ & $1$ & Takes two top words from the stack and pushes their concatenation to the stack \\
 \hline
 0x22 & DUP1 & $1$ & $2$ & Duplicates first item of the stack. \\
-\vdots & \vdots & \vdots & \vdots \\
+\vdots & \vdots & \vdots & \vdots & \vdots \\
 0x31 & DUP16 & $1$ & $2$ & Duplicates sixteenth item of the stack. \\
 \hline
 0x32 & DUPN & $1$ & $1$ & Duplicates $(n+1)$-th item of the stack where $n$ is the first item in stack. \\
 \hline
 0x33 & SWAP1 & $2$ & $2$ & Swaps first two items in the stack. \\
-\vdots & \vdots & \vdots & \vdots \\
+\vdots & \vdots & \vdots & \vdots & \vdots \\
 0x42 & SWAP16 & $2$ & $2$ & Swaps first and sixteenth items in the stack. \\
 \hline
 0x43 & SWAPN & $1$ & $1$ & Swaps the second item of the stack with the $(n+1)$-th item of the stack where $n$ is first item in the stack. \\
@@ -160,6 +160,7 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \hline
 0x84 & EQ & $2$ & $1$ & Defines whether the top element is equal to the second. \\
 \hline
+\end{tabularx}
 
 \subsection{Specials}
 \begin{tabularx}{\textwidth}{ c l c c p{7cm} }
@@ -169,9 +170,84 @@ If the length of the length is 0 the data is encoded by the rest $5$ bits of the
 \hline
 0xa1 & HEIGHT & $1$ & $0$ & Gives current block height. \\
 \hline
+0xa2 & PADDR & $0$ & $0$ & Gives current program address. \\
+\hline
+0xa3 & TRANSFER & $2$ & $0$ & Gets two parameters $a$ and $n$ from the stack and transfers $n$ native coins from the executor account to the account $a$. \\
+\hline
+0xa4 & PTRANSFER & $2$ & $0$ & Gets two parameters $a$ and $n$ from the stack and transfers $n$ native coins from the current program account to the account $a$ . \\
+\hline
 
 \end{tabularx}
 
+\section{Watts}
+
+Everything has a price. When you send your program to the Pravda blockchain, validators need to spend their resources (like electricity, disk space and memory) just to execute it. The more complex calculations you execute, the more validator's resources are needed. So, you should give them some kind of money for your program. Amount of \emph{Watts} is the representaion of spent resources in Pravda.
+
+There are three main resources you use in Pravda - CPU time, memory and storage space. So, all of them has a cost in Watts, which are described below.
+
+\emph{Watt price} $W_p$ is the cost of one spent watt. The more price you assign to the transaction the more probability that your transaction will be chosen by the validators.
+
+\emph{Watt limit} $W_l$ is the limit of watts you think should be enough to execute your program. If it is actually not enough you will get OutOfWatts exception, your program will do nothing and you will pay for that transaction.
+
+Before you execute a transaction, a fee of $W_p \cdot W_l$ Native Coins will be charged from your account. After the execution is complete, you will get back $W_p \cdot \theta$, where $\theta = W_l - W_s + \min(W_r, \frac{W_s}{2})$. Here $W_s$ - spent Watts and $W_r$ - refund Watts. 
+
+All the rest Native Coins, which are $W_p \cdot (W_l - \theta)$, are shared among the validators after the block containing the transaction is committed.
+
+\subsection{CPU time}
+
+Every new opcode needs 1 Watt to be executed.
+
+Every time you use storage we need time to read or write to it. So, it costs 20 Watts.
+
+$$
+C_s = \begin{cases} 
+	20 & \text{if storage is used} \\
+	0  & \text{otherwise}
+	\end{cases}
+$$
+
+
+There are several groups of operations that needs different omount of CPU time and therefore different amount of watts. They are:
+
+$$
+C_{extra} = \begin{cases} 
+			5 & \text{for opcodes I32ADD,I32LT,I32GT,NOT,AND,OR,XOR,EQ} \\ % SimpleArithmetic
+			5 & \text{for opcodes CALL,JUMP} \\ % Control
+			10 & \text{for opcodes I32DIV,I32MUL,I32MOD,FDIV,FMUL,FMOD} \\ % Arithmetic
+			10 & \text{for opcodes PCALL,LCALL} \\ % ExtCall
+			15 & \text{for opcodes JUMPI} \\
+			0 & \text{for other opcodes} \\
+			\end{cases}
+$$
+
+CPU time watts for every opcode are calculates as:
+$$ C_{op} = 1 + C_{s} + C_{extra} $$ 
+
+
+So, total CPU time watts for the transaction are calculates as:
+
+$$ C_w = \sum_{op} C_{op} $$ 
+
+\subsection{Memory}
+
+Memory in pravda consists of two main parts - stack and heap. PUSHX opcode allocates stack memory and MPUT opcode allocates heap memory. Pravda calculates maximum amount of bytes $b_m$ you spent during the transaction execution. Memory watts are calculated as:
+
+$$M_w = 100\cdot(\lfloor b_m/100,000,000 \rfloor + 1)^3 $$
+
+\subsection{Storage}
+
+Every time you put something into the storage using SPUT or SDROP opcodes, pravda calculates amount of bytes you occupy $o_s$ and amount of bytes you release $r_s$. Total storage watts are calculates as:
+
+$$S_w = 8 \cdot o_s $$
+
+Refund is calculates as:
+$$W_r = 2 \cdot r_s $$
+
+\subsection{Total}
+
+Total amount of spent watts is calculates as:
+
+$W_s = C_w + M_w + S_w$
 
 \begin{thebibliography}{9}
 

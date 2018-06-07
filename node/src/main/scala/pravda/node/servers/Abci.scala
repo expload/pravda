@@ -18,13 +18,12 @@ import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.persistence.FileStore
 import pravda.common.contrib.ripemd160
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.data.blockchain.Transaction.SignedTransaction
-import pravda.node.data.common.Address
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-
 import pravda.common.{bytes => byteUtils}
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
@@ -32,49 +31,98 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   import Abci._
 
-  var proposedHeight = 0L
   val consensusEnv = new EnvironmentProvider(applicationStateDb)
   val mempoolEnv = new EnvironmentProvider(applicationStateDb)
 
+  var proposedHeight = 0L
+  var validators: Vector[Address] = Vector.empty[Address]
+
   def info(request: RequestInfo): Future[ResponseInfo] = {
     FileStore.readApplicationStateInfoAsync().map { maybeInfo =>
-      val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY))
+      val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
       ResponseInfo(lastBlockHeight = info.blockHeight, lastBlockAppHash = info.appHash)
     }
   }
 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
-    Future.successful(ResponseInitChain.defaultInstance)
+    val tokenSaleMembers = List(
+      /* Alice */ Address
+        .tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45")
+        .getOrElse(Address.Void) -> NativeCoin(BigDecimal(5000)),
+      /*  Bob  */ Address
+        .tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA")
+        .getOrElse(Address.Void) -> NativeCoin(BigDecimal(3000))
+    )
+
+    val initValidators = request.validators.toVector
+      .map(x => tendermint.unpackAddress(x.pubKey))
+
+    for {
+      _ <- FileStore
+        .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators))
+      _ <- Future.sequence(tokenSaleMembers.map {
+        case (address, amount) =>
+          applicationStateDb.putBytes(byteUtils.stringToBytes(s"balance:${byteUtils.byteString2hex(address)}"),
+                                      transcode(amount).to[Bson])
+      })
+    } yield ResponseInitChain.defaultInstance
+
   }
 
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
-    Future.successful(ResponseBeginBlock())
+
+    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.pubKey))
+    val absent = request.absentValidators
+    FileStore
+      .readApplicationStateInfoAsync()
+      .map { maybeInfo =>
+        val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
+        validators = info.validators.zipWithIndex.collect {
+          case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
+        }
+      }
+      .map(_ => ResponseBeginBlock())
+  }
+
+  def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
+    if (tx.wattPrice <= NativeCoin.zero) {
+      Failure(WrongWattPrice())
+    } else if (tx.wattLimit <= 0) {
+      Failure(WrongWattLimit())
+    } else {
+      Success(())
+    }
   }
 
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: EnvironmentProvider)(
       result: (Int, String) => R): Future[R] = {
+
     val `try` = for {
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
+      _ <- checkTransaction(authTx)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
-      encodedStack <- Try {
-        Vm.runRaw(authTx.program, authTx.from, env)
-          .stack
-          .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
-          .mkString(",")
-      }
+      _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
+      execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
     } yield {
-      encodedStack
+      val spent = execResult.wattCounter.total
+      val remaining = tx.wattLimit - spent
+      env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
+      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * spent))
+      execResult
     }
 
     Future.successful {
       `try` match {
-        case Success(encodedStack) =>
-          result(TxStatusOk, encodedStack)
+        case Success(executionResult) =>
+          result(TxStatusOk,
+                 executionResult.memory.stack
+                   .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
+                   .mkString(","))
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
@@ -92,15 +140,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   def endBlock(request: RequestEndBlock): Future[ResponseEndBlock] = {
     proposedHeight = request.height
+    // TODO: Validators update
     Future.successful(ResponseEndBlock.defaultInstance)
   }
 
   def commit(request: RequestCommit): Future[ResponseCommit] = {
-    consensusEnv.commit(proposedHeight)
+    consensusEnv.commit(proposedHeight, validators)
     mempoolEnv.clear()
     val hash = ByteString.copyFrom(applicationStateDb.stateHash)
     FileStore
-      .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, hash))
+      .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, hash, validators))
       .map(_ => ResponseCommit(hash))
   }
 
@@ -118,12 +167,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   def setOption(request: RequestSetOption): Future[ResponseSetOption] = ???
 
   def query(req: RequestQuery): Future[ResponseQuery] = ???
+
 }
 
 object Abci {
 
   final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
   final case class ProgramNotFoundException() extends Exception("Program not found")
+  final case class NotEnoughMoney()           extends Exception("Not enough money")
+  final case class WrongWattPrice()           extends Exception("Bad transaction parameter: wattPrice")
+  final case class WrongWattLimit()           extends Exception("Bad transaction parameter: wattLimit")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -135,20 +188,26 @@ object Abci {
 
   object EnvironmentEffect {
     final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
-    final case class StorageWrite(key: String, value: Array[Byte])          extends EnvironmentEffect
-    final case class StorageRead(key: String, value: Option[Array[Byte]])   extends EnvironmentEffect
-    final case class ProgramCreate(address: Address, program: Array[Byte])  extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: Array[Byte])  extends EnvironmentEffect
+    final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
+        extends EnvironmentEffect
+    final case class StorageRead(key: String, value: Option[Array[Byte]])  extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class Withdraw(from: Address, amount: NativeCoin)           extends EnvironmentEffect
+    final case class Accrue(to: Address, amount: NativeCoin)               extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin)     extends EnvironmentEffect
   }
 
   final class EnvironmentProvider(db: DB) {
 
+    private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
     private val cache = mutable.Map.empty[String, Array[Byte]]
 
     private lazy val programsPath = new DbPath("program")
     private lazy val effectsPath = new DbPath("effects")
+    private lazy val balancesPath = new DbPath("balance")
 
     private final class DbPath(path: String) {
 
@@ -164,21 +223,23 @@ object Abci {
         cache.get(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
       }
 
-      def put[V: BsonEncoder](suffix: String, value: V): Unit = {
+      def put[V: BsonEncoder](suffix: String, value: V): Option[Array[Byte]] = {
         val bsonValue: Array[Byte] = transcode(value).to[Bson]
         putRawBytes(suffix, bsonValue)
       }
 
-      def putRawBytes(suffix: String, value: Array[Byte]): Unit = {
+      def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = {
         val key = mkKey(suffix)
+        val prev = getRawBytes(suffix)
         cache.put(key, value)
         operations += Operation.Put(byteUtils.stringToBytes(key), value)
+        prev
       }
 
       def remove(suffix: String): Option[Array[Byte]] = {
         val key = mkKey(suffix)
         operations += Operation.Delete(byteUtils.stringToBytes(key))
-        cache.remove(key)
+        cache.remove(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
       }
     }
 
@@ -195,33 +256,36 @@ object Abci {
 
       private final class WsProgramStorage(dbPath: DbPath) extends Storage {
 
-        def get(key: state.Address): Option[state.Data] = {
+        def get(key: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.getRawBytes(hexKey)
           effects += StorageRead(dbPath.mkKey(hexKey), value)
-          value.map(ba => ByteString.copyFrom(ba))
+          value.map(ByteString.copyFrom)
         }
 
-        def put(key: state.Address, value: state.Data): Unit = {
+        def put(key: state.Data, value: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val array = value.toByteArray
-          effects += StorageWrite(dbPath.mkKey(hexKey), array)
-          dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
+          val prev = dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
+          effects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
+          prev.map(ByteString.copyFrom)
         }
 
-        def delete(key: state.Address): Unit = {
+        def delete(key: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.remove(byteUtils.byteString2hex(key))
           effects += StorageRemove(dbPath.mkKey(hexKey), value)
+          value.map(ByteString.copyFrom)
         }
+
       }
 
-      def createProgram(owner: state.Address, code: Data): state.Address = {
+      def createProgram(owner: Address, code: Data): Address = {
         // FIXME fomkin: consider something better
         val addressBytes = ripemd160.getHash(owner.concat(code).toByteArray)
 
         val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, Address @@ owner)
+        val sp = StoredProgram(code, owner)
 
         programsPath.put(byteUtils.bytes2hex(addressBytes), sp)
 
@@ -229,11 +293,39 @@ object Abci {
         address
       }
 
-      def updateProgram(address: state.Address, code: Data): Unit = {
+      def updateProgram(address: Address, code: Data): Data = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
         val sp = oldSb.copy(code = code)
         programsPath.put(byteUtils.byteString2hex(address), sp)
-        effects += ProgramUpdate(Address @@ address, code.toByteArray)
+        effects += ProgramUpdate(address, code.toByteArray)
+        sp.code
+      }
+
+      def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
+        withdraw(from, amount)
+        accrue(to, amount)
+      }
+
+      def balance(address: Address): NativeCoin = {
+        val bal = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
+        effects += ShowBalance(address, bal)
+        bal
+      }
+
+      def withdraw(address: Address, amount: NativeCoin): Unit = {
+        val current = balance(address)
+        if (current < amount) {
+          throw NotEnoughMoney()
+        } else {
+          balancesPath.put(byteUtils.byteString2hex(address), current - amount)
+          effects += Withdraw(address, amount)
+        }
+      }
+
+      def accrue(address: Address, amount: NativeCoin): Unit = {
+        val current = balance(address)
+        balancesPath.put(byteUtils.byteString2hex(address), current + amount)
+        effects += Accrue(address, amount)
       }
 
       private def getStoredProgram(address: ByteString) =
@@ -242,10 +334,10 @@ object Abci {
       // Effects below are ignored by effect collect
       // because they are inaccessible from user space
 
-      def getProgramOwner(address: ByteString): Option[ByteString] =
+      def getProgramOwner(address: Address): Option[Address] =
         getStoredProgram(address).map(_.owner)
 
-      def getProgram(address: ByteString): Option[ProgramContext] =
+      def getProgram(address: Address): Option[ProgramContext] =
         getStoredProgram(address) map { program =>
           new ProgramContext {
             def code: ByteBuffer = ByteBuffer.wrap(program.code.toByteArray)
@@ -255,15 +347,35 @@ object Abci {
             }
           }
         }
+
+    }
+
+    def appendFee(coins: NativeCoin): Unit = {
+      val newFees = NativeCoin @@ (fee + coins)
+      fee = newFees
     }
 
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
       cache.clear()
+      fee = NativeCoin.zero
     }
 
-    def commit(height: Long): Unit = {
+    def accrue(address: Address, amount: NativeCoin): Unit = {
+      val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
+      balancesPath.put(byteUtils.byteString2hex(address), current + amount)
+    }
+
+    def commit(height: Long, validators: Vector[Address]): Unit = {
+
+      // Share fee
+      val share = NativeCoin @@ (fee / validators.length).setScale(4, BigDecimal.RoundingMode.FLOOR)
+      val remainder = NativeCoin @@ (fee - share * validators.length)
+      validators.foreach { address =>
+        accrue(address, share)
+      }
+      accrue(validators((height % validators.length).toInt), remainder)
 
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]

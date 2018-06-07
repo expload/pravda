@@ -25,7 +25,7 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F], vm: VmLanguage[F]) {
         executor = bytes.hex2byteString(config.executor)
         program <- useOption(config.input)(io.readFromStdin(),
                                            path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.\n")))
-        memory <- EitherT(vm.run(program, executor, storagePath))
+        memory <- EitherT(vm.run(program, executor, storagePath, Long.MaxValue))
       } yield {
         memory
       }

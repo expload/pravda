@@ -1,9 +1,12 @@
-package pravda.vm.std.libs
+package pravda.vm
+
+package std
+
+package libs
 
 import com.google.protobuf.ByteString
 import pravda.vm.serialization._
 import pravda.vm.state.Data
-import pravda.vm.std.{Func, NativeLibrary}
 
 object Typed extends NativeLibrary {
 
@@ -18,26 +21,28 @@ object Typed extends NativeLibrary {
     data.byteAt(0)
 
   val typedI32: Func = Func("typedI32", m => {
-    m.copy(stack = m.stack.map(dataToTyped(Int32Tag, _)))
+    val typed = m.all.map(dataToTyped(Int32Tag, _))
+    m.clear()
+    m.push(typed)
   })
 
   val typedR32: Func = Func("typedR64", m => {
-    m.copy(stack = m.stack.map(dataToTyped(Float64Tag, _)))
+    val typed = m.all.map(dataToTyped(Float64Tag, _))
+    m.clear()
+    m.push(typed)
   })
 
   val typedBool: Func = Func("typedBool", m => {
     val b = if (m.stack(0).byteAt(0) == 0) 0 else 1
-    m.stack.clear()
+    m.clear()
     m.push(dataToTyped(Int32Tag, int32ToData(b)))
-    m
   })
 
   val typedNot: Func = Func("typedNot", m => {
     val a = dataToInt32(m.stack(0).substring(1))
     val res = if (a == 0) 1 else 0
-    m.stack.clear()
+    m.clear()
     m.push(dataToTyped(Int32Tag, int32ToData(res)))
-    m
   })
 
   private def createCmpFunc(name: String,
@@ -51,9 +56,9 @@ object Typed extends NativeLibrary {
     Func(
       name,
       m => {
-        val a = m.stack(0)
-        val b = m.stack(1)
-        m.stack.clear()
+        val a = m.all(0)
+        val b = m.all(1)
+        m.clear()
 
         val res = (typedTag(a), typedTag(b)) match {
           case (Int32Tag, Int32Tag) =>
@@ -80,7 +85,6 @@ object Typed extends NativeLibrary {
         }
 
         m.push(res)
-        m
       }
     )
   }
@@ -95,7 +99,7 @@ object Typed extends NativeLibrary {
       m => {
         val a = m.stack(0)
         val b = m.stack(1)
-        m.stack.clear()
+        m.clear()
 
         val res = (typedTag(a), typedTag(b)) match {
           case (Int32Tag, Int32Tag) =>
@@ -122,7 +126,6 @@ object Typed extends NativeLibrary {
         }
 
         m.push(res)
-        m
       }
     )
 

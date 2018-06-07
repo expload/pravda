@@ -6,5 +6,5 @@ import pravda.vm.state.Memory
 import scala.language.higherKinds
 
 trait VmLanguage[F[_]] {
-  def run(program: ByteString, executor: ByteString, storagePath: String): F[Either[String, Memory]]
+  def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): F[Either[String, Memory]]
 }

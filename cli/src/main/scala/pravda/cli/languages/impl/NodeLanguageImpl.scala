@@ -8,9 +8,9 @@ import akka.util.{ByteString => AkkaByteString}
 import com.google.protobuf.ByteString
 import pravda.cli.languages.NodeLanguage
 import pravda.common.bytes
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common.{Address, Mytc}
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.launcher
@@ -32,12 +32,15 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,
                                   privateKey: ByteString,
+                                  wattLimit: Long,
+                                  wattPrice: NativeCoin,
                                   data: ByteString): Future[Either[String, String]] = {
 
     val tx = UnsignedTransaction(
       from = Address @@ address,
       program = TransactionData @@ data,
-      Mytc.zero,
+      wattLimit = wattLimit,
+      wattPrice = wattPrice,
       nonce = Random.nextInt()
     )
 
@@ -47,7 +50,8 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
 
     val request = HttpRequest(
       method = HttpMethods.POST,
-      uri = s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&fee=0",
+      uri =
+        s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&wattLimit=${tx.wattLimit}&wattPrice=${tx.wattPrice}",
       entity = HttpEntity(data.toByteArray)
     )
 

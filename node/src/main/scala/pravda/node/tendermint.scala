@@ -1,16 +1,16 @@
 package pravda.node
 
 import java.io.{File, FileOutputStream, PrintWriter}
+
 import com.google.protobuf.ByteString
 import pravda.common.contrib.ripemd160
 import pravda.node.data.TimechainConfig
-import pravda.node.data.common.Address
 import pravda.node.utils.{CpuArchitecture, OperationSystem}
 import pravda.node.data.serialization._
 import json._
+import pravda.common.domain.Address
 
 import scala.concurrent.{ExecutionContext, Future}
-
 import pravda.common.{bytes => byteUtils}
 
 object tendermint {

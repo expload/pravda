@@ -2,18 +2,21 @@ package pravda
 
 import java.nio.ByteBuffer
 
+import supertagged.TaggedType
+
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 
 package object vm {
 
-  type Word = Array[Byte]
+  object Word extends TaggedType[Array[Byte]]
+  type Word = Word.Type
 
   def doubleToWord(value: Double): Word = {
     val buf = ByteBuffer.allocate(9)
     buf.put(0x28.toByte)
     buf.putDouble(value)
-    buf.array()
+    Word @@ buf.array()
   }
 
   def wordToDouble(word: ByteBuffer): Double = {
@@ -25,7 +28,7 @@ package object vm {
     val buf = ByteBuffer.allocate(5)
     buf.put(0x24.toByte)
     buf.putInt(int32)
-    buf.array()
+    Word @@ buf.array()
   }
 
   def wordToInt32(word: ByteBuffer): Int = {
@@ -47,16 +50,16 @@ package object vm {
   def bytesToWord(bs: Array[Byte], reduction: Boolean = false): Word = {
     val reducedBytes = if (reduction) bs.dropWhile(_ == 0) else bs
     if ((reducedBytes.length == 1) && ((reducedBytes(0) & 0xE0) == 0)) {
-      reducedBytes
+      Word @@ reducedBytes
     } else {
       val prefix = lengthToBytes(reducedBytes.length.toLong)
       if ((prefix(0) & 0xE0) == 0) {
         val len = ((prefix.length & 0x07) << 5).toByte
         prefix(0) = (prefix(0) | len).toByte
-        prefix ++ reducedBytes
+        Word @@ (prefix ++ reducedBytes)
       } else {
         val len = (((prefix.length + 1) & 0x07) << 5).toByte
-        len +: (prefix ++ reducedBytes)
+        Word @@ (len +: (prefix ++ reducedBytes))
       }
     }
   }

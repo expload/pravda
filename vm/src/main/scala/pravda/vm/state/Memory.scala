@@ -1,49 +1,21 @@
-package pravda.vm
+package pravda.vm.state
 
-package state
-
-import pravda.vm.state.VmError.StackUnderflow
-
-import scala.collection.mutable.ArrayBuffer
-
-final case class Memory(
-    stack: ArrayBuffer[Data],
-    heap: ArrayBuffer[Data]
-) {
-
-  def pop(): Data = {
-    if (stack.isEmpty) {
-      throw VmErrorException(StackUnderflow)
-    }
-
-    stack.remove(stack.length - 1)
-  }
-
-  def push(x: Data): Unit =
-    stack += x
-
-  def top(num: Int): Memory = {
-    if (stack.length < num) {
-      throw VmErrorException(StackUnderflow)
-    }
-
-    val topStack = stack.takeRight(num)
-    stack.remove(stack.length - num, num)
-    Memory(topStack, heap.clone())
-  }
-
-  def ++=(other: Memory): Unit = {
-    stack ++= other.stack
-    heap ++= other.heap.drop(heap.length)
-  }
-
-}
-
-object Memory {
-
-  def empty: Memory = new Memory(
-    stack = new ArrayBuffer[Data](1024),
-    heap = new ArrayBuffer[Data](1024)
-  )
-
+trait Memory {
+  def stack: Seq[Data]
+  def heap: Seq[Data]
+  def limit(index: Int): Unit
+  def dropLimit(): Unit
+  def pop(): Data
+  def push(x: Seq[Data]): Unit
+  def push(x: Data): Unit
+  def get(i: Int): Data
+  def clear(): Unit
+  def all: Seq[Data]
+  def swap(i: Int, j: Int): Unit
+  def length: Int
+  def heapPut(x: Data): Int
+  def heapGet(idx: Int): Data
+  def heapLength: Int
+  def top(): Data
+  def top(n: Int): Seq[Data]
 }

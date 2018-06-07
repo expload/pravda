@@ -1,6 +1,7 @@
 package pravda.forth
 
 import com.google.protobuf.ByteString
+import pravda.common.domain.Address
 import pravda.vm.serialization._
 import pravda.test.utils.IntegrationUtils._
 import utest._
@@ -20,7 +21,7 @@ object ForthPcall extends TestSuite {
             |$$x${code.map("%02X".format(_)).mkString}
             |pcreate 2 pcall
           """.stripMargin,
-        int32ToByteString(42)
+        Address @@ int32ToByteString(42)
       )
 
       res ==> Right(
@@ -50,7 +51,7 @@ object ForthPcall extends TestSuite {
            |10 2
            |dup3 2 pcall
           """.stripMargin,
-        int32ToByteString(42)
+        Address @@ int32ToByteString(42)
       )
 
       res ==> Right(

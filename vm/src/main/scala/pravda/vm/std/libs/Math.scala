@@ -1,27 +1,29 @@
 package pravda.vm
 
-package std.libs
+package std
+
+package libs
 
 import serialization._
 
 object Math extends std.NativeLibrary {
 
+  import pravda.vm.watt.WattCounter._
+
   private val sum = std.Func("sum", mem => {
-    val sum = mem.stack.map(dataToInt32).sum
-    mem.stack.clear()
+    val sum = mem.all.map(dataToInt32).sum
+    mem.clear()
     mem.push(int32ToData(sum))
-    mem
-  })
+  }, _.cpuUsage(CpuSimpleArithmetic))
 
   private val prod = std.Func("prod", mem => {
-    val product = mem.stack.map(dataToInt32).product
-    mem.stack.clear()
+    val product = mem.all.map(dataToInt32).product
+    mem.clear()
     mem.push(int32ToData(product))
-    mem
-  })
+  }, _.cpuUsage(CpuArithmetic))
 
   override val address: String = "Math"
-  override val functions: Seq[pravda.vm.std.Func] = Array(
+  override val functions: Seq[Func] = Array(
     sum,
     prod
   )

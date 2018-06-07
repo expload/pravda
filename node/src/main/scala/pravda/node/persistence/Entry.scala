@@ -69,11 +69,11 @@ class SingleEntry[V](
     valueReader: ValueReader[V]
 ) {
 
-  def put(value: V) = db.put(key, value)(keyWriter, valueWriter)
+  def put(value: V): Future[Unit] = db.put(key, value)(keyWriter, valueWriter)
 
-  def get() = db.getAs[V](key)(keyWriter, valueReader)
+  def get(): Future[Option[V]] = db.getAs[V](key)(keyWriter, valueReader)
 
-  def syncGet() = db.syncGetAs[V](key)(keyWriter, valueReader)
+  def syncGet(): Option[V] = db.syncGetAs[V](key)(keyWriter, valueReader)
 
   def putBatch(value: V): Put = Put(key, value)(keyWriter, valueWriter)
 
@@ -83,9 +83,8 @@ class SingleEntry[V](
 
 object SingleEntry {
 
-  def apply[V](key: String)(
-      implicit db: DB,
-      keyWriter: KeyWriter[String],
+  def apply[V](db: DB, key: String)(
+      implicit keyWriter: KeyWriter[String],
       valueWriter: ValueWriter[V],
       valueReader: ValueReader[V]
   ) = new SingleEntry(db, key, keyWriter, valueWriter, valueReader)

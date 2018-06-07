@@ -60,6 +60,9 @@ object Opcodes {
 
   // Specials
   final val FROM = int.FROM.toByte
+  final val PADDR = int.PADDR.toByte
+  final val TRANSFER = int.TRANSFER.toByte
+  final val PTRANSFER = int.PTRANSFER.toByte
 
   object int {
     // Control
@@ -121,5 +124,9 @@ object Opcodes {
 
     // Specials
     final val FROM = 0xa0
+    final val PADDR = 0xa2
+    final val TRANSFER = 0xa3
+    final val PTRANSFER = 0xa4
+
   }
 }

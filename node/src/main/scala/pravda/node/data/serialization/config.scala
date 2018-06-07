@@ -1,7 +1,7 @@
 package pravda.node.data.serialization
 
+import pravda.common.domain.Address
 import pravda.node.data.TimechainConfig.{CryptoKey, GenesisValidator}
-import pravda.node.data.common.Address
 import pravda.node.data.cryptography.PrivateKey
 import pureconfig.ConfigReader
 

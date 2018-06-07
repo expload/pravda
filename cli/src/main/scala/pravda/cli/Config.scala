@@ -1,5 +1,7 @@
 package pravda.cli
 
+import pravda.common.domain.NativeCoin
+
 sealed trait Config
 
 object Config {
@@ -23,6 +25,8 @@ object Config {
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
                              input: Option[String] = None,
+                             wattLimit: Long = 300,
+                             wattPrice: NativeCoin = NativeCoin.amount("0.01"),
                              endpoint: String = "http://localhost:8080/api/public/broadcast")
       extends Config
 

@@ -3,12 +3,29 @@ package pravda.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import state.{Address, Data}
+import pravda.common.domain.{Address, NativeCoin}
+import state.Data
 
 package object serialization {
 
   def dataToInt32(data: Data): Int = {
     data.asReadOnlyByteBuffer().getInt
+  }
+
+  def dataToAddress(data: Data): Address = {
+    Address @@ data
+  }
+
+  def addressToData(address: Address): Data = {
+    address
+  }
+
+  def dataToCoins(data: Data): NativeCoin = {
+    NativeCoin.amount(data.toStringUtf8)
+  }
+
+  def coinsToData(coins: NativeCoin): Data = {
+    ByteString.copyFromUtf8(coins.toString)
   }
 
   def dataToDouble(data: Data): Double = {
@@ -25,7 +42,7 @@ package object serialization {
     int32ToByteString(i)
 
   def int32ToAddress(i: Int): Address =
-    int32ToByteString(i)
+    Address @@ int32ToByteString(i)
 
   def doubleToData(v: Double): Data = {
     val buf = ByteBuffer.allocate(8)
@@ -36,6 +53,10 @@ package object serialization {
 
   def wordToData(source: ByteBuffer): Data = {
     ByteString.copyFrom(wordToBytes(source))
+  }
+
+  def wordToAddress(source: ByteBuffer): Address = {
+    Address @@ ByteString.copyFrom(wordToBytes(source))
   }
 
   val FALSE: Data = ByteString.copyFrom(Array[Byte](0))
@@ -57,5 +78,5 @@ package object serialization {
     bytesToByteString(ints: _*)
 
   def bytesToAddress(ints: Int*): Address =
-    bytesToByteString(ints: _*)
+    Address @@ bytesToByteString(ints: _*)
 }

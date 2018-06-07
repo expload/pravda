@@ -5,12 +5,17 @@ package vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
+import pravda.common.domain.Address
+import pravda.vm.watt.{EnvironmentWithCounter, MemoryWithCounter, StorageWithCounter, WattCounter}
 
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable.ArrayBuffer
 import state._
 import serialization._
 import state.VmError._
+import WattCounter._
+
+import scala.util.{Failure, Success, Try}
 
 object Vm {
 
@@ -18,22 +23,34 @@ object Vm {
 
   val loader: Loader = DefaultLoader
 
-  def runRaw(program: ByteString, executor: Address, environment: Environment): Memory = run(
-    program = ByteBuffer.wrap(program.toByteArray),
-    environment = environment,
-    memory = Memory.empty,
-    executor = executor,
-    progAddress = None,
-    progStorage = None,
-    depth = 0,
-    isLibrary = false
-  )
+  def runRaw(program: ByteString, executor: Address, environment: Environment, wattLimit: Long): ExecutionResult = {
+    val wattCounter = new WattCounter(wattLimit)
+    val memory = VmMemory.empty
+    Try {
+      run(
+        program = ByteBuffer.wrap(program.toByteArray),
+        environment = EnvironmentWithCounter(environment, wattCounter),
+        memory = MemoryWithCounter(memory, wattCounter),
+        executor = executor,
+        progAddress = None,
+        progStorage = None,
+        depth = 0,
+        isLibrary = false,
+        wattCounter = wattCounter
+      )
+    } match {
+      case Success(_)                     => ExecutionResult(memory, None, wattCounter)
+      case Failure(err: VmErrorException) => ExecutionResult(memory, Some(err), wattCounter)
+      case Failure(err)                   => ExecutionResult(memory, Some(VmErrorException(SomethingWrong(err))), wattCounter)
+    }
+  }
 
   def runProgram(programAddress: Address,
-                 initMemory: Memory = Memory.empty,
+                 initMemory: Memory,
                  executor: Address,
                  environment: Environment,
-                 depth: Int = 0): Memory = {
+                 depth: Int = 0,
+                 wattCounter: WattCounter): Unit = {
 
     val account = environment.getProgram(programAddress)
     if (account.isEmpty) throw VmErrorException(NoSuchProgram)
@@ -47,7 +64,8 @@ object Vm {
         Some(programAddress),
         Some(account.get.storage),
         depth,
-        isLibrary = false)
+        isLibrary = false,
+        wattCounter = wattCounter)
   }
 
   // TODO @fomkin: looks like isLibrary and emptiness of storage are the same things.
@@ -59,12 +77,15 @@ object Vm {
       progAddress: Option[Address],
       progStorage: Option[Storage],
       depth: Int,
-      isLibrary: Boolean
-  ): Memory = {
+      isLibrary: Boolean,
+      wattCounter: WattCounter
+  ): Unit = {
+
+    if (depth > 1024) throw VmErrorException(ExtCallStackOverflow)
 
     lazy val storage = {
       if (progStorage.isEmpty) throw VmErrorException(OperationDenied)
-      progStorage.get
+      new StorageWithCounter(progStorage.get, wattCounter)
     }
 
     var currentPosition = program.position()
@@ -77,51 +98,77 @@ object Vm {
 
     def callPush(pos: Int): Unit = {
       callStack += pos
+
+      if (callStack.size > 1024) throw VmErrorException(CallStackOverflow)
     }
 
     @tailrec
     @strictfp
-    def aux(): Memory =
+    def aux(): Unit =
       if (program.hasRemaining) {
-        currentPosition = program.position()
+        wattCounter.cpuUsage(CpuBasic)
 
+        currentPosition = program.position()
         (program.get() & 0xff: @switch) match {
           case CALL =>
+            wattCounter.cpuUsage(CpuProgControl)
+
             callPush(program.position())
             program.position(dataToInt32(memory.pop()))
             aux()
           case RET =>
-            if (callStack.isEmpty) {
-              memory
-            } else {
+            if (callStack.nonEmpty) {
               program.position(callPop())
               aux()
             }
           case PCALL =>
+            wattCounter.cpuUsage(CpuExtCall)
+
             if (isLibrary) {
               throw VmErrorException(OperationDenied)
             }
             val num = dataToInt32(memory.pop())
-            val address = memory.pop()
-            val mem = runProgram(address, memory.top(num), executor, environment, depth + 1)
-            memory ++= mem
+            val address = dataToAddress(memory.pop())
+            memory.limit(num)
+            runProgram(address, memory, executor, environment, depth + 1, wattCounter)
+            memory.dropLimit()
             aux()
           case PCREATE =>
             memory.push(environment.createProgram(executor, memory.pop()))
             aux()
           case PUPDATE =>
-            val address = memory.pop()
+            val address = dataToAddress(memory.pop())
             val code = memory.pop()
             if (address != executor) {
               throw VmErrorException(OperationDenied)
             }
             environment.updateProgram(address, code)
             aux()
+          case PADDR =>
+            if (progAddress.isEmpty) {
+              throw VmErrorException(OperationDenied)
+            } else {
+              memory.push(addressToData(progAddress.get))
+            }
+          case TRANSFER =>
+            val amount = dataToCoins(memory.pop())
+            val to = dataToAddress(memory.pop())
+            environment.transfer(executor, to, amount)
+          case PTRANSFER =>
+            if (progAddress.isEmpty) {
+              throw VmErrorException(OperationDenied)
+            } else {
+              val amount = dataToCoins(memory.pop())
+              val to = dataToAddress(memory.pop())
+              environment.transfer(progAddress.get, to, amount)
+            }
           case LCALL =>
-            val address = wordToData(program)
+            wattCounter.cpuUsage(CpuExtCall)
+
+            val address = wordToAddress(program)
             val func = wordToData(program)
             val num = wordToInt32(program)
-            val callData = memory.top(num)
+            memory.limit(num)
 
             loader.lib(address, environment) match {
               case None => throw VmErrorException(NoSuchLibrary)
@@ -130,25 +177,30 @@ object Vm {
                   case None => throw VmErrorException(NoSuchMethod)
                   case Some(function) =>
                     function match {
-                      case f: StdFunction => memory ++= f(callData)
+                      case f: StdFunction => f(memory, wattCounter)
                       case f: UserDefinedFunction =>
-                        memory ++= run(f.code,
-                                       environment,
-                                       callData,
-                                       executor,
-                                       Some(address),
-                                       None,
-                                       depth + 1,
-                                       isLibrary = true)
+                        run(f.code,
+                            environment,
+                            memory,
+                            executor,
+                            Some(address),
+                            None,
+                            depth + 1,
+                            isLibrary = true,
+                            wattCounter)
                     }
                 }
             }
-
+            memory.dropLimit()
             aux()
           case JUMP =>
+            wattCounter.cpuUsage(CpuProgControl)
+
             program.position(dataToInt32(memory.pop()))
             aux()
           case JUMPI =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic, CpuProgControl)
+
             val position = memory.pop()
             val condition = memory.pop()
             if (dataToBool(condition))
@@ -161,10 +213,18 @@ object Vm {
             val from = wordToInt32(program)
             val until = wordToInt32(program)
             val word = memory.pop()
+
+            wattCounter.cpuUsage(CpuWordOperation(word))
+
             memory.push(word.substring(from, until))
             aux()
           case CONCAT =>
-            memory.push(memory.pop().concat(memory.pop()))
+            val word1 = memory.pop()
+            val word2 = memory.pop()
+
+            wattCounter.cpuUsage(CpuWordOperation(word1, word2))
+
+            memory.push(word1.concat(word2))
             aux()
           case POP =>
             memory.pop()
@@ -176,33 +236,26 @@ object Vm {
             aux()
           case DUPN =>
             val n = dataToInt32(memory.pop())
-            memory.push(memory.stack(memory.stack.length - n))
+            memory.push(memory.get(memory.length - n))
             aux()
           case SWAP =>
-            val fsti = memory.stack.length - 1
+            val fsti = memory.length - 1
             val sndi = fsti - 1
-            val fst = memory.stack(fsti)
-            val snd = memory.stack(sndi)
-            memory.stack(fsti) = snd
-            memory.stack(sndi) = fst
+            memory.swap(fsti, sndi)
             aux()
           case SWAPN =>
             val n = dataToInt32(memory.pop())
-            val fsti = memory.stack.length - 1
-            val sndi = memory.stack.length - n
-            val fst = memory.stack(fsti)
-            val snd = memory.stack(sndi)
-            memory.stack(fsti) = snd
-            memory.stack(sndi) = fst
+            val fsti = memory.length - 1
+            val sndi = memory.length - n
+            memory.swap(fsti, sndi)
             aux()
           case MPUT =>
-            val i = memory.heap.length
-            memory.heap += memory.pop()
+            val i = memory.heapPut(memory.pop())
             memory.push(int32ToData(i))
             aux()
           case MGET =>
             val i = dataToInt32(memory.pop())
-            memory.push(memory.heap(i))
+            memory.push(memory.heapGet(i))
             aux()
           case SPUT =>
             val value = memory.pop()
@@ -220,36 +273,56 @@ object Vm {
             storage.delete(memory.pop())
             aux()
           case SEXIST =>
-            memory.push(boolToData(storage.get(memory.pop()).isDefined))
+            memory.push(boolToData(storage.get(dataToAddress(memory.pop())).isDefined))
             aux()
           case I32ADD =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             memory.push(int32ToData(dataToInt32(memory.pop()) + dataToInt32(memory.pop())))
             aux()
           case I32MUL =>
+            wattCounter.cpuUsage(CpuArithmetic)
+
             memory.push(int32ToData(dataToInt32(memory.pop()) * dataToInt32(memory.pop())))
             aux()
           case I32DIV =>
+            wattCounter.cpuUsage(CpuArithmetic)
+
             memory.push(int32ToData(dataToInt32(memory.pop()) / dataToInt32(memory.pop())))
             aux()
           case I32MOD =>
+            wattCounter.cpuUsage(CpuArithmetic)
+
             memory.push(int32ToData(dataToInt32(memory.pop()) % dataToInt32(memory.pop())))
             aux()
           case FADD =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             memory.push(doubleToData(dataToDouble(memory.pop()) + dataToDouble(memory.pop())))
             aux()
           case FMUL =>
+            wattCounter.cpuUsage(CpuArithmetic)
+
             memory.push(doubleToData(dataToDouble(memory.pop()) * dataToDouble(memory.pop())))
             aux()
           case FDIV =>
+            wattCounter.cpuUsage(CpuArithmetic)
+
             memory.push(doubleToData(dataToDouble(memory.pop()) / dataToDouble(memory.pop())))
             aux()
           case FMOD =>
+            wattCounter.cpuUsage(CpuArithmetic)
+
             memory.push(doubleToData(dataToDouble(memory.pop()) % dataToDouble(memory.pop())))
             aux()
           case NOT =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             memory.push(boolToData(!dataToBool(memory.pop())))
             aux()
           case AND =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             val left = memory.pop()
             val right = memory.pop()
             memory.push(
@@ -257,6 +330,8 @@ object Vm {
             )
             aux()
           case OR =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             val left = memory.pop()
             val right = memory.pop()
             memory.push(
@@ -264,6 +339,8 @@ object Vm {
             )
             aux()
           case XOR =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             val left = memory.pop()
             val right = memory.pop()
             memory.push(
@@ -271,14 +348,20 @@ object Vm {
             )
             aux()
           case EQ =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             memory.push(boolToData(memory.pop() == memory.pop()))
             aux()
           case I32LT =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             val d1 = dataToInt32(memory.pop())
             val d2 = dataToInt32(memory.pop())
             memory.push(boolToData(d1 < d2))
             aux()
           case I32GT =>
+            wattCounter.cpuUsage(CpuSimpleArithmetic)
+
             val d1 = dataToInt32(memory.pop())
             val d2 = dataToInt32(memory.pop())
             memory.push(boolToData(d1 > d2))
@@ -286,10 +369,8 @@ object Vm {
           case FROM =>
             memory.push(executor)
             aux()
-          case STOP => memory
+          case STOP => ()
         }
-      } else {
-        memory
       }
 
     try {
@@ -297,7 +378,7 @@ object Vm {
     } catch {
       case err: VmErrorException =>
         throw err.addToTrace(Point(callStack, currentPosition, progAddress))
-      case other: Exception =>
+      case other: Throwable =>
         throw VmErrorException(SomethingWrong(other)).addToTrace(Point(callStack, program.position(), progAddress))
     }
 

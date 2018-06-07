@@ -89,7 +89,7 @@ object ParserSuite extends TestSuite {
         ArgumentsParser
           .parse(Seq("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), Config.Nope)
           .exists {
-            case Broadcast(Broadcast.Mode.Run, Some(wallet), None, "http://example.com")
+            case Broadcast(Broadcast.Mode.Run, Some(wallet), None, _, _, "http://example.com")
               if wallet.endsWith("hw.json") => true
             case _ => false
           }

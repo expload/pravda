@@ -5,7 +5,9 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import pravda.node.db.DB
 import pravda.node.clients.AbciClient
-import pravda.node.data.common.{Address, Mytc, TransactionId}
+import pravda.node.data.common.TransactionId
+import pravda.common.domain.{Address, NativeCoin}
+
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.{Config, utils}
@@ -53,6 +55,9 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
     case _: EnvironmentEffect.StorageRead   => "Read from storage"
     case _: EnvironmentEffect.StorageWrite  => "Write to storage"
+    case _: EnvironmentEffect.Withdraw      => "Withdraw NC"
+    case _: EnvironmentEffect.Accrue        => "Put NC"
+    case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
   }
 
   private def mono(s: ByteString): Node =
@@ -83,16 +88,33 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           "Key" -> localKey(key),
           "Removed value" -> showOption(value)
         )
-      case EnvironmentEffect.StorageWrite(key, value) =>
+      case EnvironmentEffect.StorageWrite(key, prev, value) =>
         Map(
           "Key" -> localKey(key),
-          "Written value" -> mono(value)
+          "Written value" -> mono(value),
+          "Previous value" -> showOption(prev)
         )
       case EnvironmentEffect.StorageRead(key, value) =>
         Map(
           "Key" -> localKey(key),
           "Readen value" -> showOption(value)
         )
+      case EnvironmentEffect.Withdraw(from, amount) =>
+        Map(
+          "From" -> mono(from),
+          "Amount" -> 'span (amount.toString)
+        )
+      case EnvironmentEffect.Accrue(to, amount) =>
+        Map(
+          "To" -> mono(to),
+          "Amount" -> 'span (amount.toString)
+        )
+      case EnvironmentEffect.ShowBalance(address, amount) =>
+        Map(
+          "Address" -> mono(address),
+          "Amount" -> 'span (amount.toString)
+        )
+
     }
   }
 
@@ -117,7 +139,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     asmAstToAsm(Assembler().decompile(program))
 
   private val codeArea = elementId()
-  private val feeField = elementId()
+  private val wattLimitField = elementId()
+  private val wattPriceField = elementId()
   private val addressField = elementId()
   private val pkField = elementId()
 
@@ -229,7 +252,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'height @= 400,
                          codeArea,
                          'placeholder /= "Place your p-forth code here"),
-              'input ('class          /= "input", 'margin @= 10, feeField, 'placeholder /= "Fee", 'value /= "0.00"),
+              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
+              'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "0.01"),
               'input ('class          /= "input",
                       'margin         @= 10,
                       addressField,
@@ -255,7 +279,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       val eventuallyErrorOrTransaction =
                         for {
                           code <- access.valueOf(codeArea)
-                          fee <- access.valueOf(feeField)
+                          wattLimit <- access.valueOf(wattLimitField)
+                          wattPrice <- access.valueOf(wattPriceField)
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
@@ -263,7 +288,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           pravda.forth.Compiler().compile(hackCode) map { data =>
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                  TransactionData @@ ByteString.copyFrom(data),
-                                                                 Mytc.fromString(fee),
+                                                                 wattLimit.toLong,
+                                                                 NativeCoin.amount(wattPrice),
                                                                  Random.nextInt())
                             cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                           }
@@ -298,7 +324,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       val eventuallyErrorOrTransaction =
                         for {
                           code <- access.valueOf(codeArea)
-                          fee <- access.valueOf(feeField)
+                          wattLimit <- access.valueOf(wattLimitField)
+                          wattPrice <- access.valueOf(wattPriceField)
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
@@ -308,7 +335,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             compiler.compile(s"$$x${byteUtils.bytes2hex(data)} pcreate") map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                    TransactionData @@ ByteString.copyFrom(data),
-                                                                   Mytc.fromString(fee),
+                                                                   wattLimit.toLong,
+                                                                   NativeCoin.amount(wattPrice),
                                                                    Random.nextInt())
                               cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                             }

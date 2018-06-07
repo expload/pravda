@@ -5,7 +5,7 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.Config
-import pravda.cli.languages.{NodeLanguage, CompilersLanguage, IoLanguage}
+import pravda.cli.languages.{CompilersLanguage, IoLanguage, NodeLanguage}
 import pravda.common.bytes
 import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader
@@ -54,6 +54,8 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
             uriPrefix = config.endpoint,
             address = wallet.address,
             privateKey = wallet.privateKey,
+            wattPrice = config.wattPrice,
+            wattLimit = config.wattLimit,
             data = program
           )
         }

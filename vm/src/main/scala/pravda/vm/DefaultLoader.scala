@@ -2,7 +2,8 @@ package pravda
 
 package vm
 
-import pravda.vm.state.{Address, Environment}
+import pravda.common.domain.Address
+import pravda.vm.state.Environment
 
 object DefaultLoader extends Loader {
   val stdLoader: Loader = std.Loader

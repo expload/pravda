@@ -26,7 +26,7 @@ object TypedTests extends TestSuite {
         .put("typedI32")
         .put(3)
 
-      exec(typedi32) ==> stack(data(hex"01 00000002"),
+      stackOfExec(typedi32) ==> stack(data(hex"01 00000002"),
         data(hex"01 00000003"),
         data(hex"01 0abcdef1"))
     }
@@ -38,7 +38,7 @@ object TypedTests extends TestSuite {
         .opcode(PUSHX)
         .put(math.Pi)
 
-      exec(program) ==> stack(data(hex"3f f0 00 00 00 00 00 00"),
+      stackOfExec(program) ==> stack(data(hex"3f f0 00 00 00 00 00 00"),
         data(hex"40 09 21 fb 54 44 2d 18"))
 
       val typedr64 = program
@@ -47,7 +47,7 @@ object TypedTests extends TestSuite {
         .put("typedR64")
         .put(2)
 
-      exec(typedr64) ==> stack(data(hex"02 3f f0 00 00 00 00 00 00"),
+      stackOfExec(typedr64) ==> stack(data(hex"02 3f f0 00 00 00 00 00 00"),
         data(hex"02 40 09 21 fb 54 44 2d 18"))
     }
 
@@ -78,7 +78,7 @@ object TypedTests extends TestSuite {
         .put(typedFunc)
         .put(2)
 
-      val execRes = exec(typedFuncI)
+      val execRes = stackOfExec(typedFuncI)
 
       execRes ==> stack(ByteString.copyFrom(Array(1.toByte)) concat int32ToData(iFunc(i1, i2)))
 
@@ -98,7 +98,7 @@ object TypedTests extends TestSuite {
         .put(typedFunc)
         .put(2)
 
-      exec(typedAddR) ==> stack(ByteString.copyFrom(Array(2.toByte)) concat doubleToData(fFunc(f1, f2)))
+      stackOfExec(typedAddR) ==> stack(ByteString.copyFrom(Array(2.toByte)) concat doubleToData(fFunc(f1, f2)))
     }
 
     * - testTypedArithmetics(1, 2, 1.0, 2.0, "typedAdd", _ + _, _ + _)

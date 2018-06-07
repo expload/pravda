@@ -2,7 +2,7 @@ package pravda.node.data
 
 import java.io.File
 
-import pravda.node.data.common.Address
+import pravda.common.domain.Address
 import pravda.node.data.cryptography.PrivateKey
 
 final case class TimechainConfig(
