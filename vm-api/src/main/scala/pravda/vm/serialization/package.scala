@@ -25,7 +25,7 @@ package object serialization {
   }
 
   def coinsToData(coins: NativeCoin): Data = {
-    ByteString.copyFromUtf8(coins.toString)
+    int64ToData(coins)
   }
 
   def dataToDouble(data: Data): Double = {
@@ -34,6 +34,12 @@ package object serialization {
 
   def int32ToByteString(i: Int): ByteString = {
     val buf = ByteBuffer.allocate(4).putInt(i)
+    buf.rewind()
+    ByteString.copyFrom(buf)
+  }
+
+  def int64ToData(i: Long): Data = {
+    val buf = ByteBuffer.allocate(8).putLong(i)
     buf.rewind()
     ByteString.copyFrom(buf)
   }
