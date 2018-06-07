@@ -55,7 +55,7 @@ class ApiRoute(abciClient: AbciClient) {
                'signature.as(hexUnmarshaller),
                'nonce.as(intUnmarshaller).?,
                'wattLimit.as[Long],
-               'wattPrice.as(bigDecimalUnmarshaller),
+               'wattPrice.as[Long],
                'mode.?)) { (from, signature, maybeNonce, wattLimit, wattPrice, maybeMode) =>
               extractStrictEntity(1.second) { body =>
                 val program = bodyToTransactionData(body)

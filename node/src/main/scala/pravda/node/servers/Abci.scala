@@ -48,10 +48,10 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
     val tokenSaleMembers = List(
       /* Alice */ Address
         .tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45")
-        .getOrElse(Address.Void) -> NativeCoin(BigDecimal(5000)),
+        .getOrElse(Address.Void) -> NativeCoin(50000L),
       /*  Bob  */ Address
         .tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA")
-        .getOrElse(Address.Void) -> NativeCoin(BigDecimal(3000))
+        .getOrElse(Address.Void) -> NativeCoin(30000L)
     )
 
     val initValidators = request.validators.toVector
@@ -172,11 +172,12 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
 object Abci {
 
-  final case class TransactionUnauthorized()  extends Exception("Transaction signature is invalid")
-  final case class ProgramNotFoundException() extends Exception("Program not found")
-  final case class NotEnoughMoney()           extends Exception("Not enough money")
-  final case class WrongWattPrice()           extends Exception("Bad transaction parameter: wattPrice")
-  final case class WrongWattLimit()           extends Exception("Bad transaction parameter: wattLimit")
+  final case class TransactionUnauthorized()   extends Exception("Transaction signature is invalid")
+  final case class ProgramNotFoundException()  extends Exception("Program not found")
+  final case class NotEnoughMoney()            extends Exception("Not enough money")
+  final case class WrongWattPrice()            extends Exception("Bad transaction parameter: wattPrice")
+  final case class WrongWattLimit()            extends Exception("Bad transaction parameter: wattLimit")
+  final case class AmountShouldNotBeNegative() extends Exception("Amount should not be negative")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -313,16 +314,19 @@ object Abci {
       }
 
       def withdraw(address: Address, amount: NativeCoin): Unit = {
+        if (amount < 0) throw AmountShouldNotBeNegative()
+
         val current = balance(address)
-        if (current < amount) {
-          throw NotEnoughMoney()
-        } else {
-          balancesPath.put(byteUtils.byteString2hex(address), current - amount)
-          effects += Withdraw(address, amount)
-        }
+        if (current < amount) throw NotEnoughMoney()
+
+        balancesPath.put(byteUtils.byteString2hex(address), current - amount)
+        effects += Withdraw(address, amount)
+
       }
 
       def accrue(address: Address, amount: NativeCoin): Unit = {
+        if (amount < 0) throw AmountShouldNotBeNegative()
+
         val current = balance(address)
         balancesPath.put(byteUtils.byteString2hex(address), current + amount)
         effects += Accrue(address, amount)
@@ -370,8 +374,8 @@ object Abci {
     def commit(height: Long, validators: Vector[Address]): Unit = {
 
       // Share fee
-      val share = NativeCoin @@ (fee / validators.length).setScale(4, BigDecimal.RoundingMode.FLOOR)
-      val remainder = NativeCoin @@ (fee - share * validators.length)
+      val share = NativeCoin @@ (fee / validators.length)
+      val remainder = NativeCoin @@ (fee % validators.length)
       validators.foreach { address =>
         accrue(address, share)
       }

@@ -26,7 +26,7 @@ object Config {
                              wallet: Option[String] = None,
                              input: Option[String] = None,
                              wattLimit: Long = 300,
-                             wattPrice: NativeCoin = NativeCoin.amount("0.01"),
+                             wattPrice: NativeCoin = NativeCoin.amount(1),
                              endpoint: String = "http://localhost:8080/api/public/broadcast")
       extends Config
 
@@ -35,10 +35,11 @@ object Config {
     sealed trait Mode
 
     object Mode {
-      case object Nope                                 extends Mode
-      case object Deploy                               extends Mode
-      case object Run                                  extends Mode
-      final case class Update(program: Option[String]) extends Mode
+      case object Nope                                                    extends Mode
+      case object Deploy                                                  extends Mode
+      case object Run                                                     extends Mode
+      final case class Update(program: Option[String])                    extends Mode
+      final case class Transfer(to: Option[String], amount: Option[Long]) extends Mode
     }
   }
 
