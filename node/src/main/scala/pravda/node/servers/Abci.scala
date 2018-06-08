@@ -3,7 +3,6 @@ package pravda.node
 package servers
 
 import java.nio.ByteBuffer
-import java.util.Base64
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
@@ -16,6 +15,7 @@ import pravda.node.data.common.{ApplicationStateInfo, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.json._
 import pravda.node.persistence.FileStore
 import pravda.common.contrib.ripemd160
 import pravda.common.domain.{Address, NativeCoin}
@@ -25,6 +25,7 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import pravda.common.{bytes => byteUtils}
+import pravda.node.data.blockchain.ExecutionInfo
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
@@ -119,10 +120,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
     Future.successful {
       `try` match {
         case Success(executionResult) =>
-          result(TxStatusOk,
-                 executionResult.memory.stack
-                   .map(bs => Base64.getEncoder.encodeToString(bs.toByteArray))
-                   .mkString(","))
+          result(TxStatusOk, transcode(ExecutionInfo.from(executionResult)).to[Json])
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized

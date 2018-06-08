@@ -13,6 +13,7 @@ import jackson.jacksonTokenIteratorProducer
 import jackson.pretty.prettyJacksonTokenWriterProducer
 import org.json4s.JsonAST
 import org.json4s.JsonAST.JValue
+import pravda.node.data.blockchain.ExecutionInfo
 import tethys.readers.FieldName
 import tethys.readers.tokens.TokenIterator
 import tethys.writers.tokens.TokenWriter
@@ -172,6 +173,15 @@ object json {
 
   implicit val timechainConfigTendermintConfigWriter: JsonWriter[TimechainConfig.TendermintConfig] =
     jsonWriter[TimechainConfig.TendermintConfig]
+
+  //---------------------------------------------------------------------------
+  // VM RWs for tethys
+  //---------------------------------------------------------------------------
+  implicit val execResultReader: JsonReader[ExecutionInfo] =
+    jsonReader[ExecutionInfo]
+
+  implicit val execResultWriter: JsonWriter[ExecutionInfo] =
+    jsonWriter[ExecutionInfo]
 
   //---------------------------------------------------------------------------
   // Domain RWs for tethys

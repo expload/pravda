@@ -1,7 +1,5 @@
 package pravda.node.clients
 
-import java.util.Base64
-
 import com.google.protobuf.{ByteString => PbByteString}
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -9,7 +7,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.blockchain.Transaction.SignedTransaction
-import pravda.node.data.blockchain.{Transaction, TransactionData}
+import pravda.node.data.blockchain.{ExecutionInfo, Transaction, TransactionData}
 import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
@@ -37,9 +35,9 @@ class AbciClient(port: Int)(implicit
 //      throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
 //  }
 
-  type ErrorOrStack = Either[RpcError, List[PbByteString]]
+  type ErrorOrExecInfo = Either[RpcError, ExecutionInfo]
 
-  private def handleResponse(response: HttpResponse, mode: String): Future[ErrorOrStack] = {
+  private def handleResponse(response: HttpResponse, mode: String): Future[ErrorOrExecInfo] = {
     response match {
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
         entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
@@ -49,12 +47,10 @@ class AbciClient(port: Int)(implicit
               val response = transcode(Json @@ json).to[RpcCommitResponse]
               response.result
                 .map { result =>
-                  Right(
-                    result.deliver_tx.log
-                      .split(',')
-                      .toList
-                      .map(s => PbByteString.copyFrom(Base64.getDecoder.decode(s)))
-                  )
+                  result.deliver_tx.log match {
+                    case Some(log) => Right(transcode(Json @@ log).to[ExecutionInfo])
+                    case None      => Left(result.check_tx.log.map(s => RpcError(-1, s, "")).getOrElse(UnknownError))
+                  }
                 }
                 .orElse(response.error.map(Left.apply))
                 .getOrElse(Left(UnknownError))
@@ -92,7 +88,7 @@ class AbciClient(port: Int)(implicit
       }
   }
 
-  def broadcastBytes(bytes: Array[Byte], mode: String = "commit"): Future[ErrorOrStack] = {
+  def broadcastBytes(bytes: Array[Byte], mode: String = "commit"): Future[ErrorOrExecInfo] = {
 
     val uri = Uri(s"http://127.0.0.1:$port/broadcast_tx_$mode")
       .withQuery(Uri.Query("tx" -> ("0x" + bytes2hex(bytes))))
@@ -102,7 +98,7 @@ class AbciClient(port: Int)(implicit
       .flatMap(handleResponse(_, mode))
   }
 
-  def broadcastTransaction(tx: SignedTransaction, mode: String = "commit"): Future[ErrorOrStack] = {
+  def broadcastTransaction(tx: SignedTransaction, mode: String = "commit"): Future[ErrorOrExecInfo] = {
 
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)
@@ -113,7 +109,7 @@ class AbciClient(port: Int)(implicit
                                   data: TransactionData,
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
-                                  mode: String = "commit"): Future[ErrorOrStack] = {
+                                  mode: String = "commit"): Future[ErrorOrExecInfo] = {
 
     val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
@@ -136,7 +132,7 @@ object AbciClient {
 
   final case class RpcCommitResponse(result: Option[TxCommitResult], error: Option[RpcError])
   final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
-  final case class TxResult(log: String)
+  final case class TxResult(log: Option[String])
 
   final case class RpcError(code: Int, message: String, data: String)
   final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])
