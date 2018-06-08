@@ -17,7 +17,7 @@ object VmError {
   case object NoSuchLibrary        extends VmError { val code = 301 }
   case object NoSuchMethod         extends VmError { val code = 302 }
   case object NoSuchElement        extends VmError { val code = 400 }
-  case object OutOfGas             extends VmError { val code = 500 }
+  case object OutOfWatts           extends VmError { val code = 500 }
   case object CallStackOverflow    extends VmError { val code = 600 }
   case object ExtCallStackOverflow extends VmError { val code = 601 }
 

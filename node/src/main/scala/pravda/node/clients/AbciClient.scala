@@ -38,12 +38,10 @@ class AbciClient(port: Int)(implicit
   type ErrorOrExecInfo = Either[RpcError, ExecutionInfo]
 
   private def handleResponse(response: HttpResponse, mode: String): Future[ErrorOrExecInfo] = {
-    println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&") // FIXME: remove
     response match {
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
         entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
           val json = body.utf8String
-          println(json) // FIXME: remove
           mode match {
             case "commit" =>
               val response = transcode(Json @@ json).to[RpcCommitResponse]

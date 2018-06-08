@@ -1,7 +1,7 @@
 package pravda.vm.watt
 
 import pravda.vm.state.{Data, VmErrorException}
-import pravda.vm.state.VmError.OutOfGas
+import pravda.vm.state.VmError.OutOfWatts
 
 class WattCounter(wattLimit: Long) {
   val StorageOccupyFactor = 8L
@@ -49,7 +49,7 @@ class WattCounter(wattLimit: Long) {
   }
 
   def check(): Unit = {
-    if (spent > wattLimit) throw VmErrorException(OutOfGas)
+    if (spent > wattLimit) throw VmErrorException(OutOfWatts)
   }
 
   def total: Long = {
