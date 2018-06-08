@@ -139,11 +139,13 @@ class DB(
       .getOrElse(zeroHash)
   }
 
-  def deleteBytes(key: Array[Byte]): Future[Unit] = Future {
-    exec(bArr(key))(
+  def syncDeleteBytes(key: Array[Byte]): Unit = exec(bArr(key))(
       deleteDiff(key),
       db.delete(key)
-    )
+  )
+
+  def deleteBytes(key: Array[Byte]): Future[Unit] = Future {
+    syncDeleteBytes(key)
   }
 
   def delete[K](key: K)(implicit keyWriter: KeyWriter[K]): Future[Unit] = {
@@ -167,11 +169,13 @@ class DB(
     xor(prevHash, newHash)
   }
 
+  def syncPutBytes(key: Array[Byte], value: Array[Byte]): Unit = exec(bArr(key))(
+    putDiff(key, value),
+    db.put(key, value)
+  )
+
   def putBytes(key: Array[Byte], value: Array[Byte]): Future[Unit] = Future {
-    exec(bArr(key))(
-      putDiff(key, value),
-      db.put(key, value)
-    )
+    syncPutBytes(key, value)
   }
 
   def put[K, V](key: K, value: V)(implicit keyWriter: KeyWriter[K], valueWriter: ValueWriter[V]): Future[Unit] = {
