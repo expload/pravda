@@ -94,10 +94,9 @@ lazy val dotnet = (project in file("dotnet"))
       "org.typelevel" %% "cats-core" % "1.0.1",
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
     ))
-  .settings(
-    scalacOptions ++= Seq(
-      "-Ypartial-unification"
-    ))
+  .settings(scalacOptions ++= Seq(
+    "-Ypartial-unification"
+  ))
 
 lazy val `vm-integration-test` = (project in file("testkit/vm-integration"))
   .dependsOn(vm)
@@ -197,3 +196,13 @@ lazy val cli = (project in file("cli"))
   .dependsOn(vm)
   .dependsOn(node)
   .dependsOn(dotnet)
+
+lazy val cmdopt = (project in file("cmdopt"))
+  .settings(commonSettings: _*)
+  .settings(
+    normalizedName := "cmdopt",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % "1.0.1",
+      "com.github.spullara.mustache.java" % "compiler" % "0.9.4"
+    )
+  )
