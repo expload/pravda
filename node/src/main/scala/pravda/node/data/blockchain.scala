@@ -59,20 +59,21 @@ object blockchain {
   object TransactionData extends TaggedType[ByteString]
   type TransactionData = TransactionData.Type
 
-  case class ExecutionInfo(
-                          error: Option[String],
-                          spentWatts: Long,
-                          refundWatts: Long,
-                          totalWatts: Long,
-                          stack: Seq[Data],
-                          heap: Seq[Data]
-                          ) {
+  final case class ExecutionInfo(
+      error: Option[String],
+      spentWatts: Long,
+      refundWatts: Long,
+      totalWatts: Long,
+      stack: Seq[Data],
+      heap: Seq[Data]
+  ) {
 
     def status: String = error.fold("Ok")(identity)
 
   }
 
   object ExecutionInfo {
+
     def from(executionResult: ExecutionResult): ExecutionInfo = {
       ExecutionInfo(
         error = executionResult.error.map(_.error.toString),

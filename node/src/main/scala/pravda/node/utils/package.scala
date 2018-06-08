@@ -19,7 +19,7 @@ package object utils {
 
   def showHeap(heap: Seq[ByteString]): String =
     heap.zipWithIndex
-      .map{case (bs, i) => s"$i: " + byteString2hex(bs) + '"'}
+      .map { case (bs, i) => s"$i: " + byteString2hex(bs) + '"' }
       .mkString("[", ", ", "]")
 
   def showStack(stack: Seq[ByteString]): String =

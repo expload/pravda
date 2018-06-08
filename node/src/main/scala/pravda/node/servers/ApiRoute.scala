@@ -68,7 +68,7 @@ class ApiRoute(abciClient: AbciClient) {
 
                 onSuccess(result) {
                   case Right(info) => complete(info)
-                  case Left(error)  => complete(error)
+                  case Left(error) => complete(error)
                 }
               }
             }

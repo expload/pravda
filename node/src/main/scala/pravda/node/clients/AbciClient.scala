@@ -38,18 +38,21 @@ class AbciClient(port: Int)(implicit
   type ErrorOrExecInfo = Either[RpcError, ExecutionInfo]
 
   private def handleResponse(response: HttpResponse, mode: String): Future[ErrorOrExecInfo] = {
+    println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&") // FIXME: remove
     response match {
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
         entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { body =>
           val json = body.utf8String
+          println(json) // FIXME: remove
           mode match {
             case "commit" =>
               val response = transcode(Json @@ json).to[RpcCommitResponse]
               response.result
                 .map { result =>
-                  Right(
-                    transcode(Json @@ result.deliver_tx.log).to[ExecutionInfo]
-                  )
+                  result.deliver_tx.log match {
+                    case Some(log) => Right(transcode(Json @@ log).to[ExecutionInfo])
+                    case None      => Left(result.check_tx.log.map(s => RpcError(-1, s, "")).getOrElse(UnknownError))
+                  }
                 }
                 .orElse(response.error.map(Left.apply))
                 .getOrElse(Left(UnknownError))
@@ -131,7 +134,7 @@ object AbciClient {
 
   final case class RpcCommitResponse(result: Option[TxCommitResult], error: Option[RpcError])
   final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
-  final case class TxResult(log: String)
+  final case class TxResult(log: Option[String])
 
   final case class RpcError(code: Int, message: String, data: String)
   final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])

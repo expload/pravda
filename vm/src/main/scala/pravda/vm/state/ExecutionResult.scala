@@ -14,11 +14,10 @@ final case class ExecutionResult(
 
 }
 
-
 object ExecutionResult {
 
   trait Status
 
-  case object Ok extends Status
+  case object Ok    extends Status
   case object Error extends Status
 }
