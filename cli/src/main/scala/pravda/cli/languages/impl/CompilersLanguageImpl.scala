@@ -31,8 +31,8 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
 
   def dotnet(source: ByteString): Future[Either[String, ByteString]] = Future {
     for {
-       pe <- DotnetParser.parsePe(source.toByteArray)
-       (_, cilData, methods, signatures) = pe
+      pe <- DotnetParser.parsePe(source.toByteArray)
+      (_, cilData, methods, signatures) = pe
       ops <- DotnetTranslator.translateAsm(methods, cilData, signatures)
     } yield ByteString.copyFrom(Assembler().compile(ops))
   }

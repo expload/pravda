@@ -15,9 +15,11 @@ object TranslationVisualizer {
   private def visualizeMethod(method: Translator.MethodTranslation): String = {
     val opcodesColumns = method.opcodes.flatMap(visualizeOpcode)
     val firstColumn = opcodesColumns.map(_._1).map(_.length).max
-    val opcodes = opcodesColumns.map {
-      case (fst, snd) => fst.padTo(firstColumn + 1, ' ') + snd
-    }.mkString("\n")
+    val opcodes = opcodesColumns
+      .map {
+        case (fst, snd) => fst.padTo(firstColumn + 1, ' ') + snd
+      }
+      .mkString("\n")
 
     s"""|[method ${method.name} args=${method.argsCount} locals=${method.localsCount} local=${method.local}]
         |$opcodes""".stripMargin

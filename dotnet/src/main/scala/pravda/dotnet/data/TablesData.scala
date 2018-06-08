@@ -114,7 +114,8 @@ object TablesData {
         } yield TypeRefData(rs, name, namespace)
     }.sequence
 
-    def typeDefListV(fieldList: Vector[FieldData], methodList: Vector[MethodDefData]): Either[String, Vector[TypeDefData]] = {
+    def typeDefListV(fieldList: Vector[FieldData],
+                     methodList: Vector[MethodDefData]): Either[String, Vector[TypeDefData]] = {
       val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
       val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
 
@@ -135,7 +136,8 @@ object TablesData {
       }.sequence
     }
 
-    def memberRefListV(typeDefTable: Vector[TypeDefData], typeRefTable: Vector[TypeRefData]): Either[String, Vector[MemberRefData]] =
+    def memberRefListV(typeDefTable: Vector[TypeDefData],
+                       typeRefTable: Vector[TypeRefData]): Either[String, Vector[MemberRefData]] =
       peData.tables.memberRefTable.map {
         case MemberRefRow(clsIdx, nameIdx, signatureIdx) =>
           for {

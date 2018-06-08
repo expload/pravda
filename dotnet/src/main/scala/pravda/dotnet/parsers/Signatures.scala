@@ -16,27 +16,27 @@ object Signatures {
   sealed trait SigType
 
   object SigType {
-    case object TypedByRef                                          extends SigType
-    case object Void                                                extends SigType
-    case object Boolean                                             extends SigType
-    case object Char                                                extends SigType
-    case object I1                                                  extends SigType
-    case object U1                                                  extends SigType
-    case object I2                                                  extends SigType
-    case object U2                                                  extends SigType
-    case object I4                                                  extends SigType
-    case object U4                                                  extends SigType
-    case object I8                                                  extends SigType
-    case object U8                                                  extends SigType
-    case object R4                                                  extends SigType
-    case object R8                                                  extends SigType
-    case object String                                              extends SigType
-    case object I                                                   extends SigType
-    case object U                                                   extends SigType
-    final case class Cls(typeDefOrRef: TableRowData)                extends SigType
-    final case class ValueTpe(typeDefOrRef: TableRowData)           extends SigType
+    case object TypedByRef                                           extends SigType
+    case object Void                                                 extends SigType
+    case object Boolean                                              extends SigType
+    case object Char                                                 extends SigType
+    case object I1                                                   extends SigType
+    case object U1                                                   extends SigType
+    case object I2                                                   extends SigType
+    case object U2                                                   extends SigType
+    case object I4                                                   extends SigType
+    case object U4                                                   extends SigType
+    case object I8                                                   extends SigType
+    case object U8                                                   extends SigType
+    case object R4                                                   extends SigType
+    case object R8                                                   extends SigType
+    case object String                                               extends SigType
+    case object I                                                    extends SigType
+    case object U                                                    extends SigType
+    final case class Cls(typeDefOrRef: TableRowData)                 extends SigType
+    final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
-    final case class Var(num: Long)                                 extends SigType
+    final case class Var(num: Long)                                  extends SigType
     // FIXME complex types are ignored
   }
 
@@ -46,7 +46,7 @@ object Signatures {
   final case class Tpe(tpe: SigType, byRef: Boolean)
 
   final case class LocalVarSig(types: List[LocalVar]) extends Signature
-  final case class FieldSig(tpe: SigType)            extends Signature
+  final case class FieldSig(tpe: SigType)             extends Signature
   final case class MethodRefDefSig(instance: Boolean,
                                    explicit: Boolean,
                                    default: Boolean,
@@ -136,7 +136,8 @@ object Signatures {
     )
   }
 
-  def fieldSig(tablesData: TablesData): P[Either[String, FieldSig]] = P(BS(0x06) ~ sigType(tablesData)).map(_.map(FieldSig))
+  def fieldSig(tablesData: TablesData): P[Either[String, FieldSig]] =
+    P(BS(0x06) ~ sigType(tablesData)).map(_.map(FieldSig))
 
   private def tpe(tablesData: TablesData): P[Either[String, Tpe]] = {
     val byRef = BS(0x10).!.?.map(_.isDefined)
