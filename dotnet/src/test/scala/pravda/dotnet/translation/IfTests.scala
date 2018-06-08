@@ -10,12 +10,8 @@ import utest._
 object IfTests extends TestSuite {
 
   val tests = Tests {
-    'ifParse - {
+    'ifTranslation - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("if.exe")
-
-      for {
-        t <- Translator.translateVerbose(methods, cilData, signatures)
-      } println(TranslationVisualizer.visualize(t))
 
       DiffUtils.assertEqual(
         Translator.translateAsm(methods, cilData, signatures),

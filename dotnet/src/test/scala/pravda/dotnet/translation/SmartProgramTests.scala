@@ -10,7 +10,7 @@ import utest._
 object SmartProgramTests extends TestSuite {
 
   val tests = Tests {
-    'smartProgramParse - {
+    'smartProgramTranslation - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("smart_program.exe")
 
       DiffUtils.assertEqual(

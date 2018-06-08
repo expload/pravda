@@ -75,9 +75,6 @@ object LoopTests extends TestSuite {
            List(LocalVar(I4, false), LocalVar(I4, false), LocalVar(Boolean, false), LocalVar(Boolean, false)))),
         (32, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
       )
-
-
-
     }
   }
 }
