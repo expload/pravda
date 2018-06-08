@@ -14,6 +14,7 @@ object Config {
     case object Nope   extends CompileMode
     case object Asm    extends CompileMode
     case object Disasm extends CompileMode
+    case object DisNet extends CompileMode
     case object Forth  extends CompileMode
     case object DotNet extends CompileMode
   }

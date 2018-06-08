@@ -418,8 +418,6 @@ object Translator {
         case Label(label) =>
           (labelOffsets.get(label), stackOffsetO) match {
             case (Some(offset), Some(stackOffset)) if offset != stackOffset + Constants.labelStackOffset =>
-              println(offset)
-              println(stackOffset)
               unstableStackError
             case (Some(offset), None)      => Right((labelOffsets, Some(offset)))
             case (None, Some(stackOffset)) => Right((labelOffsets.updated(label, stackOffset), Some(stackOffset)))
@@ -481,7 +479,7 @@ object Translator {
                 (_, newStackOffsetO) = so
                 opcodes <- translateOpcode(op, newStackOffsetO)
                 deltaOffset <- opcodeDeltaOffset(op)
-              } yield (OpCodeTranslation(Right(op), newStackOffsetO, opcodes) :: acc, newStackOffsetO.map(_ + deltaOffset))
+              } yield (OpCodeTranslation(Right(op), stackOffsetO, opcodes) :: acc, newStackOffsetO.map(_ + deltaOffset))
             case (other, op) => other
           }
           .map(_._1.reverse)

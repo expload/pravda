@@ -241,7 +241,7 @@ object CIL {
     override val size: Int = 6
   }
   final case class LdArgS(num: Short) extends OpCode {
-    override val size = 3
+    override val size = 2
   }
   case object LdArg0 extends OpCode
   case object LdArg1 extends OpCode
@@ -251,7 +251,7 @@ object CIL {
     override val size = 6
   }
   final case class LdArgAS(num: Short) extends OpCode {
-    override val size = 3
+    override val size = 2
   }
 
   final case class LdcI4(num: Int) extends OpCode {
@@ -302,7 +302,7 @@ object CIL {
     override val size = 6
   }
   final case class LdLocS(num: Short) extends OpCode {
-    override val size = 3
+    override val size = 2
   }
   case object LdLoc0 extends OpCode
   case object LdLoc1 extends OpCode
@@ -312,7 +312,7 @@ object CIL {
     override val size = 6
   }
   final case class LdLocAS(num: Short) extends OpCode {
-    override val size = 3
+    override val size = 2
   }
 
   case object LdNull extends OpCode
@@ -348,7 +348,7 @@ object CIL {
     override val size = 5
   }
   final case class StArgS(num: Short) extends OpCode {
-    override val size = 3
+    override val size = 2
   }
 
   case object StIndI1  extends OpCode
@@ -364,7 +364,7 @@ object CIL {
     override val size = 6
   }
   final case class StLocS(num: Short) extends OpCode {
-    override val size = 3
+    override val size = 2
   }
   case object StLoc0 extends OpCode
   case object StLoc1 extends OpCode

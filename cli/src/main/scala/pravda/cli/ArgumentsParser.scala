@@ -104,6 +104,13 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
             config.copy(compiler = Config.CompileMode.DotNet)
           case (_, otherwise) => otherwise
         },
+      cmd("disnet")
+        .text("Show translation process to .NET for .exe file")
+        .action {
+          case (_, config: Config.Compile) =>
+            config.copy(compiler = Config.CompileMode.DisNet)
+          case (_, otherwise) => otherwise
+        }
     )
 
   cmd("broadcast")
