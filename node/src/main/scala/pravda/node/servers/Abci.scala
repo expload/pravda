@@ -114,7 +114,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       val remaining = tx.wattLimit - total
       environmentProvider.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
       environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
-      if(execResult.isSuccess) {
+      if (execResult.isSuccess) {
         env.commitTransaction()
       }
       execResult
@@ -238,7 +238,10 @@ object Abci {
       }
     }
 
-    private final class CachedDbPath(dbPath: DbPath, dbCache: mutable.Map[String, Option[Array[Byte]]], dbOperations: mutable.Buffer[Operation]) extends  DbPath {
+    private final class CachedDbPath(dbPath: DbPath,
+                                     dbCache: mutable.Map[String, Option[Array[Byte]]],
+                                     dbOperations: mutable.Buffer[Operation])
+        extends DbPath {
       def mkKey(suffix: String): String = dbPath.mkKey(suffix)
 
       def :+(suffix: String) = new CachedDbPath(dbPath :+ suffix, dbCache, dbOperations)
@@ -290,8 +293,7 @@ object Abci {
       new TransactionDependentEnvironment(effects)
     }
 
-    final class TransactionDependentEnvironment(effects: mutable.Buffer[EnvironmentEffect])
-        extends Environment {
+    final class TransactionDependentEnvironment(effects: mutable.Buffer[EnvironmentEffect]) extends Environment {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
       private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
@@ -360,7 +362,8 @@ object Abci {
       }
 
       def balance(address: Address): NativeCoin = {
-        val bal = transactionBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
+        val bal =
+          transactionBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
         transactionEffects += ShowBalance(address, bal)
         bal
       }

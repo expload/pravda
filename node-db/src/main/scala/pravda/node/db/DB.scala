@@ -140,8 +140,8 @@ class DB(
   }
 
   def syncDeleteBytes(key: Array[Byte]): Unit = exec(bArr(key))(
-      deleteDiff(key),
-      db.delete(key)
+    deleteDiff(key),
+    db.delete(key)
   )
 
   def deleteBytes(key: Array[Byte]): Future[Unit] = Future {

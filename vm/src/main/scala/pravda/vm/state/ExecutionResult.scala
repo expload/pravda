@@ -11,4 +11,3 @@ final case class ExecutionResult(
   def isSuccess: Boolean = error.isEmpty
 
 }
-
