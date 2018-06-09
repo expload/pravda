@@ -29,21 +29,35 @@ language which can be compiled to Pravda bytecode.
 platform. It can be used to compile programs in Forth, .Net PE, Pravda Assembly
 languages to Pravda bytecode, to execute programs and to control Pravda nodes.
 
-## Building and Installation
+## Installation
+
+### Windows
+
+Download MSI installer from [releases page](https://github.com/mytimecoin/pravda/releases).
+Double click on it. Currently installer is unsigned. It leads to red alert during installation.
+Do not afraid: it's OK.
+
+### Linux and Macos
+
+We've prepared universal installation script. Just run this command in your terminal.
+
+```
+curl -s https://raw.githubusercontent.com/mytimecoin/pravda/master/i.sh | bash
+```
+
+## Building from sources
 
 We use SBT native packager to produce runnable distros for each tool packed in
-compressed archives. To build archive just run `sbt cli/universal:packageBin` in
-the root. This will create necessary zip-archive of the pravda CLI in the `target`
-directory of the `cli` subproject.
+compressed archives.
 
-After locating zip-arhive (`pravda-0.1.0.zip`) in the `target` directory unpack it
-to your programs folder. Than just add its `bin` directory to your `$PATH`.
+```
+$ sbt cli/universal:stage
+$ ./cli/target/universal/stage/bin/pravda
+```
 
-## Using prebuild binary packages
-
-We also provide installer (.msi) for Windows and universal binary package for
-all platforms (.zip). Check out the
-[Releases page](https://github.com/mytimecoin/pravda/releases) to download them.
+To build archive just run `sbt cli/universal:packageZipTarball` in
+the root of project. This will create necessary tgz-archive of
+the Pravda CLI in the `cli/target`.
 
 ## How to
 
