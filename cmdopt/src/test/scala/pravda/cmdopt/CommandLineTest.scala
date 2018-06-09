@@ -4,7 +4,7 @@ import utest._
 import java.net.URI
 import scala.concurrent.duration.Duration
 
-object ParserTest extends TestSuite {
+object CommandLineTest extends TestSuite {
 
   val tests = Tests {
 
