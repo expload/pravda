@@ -4,7 +4,8 @@ import java.nio.ByteBuffer
 
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable
-import scala.{Array => JArray}
+import scala.{Array => ScalaArray}
+import scala.{BigInt => ScalaBigInt}
 
 sealed trait Data {
 
@@ -107,7 +108,12 @@ sealed trait Data {
       xs.foreach(x => f(buffer, x))
     }
 
-    def putUint64(buffer: ByteBuffer, value: BigInt): Unit = {
+    def putTaggedBigInt(buffer: ByteBuffer, value: ScalaBigInt): Unit = {
+      buffer.put(TypeBigInt.toByte)
+      putBigInt(buffer, value)
+    }
+
+    def putBigInt(buffer: ByteBuffer, value: ScalaBigInt): Unit = {
       val bytes = value.toByteArray
       putLength(buffer, bytes.length)
       buffer.put(bytes)
@@ -119,27 +125,23 @@ sealed trait Data {
     }
 
     this match {
-      case Int8(data)   => putPrimitive(TypeInt8)(_.put(data))
-      case Int16(data)  => putPrimitive(TypeInt16)(_.putShort(data))
-      case Int32(data)  => putPrimitive(TypeInt32)(_.putInt(data))
-      case Int64(data)  => putPrimitive(TypeInt256)(_.putLong(data))
-      case Uint8(data)  => putPrimitive(TypeUint8)(_.putInt(data))
-      case Uint16(data) => putPrimitive(TypeUint16)(_.putInt(data))
-      case Uint32(data) => putPrimitive(TypeUint32)(_.putLong(data))
-      case Uint64(data) =>
-        buffer.put(TypeUint256.toByte)
-        putUint64(buffer, data)
+      case Int8(data)        => putPrimitive(TypeInt8)(_.put(data))
+      case Int16(data)       => putPrimitive(TypeInt16)(_.putShort(data))
+      case Int32(data)       => putPrimitive(TypeInt32)(_.putInt(data))
+      case Uint8(data)       => putPrimitive(TypeUint8)(_.putInt(data))
+      case Uint16(data)      => putPrimitive(TypeUint16)(_.putInt(data))
+      case Uint32(data)      => putPrimitive(TypeUint32)(_.putLong(data))
+      case BigInt(data)      => putTaggedBigInt(buffer, data)
       case Ref(data)         => putPrimitive(TypeRef.toByte)(_.putInt(data))
       case Bool.True         => putBoolean(buffer, 1.toByte)
       case Bool.False        => putBoolean(buffer, 0.toByte)
       case Int8Array(data)   => putPrimitiveArray(TypeInt8, data)(_.put(_))
       case Int16Array(data)  => putPrimitiveArray(TypeInt16, data)(_.putShort(_))
       case Int32Array(data)  => putPrimitiveArray(TypeInt32, data)(_.putInt(_))
-      case Int64Array(data)  => putPrimitiveArray(TypeInt256, data)(_.putLong(_))
       case Uint8Array(data)  => putPrimitiveArray(TypeUint8, data)(_.putInt(_))
       case Uint16Array(data) => putPrimitiveArray(TypeUint16, data)(_.putInt(_))
       case Uint32Array(data) => putPrimitiveArray(TypeUint32, data)(_.putLong(_))
-      case Uint64Array(data) => putArray(TypeUint256, data)(putUint64)
+      case BigIntArray(data) => putArray(TypeBigInt, data)(putBigInt)
       case RefArray(data)    => putPrimitiveArray(TypeRef, data)(_.putInt(_))
       case Number(data)      => putPrimitive(TypeNumber)(_.putDouble(data))
       case NumberArray(data) => putPrimitiveArray(TypeNumber, data)(_.putDouble(_))
@@ -170,16 +172,15 @@ object Data {
   sealed trait Primitive extends Data
 
   object Primitive {
-    final case class Int8(data: Byte)     extends Primitive
-    final case class Int16(data: Short)   extends Primitive
-    final case class Int32(data: Int)     extends Primitive
-    final case class Int64(data: Long)    extends Primitive
-    final case class Uint8(data: Int)     extends Primitive
-    final case class Uint16(data: Int)    extends Primitive
-    final case class Uint32(data: Long)   extends Primitive
-    final case class Uint64(data: BigInt) extends Primitive
+    final case class Int8(data: Byte)               extends Primitive
+    final case class Int16(data: Short)             extends Primitive
+    final case class Int32(data: Int)               extends Primitive
+    final case class Uint8(data: Int)               extends Primitive
+    final case class Uint16(data: Int)              extends Primitive
+    final case class Uint32(data: Long)             extends Primitive
+    final case class BigInt(data: ScalaBigInt)      extends Primitive
     @strictfp final case class Number(data: Double) extends Primitive
-    final case class Ref(data: Int) extends Primitive
+    final case class Ref(data: Int)                 extends Primitive
 
     sealed trait Bool extends Primitive
 
@@ -189,17 +190,16 @@ object Data {
     }
   }
 
-  final case class Int8Array(data: mutable.Buffer[Byte])     extends Data
-  final case class Int16Array(data: mutable.Buffer[Short])   extends Data
-  final case class Int32Array(data: mutable.Buffer[Int])     extends Data
-  final case class Int64Array(data: mutable.Buffer[Long])    extends Data
-  final case class Uint8Array(data: mutable.Buffer[Int])     extends Data
-  final case class Uint16Array(data: mutable.Buffer[Int])    extends Data
-  final case class Uint32Array(data: mutable.Buffer[Long])   extends Data
-  final case class Uint64Array(data: mutable.Buffer[BigInt]) extends Data
-  @strictfp final case class NumberArray(data: mutable.Buffer[Double])  extends Data
-  final case class RefArray(data: mutable.Buffer[Int])             extends Data
-  final case class BoolArray(data: mutable.Buffer[Primitive.Bool]) extends Data
+  final case class Int8Array(data: mutable.Buffer[Byte])               extends Data
+  final case class Int16Array(data: mutable.Buffer[Short])             extends Data
+  final case class Int32Array(data: mutable.Buffer[Int])               extends Data
+  final case class Uint8Array(data: mutable.Buffer[Int])               extends Data
+  final case class Uint16Array(data: mutable.Buffer[Int])              extends Data
+  final case class Uint32Array(data: mutable.Buffer[Long])             extends Data
+  final case class BigIntArray(data: mutable.Buffer[ScalaBigInt])      extends Data
+  @strictfp final case class NumberArray(data: mutable.Buffer[Double]) extends Data
+  final case class RefArray(data: mutable.Buffer[Int])                 extends Data
+  final case class BoolArray(data: mutable.Buffer[Primitive.Bool])     extends Data
 
   //  final case class Array(data: mutable.Buffer[Primitive]) extends Data
   final case class Struct(name: String, data: mutable.SortedMap[String, Primitive]) extends Data
@@ -298,11 +298,11 @@ object Data {
     // Read [[length]] subsequent bytes from buffer
     def getBytes(length: Int) =
       if (length < 0) {
-        val bytes = new JArray[Byte](1)
+        val bytes = new ScalaArray[Byte](1)
         bytes(0) = (length * -1).toByte
         bytes
       } else {
-        val bytes = new JArray[Byte](length)
+        val bytes = new ScalaArray[Byte](length)
         buffer.get(bytes)
         bytes
       }
@@ -323,24 +323,22 @@ object Data {
       else Primitive.Bool.False
     def getInt16 = primitiveBuffer(2).getShort
     def getInt32 = primitiveBuffer(4).getInt
-    def getInt64 = primitiveBuffer(8).getLong
     def getUint8 = primitiveBuffer(4).getInt & 0xFF
     def getUint16 = primitiveBuffer(4).getInt & 0xFFFF
     def getUint32: Long = primitiveBuffer(8).getLong & 0xFFFFFFFFl
-    def getUint64 = BigInt(getBytes(getLength))
+    def getBigInt = ScalaBigInt(getBytes(getLength))
     def getDouble = primitiveBuffer(8).getDouble
     def getRef = primitiveBuffer(4).getInt
 
-    (buffer.get: @switch) match {
+    buffer.get match {
       case TypeInt8    => Primitive.Int8(getInt8) // int8
       case TypeInt16   => Primitive.Int16(getInt16) // int16
       case TypeInt32   => Primitive.Int32(getInt32) // int32
-      case TypeInt256  => Primitive.Int64(getInt64) // int64
       case TypeUint8   => Primitive.Uint8(getUint8) // uint8
       case TypeUint16  => Primitive.Uint16(getUint16) // uint16
       case TypeUint32  => Primitive.Uint32(getUint32) // uint32
-      case TypeUint256 => Primitive.Uint64(getUint64) // uint64
-      case TypeNumber  => Primitive.Number(getDouble)// decimal // TODO
+      case TypeBigInt  => Primitive.BigInt(getBigInt) // uint64
+      case TypeNumber  => Primitive.Number(getDouble) // decimal // TODO
       case TypeBoolean => getBool
       case TypeRef     => Primitive.Ref(getRef)
       case TypeUtf8    => Utf8(getString) // utf8
@@ -349,15 +347,14 @@ object Data {
         val l = getLength
         //println(s"l=$l")
         if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position - 1)
-        (`type`: @switch) match {
+        `type` match {
           case TypeInt8    => Int8Array(mutable.Buffer.fill(l)(getInt8))
           case TypeInt16   => Int16Array(mutable.Buffer.fill(l)(getInt16))
           case TypeInt32   => Int32Array(mutable.Buffer.fill(l)(getInt32))
-          case TypeInt256  => Int64Array(mutable.Buffer.fill(l)(getInt64))
+          case TypeBigInt  => BigIntArray(mutable.Buffer.fill(l)(getBigInt))
           case TypeUint8   => Uint8Array(mutable.Buffer.fill(l)(getUint8))
           case TypeUint16  => Uint16Array(mutable.Buffer.fill(l)(getUint16))
           case TypeUint32  => Uint32Array(mutable.Buffer.fill(l)(getUint32))
-          case TypeUint256 => Uint64Array(mutable.Buffer.fill(l)(getUint64))
           case TypeNumber  => NumberArray(mutable.Buffer.fill(l)(getDouble))
           case TypeBoolean => BoolArray(mutable.Buffer.fill(l)(getBool))
           case TypeRef     => RefArray(mutable.Buffer.fill(l)(getRef))
@@ -383,15 +380,14 @@ object Data {
   final val TypeInt8 = 0x01.toByte
   final val TypeInt16 = 0x02.toByte
   final val TypeInt32 = 0x03.toByte
-  final val TypeInt256 = 0x04.toByte
+  final val TypeBigInt = 0x04.toByte
   final val TypeUint8 = 0x05.toByte
   final val TypeUint16 = 0x06.toByte
   final val TypeUint32 = 0x07.toByte
-  final val TypeUint256 = 0x08.toByte
-  final val TypeNumber = 0x09.toByte
-  final val TypeBoolean = 0x0A.toByte
-  final val TypeRef = 0x0B.toByte
-  final val TypeUtf8 = 0x0C.toByte
-  final val TypeArray = 0x0D.toByte
-  final val TypeStruct = 0x0E.toByte
+  final val TypeNumber = 0x08.toByte
+  final val TypeBoolean = 0x09.toByte
+  final val TypeRef = 0x0A.toByte
+  final val TypeUtf8 = 0x0B.toByte
+  final val TypeArray = 0x0C.toByte
+  final val TypeStruct = 0x0D.toByte
 }

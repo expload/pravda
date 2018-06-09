@@ -57,8 +57,8 @@ lazy val `vm-api` = (project in file("vm-api")).
     ),
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "500")
+      Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "8"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
     )
   ).
   dependsOn(common)
