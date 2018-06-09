@@ -88,9 +88,9 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
     if (tx.wattPrice <= NativeCoin.zero) {
-      Failure(WrongWattPrice())
+      Failure(WrongWattPriceException())
     } else if (tx.wattLimit <= 0) {
-      Failure(WrongWattLimit())
+      Failure(WrongWattLimitException())
     } else {
       Success(())
     }
@@ -103,7 +103,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       authTx <- cryptography
         .checkTransactionSignature(tx)
-        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
+        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
       _ <- checkTransaction(authTx)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
@@ -126,7 +126,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
           result(TxStatusOk, transcode(ExecutionInfo.from(executionResult)).to[Json])
         case Failure(e) =>
           val code =
-            if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
+            if (e.isInstanceOf[TransactionUnauthorizedException]) TxStatusUnauthorized
             else TxStatusError
           result(code, e.getMessage)
       }
@@ -173,12 +173,12 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
 object Abci {
 
-  final case class TransactionUnauthorized()   extends Exception("Transaction signature is invalid")
-  final case class ProgramNotFoundException()  extends Exception("Program not found")
-  final case class NotEnoughMoney()            extends Exception("Not enough money")
-  final case class WrongWattPrice()            extends Exception("Bad transaction parameter: wattPrice")
-  final case class WrongWattLimit()            extends Exception("Bad transaction parameter: wattLimit")
-  final case class AmountShouldNotBeNegative() extends Exception("Amount should not be negative")
+  final case class TransactionUnauthorizedException()   extends Exception("Transaction signature is invalid")
+  final case class ProgramNotFoundException()           extends Exception("Program not found")
+  final case class NotEnoughMoneyException()            extends Exception("Not enough money")
+  final case class WrongWattPriceException()            extends Exception("Bad transaction parameter: wattPrice")
+  final case class WrongWattLimitException()            extends Exception("Bad transaction parameter: wattLimit")
+  final case class AmountShouldNotBeNegativeException() extends Exception("Amount should not be negative")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -369,10 +369,10 @@ object Abci {
       }
 
       def withdraw(address: Address, amount: NativeCoin): Unit = {
-        if (amount < 0) throw AmountShouldNotBeNegative()
+        if (amount < 0) throw AmountShouldNotBeNegativeException()
 
         val current = balance(address)
-        if (current < amount) throw NotEnoughMoney()
+        if (current < amount) throw NotEnoughMoneyException()
 
         transactionBalancesPath.put(byteUtils.byteString2hex(address), current - amount)
         transactionEffects += Withdraw(address, amount)
@@ -380,7 +380,7 @@ object Abci {
       }
 
       def accrue(address: Address, amount: NativeCoin): Unit = {
-        if (amount < 0) throw AmountShouldNotBeNegative()
+        if (amount < 0) throw AmountShouldNotBeNegativeException()
 
         val current = balance(address)
         transactionBalancesPath.put(byteUtils.byteString2hex(address), current + amount)
@@ -422,16 +422,16 @@ object Abci {
     }
 
     def withdraw(address: Address, amount: NativeCoin): Unit = {
-      if (amount < 0) throw AmountShouldNotBeNegative()
+      if (amount < 0) throw AmountShouldNotBeNegativeException()
       val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
-      if (current < amount) throw NotEnoughMoney()
+      if (current < amount) throw NotEnoughMoneyException()
 
       balancesPath.put(byteUtils.byteString2hex(address), current - amount)
 
     }
 
     def accrue(address: Address, amount: NativeCoin): Unit = {
-      if (amount < 0) throw AmountShouldNotBeNegative()
+      if (amount < 0) throw AmountShouldNotBeNegativeException()
 
       val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
       balancesPath.put(byteUtils.byteString2hex(address), current + amount)
