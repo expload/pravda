@@ -64,7 +64,7 @@ object Config {
 
     object Mode {
       case object Nope                        extends Mode
-      final case class Init(network: Network) extends Mode
+      final case class Init(network: Network, initDistrConf: Option[String]) extends Mode
       case object Run                         extends Mode
     }
   }

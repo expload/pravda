@@ -196,22 +196,29 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
         .text("Initialize node.")
         .action {
           case (_, config: Config.Node) =>
-            config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local))
+            config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local, None))
           case (_, otherwise) => otherwise
         }
         .children(
           opt[Unit]("local")
             .action {
-              case (_, config: Config.Node) =>
-                config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local))
+              case (_, config @ Config.Node(Config.Node.Mode.Init(_, initDistrConf), _)) =>
+                config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local, initDistrConf))
               case (_, otherwise) => otherwise
             },
           opt[Unit]("testnet")
             .action {
-              case (_, config: Config.Node) =>
-                config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Testnet))
+              case (_, config @ Config.Node(Config.Node.Mode.Init(_, initDistrConf), _)) =>
+                config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Testnet, initDistrConf))
+              case (_, otherwise) => otherwise
+            },
+          opt[String]("init-distr-conf")
+            .action {
+              case (initDistrConf, config @ Config.Node(Config.Node.Mode.Init(network, _), _)) =>
+                config.copy(mode = Config.Node.Mode.Init(network, Some(initDistrConf)))
               case (_, otherwise) => otherwise
             }
+
         ),
       cmd("run")
         .text("Run initialized node.")

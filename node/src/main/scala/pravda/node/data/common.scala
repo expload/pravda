@@ -30,6 +30,6 @@ object common {
 
   final case class ApplicationStateInfo(blockHeight: Long, appHash: ByteString, validators: Vector[Address])
 
-  final case class TokenSaleMember(address: Address, amount: NativeCoin)
+  final case class InitialDistributionMember(address: Address, amount: NativeCoin)
 
 }
