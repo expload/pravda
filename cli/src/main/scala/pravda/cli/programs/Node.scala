@@ -7,10 +7,13 @@ import com.google.protobuf.ByteString
 import pravda.cli.Config
 import pravda.cli.Config.Node.{Mode, Network}
 import pravda.cli.languages.{IoLanguage, NodeLanguage, RandomLanguage}
-import pravda.common.domain.Address
+import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes, crypto}
 import pravda.node.data.TimechainConfig.PaymentWallet
+import pravda.node.data.common.InitialDistributionMember
 import pravda.node.data.cryptography.PrivateKey
+import pravda.node.data.serialization._
+import pravda.node.data.serialization.json._
 
 import scala.language.higherKinds
 
@@ -21,6 +24,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                                 dataDir: String,
                                 paymentWallet: PaymentWallet,
                                 validators: Seq[String],
+                                initialDistribution: Seq[InitialDistributionMember],
                                 seeds: Seq[(String, Int)]) =
     s"""timechain {
        |  api {
@@ -35,6 +39,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |  }
        |  is-validator = $isValidator
        |  data-directory = "$dataDir"
+       |  init-distr = "${initialDistribution.map(d => s"${bytes.byteString2hex(d.address)}:${d.amount}").mkString(",")}"
        |  seeds = "${seeds.map { case (host, port) => s"$host:$port" }.mkString(",")}"
        |  genesis {
        |    time = "0001-01-01T00:00:00Z"
@@ -53,12 +58,24 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
   private def mkConfigPath(dataDir: String): F[String] =
     io.concatPath(dataDir, "node.conf")
 
-  private def init(dataDir: String, network: Network): F[Unit] = {
+//  val readFromFile = (path: String) =>
+//    io.readFromFile(path)
+//      .map(_.toRight(s"`$path` is not found."))
+
+  private def init(dataDir: String, network: Network, initDistrConf: Option[String]): F[Unit] = { // FIXME: it should be Either
     for {
       configPath <- io.concatPath(dataDir, "node.conf")
       randomBytes <- random.secureBytes64()
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       paymentWallet = PaymentWallet(PrivateKey @@ sec, Address @@ pub)
+      initialDistribution <-
+        initDistrConf.map(
+          path => io.readFromFile(path).map(
+            bs => transcode(Json @@ bs.get.toStringUtf8).to[Seq[InitialDistributionMember]] // FIXME: it should be Either
+          )
+        ).getOrElse(
+          Monad[F].pure(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000)))) // FIXME: hardcoded amount
+        )
       config = network match {
         case Network.Local =>
           applicationConfig(
@@ -66,11 +83,12 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
             chainId = "local",
             dataDir = dataDir,
             paymentWallet = paymentWallet,
+            initialDistribution = initialDistribution,
             validators = List(s"me:10:${bytes.byteString2hex(pub)}"),
             seeds = Nil
           )
         case Network.Testnet =>
-          applicationConfig(isValidator = false, "testnet", dataDir, paymentWallet, Nil, Nil)
+          applicationConfig(isValidator = false, "testnet", dataDir, paymentWallet, Nil, initialDistribution, Nil)
       }
       _ <- io.writeToFile(configPath, ByteString.copyFromUtf8(config))
     } yield ()
@@ -98,7 +116,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         _ <- EitherT[F, String, Unit] {
           config.mode match {
             case Mode.Nope          => Monad[F].pure(Left(s"[init|run] subcommand required."))
-            case Mode.Init(network) => init(dataDir, network).map(Right.apply)
+            case Mode.Init(network, initDistrConf) => init(dataDir, network, initDistrConf).map(Right.apply)
             case Mode.Run           => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
           }
         }

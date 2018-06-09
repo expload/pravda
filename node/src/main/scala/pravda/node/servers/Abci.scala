@@ -11,7 +11,7 @@ import pravda.vm.{Vm, state}
 import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
-import pravda.node.data.common.{ApplicationStateInfo, TokenSaleMember, TransactionId}
+import pravda.node.data.common.{ApplicationStateInfo, InitialDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
@@ -27,7 +27,7 @@ import scala.util.{Failure, Success, Try}
 import pravda.common.{bytes => byteUtils}
 import pravda.node.data.blockchain.ExecutionInfo
 
-class Abci(applicationStateDb: DB, abciClient: AbciClient, tokenSaleMembers: Seq[TokenSaleMember])(
+class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: Seq[InitialDistributionMember])(
     implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
 
@@ -54,8 +54,8 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, tokenSaleMembers: Seq
     for {
       _ <- FileStore
         .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators))
-      _ <- Future.sequence(tokenSaleMembers.map {
-        case TokenSaleMember(address, amount) =>
+      _ <- Future.sequence(initialDistribution.map {
+        case InitialDistributionMember(address, amount) =>
           applicationStateDb.putBytes(byteUtils.stringToBytes(s"balance:${byteUtils.byteString2hex(address)}"),
                                       transcode(amount).to[Bson])
       })
