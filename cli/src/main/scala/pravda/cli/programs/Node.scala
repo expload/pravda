@@ -39,7 +39,9 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |  }
        |  is-validator = $isValidator
        |  data-directory = "$dataDir"
-       |  init-distr = "${initialDistribution.map(d => s"${bytes.byteString2hex(d.address)}:${d.amount}").mkString(",")}"
+       |  init-distr = "${initialDistribution
+         .map(d => s"${bytes.byteString2hex(d.address)}:${d.amount}")
+         .mkString(",")}"
        |  seeds = "${seeds.map { case (host, port) => s"$host:$port" }.mkString(",")}"
        |  genesis {
        |    time = "0001-01-01T00:00:00Z"
@@ -68,13 +70,19 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
       randomBytes <- random.secureBytes64()
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       paymentWallet = PaymentWallet(PrivateKey @@ sec, Address @@ pub)
-      initialDistribution <-
-        initDistrConf.map(
-          path => io.readFromFile(path).map(
-            bs => transcode(Json @@ bs.get.toStringUtf8).to[Seq[InitialDistributionMember]] // FIXME: it should be Either
-          )
-        ).getOrElse(
-          Monad[F].pure(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000)))) // FIXME: hardcoded amount
+      initialDistribution <- initDistrConf
+        .map(
+          path =>
+            io.readFromFile(path)
+              .map(
+                bs =>
+                  transcode(Json @@ bs.get.toStringUtf8)
+                    .to[Seq[InitialDistributionMember]] // FIXME: it should be Either
+            )
+        )
+        .getOrElse(
+          Monad[F]
+            .pure(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000)))) // FIXME: hardcoded amount
         )
       config = network match {
         case Network.Local =>
@@ -115,9 +123,9 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         }
         _ <- EitherT[F, String, Unit] {
           config.mode match {
-            case Mode.Nope          => Monad[F].pure(Left(s"[init|run] subcommand required."))
+            case Mode.Nope                         => Monad[F].pure(Left(s"[init|run] subcommand required."))
             case Mode.Init(network, initDistrConf) => init(dataDir, network, initDistrConf).map(Right.apply)
-            case Mode.Run           => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
+            case Mode.Run                          => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
           }
         }
       } yield ()

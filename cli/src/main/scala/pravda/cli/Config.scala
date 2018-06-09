@@ -63,9 +63,9 @@ object Config {
     sealed trait Mode
 
     object Mode {
-      case object Nope                        extends Mode
+      case object Nope                                                       extends Mode
       final case class Init(network: Network, initDistrConf: Option[String]) extends Mode
-      case object Run                         extends Mode
+      case object Run                                                        extends Mode
     }
   }
 

@@ -218,7 +218,6 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
                 config.copy(mode = Config.Node.Mode.Init(network, Some(initDistrConf)))
               case (_, otherwise) => otherwise
             }
-
         ),
       cmd("run")
         .text("Run initialized node.")

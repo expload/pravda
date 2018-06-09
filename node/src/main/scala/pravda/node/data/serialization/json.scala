@@ -197,7 +197,6 @@ object json {
   implicit val domainNodeSettingsWriter: JsonWriter[ApplicationStateInfo] =
     jsonWriter[ApplicationStateInfo]
 
-
   implicit val initialDistributionReader: JsonReader[InitialDistributionMember] =
     jsonReader[InitialDistributionMember]
 

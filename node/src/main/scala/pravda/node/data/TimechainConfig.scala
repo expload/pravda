@@ -7,14 +7,14 @@ import pravda.node.data.common.InitialDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 
 final case class TimechainConfig(
-                                  genesis: TimechainConfig.Genesis,
-                                  paymentWallet: TimechainConfig.PaymentWallet,
-                                  isValidator: Boolean,
-                                  initDistr: Seq[InitialDistributionMember],
-                                  dataDirectory: File,
-                                  seeds: String,
-                                  api: TimechainConfig.ApiConfig,
-                                  tendermint: TimechainConfig.TendermintConfig
+    genesis: TimechainConfig.Genesis,
+    paymentWallet: TimechainConfig.PaymentWallet,
+    isValidator: Boolean,
+    initDistr: Seq[InitialDistributionMember],
+    dataDirectory: File,
+    seeds: String,
+    api: TimechainConfig.ApiConfig,
+    tendermint: TimechainConfig.TendermintConfig
 )
 
 object TimechainConfig {
