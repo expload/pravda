@@ -88,9 +88,9 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
   def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
     if (tx.wattPrice <= NativeCoin.zero) {
-      Failure(WrongWattPrice())
+      Failure(WrongWattPriceException())
     } else if (tx.wattLimit <= 0) {
-      Failure(WrongWattLimit())
+      Failure(WrongWattLimitException())
     } else {
       Success(())
     }
@@ -103,17 +103,20 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       authTx <- cryptography
         .checkTransactionSignature(tx)
-        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorized()))(Success.apply)
+        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
       _ <- checkTransaction(authTx)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(tid)
-      _ <- Try(env.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
+      _ <- Try(environmentProvider.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
     } yield {
-      val spent = execResult.wattCounter.total
-      val remaining = tx.wattLimit - spent
-      env.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
-      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * spent))
+      val total = execResult.wattCounter.total
+      val remaining = tx.wattLimit - total
+      environmentProvider.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
+      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
+      if (execResult.isSuccess) {
+        env.commitTransaction()
+      }
       execResult
     }
 
@@ -123,7 +126,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
           result(TxStatusOk, transcode(ExecutionInfo.from(executionResult)).to[Json])
         case Failure(e) =>
           val code =
-            if (e.isInstanceOf[TransactionUnauthorized]) TxStatusUnauthorized
+            if (e.isInstanceOf[TransactionUnauthorizedException]) TxStatusUnauthorized
             else TxStatusError
           result(code, e.getMessage)
       }
@@ -170,12 +173,12 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
 
 object Abci {
 
-  final case class TransactionUnauthorized()   extends Exception("Transaction signature is invalid")
-  final case class ProgramNotFoundException()  extends Exception("Program not found")
-  final case class NotEnoughMoney()            extends Exception("Not enough money")
-  final case class WrongWattPrice()            extends Exception("Bad transaction parameter: wattPrice")
-  final case class WrongWattLimit()            extends Exception("Bad transaction parameter: wattLimit")
-  final case class AmountShouldNotBeNegative() extends Exception("Amount should not be negative")
+  final case class TransactionUnauthorizedException()   extends Exception("Transaction signature is invalid")
+  final case class ProgramNotFoundException()           extends Exception("Program not found")
+  final case class NotEnoughMoneyException()            extends Exception("Not enough money")
+  final case class WrongWattPriceException()            extends Exception("Bad transaction parameter: wattPrice")
+  final case class WrongWattLimitException()            extends Exception("Bad transaction parameter: wattLimit")
+  final case class AmountShouldNotBeNegativeException() extends Exception("Amount should not be negative")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -202,54 +205,108 @@ object Abci {
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
-    private val cache = mutable.Map.empty[String, Array[Byte]]
+    private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
-    private lazy val programsPath = new DbPath("program")
-    private lazy val effectsPath = new DbPath("effects")
-    private lazy val balancesPath = new DbPath("balance")
+    private lazy val programsPath = new CachedDbPath(new PureDbPath("program"), cache, operations)
+    private lazy val effectsPath = new CachedDbPath(new PureDbPath("effects"), cache, operations)
+    private lazy val balancesPath = new CachedDbPath(new PureDbPath("balance"), cache, operations)
 
-    private final class DbPath(path: String) {
+    trait DbPath {
 
-      def mkKey(suffix: String) = s"$path:$suffix"
+      def mkKey(suffix: String): String
 
-      def :+(suffix: String) = new DbPath(mkKey(suffix))
+      def :+(suffix: String): DbPath
 
       def getAs[V: BsonDecoder](suffix: String): Option[V] =
         getRawBytes(suffix).map(arr => transcode(Bson @@ arr).to[V])
 
-      def getRawBytes(suffix: String): Option[Array[Byte]] = {
-        val key = mkKey(suffix)
-        cache.get(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
-      }
+      def getRawBytes(suffix: String): Option[Array[Byte]]
 
       def put[V: BsonEncoder](suffix: String, value: V): Option[Array[Byte]] = {
         val bsonValue: Array[Byte] = transcode(value).to[Bson]
         putRawBytes(suffix, bsonValue)
       }
 
-      def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = {
-        val key = mkKey(suffix)
-        val prev = getRawBytes(suffix)
-        cache.put(key, value)
-        operations += Operation.Put(byteUtils.stringToBytes(key), value)
-        prev
-      }
+      def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]]
 
-      def remove(suffix: String): Option[Array[Byte]] = {
-        val key = mkKey(suffix)
-        operations += Operation.Delete(byteUtils.stringToBytes(key))
-        cache.remove(key).orElse(db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes))
+      def remove(suffix: String): Option[Array[Byte]]
+
+      protected def returningPrevious(suffix: String)(f: => Unit): Option[Array[Byte]] = {
+        val prev = getRawBytes(suffix)
+        f
+        prev
       }
     }
 
-    def transactionEnvironment(tid: TransactionId): Environment = {
+    private final class CachedDbPath(dbPath: DbPath,
+                                     dbCache: mutable.Map[String, Option[Array[Byte]]],
+                                     dbOperations: mutable.Buffer[Operation])
+        extends DbPath {
+      def mkKey(suffix: String): String = dbPath.mkKey(suffix)
+
+      def :+(suffix: String) = new CachedDbPath(dbPath :+ suffix, dbCache, dbOperations)
+
+      def getRawBytes(suffix: String): Option[Array[Byte]] = {
+        val key = mkKey(suffix)
+        dbCache.get(key).orElse(Option(dbPath.getRawBytes(suffix))).flatten
+      }
+
+      def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = returningPrevious(suffix) {
+        val key = mkKey(suffix)
+        dbCache.put(key, Some(value))
+        dbOperations += Operation.Put(byteUtils.stringToBytes(key), value)
+      }
+
+      def remove(suffix: String): Option[Array[Byte]] = returningPrevious(suffix) {
+        val key = mkKey(suffix)
+        dbCache.put(key, None)
+      }
+
+    }
+
+    private final class PureDbPath(path: String) extends DbPath {
+
+      def mkKey(suffix: String) = s"$path:$suffix"
+
+      def :+(suffix: String) = new PureDbPath(mkKey(suffix))
+
+      def getRawBytes(suffix: String): Option[Array[Byte]] = {
+        val key = mkKey(suffix)
+        db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes)
+      }
+
+      def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = returningPrevious(suffix) {
+        val key = mkKey(suffix)
+        db.syncPutBytes(byteUtils.stringToBytes(key), value)
+      }
+
+      def remove(suffix: String): Option[Array[Byte]] = returningPrevious(suffix) {
+        val key = mkKey(suffix)
+        db.syncDeleteBytes(byteUtils.stringToBytes(key))
+      }
+
+    }
+
+    def transactionEnvironment(tid: TransactionId): TransactionDependentEnvironment = {
       val effects = mutable.Buffer.empty[EnvironmentEffect]
       effectsMap += (tid -> effects)
       new TransactionDependentEnvironment(effects)
     }
 
-    private final class TransactionDependentEnvironment(effects: mutable.Buffer[EnvironmentEffect])
-        extends Environment {
+    final class TransactionDependentEnvironment(effects: mutable.Buffer[EnvironmentEffect]) extends Environment {
+
+      private val transactionOperations = mutable.Buffer.empty[Operation]
+      private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
+      private val transactionCache = mutable.Map.empty[String, Option[Array[Byte]]]
+
+      private lazy val transactionProgramsPath = new CachedDbPath(programsPath, transactionCache, transactionOperations)
+      private lazy val transactionBalancesPath = new CachedDbPath(balancesPath, transactionCache, transactionOperations)
+
+      def commitTransaction(): Unit = {
+        operations ++= transactionOperations
+        cache ++= transactionCache
+        effects ++= transactionEffects
+      }
 
       import EnvironmentEffect._
 
@@ -258,7 +315,7 @@ object Abci {
         def get(key: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.getRawBytes(hexKey)
-          effects += StorageRead(dbPath.mkKey(hexKey), value)
+          transactionEffects += StorageRead(dbPath.mkKey(hexKey), value)
           value.map(ByteString.copyFrom)
         }
 
@@ -266,14 +323,14 @@ object Abci {
           val hexKey = byteUtils.byteString2hex(key)
           val array = value.toByteArray
           val prev = dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
-          effects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
+          transactionEffects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
           prev.map(ByteString.copyFrom)
         }
 
         def delete(key: state.Data): Option[state.Data] = {
           val hexKey = byteUtils.byteString2hex(key)
           val value = dbPath.remove(byteUtils.byteString2hex(key))
-          effects += StorageRemove(dbPath.mkKey(hexKey), value)
+          transactionEffects += StorageRemove(dbPath.mkKey(hexKey), value)
           value.map(ByteString.copyFrom)
         }
 
@@ -286,17 +343,16 @@ object Abci {
         val address = Address @@ ByteString.copyFrom(addressBytes)
         val sp = StoredProgram(code, owner)
 
-        programsPath.put(byteUtils.bytes2hex(addressBytes), sp)
-
-        effects += ProgramCreate(address, code.toByteArray)
+        transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
+        transactionEffects += ProgramCreate(address, code.toByteArray)
         address
       }
 
       def updateProgram(address: Address, code: Data): Data = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
         val sp = oldSb.copy(code = code)
-        programsPath.put(byteUtils.byteString2hex(address), sp)
-        effects += ProgramUpdate(address, code.toByteArray)
+        transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
+        transactionEffects += ProgramUpdate(address, code.toByteArray)
         sp.code
       }
 
@@ -306,32 +362,33 @@ object Abci {
       }
 
       def balance(address: Address): NativeCoin = {
-        val bal = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
-        effects += ShowBalance(address, bal)
+        val bal =
+          transactionBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
+        transactionEffects += ShowBalance(address, bal)
         bal
       }
 
       def withdraw(address: Address, amount: NativeCoin): Unit = {
-        if (amount < 0) throw AmountShouldNotBeNegative()
+        if (amount < 0) throw AmountShouldNotBeNegativeException()
 
         val current = balance(address)
-        if (current < amount) throw NotEnoughMoney()
+        if (current < amount) throw NotEnoughMoneyException()
 
-        balancesPath.put(byteUtils.byteString2hex(address), current - amount)
-        effects += Withdraw(address, amount)
+        transactionBalancesPath.put(byteUtils.byteString2hex(address), current - amount)
+        transactionEffects += Withdraw(address, amount)
 
       }
 
       def accrue(address: Address, amount: NativeCoin): Unit = {
-        if (amount < 0) throw AmountShouldNotBeNegative()
+        if (amount < 0) throw AmountShouldNotBeNegativeException()
 
         val current = balance(address)
-        balancesPath.put(byteUtils.byteString2hex(address), current + amount)
-        effects += Accrue(address, amount)
+        transactionBalancesPath.put(byteUtils.byteString2hex(address), current + amount)
+        transactionEffects += Accrue(address, amount)
       }
 
       private def getStoredProgram(address: ByteString) =
-        programsPath.getAs[StoredProgram](byteUtils.byteString2hex(address))
+        transactionProgramsPath.getAs[StoredProgram](byteUtils.byteString2hex(address))
 
       // Effects below are ignored by effect collect
       // because they are inaccessible from user space
@@ -344,7 +401,7 @@ object Abci {
           new ProgramContext {
             def code: ByteBuffer = ByteBuffer.wrap(program.code.toByteArray)
             def storage: Storage = {
-              val newPath = programsPath :+ byteUtils.byteString2hex(address)
+              val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
               new WsProgramStorage(newPath)
             }
           }
@@ -364,9 +421,21 @@ object Abci {
       fee = NativeCoin.zero
     }
 
+    def withdraw(address: Address, amount: NativeCoin): Unit = {
+      if (amount < 0) throw AmountShouldNotBeNegativeException()
+      val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
+      if (current < amount) throw NotEnoughMoneyException()
+
+      balancesPath.put(byteUtils.byteString2hex(address), current - amount)
+
+    }
+
     def accrue(address: Address, amount: NativeCoin): Unit = {
+      if (amount < 0) throw AmountShouldNotBeNegativeException()
+
       val current = balancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
       balancesPath.put(byteUtils.byteString2hex(address), current + amount)
+
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
@@ -387,5 +456,7 @@ object Abci {
       db.syncBatch(operations: _*)
       clear()
     }
+
   }
+
 }

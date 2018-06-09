@@ -150,10 +150,12 @@ object Vm {
             } else {
               memory.push(addressToData(progAddress.get))
             }
+            aux()
           case TRANSFER =>
             val amount = dataToCoins(memory.pop())
             val to = dataToAddress(memory.pop())
             environment.transfer(executor, to, amount)
+            aux()
           case PTRANSFER =>
             if (progAddress.isEmpty) {
               throw VmErrorException(OperationDenied)
@@ -162,6 +164,7 @@ object Vm {
               val to = dataToAddress(memory.pop())
               environment.transfer(progAddress.get, to, amount)
             }
+            aux()
           case LCALL =>
             wattCounter.cpuUsage(CpuExtCall)
 

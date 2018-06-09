@@ -8,16 +8,6 @@ final case class ExecutionResult(
     wattCounter: WattCounter
 ) {
 
-  import ExecutionResult._
+  def isSuccess: Boolean = error.isEmpty
 
-  def status: Status = error.fold[Status](Ok)(_ => Error)
-
-}
-
-object ExecutionResult {
-
-  trait Status
-
-  case object Ok    extends Status
-  case object Error extends Status
 }
