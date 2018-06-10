@@ -36,16 +36,10 @@ object Opcodes {
   final val SEXIST = int.SEXIST.toByte
 
   // Int32 operations
-  final val I32ADD = int.I32ADD.toByte
-  final val I32MUL = int.I32MUL.toByte
-  final val I32DIV = int.I32DIV.toByte
-  final val I32MOD = int.I32MUL.toByte
-
-  // Strict float operations
-  final val FADD = int.FADD.toByte
-  final val FMUL = int.FMUL.toByte
-  final val FDIV = int.FDIV.toByte
-  final val FMOD = int.FMUL.toByte
+  final val ADD = int.ADD.toByte
+  final val MUL = int.MUL.toByte
+  final val DIV = int.DIV.toByte
+  final val MOD = int.MOD.toByte
 
   // Boolean operations
   final val NOT = int.NOT.toByte
@@ -53,8 +47,8 @@ object Opcodes {
   final val OR = int.OR.toByte
   final val XOR = int.XOR.toByte
   final val EQ = int.EQ.toByte
-  final val I32LT = int.I32LT.toByte
-  final val I32GT = int.I32GT.toByte
+  final val LT = int.LT.toByte
+  final val GT = int.GT.toByte
 
   final val FTBL = int.FTBL.toByte
 
@@ -100,18 +94,12 @@ object Opcodes {
     final val SEXIST = 0x53
 
     // Int32 operations
-    final val I32ADD = 0x60
-    final val I32MUL = 0x61
-    final val I32DIV = 0x62
-    final val I32MOD = 0x63
-    final val I32LT = 0x67
-    final val I32GT = 0x68
-
-    // Double precision numbers operations
-    final val FADD = 0x70
-    final val FMUL = 0x71
-    final val FDIV = 0x72
-    final val FMOD = 0x73
+    final val ADD = 0x60
+    final val MUL = 0x61
+    final val DIV = 0x62
+    final val MOD = 0x63
+    final val LT = 0x67
+    final val GT = 0x68
 
     // Boolean operations
     final val NOT = 0x80

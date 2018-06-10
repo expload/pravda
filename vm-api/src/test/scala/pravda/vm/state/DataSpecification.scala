@@ -1,4 +1,4 @@
-package pravda.vm
+package pravda.vm.state
 
 import java.nio.ByteBuffer
 

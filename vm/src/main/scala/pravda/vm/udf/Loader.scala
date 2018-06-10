@@ -6,20 +6,23 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.Address
-import state.Environment
+import state.{Data, Environment}
 
 import scala.collection.mutable
 
 object Loader extends Loader {
+
+  import DataOperations._
+
   type ExternalTable = mutable.Map[ByteString, Int]
 
   private def readExternalTable(program: ByteBuffer): ExternalTable = {
     val table: ExternalTable = mutable.Map.empty
-    val n = wordToInt32(program)
+    val n = int32(Data.readFromByteBuffer(program))
     for (i <- 1 to n) {
-      val address = wordToBytes(program)
-      val position = wordToInt32(program)
-      table += (ByteString.copyFrom(address) -> position)
+      val address = bytes(Data.readFromByteBuffer(program))
+      val position = int32(Data.readFromByteBuffer(program))
+      table += (address -> position)
     }
     table
   }

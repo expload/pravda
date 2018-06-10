@@ -7,8 +7,8 @@ final case class MemoryWithCounter(
     wattCounter: WattCounter
 ) extends Memory {
 
-  private var stackVolume = stack.map(_.size()).sum.toLong
-  private var heapVolume = heap.map(_.size()).sum.toLong
+  private var stackVolume = stack.map(_.volume).sum.toLong
+  private var heapVolume = heap.map(_.volume).sum.toLong
   private var maxStackVolume = stackVolume
   private var maxHeapVolume = heapVolume
 
@@ -27,12 +27,12 @@ final case class MemoryWithCounter(
   def top(n: Int): Seq[Data] = memory.top(n)
 
   def pop(): Data = {
-    stackVolume -= memory.top().size()
+    stackVolume -= memory.top().volume.toLong
     memory.pop()
   }
 
   def push(x: Seq[Data]): Unit = {
-    stackVolume += x.map(_.size()).sum
+    stackVolume += x.map(_.volume).sum.toLong
     if (stackVolume > maxStackVolume) {
       maxStackVolume = stackVolume
       wattCounter.memoryUsage(maxVolume)
@@ -41,7 +41,7 @@ final case class MemoryWithCounter(
   }
 
   def push(x: Data): Unit = {
-    stackVolume += x.size()
+    stackVolume += x.volume
     if (stackVolume > maxStackVolume) {
       maxStackVolume = stackVolume
       wattCounter.memoryUsage(maxVolume)
@@ -54,7 +54,7 @@ final case class MemoryWithCounter(
   }
 
   def clear(): Unit = {
-    stackVolume -= memory.all.map(_.size()).sum
+    stackVolume -= memory.all.map(_.volume).sum.toLong
     memory.clear()
   }
 
@@ -65,7 +65,7 @@ final case class MemoryWithCounter(
   def length: Int = memory.length
 
   def heapPut(x: Data): Int = {
-    heapVolume += x.size()
+    heapVolume += x.volume.toLong
     if (heapVolume > maxHeapVolume) {
       maxHeapVolume = heapVolume
       wattCounter.memoryUsage(maxVolume)

@@ -33,15 +33,15 @@ object LibraryTests extends TestSuite {
         .put(2)
         .put("plus").put(1 + 5 + plusLen + 5 + multLen + 5)
         .put("mult").put(1 + 5 + plusLen + 5 + multLen + 5 + 1 + 1)
-        .opcode(I32ADD).opcode(RET)
-        .opcode(I32MUL).opcode(RET)
+        .opcode(ADD).opcode(RET)
+        .opcode(MUL).opcode(RET)
 
       val udflib2 = prog.opcode(FTBL)
         .put(1)
         .put("plus").put(1 + 5 + plusLen + 5)
         .opcode(PUSHX).put(13)
-        .opcode(I32ADD)
-        .opcode(I32ADD)
+        .opcode(ADD)
+        .opcode(ADD)
         .opcode(RET)
 
 
@@ -75,8 +75,8 @@ object LibraryTests extends TestSuite {
         .put(2)
         .put("plus").put(1 + 5 + plusLen + 5 + funcLen + 5)
         .put("func").put(1 + 5 + plusLen + 5 + funcLen + 5 + 1 + 1)
-        .opcode(I32ADD).opcode(RET)
-        .opcode(DUP).opcode(LCALL).put(address).put("plus").put(2).opcode(PUSHX).put(1).opcode(I32ADD).opcode(RET)
+        .opcode(ADD).opcode(RET)
+        .opcode(DUP).opcode(LCALL).put(address).put("plus").put(2).opcode(PUSHX).put(1).opcode(ADD).opcode(RET)
 
       val wState = environment(address -> udflib)
 

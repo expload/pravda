@@ -1,16 +1,33 @@
-package pravda.vm
+package pravda.vm.state
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
+
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable
-import scala.{Array => ScalaArray}
-import scala.{BigInt => ScalaBigInt}
+import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
 sealed trait Data {
 
   import Data._
   import Primitive._
+  import Array._
+
+  // TODO optimize me. better way to save count of bytes on deserialization
+  lazy val volume: Int = {
+    val buffer = getByteStringBuffer
+    writeToByteBuffer(buffer)
+    buffer.flip()
+    buffer.remaining()
+  }
+
+  def toByteString: ByteString = {
+    val buffer = getByteStringBuffer
+    writeToByteBuffer(buffer)
+    buffer.flip()
+    ByteString.copyFrom(buffer)
+  }
 
   def writeToByteBuffer(buffer: ByteBuffer): Unit = {
 
@@ -28,7 +45,7 @@ sealed trait Data {
       //println(s"putLength: $length")
       if (length < 0 || length >= 0x400000)
         throw new IllegalArgumentException(s"`length` should be greater than 0 and less than 4194304 but it is $length")
-      val pb = getLengthBufferFromCache
+      val pb = getLengthBuffer
       pb.rewind()
       pb.putInt(length)
       pb.flip()
@@ -78,7 +95,7 @@ sealed trait Data {
     }
 
     def putTaglessPrimitive[U](f: ByteBuffer => U): Unit = {
-      val pb = getPrimitiveBufferFromCache
+      val pb = getPrimitiveBuffer
       f(pb)
       pb.flip()
       seek(pb)
@@ -125,6 +142,7 @@ sealed trait Data {
     }
 
     this match {
+      case Null              => buffer.put(TypeNull)
       case Int8(data)        => putPrimitive(TypeInt8)(_.put(data))
       case Int16(data)       => putPrimitive(TypeInt16)(_.putShort(data))
       case Int32(data)       => putPrimitive(TypeInt32)(_.putInt(data))
@@ -162,6 +180,8 @@ sealed trait Data {
             putString(field)
             value.writeToByteBuffer(buffer)
         }
+      case MarshalledData(data) =>
+        buffer.put(data.toByteArray)
     }
   }
 
@@ -172,47 +192,63 @@ object Data {
   sealed trait Primitive extends Data
 
   object Primitive {
-    final case class Int8(data: Byte)               extends Primitive
-    final case class Int16(data: Short)             extends Primitive
-    final case class Int32(data: Int)               extends Primitive
-    final case class Uint8(data: Int)               extends Primitive
-    final case class Uint16(data: Int)              extends Primitive
-    final case class Uint32(data: Long)             extends Primitive
-    final case class BigInt(data: ScalaBigInt)      extends Primitive
-    @strictfp final case class Number(data: Double) extends Primitive
+
+    sealed trait Numeric extends Data
+
+    final case class Int8(data: Byte)               extends Numeric
+    final case class Int16(data: Short)             extends Numeric
+    final case class Int32(data: Int)               extends Numeric
+    final case class Uint8(data: Int)               extends Numeric
+    final case class Uint16(data: Int)              extends Numeric
+    final case class Uint32(data: Long)             extends Numeric
+    final case class BigInt(data: ScalaBigInt)      extends Numeric
+    @strictfp final case class Number(data: Double) extends Numeric
+
     final case class Ref(data: Int)                 extends Primitive
 
     sealed trait Bool extends Primitive
 
     object Bool {
+      def apply(value: Boolean): Bool =
+        if (value) True else False
       final case object True  extends Bool
       final case object False extends Bool
     }
   }
 
-  final case class Int8Array(data: mutable.Buffer[Byte])               extends Data
-  final case class Int16Array(data: mutable.Buffer[Short])             extends Data
-  final case class Int32Array(data: mutable.Buffer[Int])               extends Data
-  final case class Uint8Array(data: mutable.Buffer[Int])               extends Data
-  final case class Uint16Array(data: mutable.Buffer[Int])              extends Data
-  final case class Uint32Array(data: mutable.Buffer[Long])             extends Data
-  final case class BigIntArray(data: mutable.Buffer[ScalaBigInt])      extends Data
-  @strictfp final case class NumberArray(data: mutable.Buffer[Double]) extends Data
-  final case class RefArray(data: mutable.Buffer[Int])                 extends Data
-  final case class BoolArray(data: mutable.Buffer[Primitive.Bool])     extends Data
+  sealed trait Array extends Data
 
-  //  final case class Array(data: mutable.Buffer[Primitive]) extends Data
+  object Array {
+    final case class Int8Array(data: mutable.Buffer[Byte])               extends Array
+    final case class Int16Array(data: mutable.Buffer[Short])             extends Array
+    final case class Int32Array(data: mutable.Buffer[Int])               extends Array
+    final case class Uint8Array(data: mutable.Buffer[Int])               extends Array
+    final case class Uint16Array(data: mutable.Buffer[Int])              extends Array
+    final case class Uint32Array(data: mutable.Buffer[Long])             extends Array
+    final case class BigIntArray(data: mutable.Buffer[ScalaBigInt])      extends Array
+    @strictfp final case class NumberArray(data: mutable.Buffer[Double]) extends Array
+    final case class RefArray(data: mutable.Buffer[Int])                 extends Array
+    final case class BoolArray(data: mutable.Buffer[Primitive.Bool])     extends Array
+  }
+
   final case class Struct(name: String, data: mutable.SortedMap[String, Primitive]) extends Data
-  final case class Utf8(data: String)                                               extends Data
+  final case class Utf8(data: String)                                               extends Array
+  final case class MarshalledData(data: ByteString)                                 extends Data
+  case object Null extends Data
 
   // scalafix:off DisableSyntax.keywords.null
-  private[vm] val primitiveBufferCache = new ThreadLocal[ByteBuffer]()
 
-  private[vm] def getPrimitiveBufferFromCache = {
-    val pb = primitiveBufferCache.get()
+  //--------------------------------
+  // Two 1M buffers for any purposes
+  //--------------------------------
+
+  private[vm] val primitiveBuffer = new ThreadLocal[ByteBuffer]()
+
+  private[vm] def getPrimitiveBuffer = {
+    val pb = primitiveBuffer.get()
     if (pb == null) {
       val newPb = ByteBuffer.allocate(256)
-      primitiveBufferCache.set(newPb)
+      primitiveBuffer.set(newPb)
       newPb
     } else {
       pb.clear()
@@ -220,19 +256,36 @@ object Data {
     }
   }
 
-  private[vm] val lengthBufferCache = new ThreadLocal[ByteBuffer]()
+  private[vm] val lengthBuffer = new ThreadLocal[ByteBuffer]()
 
-  private[vm] def getLengthBufferFromCache = {
-    val pb = lengthBufferCache.get()
+  private[vm] def getLengthBuffer = {
+    val pb = lengthBuffer.get()
     if (pb == null) {
       val newPb = ByteBuffer.allocate(4)
-      lengthBufferCache.set(newPb)
+      lengthBuffer.set(newPb)
       newPb
     } else {
       pb.clear()
       pb
     }
   }
+
+  private[vm] val BufferSize = 1024 * 1024
+
+  private[vm] val byteStringBuffer = new ThreadLocal[ByteBuffer]()
+
+  private[vm] def getByteStringBuffer = {
+    val pb = byteStringBuffer.get()
+    if (pb == null) {
+      val newPb = ByteBuffer.allocate(BufferSize)
+      byteStringBuffer.set(newPb)
+      newPb
+    } else {
+      pb.clear()
+      pb
+    }
+  }
+
   // scalafix:on DisableSyntax.keywords.null
 
   /** Seek first non zero byte in pb **/
@@ -247,6 +300,13 @@ object Data {
   private[vm] def erase(pb: ByteBuffer): Unit = {
     while (pb.hasRemaining) pb.put(0.toByte)
     pb.rewind()
+  }
+
+  def fromBytes(bytes: ScalaArray[Byte]): Data = {
+    val buffer = getByteStringBuffer
+    buffer.put(bytes)
+    buffer.flip()
+    readFromByteBuffer(buffer)
   }
 
   def readFromByteBuffer(buffer: ByteBuffer): Data = {
@@ -268,7 +328,7 @@ object Data {
     }
 
     def primitiveBuffer(alignment: Int): ByteBuffer = {
-      val pb = getPrimitiveBufferFromCache
+      val pb = getPrimitiveBuffer
       pb.limit(alignment)
       pb.rewind()
       erase(pb)
@@ -331,6 +391,7 @@ object Data {
     def getRef = primitiveBuffer(4).getInt
 
     buffer.get match {
+      case TypeNull    => Null
       case TypeInt8    => Primitive.Int8(getInt8) // int8
       case TypeInt16   => Primitive.Int16(getInt16) // int16
       case TypeInt32   => Primitive.Int32(getInt32) // int32
@@ -348,16 +409,16 @@ object Data {
         //println(s"l=$l")
         if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position - 1)
         `type` match {
-          case TypeInt8    => Int8Array(mutable.Buffer.fill(l)(getInt8))
-          case TypeInt16   => Int16Array(mutable.Buffer.fill(l)(getInt16))
-          case TypeInt32   => Int32Array(mutable.Buffer.fill(l)(getInt32))
-          case TypeBigInt  => BigIntArray(mutable.Buffer.fill(l)(getBigInt))
-          case TypeUint8   => Uint8Array(mutable.Buffer.fill(l)(getUint8))
-          case TypeUint16  => Uint16Array(mutable.Buffer.fill(l)(getUint16))
-          case TypeUint32  => Uint32Array(mutable.Buffer.fill(l)(getUint32))
-          case TypeNumber  => NumberArray(mutable.Buffer.fill(l)(getDouble))
-          case TypeBoolean => BoolArray(mutable.Buffer.fill(l)(getBool))
-          case TypeRef     => RefArray(mutable.Buffer.fill(l)(getRef))
+          case TypeInt8    => Array.Int8Array(mutable.Buffer.fill(l)(getInt8))
+          case TypeInt16   => Array.Int16Array(mutable.Buffer.fill(l)(getInt16))
+          case TypeInt32   => Array.Int32Array(mutable.Buffer.fill(l)(getInt32))
+          case TypeBigInt  => Array.BigIntArray(mutable.Buffer.fill(l)(getBigInt))
+          case TypeUint8   => Array.Uint8Array(mutable.Buffer.fill(l)(getUint8))
+          case TypeUint16  => Array.Uint16Array(mutable.Buffer.fill(l)(getUint16))
+          case TypeUint32  => Array.Uint32Array(mutable.Buffer.fill(l)(getUint32))
+          case TypeNumber  => Array.NumberArray(mutable.Buffer.fill(l)(getDouble))
+          case TypeBoolean => Array.BoolArray(mutable.Buffer.fill(l)(getBool))
+          case TypeRef     => Array.RefArray(mutable.Buffer.fill(l)(getRef))
         }
       case TypeStruct =>
         val name = getString
@@ -377,6 +438,7 @@ object Data {
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
       extends Exception(s"Unexpected length: $expected expected but $given given at $offset")
 
+  final val TypeNull = 0x00.toByte
   final val TypeInt8 = 0x01.toByte
   final val TypeInt16 = 0x02.toByte
   final val TypeInt32 = 0x03.toByte

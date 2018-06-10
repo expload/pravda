@@ -8,16 +8,16 @@ final case class EnvironmentWithCounter(environment: Environment, wattCounter: W
 
   def updateProgram(address: Address, code: Data): Data = {
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
+    wattCounter.storageUsage(occupiedBytes = code.volume.toLong)
 
     val previous = environment.updateProgram(address, code)
-    wattCounter.storageUsage(releasedBytes = previous.size().toLong)
+    wattCounter.storageUsage(releasedBytes = previous.volume.toLong)
     previous
   }
 
   def createProgram(owner: Address, code: Data): Address = {
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
+    wattCounter.storageUsage(occupiedBytes = code.volume.toLong)
 
     environment.createProgram(owner, code)
   }

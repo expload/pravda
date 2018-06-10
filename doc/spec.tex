@@ -7,8 +7,8 @@
 \usepackage{url}
 \usepackage{amsmath}
 
-\title{B* Smart-contracts Engine Specification}
-\author{Aleksey Fomkin}
+\title{Pravda Virtual Machine}
+\author{Aleksey Fomkin, Vasiliy Pankratov}
 \date{\today}
 
 \begin{document}
@@ -17,7 +17,7 @@
 
 \section{Introduction}
 
-As part of the Mytime Project, BSCE is designed to solve challenges of the game industry in section of decentralization. The purpose of BSCE is programmatic management of global state of the network. We're offering minimalistic deterministic virtual machine and runtime library for managed execution of smart-contracts.
+As part of the Mytime Project, Pravda VM is designed to solve challenges of the game industry in section of decentralization. The purpose of Pravda VM is programmatic management of global state of the network. We're offering minimalistic deterministic virtual machine and runtime library for managed execution of smart-contracts.
 
 In our work we're focusing on simplicity and extensibility. We don't set ourselves a task to invent something new, but using solid foundation of computer science we consider requirements of the network.
 
@@ -27,9 +27,9 @@ This document specifies memory and execution model, bytecode format, start-contr
 
 \subsection{General}
 
-BSCE is a stack-based virtual machine. All data is represented by string, so "machine word" is a string. BSCE can store words in a managed heap. Heap is inaccessible for raw reads/writes and fully managed by runtime. Heap has map-like interface where key is string of four bytes and value is an arbitrary string. 
+Pravda VM is a stack-based virtual machine. All data is represented by string, so "machine word" is a string. Pravda VM can store words in a managed heap. Heap is inaccessible for raw reads/writes and fully managed by runtime. Heap has map-like interface where key is string of four bytes and value is an arbitrary string. 
 
-Persistence is an integral part of BSCE which is a representation of a global state of the network. Persistent state has map-like interface as the heap. The difference is programmer can use arbitrary string as a key.
+Persistence is an integral part of Pravda VM which is a representation of a global state of the network. Persistent state has map-like interface as the heap. The difference is programmer can use arbitrary string as a key.
 
 Code can be executed.
 \subsection{Execution scopes}
@@ -40,7 +40,7 @@ Execution in transactions scope has not persistent storage but has its own stack
 
 \subsection{Transaction isolation}
 
-As noted above persistence is an integral part of BSCE. Executions can read and write to the persistent storage. BSCE supports parallel execution of the same smart-contacts. It means concurrent access to the stored data. According to this requirement we need to provide highest level of consistency so transactions is isolated serializable\cite{transaction-isolation}. 
+As noted above persistence is an integral part of Pravda VM. Executions can read and write to the persistent storage. Pravda VM supports parallel execution of the same smart-contacts. It means concurrent access to the stored data. According to this requirement we need to provide highest level of consistency so transactions is isolated serializable\cite{transaction-isolation}. 
 
 \section{Bytecode}
 

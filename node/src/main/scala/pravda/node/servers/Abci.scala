@@ -313,47 +313,50 @@ object Abci {
       private final class WsProgramStorage(dbPath: DbPath) extends Storage {
 
         def get(key: state.Data): Option[state.Data] = {
-          val hexKey = byteUtils.byteString2hex(key)
+          val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
           transactionEffects += StorageRead(dbPath.mkKey(hexKey), value)
-          value.map(ByteString.copyFrom)
+          value.map(Data.fromBytes)
         }
 
         def put(key: state.Data, value: state.Data): Option[state.Data] = {
-          val hexKey = byteUtils.byteString2hex(key)
-          val array = value.toByteArray
-          val prev = dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
+          val hexKey = byteUtils.byteString2hex(key.toByteString)
+          val array = value.toByteString.toByteArray
+          val prev = dbPath.putRawBytes(hexKey, array)
           transactionEffects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
-          prev.map(ByteString.copyFrom)
+          prev.map(Data.fromBytes)
         }
 
         def delete(key: state.Data): Option[state.Data] = {
-          val hexKey = byteUtils.byteString2hex(key)
-          val value = dbPath.remove(byteUtils.byteString2hex(key))
+          val hexKey = byteUtils.byteString2hex(key.toByteString)
+          val value = dbPath.remove(hexKey)
           transactionEffects += StorageRemove(dbPath.mkKey(hexKey), value)
-          value.map(ByteString.copyFrom)
+          value.map(Data.fromBytes)
         }
-
       }
 
-      def createProgram(owner: Address, code: Data): Address = {
+      def createProgram(owner: Address, code: Data.Array.Int8Array): Address = {
         // FIXME fomkin: consider something better
-        val addressBytes = ripemd160.getHash(owner.concat(code).toByteArray)
-
+        // FIXME fomkin: address always 32 bytes
+        val codeBa = code.data.toArray
+        val codeBs = ByteString.copyFrom(codeBa)
+        val addressBytes = ripemd160.getHash(owner.concat(codeBs).toByteArray)
         val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, owner)
+        val sp = StoredProgram(codeBs, owner)
 
         transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
-        transactionEffects += ProgramCreate(address, code.toByteArray)
+        transactionEffects += ProgramCreate(address, codeBa)
         address
       }
 
-      def updateProgram(address: Address, code: Data): Data = {
+      def updateProgram(address: Address, code: Data.Array.Int8Array): Data = {
+        val codeBa = code.data.toArray
+        val codeBs = ByteString.copyFrom(codeBa)
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
-        val sp = oldSb.copy(code = code)
+        val sp = oldSb.copy(code = codeBs)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
-        transactionEffects += ProgramUpdate(address, code.toByteArray)
-        sp.code
+        transactionEffects += ProgramUpdate(address, codeBa)
+        code
       }
 
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {

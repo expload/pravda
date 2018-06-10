@@ -4,6 +4,7 @@ import pravda.vm.state.{Data, VmErrorException}
 import pravda.vm.state.VmError.OutOfWatts
 
 class WattCounter(wattLimit: Long) {
+
   val StorageOccupyFactor = 8L
   val StorageReleaseFactor = 2L
   val CpuFactor = 1L
@@ -75,6 +76,6 @@ object WattCounter {
   val CpuStorageUse = 20L
 
   private val CpuWordDelimiter = 64L
-  def CpuWordOperation(word: Data*): Long = word.map(_.size()).sum / CpuWordDelimiter
 
+  def CpuWordOperation(word: Data*): Long = word.map(_.volume).sum / CpuWordDelimiter
 }

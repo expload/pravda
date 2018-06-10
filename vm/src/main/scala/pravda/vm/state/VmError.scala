@@ -2,26 +2,28 @@ package pravda.vm.state
 
 import pravda.common.domain.Address
 
-sealed trait VmError {
-  val code: Int
-}
+sealed abstract class VmError(val code: Int)
 
 object VmError {
 
-  case object StackOverflow        extends VmError { val code = 100 }
-  case object StackUnderflow       extends VmError { val code = 101 }
-  case object WrongStackIndex      extends VmError { val code = 102 }
-  case object WrongHeapIndex       extends VmError { val code = 103 }
-  case object OperationDenied      extends VmError { val code = 200 }
-  case object NoSuchProgram        extends VmError { val code = 300 }
-  case object NoSuchLibrary        extends VmError { val code = 301 }
-  case object NoSuchMethod         extends VmError { val code = 302 }
-  case object NoSuchElement        extends VmError { val code = 400 }
-  case object OutOfWatts           extends VmError { val code = 500 }
-  case object CallStackOverflow    extends VmError { val code = 600 }
-  case object ExtCallStackOverflow extends VmError { val code = 601 }
+  case object StackOverflow        extends VmError(100)
+  case object StackUnderflow       extends VmError(101)
+  case object WrongStackIndex      extends VmError(102)
+  case object WrongHeapIndex       extends VmError(103)
+  case object WrongType            extends VmError(104)
+  case object InvalidCoinAmount    extends VmError(104)
+  case object InvalidAddress       extends VmError(104)
 
-  final case class SomethingWrong(ex: Throwable) extends VmError { val code = 999 }
+  case object OperationDenied      extends VmError(200)
+  case object NoSuchProgram        extends VmError(300)
+  case object NoSuchLibrary        extends VmError(301)
+  case object NoSuchMethod         extends VmError(302)
+  case object NoSuchElement        extends VmError(400)
+  case object OutOfWatts           extends VmError(500)
+  case object CallStackOverflow    extends VmError(600)
+  case object ExtCallStackOverflow extends VmError(601)
+
+  final case class SomethingWrong(ex: Throwable) extends VmError(999)
 
 }
 

@@ -22,8 +22,8 @@ object WattTests extends TestSuite {
       val baseProg = prog.opcode(PUSHX).put(1).opcode(PUSHX).put(2)
       val baseCnt = exec(baseProg).wattCounter.total
 
-      exec(baseProg.opcode(I32ADD)).wattCounter.total ==> baseCnt + CpuBasic + CpuSimpleArithmetic
-      exec(baseProg.opcode(I32MUL)).wattCounter.total ==> baseCnt + CpuBasic + CpuArithmetic
+      exec(baseProg.opcode(ADD)).wattCounter.total ==> baseCnt + CpuBasic + CpuSimpleArithmetic
+      exec(baseProg.opcode(MUL)).wattCounter.total ==> baseCnt + CpuBasic + CpuArithmetic
 
       exec(prog.opcode(PUSHX).put(hex"ff00aa").opcode(PUSHX).put(coinsToData(NativeCoin.zero)).opcode(TRANSFER)).wattCounter.total ==>
         MemoryUsage + CpuBasic + CpuBasic + CpuStorageUse + CpuBasic

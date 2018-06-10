@@ -3,33 +3,37 @@ package pravda.vm.watt
 import pravda.vm.state.{Data, Storage}
 
 class StorageWithCounter(storage: Storage, wattCounter: WattCounter) extends Storage {
+
   import WattCounter._
 
-  override def get(key: Data): Option[Data] = {
+  def get(key: Data): Option[Data] = {
     wattCounter.cpuUsage(CpuStorageUse)
-
     storage.get(key)
   }
 
-  override def put(key: Data, value: Data): Option[Data] = {
-    wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = value.size().toLong + key.size().toLong)
+  def put(key: Data, value: Data): Option[Data] = {
+    val keyBytes = key.toByteString
+    val valueBytes = value.toByteString
+    val bytesTotal = valueBytes.size().toLong + keyBytes.size().toLong
+    val maybePrevious = storage.put(Data.MarshalledData(keyBytes), Data.MarshalledData(valueBytes))
 
-    val prev = storage.put(key, value)
-    prev.foreach { d =>
-      wattCounter.storageUsage(releasedBytes = d.size().toLong + key.size().toLong)
-    }
-    prev
+    wattCounter.cpuUsage(CpuStorageUse)
+    wattCounter.storageUsage(occupiedBytes = bytesTotal)
+    maybeReleaseStorage(keyBytes.size(), maybePrevious)
   }
 
-  override def delete(key: Data): Option[Data] = {
+  def delete(key: Data): Option[Data] = {
+    val keyBytes = key.toByteString
+    val maybePrevious = storage.delete(Data.MarshalledData(keyBytes))
     wattCounter.cpuUsage(CpuStorageUse)
-
-    val prev = storage.delete(key)
-    prev.foreach { d =>
-      wattCounter.storageUsage(releasedBytes = d.size().toLong + key.size().toLong)
-    }
-    prev
+    maybeReleaseStorage(keyBytes.size(), maybePrevious)
   }
 
+  private def maybeReleaseStorage(keySize: Int, maybePrevious: Option[Data]) = {
+    maybePrevious foreach { previous =>
+      val releasedBytesTotal = keySize.toLong + previous.volume.toLong
+      wattCounter.storageUsage(releasedBytes = releasedBytesTotal)
+    }
+    maybePrevious
+  }
 }

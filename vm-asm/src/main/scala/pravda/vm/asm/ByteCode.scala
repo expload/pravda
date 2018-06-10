@@ -98,37 +98,37 @@ class ByteCode {
 
         case Op.I32Add => {
           val offset = code.size
-          code += VM.I32ADD
+          code += VM.ADD
           (Op.I32Add, offset)
         }
 
         case Op.I32Mul => {
           val offset = code.size
-          code += VM.I32MUL
+          code += VM.MUL
           (Op.I32Mul, offset)
         }
 
         case Op.I32Div => {
           val offset = code.size
-          code += VM.I32DIV
+          code += VM.DIV
           (Op.I32Div, offset)
         }
 
         case Op.I32Mod => {
           val offset = code.size
-          code += VM.I32MOD
+          code += VM.MOD
           (Op.I32Mod, offset)
         }
 
         case Op.I32LT => {
           val offset = code.size
-          code += VM.I32LT
+          code += VM.LT
           (Op.I32LT, offset)
         }
 
         case Op.I32GT => {
           val offset = code.size
-          code += VM.I32GT
+          code += VM.GT
           (Op.I32GT, offset)
         }
 
@@ -301,12 +301,12 @@ class ByteCode {
       case Op.Ret      => code += VM.RET
       case Op.MPut     => code += VM.MPUT
       case Op.MGet     => code += VM.MGET
-      case Op.I32Add   => code += VM.I32ADD
-      case Op.I32Mul   => code += VM.I32MUL
-      case Op.I32Div   => code += VM.I32DIV
-      case Op.I32Mod   => code += VM.I32MOD
-      case Op.I32LT    => code += VM.I32LT
-      case Op.I32GT    => code += VM.I32GT
+      case Op.I32Add   => code += VM.ADD
+      case Op.I32Mul   => code += VM.MUL
+      case Op.I32Div   => code += VM.DIV
+      case Op.I32Mod   => code += VM.MOD
+      case Op.I32LT    => code += VM.LT
+      case Op.I32GT    => code += VM.GT
       case Op.Eq       => code += VM.EQ
       case Op.Not      => code += VM.NOT
       case Op.FAdd     => code += VM.FADD
@@ -353,12 +353,12 @@ class ByteCode {
         case VM.int.RET      => obuf += ((pos, Op.Ret))
         case VM.int.MPUT     => obuf += ((pos, Op.MPut))
         case VM.int.MGET     => obuf += ((pos, Op.MGet))
-        case VM.int.I32ADD   => obuf += ((pos, Op.I32Add))
-        case VM.int.I32MUL   => obuf += ((pos, Op.I32Mul))
-        case VM.int.I32DIV   => obuf += ((pos, Op.I32Div))
-        case VM.int.I32MOD   => obuf += ((pos, Op.I32Mod))
-        case VM.int.I32LT    => obuf += ((pos, Op.I32LT))
-        case VM.int.I32GT    => obuf += ((pos, Op.I32GT))
+        case VM.int.ADD   => obuf += ((pos, Op.I32Add))
+        case VM.int.MUL   => obuf += ((pos, Op.I32Mul))
+        case VM.int.DIV   => obuf += ((pos, Op.I32Div))
+        case VM.int.MOD   => obuf += ((pos, Op.I32Mod))
+        case VM.int.LT    => obuf += ((pos, Op.I32LT))
+        case VM.int.GT    => obuf += ((pos, Op.I32GT))
         case VM.int.NOT      => obuf += ((pos, Op.Not))
         case VM.int.EQ       => obuf += ((pos, Op.Eq))
         case VM.int.FADD     => obuf += ((pos, Op.FAdd))
