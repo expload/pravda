@@ -21,6 +21,22 @@ object Read {
     }
   }
 
+  implicit val longReader = new Read[Long] {
+    def read(line: Line): Either[String, (Long, Line)] = {
+      line.headOption.map{ item =>
+        try {
+          Right((java.lang.Long.parseLong(item), line.tail))
+        } catch {
+          case ex: NumberFormatException => try {
+            Right((java.lang.Long.parseLong(item.drop(2), 16), line.tail))
+          } catch {
+            case ex: NumberFormatException => Left(s"Error parsing option value: ${ex.getClass}:${ex.getMessage}")
+          }
+        }
+      } getOrElse(Left(s"Option must have value. No value provided"))
+    }
+  }
+
   implicit val stringReader = new Read[String] {
     def read(line: Line): Either[String, (String, Line)] = {
       line.headOption.map{ item =>

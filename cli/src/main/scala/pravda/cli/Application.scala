@@ -33,14 +33,22 @@ object Application extends App {
 
   // FIXME programs should be composed by another one
   val eventuallyExitCode = ArgumentsParser.parse(args, Config.Nope) match {
-    case Some(config: Config.Compile)     => compile(config).map(_ => 0)
-    case Some(config: Config.RunBytecode) => runner(config).map(_ => 0)
-    case Some(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
-    case Some(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
-    case Some(config: Config.Node)        => nodeProgram(config).map(_ => 0)
-    case _ =>
+    case Right(config: Config.Compile)     => compile(config).map(_ => 0)
+    case Right(config: Config.RunBytecode) => runner(config).map(_ => 0)
+    case Right(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
+    case Right(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
+    case Right(config: Config.Node)        => nodeProgram(config).map(_ => 0)
+    case Right(Config.Nope)                =>
+      Future{
+        import pravda.cmdopt.instances.show.console._
+        print( ArgumentsParser.help() )
+        0
+      }
+    case Left(msg) =>
       Future {
-        stderr.println(ArgumentsParser.renderTwoColumnsUsage)
+        import pravda.cmdopt.instances.show.console._
+        stderr.println(msg)
+        stderr.print( ArgumentsParser.help() )
         1 // every non zero exit code says about error
       }
   }

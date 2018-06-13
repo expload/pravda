@@ -5,17 +5,19 @@ import java.io.File
 import pravda.cli.Config.CompileMode
 import pravda.common.bytes
 import pravda.common.domain.NativeCoin
-import scopt.OptionParser
+import pravda.cmdopt._
 
-object ArgumentsParser extends OptionParser[Config]("pravda") {
+object ArgumentsParser extends CommandLine[Config] { def model = List(
 
-  head("Pravda Command Line Interface")
+  head("pravda")
+    .text("Usage:  pravda COMMAND [...COMMAND]")
+    .desc("Blockchain platform for building games"),
 
   cmd("gen")
     .text("Useful stuff generators.")
     .children(
       cmd("address")
-        .text("Generate ed25519 key pair. It can be used as regualr wallet or validator node identifier.")
+        .text("Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.")
         .action((_, _) => Config.GenAddress())
         .children(
           opt[File]('o', "output")
@@ -26,17 +28,17 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
               case (_, otherwise) => otherwise
             }
         )
-    )
+    ),
 
   cmd("run")
     .text("Run bytecode given from stdin or file on Pravda VM.")
     .action((_, _) => Config.RunBytecode())
     .children(
       opt[String]('e', "executor")
-        .validate {
+        .validate { (s: String) => s match {
           case s if bytes.isHex(s) && s.length == 64 => Right(())
           case s                                     => Left(s"`$s` is not valid address. It should be 32 bytes hex string.")
-        }
+        } }
         .text("Executor address HEX representation")
         .action {
           case (address, config: Config.RunBytecode) =>
@@ -57,7 +59,7 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
             config.copy(storage = Some(file.getAbsolutePath))
           case (_, otherwise) => otherwise
         }
-    )
+    ),
 
   cmd("compile")
     .action((_, _) => Config.Compile(CompileMode.Nope))
@@ -111,8 +113,7 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
             config.copy(compiler = Config.CompileMode.DisNet)
           case (_, otherwise) => otherwise
         }
-    )
-
+    ),
   cmd("broadcast")
     .text("Broadcasting program to the network")
     .children(
@@ -193,7 +194,7 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
             config.copy(endpoint = endpoint)
           case (_, otherwise) => otherwise
         },
-    )
+    ),
 
   cmd("node")
     .text("Control Pravda Network Node using CLI.")
@@ -241,5 +242,4 @@ object ArgumentsParser extends OptionParser[Config]("pravda") {
         },
     )
 
-  override def showUsageOnError: Boolean = false
-}
+)}

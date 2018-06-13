@@ -68,7 +68,6 @@ lazy val `vm-asm` = (project in file("vm-asm"))
   .settings(mainClass in Compile := Some("pravda.vm.asm.Application"))
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.scopt" %% "scopt" % "3.7.0",
       "com.lihaoyi" %% "fastparse" % "1.0.0"
     )
   )
@@ -80,7 +79,6 @@ lazy val forth = (project in file("forth"))
   .settings(mainClass in Compile := Some("pravda.forth.Application"))
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.scopt" %% "scopt" % "3.7.0",
       "com.lihaoyi" %% "fastparse" % "1.0.0"
     )
   )
@@ -180,6 +178,12 @@ lazy val node = (project in file("node"))
   .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
+lazy val cmdopt = (project in file("cmdopt"))
+  .settings(commonSettings: _*)
+  .settings(
+    normalizedName := "cmdopt"
+  )
+
 lazy val cli = (project in file("cli"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
@@ -190,19 +194,10 @@ lazy val cli = (project in file("cli"))
       "org.typelevel" %% "cats-core" % "1.0.1",
     )
   )
+  .dependsOn(cmdopt)
   .dependsOn(common)
   .dependsOn(forth)
   .dependsOn(`vm-asm`)
   .dependsOn(vm)
   .dependsOn(node)
   .dependsOn(dotnet)
-
-lazy val cmdopt = (project in file("cmdopt"))
-  .settings(commonSettings: _*)
-  .settings(
-    normalizedName := "cmdopt",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "1.0.1",
-      "com.github.spullara.mustache.java" % "compiler" % "0.9.4"
-    )
-  )

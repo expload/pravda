@@ -8,7 +8,8 @@ object CommandLine {
       name: String,
       text: String = "",
       desc: String = "",
-      action: (String, C) => C = (_: String, c: C) => c,
+      action: (Any, C) => C = (_: Any, c: C) => c,
+      validate: Any => Either[String, Any] = (_: Any) => Right(()),
       verbs: List[Verb[C, _]] = List.empty[Verb[C, _]]
     ) extends Verb[C, Nothing] {
 
@@ -18,14 +19,16 @@ object CommandLine {
 
     def text(msg: String): Head[C] = copy(text = msg)
     def desc(msg: String): Head[C] = copy(desc = msg)
-    def action(f: (String, C) => C): Head[C] = copy(action = f)
+    def action(f: (Any, C) => C): Head[C] = copy(action = f)
+    def validate(f: Any => Either[String, Any]): Head[C] = copy(validate = f)
   }
 
   final case class Cmd[C](
       name: String,
       text: String = "",
       desc: String = "",
-      action: (String, C) => C = (_: String, c: C) => c,
+      action: (Any, C) => C = (_: Any, c: C) => c,
+      validate: Any => Either[String, Any] = (_: Any) => Right(()),
       docref: String = "",
       verbs: List[Verb[C, _]] = List.empty[Verb[C, _]]
     ) extends Verb[C, Nothing] {
@@ -36,7 +39,8 @@ object CommandLine {
 
     def text(msg: String): Cmd[C] = copy(text = msg)
     def desc(msg: String): Cmd[C] = copy(desc = msg)
-    def action(f: (String, C) => C): Cmd[C] = copy(action = f)
+    def action(f: (Any, C) => C): Cmd[C] = copy(action = f)
+    def validate(f: Any => Either[String, Any]): Cmd[C] = copy(validate = f)
   }
 
   final case class Opt[C, A: Read](
@@ -46,6 +50,7 @@ object CommandLine {
       desc: String = "",
       abbrs: List[String] = List.empty[String],
       action: (A, C) => C = (_: A, c: C) => c,
+      validate: A => Either[String, Unit] = (_: Any) => Right(()),
     ) extends Verb[C, A] {
 
     def read(line: Line, cfg: C): Either[String, (Line, C)] = {
@@ -62,6 +67,7 @@ object CommandLine {
     def desc(msg: String): Opt[C,A] = copy(desc = msg)
     def abbr(name: String): Opt[C, A] = copy(abbrs = abbrs :+ name)
     def action(f: (A, C) => C): Opt[C, A] = copy(action = f)
+    def validate(f: A => Either[String, Unit]): Opt[C, A] = copy(validate = f)
   }
 
   final case class Arg[C, A](
