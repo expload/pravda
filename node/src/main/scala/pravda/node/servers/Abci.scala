@@ -11,7 +11,7 @@ import pravda.vm.{Vm, state}
 import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
-import pravda.node.data.common.{ApplicationStateInfo, TransactionId}
+import pravda.node.data.common.{ApplicationStateInfo, InitialDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
@@ -27,7 +27,8 @@ import scala.util.{Failure, Success, Try}
 import pravda.common.{bytes => byteUtils}
 import pravda.node.data.blockchain.ExecutionInfo
 
-class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: ExecutionContext)
+class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: Seq[InitialDistributionMember])(
+    implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
 
   import Abci._
@@ -46,14 +47,6 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
   }
 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
-    val tokenSaleMembers = List(
-      /* Alice */ Address
-        .tryFromHex("67EA4654C7F00206215A6B32C736E75A77C0B066D9F5CEDD656714F1A8B64A45")
-        .getOrElse(Address.Void) -> NativeCoin(50000L),
-      /*  Bob  */ Address
-        .tryFromHex("17681F651544420EB9C89F055500E61F09374B605AA7B69D98B2DEF74E8789CA")
-        .getOrElse(Address.Void) -> NativeCoin(30000L)
-    )
 
     val initValidators = request.validators.toVector
       .map(x => tendermint.unpackAddress(x.pubKey))
@@ -61,8 +54,8 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient)(implicit ec: Executio
     for {
       _ <- FileStore
         .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators))
-      _ <- Future.sequence(tokenSaleMembers.map {
-        case (address, amount) =>
+      _ <- Future.sequence(initialDistribution.map {
+        case InitialDistributionMember(address, amount) =>
           applicationStateDb.putBytes(byteUtils.stringToBytes(s"balance:${byteUtils.byteString2hex(address)}"),
                                       transcode(amount).to[Bson])
       })
