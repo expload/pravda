@@ -103,13 +103,13 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       _ <- Try(environmentProvider.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
     } yield {
-      val total = execResult.wattCounter.total
-      val remaining = tx.wattLimit - total
-      environmentProvider.accrue(tx.from, NativeCoin(tx.wattPrice * remaining))
-      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
       if (execResult.isSuccess) {
         env.commitTransaction()
       }
+      val total = execResult.wattCounter.total
+      val remaining = authTx.wattLimit - total
+      environmentProvider.accrue(authTx.from, NativeCoin(authTx.wattPrice * remaining))
+      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
       execResult
     }
 
