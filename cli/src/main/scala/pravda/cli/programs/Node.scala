@@ -65,26 +65,27 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
     io.readFromFile(path)
       .map(_.toRight(s"`$path` is not found."))
 
-  private def init(dataDir: String, network: Network, initDistrConf: Option[String]): F[Either[String,Unit]] = {
+  private def init(dataDir: String, network: Network, initDistrConf: Option[String]): F[Either[String, Unit]] = {
 
     val result = for {
       configPath <- EitherT[F, String, String](io.concatPath(dataDir, "node.conf").map(Right.apply))
       randomBytes <- EitherT[F, String, ByteString](random.secureBytes64().map(Right.apply))
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       paymentWallet = PaymentWallet(PrivateKey @@ sec, Address @@ pub)
-      initialDistribution <- initDistrConf.map { path =>
-          EitherT[F, String, ByteString](readFromFile(path)).flatMap {
-            bs =>
-              EitherT[F, String, Seq[InitialDistributionMember]] {
-                Monad[F].pure(
-                  Try {
-                    transcode(Json @@ bs.toStringUtf8)
-                      .to[Seq[InitialDistributionMember]]
-                  }.fold(e => Left(e.getMessage), Right(_))
-                )
-              }
-           }
-        }.getOrElse(
+      initialDistribution <- initDistrConf
+        .map { path =>
+          EitherT[F, String, ByteString](readFromFile(path)).flatMap { bs =>
+            EitherT[F, String, Seq[InitialDistributionMember]] {
+              Monad[F].pure(
+                Try {
+                  transcode(Json @@ bs.toStringUtf8)
+                    .to[Seq[InitialDistributionMember]]
+                }.fold(e => Left(e.getMessage), Right(_))
+              )
+            }
+          }
+        }
+        .getOrElse(
           EitherT[F, String, Seq[InitialDistributionMember]] {
             Monad[F].pure(
               Right(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000))))
