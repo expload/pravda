@@ -75,22 +75,20 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
       initialDistribution <- initDistrConf
         .map { path =>
           EitherT[F, String, ByteString](readFromFile(path)).flatMap { bs =>
-            EitherT[F, String, Seq[InitialDistributionMember]] {
+            EitherT[F, String, Seq[InitialDistributionMember]](
               Monad[F].pure(
-                Try {
-                  transcode(Json @@ bs.toStringUtf8)
-                    .to[Seq[InitialDistributionMember]]
-                }.fold(e => Left(e.getMessage), Right(_))
+                Try(transcode(Json @@ bs.toStringUtf8).to[Seq[InitialDistributionMember]])
+                  .fold(e => Left(e.getMessage), Right(_))
               )
-            }
+            )
           }
         }
         .getOrElse(
-          EitherT[F, String, Seq[InitialDistributionMember]] {
+          EitherT[F, String, Seq[InitialDistributionMember]](
             Monad[F].pure(
               Right(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000))))
             )
-          }
+          )
         )
 
       config = network match {
