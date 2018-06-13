@@ -16,6 +16,7 @@ import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 
 import scala.language.higherKinds
+import scala.util.Try
 
 final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node: NodeLanguage[F]) {
 
@@ -60,30 +61,37 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
   private def mkConfigPath(dataDir: String): F[String] =
     io.concatPath(dataDir, "node.conf")
 
-//  val readFromFile = (path: String) =>
-//    io.readFromFile(path)
-//      .map(_.toRight(s"`$path` is not found."))
+  private val readFromFile: String => F[Either[String, ByteString]] = (path: String) =>
+    io.readFromFile(path)
+      .map(_.toRight(s"`$path` is not found."))
 
-  private def init(dataDir: String, network: Network, initDistrConf: Option[String]): F[Unit] = { // FIXME: it should be Either
-    for {
-      configPath <- io.concatPath(dataDir, "node.conf")
-      randomBytes <- random.secureBytes64()
+  private def init(dataDir: String, network: Network, initDistrConf: Option[String]): F[Either[String,Unit]] = {
+
+    val result = for {
+      configPath <- EitherT[F, String, String](io.concatPath(dataDir, "node.conf").map(Right.apply))
+      randomBytes <- EitherT[F, String, ByteString](random.secureBytes64().map(Right.apply))
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
       paymentWallet = PaymentWallet(PrivateKey @@ sec, Address @@ pub)
-      initialDistribution <- initDistrConf
-        .map(
-          path =>
-            io.readFromFile(path)
-              .map(
-                bs =>
-                  transcode(Json @@ bs.get.toStringUtf8)
-                    .to[Seq[InitialDistributionMember]] // FIXME: it should be Either
+      initialDistribution <- initDistrConf.map { path =>
+          EitherT[F, String, ByteString](readFromFile(path)).flatMap {
+            bs =>
+              EitherT[F, String, Seq[InitialDistributionMember]] {
+                Monad[F].pure(
+                  Try {
+                    transcode(Json @@ bs.toStringUtf8)
+                      .to[Seq[InitialDistributionMember]]
+                  }.fold(e => Left(e.getMessage), Right(_))
+                )
+              }
+           }
+        }.getOrElse(
+          EitherT[F, String, Seq[InitialDistributionMember]] {
+            Monad[F].pure(
+              Right(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000))))
             )
+          }
         )
-        .getOrElse(
-          Monad[F]
-            .pure(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000)))) // FIXME: hardcoded amount
-        )
+
       config = network match {
         case Network.Local =>
           applicationConfig(
@@ -98,8 +106,9 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         case Network.Testnet =>
           applicationConfig(isValidator = false, "testnet", dataDir, paymentWallet, Nil, initialDistribution, Nil)
       }
-      _ <- io.writeToFile(configPath, ByteString.copyFromUtf8(config))
+      _ <- EitherT[F, String, Unit](io.writeToFile(configPath, ByteString.copyFromUtf8(config)).map(Right.apply))
     } yield ()
+    result.value
   }
 
   def apply(config: Config.Node): F[Unit] = {
@@ -124,7 +133,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         _ <- EitherT[F, String, Unit] {
           config.mode match {
             case Mode.Nope                         => Monad[F].pure(Left(s"[init|run] subcommand required."))
-            case Mode.Init(network, initDistrConf) => init(dataDir, network, initDistrConf).map(Right.apply)
+            case Mode.Init(network, initDistrConf) => init(dataDir, network, initDistrConf)
             case Mode.Run                          => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
           }
         }
