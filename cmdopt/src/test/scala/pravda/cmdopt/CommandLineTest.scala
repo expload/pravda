@@ -6,6 +6,9 @@ import scala.concurrent.duration.Duration
 
 object CommandLineTest extends TestSuite {
 
+  import CommandLine.Ok
+  import CommandLine.ParseError
+
   val tests = Tests {
 
     "unit parser should parse ()" - {
@@ -23,9 +26,8 @@ object CommandLineTest extends TestSuite {
       intParser("-f", "1")
       intParser("--foo", "0x01")
       intParser("-f", "0x1")
-      intParserFail{"--foo"}
+      intParserFail("--foo")
       intParserFail("--foo", "bar")
-      intParserFail("--foo=bar")
     }
 
   }
@@ -36,11 +38,11 @@ object CommandLineTest extends TestSuite {
   ) }
   def unitParser(args: String*): Unit = {
     val result = unitParser1.parse(args.toSeq, Config())
-    assert(result == Right(Config(flag = true)))
+    assert(result == Ok(Config(flag = true)))
   }
   def unitParserHidden(args: String*): Unit = {
     val result = unitParser1.parse(args.toSeq, Config())
-    assert(result == Right(Config(debug = true)))
+    assert(result == Ok(Config(debug = true)))
   }
 
   val groupParser1 = new CommandLine[Config] { def model = List(
@@ -50,7 +52,7 @@ object CommandLineTest extends TestSuite {
   ) }
   def groupParser(args: String*): Unit = {
     val result = groupParser1.parse(args.toSeq, Config())
-    assert(result == Right(Config(flag = true)))
+    assert(result == Ok(Config(flag = true)))
   }
 
   val intParser1 = new CommandLine[Config] { def model = List(
@@ -58,11 +60,11 @@ object CommandLineTest extends TestSuite {
   ) }
   def intParser(args: String*): Unit = {
     val result = intParser1.parse(args.toSeq, Config())
-    assert(result == Right(Config(intValue = 1)))
+    assert(result == Ok(Config(intValue = 1)))
   }
   def intParserFail(args: String*): Unit = {
     val result = intParser1.parse(args.toSeq, Config())
-    assert(result.isInstanceOf[Left[String, Config]])
+    assert(result.isInstanceOf[ParseError])
   }
 
   case class Config(

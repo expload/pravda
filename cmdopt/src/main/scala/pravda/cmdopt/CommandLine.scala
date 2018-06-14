@@ -70,18 +70,32 @@ object CommandLine {
     def validate(f: A => Either[String, Unit]): Opt[C, A] = copy(validate = f)
   }
 
-  final case class Arg[C, A](
+  final case class Arg[C, A: Read](
       name: String,
       text: String = "",
       desc: String = "",
       action: (A, C) => C = (_: A, c: C) => c,
     ) extends Verb[C, A] {
 
+    def read(line: Line, cfg: C): Either[String, (Line, C)] = {
+      val reader = implicitly[Read[A]]
+      reader.read(line) match {
+        case Right((v, newLine)) =>
+          val newCfg = action(v, cfg)
+          Right((newLine, newCfg))
+        case Left(msg) => Left(msg)
+      }
+    }
+
     def text(msg: String): Arg[C,A] = copy(text = msg)
     def desc(msg: String): Arg[C,A] = copy(desc = msg)
     def action(f: (A, C) => C): Arg[C,A] = copy(action = f)
   }
 
+  sealed trait Result[+C]
+  final case class Ok[C](config: C) extends Result[C]
+  final case class ParseError(msg: String) extends Result[Nothing]
+  final case class HelpWanted[C](cl: CommandLine[C]) extends Result[Nothing]
 }
 
 trait CommandLine[C] {
@@ -89,12 +103,13 @@ trait CommandLine[C] {
   import CommandLine._
 
   def model: List[Verb[C, _]]
+  def helpOpts = List("-h", "--help", "/?")
 
   def head(name: String): Head[C] = Head[C](name)
   def cmd(name: String): Cmd[C] = Cmd[C](name)
   def opt[A: Read](name: String): Opt[C, A] = Opt[C, A]('\u0000', name)
   def opt[A: Read](short: Char, name: String): Opt[C, A] = Opt[C, A](short, name)
-  def arg[A]: Arg[C,A] = Arg[C,A]("")
+  def arg[A: Read]: Arg[C, A] = Arg[C, A]("")
 
   def help[O](cmd: String = "")(implicit printer: Show[List[Verb[C,_]], O]): String = {
     if (cmd.isEmpty) {
@@ -107,44 +122,60 @@ trait CommandLine[C] {
     }
   }
 
-  def parse(rawLine: Line, init: C): Either[String, C] = {
+  def parse(rawLine: Line, init: C): Result[C] = {
     val line = splitShortOptions(rawLine)
-    def next(line: Line, m: List[Verb[C, _]], init: C): Either[String, C] = {
+    def next(line: Line, m: List[Verb[C, _]], init: C): Result[C] = {
       val cmds = m.collect{ case x: Cmd[_] => (x.name, x) }.toMap
-      // val args = m.collect{ case x: Arg[_, C] => (x.name, x) }.toMap[String, Arg[_, C]]
+      val args = m.collect{ case x: Arg[_, _] => x }.toList
       val opts = m.collect{ case x: Opt[_, _] => (x.name, x) }.toMap[String, Opt[C, _]] ++
                  m.collect{ case x: Opt[_, _] if x.short != '\u0000' => (x.short.toString, x) }.toMap[String, Opt[C, _]] ++
                  m.collect{ case x: Opt[_, _] => x.abbrs.map{ n => (n, x) } }.flatten[(String, Opt[C, _])].toMap
-      def parseArg(line: Line, cfg: C): Either[String, C] = {
-        // TODO: Implement arguments parsing
-        Left("Not implemented yet")
+      def parseArg(line: Line, args: List[Arg[C, _]], cfg: C): Result[C] = {
+        if (args.isEmpty) {
+          ParseError(s"Uknown argument: ${line.head}")
+        } else {
+          val arg: Arg[C, _] = args.head
+          arg.read(line, cfg) match {
+            case Right((newLine, newCfg)) => {
+              if (newLine.isEmpty) {
+                Ok(newCfg)
+              } else {
+                parseArg(newLine, args.tail, newCfg)
+              }
+            }
+            case Left(err) => ParseError(err)
+          }
+        }
       }
-      def parseCmd(line: Line, cfg: C): Either[String, C] = {
+      def parseCmd(line: Line, cfg: C): Result[C] = {
         if (line.isEmpty) {
-          Right(cfg)
+          Ok[C](cfg)
         } else {
           cmds.get(line.head).map{ cmd =>
             val newCfg = cmd.action(cmd.name, cfg)
-            next(line.tail, cmd.verbs ++ opts.values, newCfg)
-          } getOrElse parseArg(line, cfg)
+            val passOpts = opts.values.toSet
+            next(line.tail, cmd.verbs ++ passOpts, newCfg)
+          } getOrElse parseArg(line, args, cfg)
         }
       }
-      def parseOpt(line: Line, cfg: C): Either[String, C] = {
+      def parseOpt(line: Line, cfg: C): Result[C] = {
         if (line.isEmpty) {
-          Right(cfg)
+          Ok[C](cfg)
+        } else if (!helpOpts.find(_ == line.head).isEmpty) {
+          HelpWanted[C](new CommandLine[C]{ def model = m })
         } else if (line.head.startsWith("-")) {
           val name = line.head
           val short = if (name.startsWith("--")) name.drop(2) else name.drop(1)
           val shopt = opts.get(short)
           if (shopt.isEmpty) {
-            parseArg(line, cfg)
+            ParseError(s"Uknown option: ${name}")
           } else {
             shopt.map{ opt =>
               opt.read(line.tail, cfg) match {
                 case Right((newLine, newCfg)) => parseOpt(newLine, newCfg)
-                case Left(err) => Left(err)
+                case Left(err) => ParseError(err)
               }
-            }.getOrElse(Left("Assertion failure: Option should not be empty"))
+            }.getOrElse(ParseError("Assertion failure: Option should not be empty"))
           }
         } else {
           parseCmd(line, cfg)

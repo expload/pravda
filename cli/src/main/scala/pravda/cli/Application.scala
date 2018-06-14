@@ -5,6 +5,9 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import pravda.cli.languages.impl._
 import pravda.cli.programs._
+import pravda.cmdopt.CommandLine.Ok
+import pravda.cmdopt.CommandLine.ParseError
+import pravda.cmdopt.CommandLine.HelpWanted
 
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import sys.process.stderr
@@ -33,18 +36,24 @@ object Application extends App {
 
   // FIXME programs should be composed by another one
   val eventuallyExitCode = ArgumentsParser.parse(args, Config.Nope) match {
-    case Right(config: Config.Compile)     => compile(config).map(_ => 0)
-    case Right(config: Config.RunBytecode) => runner(config).map(_ => 0)
-    case Right(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
-    case Right(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
-    case Right(config: Config.Node)        => nodeProgram(config).map(_ => 0)
-    case Right(Config.Nope)                =>
+    case Ok(config: Config.Compile)     => compile(config).map(_ => 0)
+    case Ok(config: Config.RunBytecode) => runner(config).map(_ => 0)
+    case Ok(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
+    case Ok(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
+    case Ok(config: Config.Node)        => nodeProgram(config).map(_ => 0)
+    case Ok(Config.Nope)                =>
       Future{
         import pravda.cmdopt.instances.show.console._
         print( ArgumentsParser.help() )
         0
       }
-    case Left(msg) =>
+    case HelpWanted(cli) =>
+      Future {
+        import pravda.cmdopt.instances.show.console._
+        stderr.print( cli.help() )
+        0 // every non zero exit code says about error
+      }
+    case ParseError(msg) =>
       Future {
         import pravda.cmdopt.instances.show.console._
         stderr.println(msg)
