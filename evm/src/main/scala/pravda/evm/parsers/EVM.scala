@@ -89,6 +89,7 @@ object EVM {
     0x09 -> MulMod,
     0x0a -> Exp,
     0x0b -> SignExtend,
+    //
     0x10 -> Lt,
     0x11 -> Gt,
     0x12 -> Slt,
@@ -100,7 +101,9 @@ object EVM {
     0x18 -> Xor,
     0x19 -> Not,
     0x1a -> Byte,
+    //
     0x20 -> Sha3,
+    //
     0x30 -> Address,
     0x31 -> Balance,
     0x32 -> Origin,
@@ -116,12 +119,14 @@ object EVM {
     0x3c -> ExtCodeCopy,
     0x3d -> ReturnDataSize,
     0x3e -> ReturnDataCopy,
+    //
     0x40 -> BlockHash,
     0x41 -> CoinBase,
     0x42 -> Timestamp,
     0x43 -> Number,
     0x44 -> Difficulty,
     0x45 -> GasLimit,
+    //
     0x50 -> Pop,
     0x51 -> MLoad,
     0x52 -> MStore,
@@ -134,6 +139,7 @@ object EVM {
     0x59 -> MSize,
     0x5a -> Gas,
     0x5b -> JumpDest,
+    //
     0xf0 -> Create,
     0xf1 -> Call,
     0xf2 -> CallCode,
@@ -167,13 +173,20 @@ object EVM {
     def checkSingleOps(i: Int) = singleOps.get(i)
 
     Int8.flatMap(b => {
-      val i = b.toInt
+      val i = b & 0xff
       checkSingleOps(i)
         .orElse(checkRanges(i))
         .map(PassWith)
         .orElse(checkPush(i))
         .map(_.map(Right(_)))
-        .getOrElse(PassWith(Left(s"Unknown opcode: $b")))
+        .getOrElse(PassWith(Left(s"Unknown opcode: 0x${i.toHexString}")))
     })
   }
+
+  private def sequence[T](l: List[Either[String, T]]): Either[String, List[T]] =
+    l.foldRight(Right(Nil): Either[String, List[T]]) { (e, acc) =>
+      for (xs <- acc.right; x <- e.right) yield x :: xs
+    }
+
+  val ops: P[Either[String, List[Op]]] = P(Start ~ op.rep ~ End).map(ops => sequence(ops.toList))
 }
