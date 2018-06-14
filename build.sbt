@@ -95,6 +95,16 @@ lazy val dotnet = (project in file("dotnet")).
     )
   )
 
+lazy val evm = (project in file("evm")).
+	dependsOn(`vm-asm`).
+	settings(normalizedName := "pravda-evm").
+	settings( commonSettings: _* ).
+	settings(
+		libraryDependencies ++= Seq (
+			"com.lihaoyi" %% "fastparse-byte" % "1.0.0"
+		)
+	)
+
 lazy val `vm-integration-test` = (project in file("testkit/vm-integration")).
 	dependsOn(vm).
 	dependsOn(`vm-asm`).
