@@ -30,6 +30,7 @@ object Application extends App {
 
   lazy val compile = new Compile(io, compilers)
   lazy val genAddress = new GenAddress(io, random)
+  lazy val genDocs = new GenDocs(io)
   lazy val runner = new RunBytecode(io, vm)
   lazy val broadcast = new Broadcast(io, nodeLanguage, compilers)
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
@@ -39,6 +40,7 @@ object Application extends App {
     case Ok(config: Config.Compile)     => compile(config).map(_ => 0)
     case Ok(config: Config.RunBytecode) => runner(config).map(_ => 0)
     case Ok(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
+    case Ok(config: Config.GenDocs)     => genDocs(config).map(_ => 0)
     case Ok(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
     case Ok(config: Config.Node)        => nodeProgram(config).map(_ => 0)
     case Ok(Config.Nope)                =>
@@ -51,7 +53,7 @@ object Application extends App {
       Future {
         import pravda.cmdopt.instances.show.console._
         stderr.print( cli.help() )
-        0 // every non zero exit code says about error
+        0
       }
     case ParseError(msg) =>
       Future {

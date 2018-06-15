@@ -31,7 +31,8 @@ package object console {
     val optP = opts.map(fshow(_, o)).mkString(EOL)
     if (o.lvl == 0) {
       val optText = if (opts.isEmpty) "" else s"Options:${EOL}${optP}${EOL}${EOL}"
-      s"${headP}${EOL}${EOL}${optText}Commands:${EOL}${cmdP}"
+      val cmdText = if (cmds.isEmpty) "" else s"Commands:${EOL}${cmdP}"
+      s"${headP}${EOL}${EOL}${optText}${cmdText}"
     } else {
       s"${cmdP}"
     }

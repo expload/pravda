@@ -10,7 +10,8 @@ import pravda.cmdopt._
 object ArgumentsParser extends CommandLine[Config] { def model = List(
 
   head("pravda")
-    .text("Usage:  pravda COMMAND [...COMMAND]")
+    .title("pravda - blockchain SDK for games.")
+    .text("pravda COMMAND [...SUBCOMMAND]")
     .desc("Blockchain platform for building games"),
 
   cmd("gen")
@@ -25,6 +26,18 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
             .action {
               case (file, Config.GenAddress(_)) =>
                 Config.GenAddress(Some(file.getAbsolutePath))
+              case (_, otherwise) => otherwise
+            }
+        ),
+      cmd("docs")
+        .text("Generate markdown documentation for command line tool.")
+        .action((_, _) => Config.GenDocs(cl = ArgumentsParser))
+        .children(
+          opt[File]('o', "output")
+            .text("Output directory")
+            .action {
+              case (file, Config.GenDocs(outDir, mainPageName, cl)) =>
+                Config.GenDocs(file.getAbsolutePath, mainPageName, cl)
               case (_, otherwise) => otherwise
             }
         )
@@ -64,6 +77,10 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
   cmd("compile")
     .action((_, _) => Config.Compile(CompileMode.Nope))
     .children(
+      head("Compilation")
+        .text("Usage:  pravda compile [...SUBCOMMAND]")
+        .desc("Compile and debug pravda programs"),
+
       opt[File]('i', "input")
         .text("Input file")
         .action {

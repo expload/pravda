@@ -8,6 +8,7 @@ object CommandLine {
       name: String,
       text: String = "",
       desc: String = "",
+      title: String = "",
       action: (Any, C) => C = (_: Any, c: C) => c,
       validate: Any => Either[String, Any] = (_: Any) => Right(()),
       verbs: List[Verb[C, _]] = List.empty[Verb[C, _]]
@@ -19,6 +20,7 @@ object CommandLine {
 
     def text(msg: String): Head[C] = copy(text = msg)
     def desc(msg: String): Head[C] = copy(desc = msg)
+    def title(msg: String): Head[C] = copy(title = msg)
     def action(f: (Any, C) => C): Head[C] = copy(action = f)
     def validate(f: Any => Either[String, Any]): Head[C] = copy(validate = f)
   }
@@ -96,6 +98,18 @@ object CommandLine {
   final case class Ok[C](config: C) extends Result[C]
   final case class ParseError(msg: String) extends Result[Nothing]
   final case class HelpWanted[C](cl: CommandLine[C]) extends Result[Nothing]
+
+  def walk[C](path: List[Cmd[C]], verbs: List[Verb[C, _]]): List[List[Cmd[C]]] = {
+    verbs.collect{ case x: Cmd[_] => x }.flatMap{ cmd =>
+      val newPath = path :+ cmd
+      val list = walk(newPath, cmd.verbs)
+      if (list.isEmpty) {
+        List(newPath)
+      } else {
+        list.map(path ++ _)
+      }
+    }
+  }
 }
 
 trait CommandLine[C] {
@@ -111,15 +125,19 @@ trait CommandLine[C] {
   def opt[A: Read](short: Char, name: String): Opt[C, A] = Opt[C, A](short, name)
   def arg[A: Read]: Arg[C, A] = Arg[C, A]("")
 
-  def help[O](cmd: String = "")(implicit printer: Show[List[Verb[C,_]], O]): String = {
+  def help[O](cmd: String = "")(implicit clP: Show[CommandLine[C], O], verbsP: Show[List[Verb[C, _]], O]): String = {
     if (cmd.isEmpty) {
-      printer.show(model)
+      clP.show(this)
     } else {
       model.collect{ case x: Cmd[_] => x }
         .find(_.name == cmd)
-        .map(x => printer.show(x.verbs))
+        .map(x => verbsP.show(x.verbs))
         .getOrElse(s"Unknown command: ${cmd}")
     }
+  }
+
+  def paths(): List[List[Cmd[C]]] = {
+    walk(List.empty[Cmd[C]], model)
   }
 
   def parse(rawLine: Line, init: C): Result[C] = {
@@ -195,6 +213,4 @@ trait CommandLine[C] {
       }
     }
   }
-
-
 }
