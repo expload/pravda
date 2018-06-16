@@ -6,13 +6,13 @@ sealed abstract class VmError(val code: Int)
 
 object VmError {
 
-  case object StackOverflow        extends VmError(100)
-  case object StackUnderflow       extends VmError(101)
-  case object WrongStackIndex      extends VmError(102)
-  case object WrongHeapIndex       extends VmError(103)
-  case object WrongType            extends VmError(104)
-  case object InvalidCoinAmount    extends VmError(104)
-  case object InvalidAddress       extends VmError(104)
+  case object StackOverflow     extends VmError(100)
+  case object StackUnderflow    extends VmError(101)
+  case object WrongStackIndex   extends VmError(102)
+  case object WrongHeapIndex    extends VmError(103)
+  case object WrongType         extends VmError(104)
+  case object InvalidCoinAmount extends VmError(104)
+  case object InvalidAddress    extends VmError(104)
 
   case object OperationDenied      extends VmError(200)
   case object NoSuchProgram        extends VmError(300)

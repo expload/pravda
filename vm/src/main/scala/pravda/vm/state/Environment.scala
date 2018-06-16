@@ -3,6 +3,12 @@ package pravda.vm.state
 import pravda.common.domain.{Address, NativeCoin}
 
 trait Environment {
+
+  /**
+    * Current executor
+    */
+  def executor: Address
+
   // Programs
   def updateProgram(address: Address, code: Data): Data
   def createProgram(owner: Address, code: Data): Address
@@ -10,10 +16,8 @@ trait Environment {
   def getProgramOwner(address: Address): Option[Address]
 
   // Balance
-  def transfer(from: Address, to: Address, amount: NativeCoin): Unit
   def balance(address: Address): NativeCoin
-
-  def withdraw(address: Address, amount: NativeCoin): Unit
+  def transfer(from: Address, to: Address, amount: NativeCoin): Unit
   def accrue(address: Address, amount: NativeCoin): Unit
-
+  def withdraw(address: Address, amount: NativeCoin): Unit
 }
