@@ -19,7 +19,7 @@ object CommandLine {
     }
 
     def text(msg: String): Head[C] = copy(text = msg)
-    def desc(msg: String): Head[C] = copy(desc = msg)
+    def desc(msg: String): Head[C] = copy(desc = msg.stripMargin)
     def title(msg: String): Head[C] = copy(title = msg)
     def action(f: (Any, C) => C): Head[C] = copy(action = f)
     def validate(f: Any => Either[String, Any]): Head[C] = copy(validate = f)

@@ -10,17 +10,31 @@ import pravda.cmdopt._
 object ArgumentsParser extends CommandLine[Config] { def model = List(
 
   head("pravda")
-    .title("pravda - blockchain SDK for games.")
+    .title("Pravda - blockchain SDK for games.")
     .text("pravda COMMAND [...SUBCOMMAND]")
-    .desc("Blockchain platform for building games"),
+    .desc("""
+      |pravda is a unified command line interface to Pravda SDK.
+    """),
 
   cmd("gen")
     .text("Useful stuff generators.")
     .children(
+
+      head("pravda-gen")
+        .title("A bunch of usefull generators.")
+        .text("pravda gen [...SUBCOMMAND]")
+        .desc("Generate addresses and documentation."),
+
       cmd("address")
         .text("Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.")
         .action((_, _) => Config.GenAddress())
         .children(
+
+          head("pravda-gen-address")
+            .title("Generate public/private key.")
+            .text("pravda gen address")
+            .desc("Generate ed25519 conforming addresses. They can be used as regular wallet or validator node identifier."),
+
           opt[File]('o', "output")
             .text("Output file")
             .action {
@@ -33,6 +47,15 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
         .text("Generate markdown documentation for command line tool.")
         .action((_, _) => Config.GenDocs(cl = ArgumentsParser))
         .children(
+
+          head("pravda-gen-docs")
+            .title("Generate markdown documentation.")
+            .text("pravda gen docs")
+            .desc("""
+              |Generate and write to a given folder (docs/ref/ by default)
+              |comprehensive markdown docs for CLI.
+            """),
+
           opt[File]('o', "output")
             .text("Output directory")
             .action {
@@ -47,6 +70,14 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
     .text("Run bytecode given from stdin or file on Pravda VM.")
     .action((_, _) => Config.RunBytecode())
     .children(
+
+      head("pravda-run")
+        .title("Run and debug Pravda programs.")
+        .text("pravda run")
+        .desc("""
+          |Run bytecode given from stdin or file on Pravda VM.
+        """),
+
       opt[String]('e', "executor")
         .validate { (s: String) => s match {
           case s if bytes.isHex(s) && s.length == 64 => Right(())
@@ -75,11 +106,16 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
     ),
 
   cmd("compile")
+    .text("Compile Pravda programs.")
     .action((_, _) => Config.Compile(CompileMode.Nope))
     .children(
+
       head("Compilation")
-        .text("Usage:  pravda compile [...SUBCOMMAND]")
-        .desc("Compile and debug pravda programs"),
+        .title("Compile Pravda programs.")
+        .text("pravda compile [...SUBCOMMAND]")
+        .desc("""
+          |Compile Pravda programs from different sources
+        """),
 
       opt[File]('i', "input")
         .text("Input file")
@@ -101,50 +137,100 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.CompileMode.Asm)
           case (_, otherwise) => otherwise
-        },
+        }
+        .children(
+          head("pravda-compile-asm")
+            .title("Assemble Pravda VM bytecode from text representation.")
+            .text("pravda compile asm")
+            .desc("""
+              |Input file is a Pravda assembly language text file. Output is binary Pravda
+              |program. By default read from stdin and print to stdout.
+            """)
+        ),
       cmd("disasm")
         .text("Disassemble Pravda VM bytecode to text presentation.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.CompileMode.Disasm)
           case (_, otherwise) => otherwise
-        },
+        }
+        .children(
+          head("pravda-compile-disasm")
+            .title("Disassemble Pravda programs.")
+            .text("pravda compile disasm [--input <filename>] [--output <filename>]")
+            .desc("""
+              |Input file is a Pravda executable binary. Output is a text file with
+              |Pravda assembly code. By default read from stdin and print to stdout.
+            """)
+        ),
       cmd("forth")
         .text("Compile Pravda pseudo-forth to Pravda VM bytecode.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.CompileMode.Forth)
           case (_, otherwise) => otherwise
-        },
+        }
+        .children(
+          head("pravda-compile-disasm")
+            .title("Disassemble Pravda programs.")
+            .text("pravda compile disasm [--input <filename>] [--output <filename>]")
+            .desc("""
+              |Input file is a Pravda executable binary. Output is a text file with
+              |Pravda assembly code. By default read from stdin and print to stdout.
+            """)
+        ),
       cmd("dotnet")
         .text("Compile .exe produced byt .NET compiler to Pravda VM bytecode.")
         .action {
           case (_, config: Config.Compile) =>
             config.copy(compiler = Config.CompileMode.DotNet)
           case (_, otherwise) => otherwise
-        },
-      cmd("disnet")
-        .text("Show translation process to .NET for .exe file")
-        .action {
-          case (_, config: Config.Compile) =>
-            config.copy(compiler = Config.CompileMode.DisNet)
-          case (_, otherwise) => otherwise
         }
+        .children(
+          head("pravda-compile-dotnet")
+            .title("Compile .Net PE executable to Pravda executable binary.")
+            .text("pravda compile dotnet [--input <filename>] [--output <filename>]")
+            .desc("""
+              |Input file is a .Net PE (portable executable). Output is binary Pravda
+              |program. By default read from stdin and print to stdout.
+            """)
+        )
     ),
   cmd("broadcast")
     .text("Broadcasting program to the network")
     .children(
+
+      head("pravda-broadcast")
+        .title("Send a transaction with Pravda Program to a blockchain.")
+        .text("pravda broadcast SUBCOMMAND [...OPTIONS]")
+        .desc("""
+        """),
+
       cmd("run")
         .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Run))
-        .text("")
+        .text("Run pointed program.")
         .action {
           case (_, config: Config.Broadcast) =>
             config.copy(mode = Config.Broadcast.Mode.Run)
           case (_, otherwise) => otherwise
-        },
+        }
+        .children(
+          head("pravda-broadcast-run")
+            .title("Send a transaction with Pravda Program address to blockchain to run it.")
+            .text("pravda broadcast run [--input <filename>] [--output <filename>]")
+            .desc("""
+            """)
+        ),
       cmd("transfer")
+        .text("Pravda is a unified command line interface to Pravda SDK.")
         .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Transfer(None, None)))
         .children(
+          head("pravda-broadcast-transfer")
+            .title("Transfer native coins to a given wallet.")
+            .text("pravda broadcast transfer --to <wallet> --amount <amount>")
+            .desc("""
+              |Transfer native coins to a wallet.
+            """),
           opt[String]('t', "to")
             .action {
               case (hex, config @ Config.Broadcast(mode: Config.Broadcast.Mode.Transfer, _, _, _, _, _)) =>
@@ -159,17 +245,29 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
             }
         ),
       cmd("deploy")
-        .text("")
+        .text("Deploy Pravda program to a blockchain.")
         .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Deploy))
         .action {
           case (_, config: Config.Broadcast) =>
             config.copy(mode = Config.Broadcast.Mode.Deploy)
           case (_, otherwise) => otherwise
-        },
+        }
+        .children(
+          head("pravda-broadcast-deploy")
+            .title("Deploy Pravda program to a blockchain.")
+            .text("pravda broadcast deploy")
+            .desc("""
+            """)
+        ),
       cmd("update")
-        .text("")
+        .text("Update existing Pravda program in a blockchain.")
         .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Update(None)))
         .children(
+          head("pravda-broadcast-update")
+            .title("Update existing Pravda program in a blockchain.")
+            .text("pravda broadcast update")
+            .desc("""
+            """),
           opt[String]('p', "program")
             .action {
               case (hex, config: Config.Broadcast) =>
@@ -217,6 +315,11 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
     .text("Control Pravda Network Node using CLI.")
     .action((_, _) => Config.Node(Config.Node.Mode.Nope, None))
     .children(
+      head("pravda-node")
+        .title("Control Pravda node.")
+        .text("pravda node SUBCOMMAND")
+        .desc("""
+        """),
       cmd("init")
         .text("Initialize node.")
         .action {
@@ -225,6 +328,11 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
           case (_, otherwise) => otherwise
         }
         .children(
+          head("pravda-node-init")
+            .title("Create data directory and configuration for a new node.")
+            .text("pravda node init")
+            .desc("""
+            """),
           opt[Unit]("local")
             .action {
               case (_, config @ Config.Node(Config.Node.Mode.Init(_, initDistrConf), _)) =>
@@ -250,7 +358,14 @@ object ArgumentsParser extends CommandLine[Config] { def model = List(
           case (_, config: Config.Node) =>
             config.copy(mode = Config.Node.Mode.Run)
           case (_, otherwise) => otherwise
-        },
+        }
+        .children(
+          head("pravda-node-run")
+            .title("Create data directory and configuration for a new node.")
+            .text("pravda node init")
+            .desc("""
+            """),
+        ),
       opt[File]('d', "data-dir")
         .action {
           case (dataDir, config: Config.Node) =>
