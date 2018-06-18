@@ -25,7 +25,7 @@ object ArgumentsParser extends CommandLine[Config] {
           .desc("Generate addresses and documentation."),
         cmd("address")
           .text("Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.")
-          .action((_, _) => Config.GenAddress())
+          .action(_ => Config.GenAddress())
           .children(
             head("pravda-gen-address")
               .title("Generate public/private key.")
@@ -41,7 +41,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("docs")
           .text("Generate markdown documentation for command line tool.")
-          .action((_, _) => Config.GenDocs(cl = ArgumentsParser))
+          .action(_ => Config.GenDocs(cl = ArgumentsParser))
           .children(
             head("pravda-gen-docs")
               .title("Generate markdown documentation.")
@@ -61,7 +61,7 @@ object ArgumentsParser extends CommandLine[Config] {
       ),
     cmd("run")
       .text("Run bytecode given from stdin or file on Pravda VM.")
-      .action((_, _) => Config.RunBytecode())
+      .action(_ => Config.RunBytecode())
       .children(
         head("pravda-run")
           .title("Run and debug Pravda programs.")
@@ -99,7 +99,7 @@ object ArgumentsParser extends CommandLine[Config] {
       ),
     cmd("compile")
       .text("Compile Pravda programs.")
-      .action((_, _) => Config.Compile(CompileMode.Nope))
+      .action(_ => Config.Compile(CompileMode.Nope))
       .children(
         head("Compilation")
           .title("Compile Pravda programs.")
@@ -123,11 +123,7 @@ object ArgumentsParser extends CommandLine[Config] {
           },
         cmd("asm")
           .text("Assemble Pravda VM bytecode from text presentation.")
-          .action {
-            case (_, config: Config.Compile) =>
-              config.copy(compiler = Config.CompileMode.Asm)
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Compile(Config.CompileMode.Asm))
           .children(
             head("pravda-compile-asm")
               .title("Assemble Pravda VM bytecode from text representation.")
@@ -139,11 +135,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("disasm")
           .text("Disassemble Pravda VM bytecode to text presentation.")
-          .action {
-            case (_, config: Config.Compile) =>
-              config.copy(compiler = Config.CompileMode.Disasm)
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Compile(Config.CompileMode.Disasm))
           .children(
             head("pravda-compile-disasm")
               .title("Disassemble Pravda programs.")
@@ -155,11 +147,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("forth")
           .text("Compile Pravda pseudo-forth to Pravda VM bytecode.")
-          .action {
-            case (_, config: Config.Compile) =>
-              config.copy(compiler = Config.CompileMode.Forth)
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Compile(Config.CompileMode.Forth))
           .children(
             head("pravda-compile-disasm")
               .title("Disassemble Pravda programs.")
@@ -171,11 +159,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("dotnet")
           .text("Compile .exe produced byt .NET compiler to Pravda VM bytecode.")
-          .action {
-            case (_, config: Config.Compile) =>
-              config.copy(compiler = Config.CompileMode.DotNet)
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Compile(Config.CompileMode.DotNet))
           .children(
             head("pravda-compile-dotnet")
               .title("Compile .Net PE executable to Pravda executable binary.")
@@ -194,7 +178,7 @@ object ArgumentsParser extends CommandLine[Config] {
           .text("pravda broadcast SUBCOMMAND [...OPTIONS]")
           .desc(""),
         cmd("run")
-          .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Run))
+          .action(_ => Config.Broadcast(Config.Broadcast.Mode.Run))
           .text("Run pointed program.")
           .children(
             head("pravda-broadcast-run")
@@ -205,7 +189,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("transfer")
           .text("Pravda is a unified command line interface to Pravda SDK.")
-          .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Transfer(None, None)))
+          .action(_ => Config.Broadcast(Config.Broadcast.Mode.Transfer(None, None)))
           .children(
             head("pravda-broadcast-transfer")
               .title("Transfer native coins to a given wallet.")
@@ -228,12 +212,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("deploy")
           .text("Deploy Pravda program to a blockchain.")
-          .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Deploy))
-          .action {
-            case (_, config: Config.Broadcast) =>
-              config.copy(mode = Config.Broadcast.Mode.Deploy)
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Broadcast(Config.Broadcast.Mode.Deploy))
           .children(
             head("pravda-broadcast-deploy")
               .title("Deploy Pravda program to a blockchain.")
@@ -243,7 +222,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("update")
           .text("Update existing Pravda program in a blockchain.")
-          .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Update(None)))
+          .action(_ => Config.Broadcast(Config.Broadcast.Mode.Update(None)))
           .children(
             head("pravda-broadcast-update")
               .title("Update existing Pravda program in a blockchain.")
@@ -294,7 +273,7 @@ object ArgumentsParser extends CommandLine[Config] {
       ),
     cmd("node")
       .text("Control Pravda Network Node using CLI.")
-      .action((_, _) => Config.Node(Config.Node.Mode.Nope, None))
+      .action(_ => Config.Node(Config.Node.Mode.Nope, None))
       .children(
         head("pravda-node")
           .title("Control Pravda node.")
@@ -303,11 +282,7 @@ object ArgumentsParser extends CommandLine[Config] {
         """),
         cmd("init")
           .text("Initialize node.")
-          .action {
-            case (_, config: Config.Node) =>
-              config.copy(mode = Config.Node.Mode.Init(Config.Node.Network.Local, None))
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Node(Config.Node.Mode.Init(Config.Node.Network.Local, None), None))
           .children(
             head("pravda-node-init")
               .title("Create data directory and configuration for a new node.")
@@ -335,11 +310,7 @@ object ArgumentsParser extends CommandLine[Config] {
           ),
         cmd("run")
           .text("Run initialized node.")
-          .action {
-            case (_, config: Config.Node) =>
-              config.copy(mode = Config.Node.Mode.Run)
-            case (_, otherwise) => otherwise
-          }
+          .action(_ => Config.Node(Config.Node.Mode.Run, None))
           .children(
             head("pravda-node-run")
               .title("Create data directory and configuration for a new node.")

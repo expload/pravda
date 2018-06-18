@@ -9,8 +9,6 @@ object CommandLine {
       text: String = "",
       desc: String = "",
       title: String = "",
-      action: (Any, C) => C = (_: Any, c: C) => c,
-      validate: Any => Either[String, Any] = (_: Any) => Right(()),
       verbs: List[Verb[C, _]] = List.empty[Verb[C, _]]
   ) extends Verb[C, Nothing] {
 
@@ -21,16 +19,13 @@ object CommandLine {
     def text(msg: String): Head[C] = copy(text = msg)
     def desc(msg: String): Head[C] = copy(desc = msg.stripMargin)
     def title(msg: String): Head[C] = copy(title = msg)
-    def action(f: (Any, C) => C): Head[C] = copy(action = f)
-    def validate(f: Any => Either[String, Any]): Head[C] = copy(validate = f)
   }
 
   final case class Cmd[C](
       name: String,
       text: String = "",
       desc: String = "",
-      action: (Any, C) => C = (_: Any, c: C) => c,
-      validate: Any => Either[String, Any] = (_: Any) => Right(()),
+      action: C => C = (c: C) => c,
       docref: String = "",
       verbs: List[Verb[C, _]] = List.empty[Verb[C, _]]
   ) extends Verb[C, Nothing] {
@@ -41,8 +36,7 @@ object CommandLine {
 
     def text(msg: String): Cmd[C] = copy(text = msg)
     def desc(msg: String): Cmd[C] = copy(desc = msg)
-    def action(f: (Any, C) => C): Cmd[C] = copy(action = f)
-    def validate(f: Any => Either[String, Any]): Cmd[C] = copy(validate = f)
+    def action(f: C => C): Cmd[C] = copy(action = f)
   }
 
   final case class Opt[C, A: Read](
@@ -178,7 +172,7 @@ trait CommandLine[C] {
           Ok[C](cfg)
         } else {
           cmds.get(line.head).map { cmd =>
-            val newCfg = cmd.action(cmd.name, cfg)
+            val newCfg = cmd.action(cfg)
             val passOpts = opts.values.toSet
             next(line.tail, cmd.verbs ++ passOpts, newCfg)
           } getOrElse parseArg(line, args, cfg)
