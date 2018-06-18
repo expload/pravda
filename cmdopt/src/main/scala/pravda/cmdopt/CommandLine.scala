@@ -51,11 +51,10 @@ object CommandLine {
 
     def read(line: Line, cfg: C): Either[String, (Line, C)] = {
       val reader = implicitly[Read[A]]
-      reader.read(line) match {
-        case Right((v, newLine)) =>
+      reader.read(line) map {
+        case ((v, newLine)) =>
           val newCfg = action(v, cfg)
-          Right((newLine, newCfg))
-        case Left(msg) => Left(msg)
+          (newLine, newCfg)
       }
     }
 
@@ -75,11 +74,10 @@ object CommandLine {
 
     def read(line: Line, cfg: C): Either[String, (Line, C)] = {
       val reader = implicitly[Read[A]]
-      reader.read(line) match {
-        case Right((v, newLine)) =>
+      reader.read(line) map {
+        case (v, newLine) =>
           val newCfg = action(v, cfg)
-          Right((newLine, newCfg))
-        case Left(msg) => Left(msg)
+          (newLine, newCfg)
       }
     }
 
@@ -91,7 +89,7 @@ object CommandLine {
   sealed trait Result[+C]
   final case class Ok[C](config: C)                  extends Result[C]
   final case class ParseError(msg: String)           extends Result[Nothing]
-  final case class HelpWanted[C](cl: CommandLine[C]) extends Result[Nothing]
+  final case class HelpNeeded[C](cl: CommandLine[C]) extends Result[Nothing]
 
   def walk[C](path: List[Cmd[C]], verbs: List[Verb[C, _]]): List[List[Cmd[C]]] = {
     verbs.collect { case x: Cmd[_] => x }.flatMap { cmd =>
@@ -182,7 +180,7 @@ trait CommandLine[C] {
         if (line.isEmpty) {
           Ok[C](cfg)
         } else if (!helpOpts.find(_ == line.head).isEmpty) {
-          HelpWanted[C](new CommandLine[C] { def model = m })
+          HelpNeeded[C](new CommandLine[C] { def model = m })
         } else if (line.head.startsWith("-")) {
           val name = line.head
           val shortName = if (name.startsWith("--")) name.drop(2) else name.drop(1)

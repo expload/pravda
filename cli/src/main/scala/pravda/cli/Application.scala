@@ -7,7 +7,7 @@ import pravda.cli.languages.impl._
 import pravda.cli.programs._
 import pravda.cmdopt.CommandLine.Ok
 import pravda.cmdopt.CommandLine.ParseError
-import pravda.cmdopt.CommandLine.HelpWanted
+import pravda.cmdopt.CommandLine.HelpNeeded
 
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import sys.process.stderr
@@ -49,7 +49,7 @@ object Application extends App {
         print(ArgumentsParser.help())
         0
       }
-    case HelpWanted(cli) =>
+    case HelpNeeded(cli) =>
       Future {
         import pravda.cmdopt.instances.show.console._
         stderr.print(cli.help())
