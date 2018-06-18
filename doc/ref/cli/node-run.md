@@ -9,12 +9,4 @@ pravda node init
 ## Description
 
             
-## Options
-
-|Option|Description|
-|----|----|
-
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|
+No options available

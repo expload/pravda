@@ -16,7 +16,3 @@ Transfer native coins to a wallet.
 |----|----|
 |-t, --to|
 |-a, --amount|
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|

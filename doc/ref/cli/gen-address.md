@@ -13,7 +13,3 @@ Generate ed25519 conforming addresses. They can be used as regular wallet or val
 |Option|Description|
 |----|----|
 |-o, --output|Output file
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|

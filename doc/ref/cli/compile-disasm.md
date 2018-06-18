@@ -11,12 +11,4 @@ pravda compile disasm [--input <filename>] [--output <filename>]
 Input file is a Pravda executable binary. Output is a text file with
 Pravda assembly code. By default read from stdin and print to stdout.
             
-## Options
-
-|Option|Description|
-|----|----|
-
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|
+No options available

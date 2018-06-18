@@ -9,12 +9,4 @@ pravda broadcast deploy
 ## Description
 
             
-## Options
-
-|Option|Description|
-|----|----|
-
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|
+No options available

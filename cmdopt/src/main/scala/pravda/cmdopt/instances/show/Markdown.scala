@@ -27,24 +27,25 @@ package object markdown {
   implicit def clVerbListShow[C]: MarkdownShow[List[Verb[C, _]]] = (list, o) => {
     val opts = list.collect { case x: Opt[_, _] => x }
     val head = list.collect { case x: Head[_]   => x }
-    val cmdHead = head.headOption.map(h => s"${fshow(h, o)}").getOrElse("")
+    val cmds = CommandLine.walk(List.empty[Cmd[C]], list)
+    val header = head.headOption.map(h => s"${fshow(h, o)}").getOrElse("")
     val optHead = s"## Options${EOL}${EOL}|Option|Description|${EOL}|----|----|"
     val optBody = opts
       .map { x =>
         fshow(x, o)
       }
       .mkString(EOL)
-    val tblHead = s"## Commands${EOL}${EOL}|Command|Docs|Description|${EOL}|----|----|----|"
-    val tblBody = CommandLine
-      .walk(List.empty[Cmd[C]], list)
-      .map { path =>
+    val cmdHead = s"## Commands${EOL}${EOL}|Command|Docs|Description|${EOL}|----|----|----|"
+    val cmdBody = cmds.map { path =>
         val desc = path.reverse.head.text
         val comm = path.map(_.name).mkString("-")
         val link = s"[docs](${comm}.md)"
         s"|`${comm}`|${link}|${desc}|"
       }
       .mkString(EOL)
-    List(cmdHead, optHead, optBody, tblHead, tblBody).mkString(EOL)
+    val optAll = if (opts.nonEmpty) s"${optHead}${EOL}${optBody}" else "No options available"
+    val cmdAll = if (cmds.nonEmpty) s"${cmdHead}${EOL}${cmdBody}" else ""
+    List(header, optAll, cmdAll).mkString(EOL)
   }
 
   implicit def clCmdShow[C]: MarkdownShow[Cmd[C]] = (cmd, o) => {

@@ -10,11 +10,7 @@ pravda COMMAND [...SUBCOMMAND]
 
 pravda is a unified command line interface to Pravda SDK.
     
-## Options
-
-|Option|Description|
-|----|----|
-
+No options available
 ## Commands
 
 |Command|Docs|Description|

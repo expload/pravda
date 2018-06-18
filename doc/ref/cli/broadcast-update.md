@@ -14,7 +14,3 @@ pravda broadcast update
 |Option|Description|
 |----|----|
 |-p, --program|
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|

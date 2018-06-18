@@ -16,7 +16,3 @@ comprehensive markdown docs for CLI.
 |Option|Description|
 |----|----|
 |-o, --output|Output directory
-## Commands
-
-|Command|Docs|Description|
-|----|----|----|
