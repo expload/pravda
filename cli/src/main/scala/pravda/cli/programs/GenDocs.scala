@@ -29,9 +29,10 @@ class GenDocs[F[_]: Monad](io: IoLanguage[F]) {
     } :+ mainPage
     for {
       _ <- io.mkdirs(config.outDir)
-      _ <- pages.map { case (name, content) =>
-        io.writeToFile(name.getAbsolutePath, content)
+      _ <- pages.map {
+        case (name, content) =>
+          io.writeToFile(name.getAbsolutePath, content)
       }.sequence
-    } yield()
+    } yield ()
   }
 }

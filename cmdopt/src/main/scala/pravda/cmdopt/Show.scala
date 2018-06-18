@@ -5,5 +5,4 @@ trait Show[A, O] {
   def show(a: A, o: O): String
 }
 
-object Show {
-}
+object Show {}

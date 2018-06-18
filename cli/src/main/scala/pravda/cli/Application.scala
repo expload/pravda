@@ -43,23 +43,23 @@ object Application extends App {
     case Ok(config: Config.GenDocs)     => genDocs(config).map(_ => 0)
     case Ok(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
     case Ok(config: Config.Node)        => nodeProgram(config).map(_ => 0)
-    case Ok(Config.Nope)                =>
-      Future{
+    case Ok(Config.Nope) =>
+      Future {
         import pravda.cmdopt.instances.show.console._
-        print( ArgumentsParser.help() )
+        print(ArgumentsParser.help())
         0
       }
     case HelpWanted(cli) =>
       Future {
         import pravda.cmdopt.instances.show.console._
-        stderr.print( cli.help() )
+        stderr.print(cli.help())
         0
       }
     case ParseError(msg) =>
       Future {
         import pravda.cmdopt.instances.show.console._
         stderr.println(msg)
-        stderr.print( ArgumentsParser.help() )
+        stderr.print(ArgumentsParser.help())
         1 // every non zero exit code says about error
       }
   }

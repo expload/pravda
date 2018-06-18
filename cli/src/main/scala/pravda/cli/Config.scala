@@ -24,9 +24,8 @@ object Config {
 
   final case class GenAddress(output: Option[String] = None) extends Config
 
-  final case class GenDocs(outDir: String = "docs",
-                           mainPageName: String = "main.md",
-                           cl: CommandLine[Config]) extends Config
+  final case class GenDocs(outDir: String = "docs", mainPageName: String = "main.md", cl: CommandLine[Config])
+      extends Config
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
