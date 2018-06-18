@@ -196,11 +196,6 @@ object ArgumentsParser extends CommandLine[Config] {
         cmd("run")
           .action((_, _) => Config.Broadcast(Config.Broadcast.Mode.Run))
           .text("Run pointed program.")
-          .action {
-            case (_, config: Config.Broadcast) =>
-              config.copy(mode = Config.Broadcast.Mode.Run)
-            case (_, otherwise) => otherwise
-          }
           .children(
             head("pravda-broadcast-run")
               .title("Send a transaction with Pravda Program address to blockchain to run it.")

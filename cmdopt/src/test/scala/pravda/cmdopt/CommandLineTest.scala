@@ -67,7 +67,7 @@ object CommandLineTest extends TestSuite {
     assert(result.isInstanceOf[ParseError])
   }
 
-  case class Config(
+  final case class Config(
     flag: Boolean = false,
     intValue: Int = 0,
     longValue: Long = 0L,

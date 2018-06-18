@@ -1,11 +1,12 @@
 package pravda.cmdopt
 
+import java.io.File
 trait Read[T] {
   def read(line: Line): Either[String, (T, Line)]
 }
 
 object Read {
-  implicit val intReader = new Read[Int] {
+  implicit val intReader: Read[Int] = new Read[Int] {
 
     def read(line: Line): Either[String, (Int, Line)] = {
       line.headOption.map { item =>
@@ -23,7 +24,7 @@ object Read {
     }
   }
 
-  implicit val longReader = new Read[Long] {
+  implicit val longReader: Read[Long] = new Read[Long] {
 
     def read(line: Line): Either[String, (Long, Line)] = {
       line.headOption.map { item =>
@@ -41,7 +42,7 @@ object Read {
     }
   }
 
-  implicit val stringReader = new Read[String] {
+  implicit val stringReader: Read[String] = new Read[String] {
 
     def read(line: Line): Either[String, (String, Line)] = {
       line.headOption.map { item =>
@@ -50,7 +51,7 @@ object Read {
     }
   }
 
-  implicit val fileReader = new Read[java.io.File] {
+  implicit val fileReader: Read[File] = new Read[java.io.File] {
 
     def read(line: Line): Either[String, (java.io.File, Line)] = {
       line.headOption.map { item =>
@@ -59,7 +60,7 @@ object Read {
     }
   }
 
-  implicit val unitReader = new Read[Unit] {
+  implicit val unitReader: Read[Unit] = new Read[Unit] {
     def read(line: Line): Either[String, (Unit, Line)] = Right(((), line))
   }
 }
