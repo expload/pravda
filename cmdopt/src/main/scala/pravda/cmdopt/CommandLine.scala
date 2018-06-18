@@ -40,7 +40,7 @@ object CommandLine {
   }
 
   final case class Opt[C, A: Read](
-      short: Char,
+      short: Option[Char],
       name: String,
       text: String = "",
       desc: String = "",
@@ -115,8 +115,8 @@ trait CommandLine[C] {
 
   def head(name: String): Head[C] = Head[C](name)
   def cmd(name: String): Cmd[C] = Cmd[C](name)
-  def opt[A: Read](name: String): Opt[C, A] = Opt[C, A]('\u0000', name)
-  def opt[A: Read](short: Char, name: String): Opt[C, A] = Opt[C, A](short, name)
+  def opt[A: Read](name: String): Opt[C, A] = Opt[C, A](Option.empty[Char], name)
+  def opt[A: Read](short: Char, name: String): Opt[C, A] = Opt[C, A](Option(short), name)
   def arg[A: Read]: Arg[C, A] = Arg[C, A]("")
 
   def help[O](cmd: String = "")(implicit clP: Show[CommandLine[C], O], verbsP: Show[List[Verb[C, _]], O]): String = {
@@ -140,8 +140,8 @@ trait CommandLine[C] {
     def next(line: Line, m: List[Verb[C, _]], init: C): Result[C] = {
       val cmds = m.collect { case x: Cmd[_]    => (x.name, x) }.toMap
       val args = m.collect { case x: Arg[_, _] => x }.toList
-      val opts = m.collect { case x: Opt[_, _]               => (x.name, x) }.toMap[String, Opt[C, _]] ++
-        m.collect { case x: Opt[_, _] if x.short != '\u0000' => (x.short.toString, x) }.toMap[String, Opt[C, _]] ++
+      val opts = m.collect { case x: Opt[_, _]            => (x.name, x) }.toMap[String, Opt[C, _]] ++
+        m.collect { case x: Opt[_, _] if x.short.nonEmpty => (x.short.get.toString, x) }.toMap[String, Opt[C, _]] ++
         m.collect {
             case x: Opt[_, _] =>
               x.abbrs.map { n =>
@@ -185,8 +185,8 @@ trait CommandLine[C] {
           HelpWanted[C](new CommandLine[C] { def model = m })
         } else if (line.head.startsWith("-")) {
           val name = line.head
-          val short = if (name.startsWith("--")) name.drop(2) else name.drop(1)
-          val shopt = opts.get(short)
+          val shortName = if (name.startsWith("--")) name.drop(2) else name.drop(1)
+          val shopt = opts.get(shortName)
           if (shopt.isEmpty) {
             ParseError(s"Uknown option: ${name}")
           } else {

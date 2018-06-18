@@ -36,7 +36,8 @@ package object markdown {
       }
       .mkString(EOL)
     val cmdHead = s"## Commands${EOL}${EOL}|Command|Docs|Description|${EOL}|----|----|----|"
-    val cmdBody = cmds.map { path =>
+    val cmdBody = cmds
+      .map { path =>
         val desc = path.reverse.head.text
         val comm = path.map(_.name).mkString("-")
         val link = s"[docs](${comm}.md)"

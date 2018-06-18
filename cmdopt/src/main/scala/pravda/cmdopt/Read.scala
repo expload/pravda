@@ -1,6 +1,7 @@
 package pravda.cmdopt
 
 import java.io.File
+
 trait Read[T] {
   def read(line: Line): Either[String, (T, Line)]
 }
