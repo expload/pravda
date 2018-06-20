@@ -50,10 +50,10 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
     * @see [[pravda.vm.Opcodes.SGET]]
     */
   def get(): Unit = ifStorage { storage =>
-    val data = storage.get(memory.pop()).getOrElse(Data.Null)
+    val data = storage.get(memory.pop()).getOrElse(Data.Primitive.Null)
     wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(Data.Null)
+    memory.push(Data.Primitive.Null)
   }
 
   /**

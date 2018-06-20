@@ -42,7 +42,7 @@ final class SystemOperations(memory: Memory,
   def lcall(): Unit = {
     val argumentsCount = int32(memory.pop())
     memory.pop() match {
-      case Data.Null =>
+      case Data.Primitive.Null =>
       // TODO use standard library
       case rawAddress =>
         wattCounter.cpuUsage(CpuStorageUse)

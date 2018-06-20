@@ -17,7 +17,7 @@ package object operations {
     * Pushes application result to stack.
     * @param f binary operation
     */
-  def binaryOperation(memory: Memory, wattCounter: WattCounter)(f: (Data, Data) => Data): Unit = {
+  def binaryOperation(memory: Memory, wattCounter: WattCounter)(f: (Data, Data) => Data.Primitive): Unit = {
     val a = memory.pop()
     val b = memory.pop()
     val r = f(a, b)
@@ -74,7 +74,7 @@ package object operations {
     else throw VmErrorException(InvalidAddress)
   }
 
-  def address(a: Address): Data = {
+  def address(a: Address): Data.Primitive = {
     val bytes = a.toByteArray
     if (bytes.length == 32) BigInt(scala.BigInt(bytes))
     else throw VmErrorException(InvalidAddress)

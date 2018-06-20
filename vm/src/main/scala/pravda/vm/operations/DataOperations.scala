@@ -3,16 +3,24 @@ package pravda.vm.operations
 import pravda.vm.state.Data.Array._
 import pravda.vm.state.Data.Utf8
 import pravda.vm.state.VmError.WrongType
-import pravda.vm.state.{Memory, VmErrorException}
+import pravda.vm.state.{Data, Memory, VmErrorException}
 import pravda.vm.watt.WattCounter
 import pravda.vm.watt.WattCounter.CpuWordOperation
 
 final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 
+  /**
+    * Takes start index, end index and reference to item from the stack.
+    * Gets item by reference from heap.
+    * Makes slice of item and puts result to heap.
+    * Puts reference to result to the stack.
+    * @see [[pravda.vm.Opcodes.SLICE]]
+    */
   def slice(): Unit = {
     val from = int32(memory.pop())
     val until = int32(memory.pop())
-    val a = memory.pop()
+    val aRef = ref(memory.pop())
+    val a = memory.heapGet(aRef.data)
     val sliced = a match {
       case Utf8(data)        => Utf8(data.substring(from, until))
       case Int8Array(data)   => Int8Array(data.slice(from, until))
@@ -27,14 +35,27 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
       case BoolArray(data)   => BoolArray(data.slice(from, until))
       case _                 => throw VmErrorException(WrongType)
     }
+    val idx = memory.heapPut(sliced)
+    val resultRef = Data.Primitive.Ref(idx)
     wattCounter.cpuUsage(CpuWordOperation(a))
     wattCounter.memoryUsage(sliced.volume.toLong)
-    memory.push(sliced)
+    wattCounter.memoryUsage(resultRef.volume.toLong)
+    memory.push(resultRef)
   }
 
+  /**
+    * Takes two references from stack.
+    * Gets corresponding items from heap.
+    * Concatenates them.
+    * Puts result to heap.
+    * Put reference to result to stack
+    * @see [[pravda.vm.Opcodes.CONCAT]]
+    */
   def concat(): Unit = {
-    val a = memory.pop()
-    val b = memory.pop()
+    val aRef = ref(memory.pop())
+    val bRef = ref(memory.pop())
+    val a = memory.heapGet(aRef.data)
+    val b = memory.heapGet(bRef.data)
     val data = a match {
       case Utf8(lhs) =>
         b match {
@@ -93,9 +114,12 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
         }
       case _ => throw VmErrorException(WrongType)
     }
+    val idx = memory.heapPut(data)
+    val newRef = Data.Primitive.Ref(idx)
     wattCounter.cpuUsage(CpuWordOperation(a, b))
     wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(data)
+    wattCounter.memoryUsage(newRef.volume.toLong)
+    memory.push(newRef)
   }
 
 }

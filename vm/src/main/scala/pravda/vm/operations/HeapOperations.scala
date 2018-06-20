@@ -1,6 +1,6 @@
 package pravda.vm.operations
 
-import pravda.vm.state.{Data, Memory}
+import pravda.vm.state.{Data, Memory, VmError, VmErrorException}
 import pravda.vm.watt.WattCounter
 
 /**
@@ -15,7 +15,7 @@ final class HeapOperations(memory: Memory, wattCounter: WattCounter) {
     * Pushes reference to the stack.
     * @see [[pravda.vm.Opcodes.MPUT]]
     */
-  def put(): Unit = {
+  def mput(): Unit = {
     val data = memory.pop()
     val i = memory.heapPut(data)
     wattCounter.memoryUsage(data.volume.toLong)
@@ -28,8 +28,11 @@ final class HeapOperations(memory: Memory, wattCounter: WattCounter) {
     * retrieved data to the stack.
     * @see [[pravda.vm.Opcodes.MGET]]
     */
-  def get(): Unit = {
+  def mget(): Unit = {
     val i = ref(memory.pop())
-    memory.push(memory.heapGet(i.data))
+    memory.heapGet(i.data) match {
+      case primitive: Data.Primitive => memory.push(primitive)
+      case _ => throw VmErrorException(VmError.WrongType)
+    }
   }
 }

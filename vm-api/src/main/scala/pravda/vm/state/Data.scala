@@ -8,7 +8,7 @@ import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable
 import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
-sealed trait Data {
+@strictfp sealed trait Data {
 
   import Data._
   import Primitive._
@@ -187,13 +187,13 @@ sealed trait Data {
 
 }
 
-object Data {
+@strictfp object Data {
 
   sealed trait Primitive extends Data
 
   object Primitive {
 
-    sealed trait Numeric extends Data
+    sealed trait Numeric extends Primitive
 
     final case class Int8(data: Byte)               extends Numeric
     final case class Int16(data: Short)             extends Numeric
@@ -202,9 +202,9 @@ object Data {
     final case class Uint16(data: Int)              extends Numeric
     final case class Uint32(data: Long)             extends Numeric
     final case class BigInt(data: ScalaBigInt)      extends Numeric
-    @strictfp final case class Number(data: Double) extends Numeric
-
+    final case class Number(data: Double)           extends Numeric
     final case class Ref(data: Int)                 extends Primitive
+    case object Null                                extends Primitive
 
     sealed trait Bool extends Primitive
 
@@ -234,7 +234,6 @@ object Data {
   final case class Struct(name: String, data: mutable.SortedMap[String, Primitive]) extends Data
   final case class Utf8(data: String)                                               extends Array
   final case class MarshalledData(data: ByteString)                                 extends Data
-  case object Null extends Data
 
   // scalafix:off DisableSyntax.keywords.null
 
@@ -391,7 +390,7 @@ object Data {
     def getRef = primitiveBuffer(4).getInt
 
     buffer.get match {
-      case TypeNull    => Null
+      case TypeNull    => Primitive.Null
       case TypeInt8    => Primitive.Int8(getInt8) // int8
       case TypeInt16   => Primitive.Int16(getInt16) // int16
       case TypeInt32   => Primitive.Int32(getInt32) // int32

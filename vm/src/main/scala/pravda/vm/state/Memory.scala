@@ -1,15 +1,15 @@
 package pravda.vm.state
 
 trait Memory {
-  def stack: Seq[Data]
+  def stack: Seq[Data.Primitive]
   def heap: Seq[Data]
   def limit(index: Int): Unit
   def dropLimit(): Unit
-  def pop(): Data
-  def push(x: Data): Unit
-  def get(i: Int): Data
+  def pop(): Data.Primitive
+  def push(x: Data.Primitive): Unit
+  def get(i: Int): Data.Primitive
   def clear(): Unit
-  def all: Seq[Data]
+  def all: Seq[Data.Primitive]
   def swap(i: Int, j: Int): Unit
   def length: Int
   // TODO should return Data.Ref
@@ -17,6 +17,6 @@ trait Memory {
   // TODO should take Data.Ref
   def heapGet(idx: Int): Data
   def heapLength: Int
-  def top(): Data
-  def top(n: Int): Seq[Data]
+  def top(): Data.Primitive
+  def top(n: Int): Seq[Data.Primitive]
 }

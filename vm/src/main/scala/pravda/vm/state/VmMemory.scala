@@ -7,7 +7,7 @@ import pravda.vm.state.VmError.{StackUnderflow, WrongHeapIndex, WrongStackIndex}
 import scala.collection.mutable.ArrayBuffer
 
 final case class VmMemory(
-    stack: ArrayBuffer[Data],
+    stack: ArrayBuffer[Data.Primitive],
     heap: ArrayBuffer[Data]
 ) extends Memory {
 
@@ -29,36 +29,32 @@ final case class VmMemory(
 
   private def currentLimit = if (limits.isEmpty) 0 else limits.last
 
-  def pop(): Data = {
+  def pop(): Data.Primitive = {
     if (stack.size <= currentLimit) {
       throw VmErrorException(StackUnderflow)
     }
     stack.remove(stack.length - 1)
   }
 
-  def top(): Data = {
+  def top(): Data.Primitive = {
     if (stack.size <= currentLimit) {
       throw VmErrorException(StackUnderflow)
     }
     stack(stack.length - 1)
   }
 
-  def top(n: Int): Seq[Data] = {
+  def top(n: Int): Seq[Data.Primitive] = {
     if (stack.size <= currentLimit - n) {
       throw VmErrorException(StackUnderflow)
     }
     stack.slice(stack.length - n, stack.length)
   }
 
-  def push(x: Seq[Data]): Unit = {
-    stack ++= x
-  }
-
-  def push(x: Data): Unit = {
+  def push(x: Data.Primitive): Unit = {
     stack += x
   }
 
-  def get(i: Int): Data = {
+  def get(i: Int): Data.Primitive = {
     if (i < currentLimit || i >= stack.length) {
       throw VmErrorException(WrongStackIndex)
     }
@@ -69,7 +65,7 @@ final case class VmMemory(
     stack.remove(currentLimit, stack.length - currentLimit)
   }
 
-  def all: Seq[Data] = {
+  def all: Seq[Data.Primitive] = {
     stack.takeRight(stack.length - currentLimit)
   }
 
@@ -103,7 +99,7 @@ final case class VmMemory(
 object VmMemory {
 
   def empty: VmMemory = new VmMemory(
-    stack = new ArrayBuffer[Data](1024),
+    stack = new ArrayBuffer[Data.Primitive](1024),
     heap = new ArrayBuffer[Data](1024)
   )
 

@@ -96,17 +96,20 @@ object Vm extends Vm {
           case CONCAT => dataOperations.concat()
           // Stack operations
           case PUSHX =>
-            val data = Data.readFromByteBuffer(program)
-            counter.memoryUsage(data.volume.toLong)
-            memory.push(data)
+            Data.readFromByteBuffer(program) match {
+              case data: Data.Primitive =>
+                counter.memoryUsage(data.volume.toLong)
+                memory.push(data)
+              case _ => throw VmErrorException(VmError.WrongType)
+            }
           case POP   => memory.pop()
           case DUP   => stackOperations.dup()
           case DUPN  => stackOperations.dupN()
           case SWAP  => stackOperations.swap()
           case SWAPN => stackOperations.swapN()
           // Heap operations
-          case MPUT => heapOperations.put()
-          case MGET => heapOperations.get()
+          case MPUT => heapOperations.mput()
+          case MGET => heapOperations.mget()
           // Storage operations
           case SPUT   => storageOperations.put()
           case SGET   => storageOperations.get()
