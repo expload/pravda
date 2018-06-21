@@ -1,7 +1,6 @@
 package pravda.vm.operations
 
-import pravda.vm.state.Memory
-import pravda.vm.watt.WattCounter
+import pravda.vm.{Memory, WattCounter}
 
 /**
   * Pravda VM stack control pravda.vm.Opcodes implementation.

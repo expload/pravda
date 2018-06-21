@@ -1,10 +1,9 @@
 package pravda.vm.operations
 
-import pravda.vm.state.Data.Primitive.{BigInt, Int16, Int32, Int8, Number, Uint16, Uint32, Uint8}
-import pravda.vm.state.VmError.WrongType
-import pravda.vm.state.{Memory, VmErrorException}
-import pravda.vm.watt.WattCounter
-import pravda.vm.watt.WattCounter.CpuArithmetic
+import pravda.vm.Data.Primitive.{BigInt, Int16, Int32, Int8, Number, Uint16, Uint32, Uint8}
+import pravda.vm.VmError.WrongType
+import pravda.vm.WattCounter.CpuArithmetic
+import pravda.vm.{Memory, VmErrorException, WattCounter}
 
 /**
   * Pravda VM arithmetic opcodes implementation.

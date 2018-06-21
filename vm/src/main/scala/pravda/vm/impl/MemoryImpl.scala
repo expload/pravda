@@ -1,15 +1,11 @@
-package pravda.vm
+package pravda.vm.impl
 
-package state
-
-import pravda.vm.state.VmError.{StackUnderflow, WrongHeapIndex, WrongStackIndex}
+import pravda.vm.VmError.{StackUnderflow, WrongHeapIndex, WrongStackIndex}
+import pravda.vm.{Data, Memory, VmErrorException}
 
 import scala.collection.mutable.ArrayBuffer
 
-final case class VmMemory(
-    stack: ArrayBuffer[Data.Primitive],
-    heap: ArrayBuffer[Data]
-) extends Memory {
+final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffer[Data]) extends Memory {
 
   private val limits = new ArrayBuffer[Int](1024)
 
@@ -96,9 +92,9 @@ final case class VmMemory(
 
 }
 
-object VmMemory {
+object MemoryImpl {
 
-  def empty: VmMemory = new VmMemory(
+  def empty: MemoryImpl = new MemoryImpl(
     stack = new ArrayBuffer[Data.Primitive](1024),
     heap = new ArrayBuffer[Data](1024)
   )

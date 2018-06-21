@@ -1,9 +1,8 @@
 package pravda.vm.operations
 
-import pravda.vm.state.VmError.WrongType
-import pravda.vm.state.{Data, Memory, VmErrorException}
-import pravda.vm.watt.WattCounter
-import pravda.vm.watt.WattCounter.CpuSimpleArithmetic
+import pravda.vm.VmError.WrongType
+import pravda.vm.WattCounter.CpuSimpleArithmetic
+import pravda.vm.{Data, Memory, VmErrorException, WattCounter}
 
 import scala.annotation.strictfp
 

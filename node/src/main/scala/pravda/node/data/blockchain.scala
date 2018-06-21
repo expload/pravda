@@ -3,7 +3,8 @@ package pravda.node.data
 import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.domain._
-import pravda.vm.state.{Data, ExecutionResult}
+import pravda.vm.{Data, ExecutionResult}
+import pravda.vm.state.ExecutionResult
 import supertagged.TaggedType
 
 object blockchain {

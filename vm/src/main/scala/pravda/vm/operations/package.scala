@@ -2,11 +2,9 @@ package pravda.vm
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.vm.state.Data.Array.{Int8Array, Uint8Array}
-import pravda.vm.state.Data.Primitive._
-import pravda.vm.state.VmError.{InvalidAddress, InvalidCoinAmount, WrongType}
-import pravda.vm.state.{Data, Memory, VmErrorException}
-import pravda.vm.watt.WattCounter
+import pravda.vm.VmError.{InvalidAddress, InvalidCoinAmount, WrongType}
+import pravda.vm.Data.Array.{Int8Array, Uint8Array}
+import pravda.vm.Data.Primitive._
 
 import scala.collection.mutable
 
@@ -31,14 +29,14 @@ package object operations {
   }
 
   def integer(value: Data.Primitive): Long = value match {
-    case Int8(x) => x.toLong
-    case Int16(x) => x.toLong
-    case Int32(x) => x.toLong
-    case Uint8(x) => x.toLong
+    case Int8(x)   => x.toLong
+    case Int16(x)  => x.toLong
+    case Int32(x)  => x.toLong
+    case Uint8(x)  => x.toLong
     case Uint16(x) => x.toLong
     case Uint32(x) => x.toLong
     case BigInt(x) => x.toLong
-    case _ => throw VmErrorException(WrongType)
+    case _         => throw VmErrorException(WrongType)
   }
 
   def int32(value: Data): Int = value match {
@@ -65,13 +63,13 @@ package object operations {
   def bytes(a: ByteString): Int8Array =
     Int8Array(a.toByteArray.to[mutable.Buffer])
 
-  def coin(a: Data): NativeCoin = a match {
+  def coins(a: Data): NativeCoin = a match {
     case BigInt(data) if data < Long.MinValue || data > Long.MaxValue => throw VmErrorException(InvalidCoinAmount)
     case BigInt(data)                                                 => NativeCoin @@ data.toLong
     case _                                                            => throw VmErrorException(WrongType)
   }
 
-  def coin(a: NativeCoin): Data =
+  def coins(a: NativeCoin): Data =
     BigInt(scala.BigInt(a))
 
   def address(a: Data): Address = {

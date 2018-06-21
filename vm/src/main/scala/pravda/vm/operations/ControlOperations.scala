@@ -1,10 +1,10 @@
 package pravda.vm.operations
 
 import java.nio.ByteBuffer
-import pravda.vm.state.VmError.CallStackOverflow
-import pravda.vm.state.{Memory, VmErrorException}
-import pravda.vm.watt.WattCounter
-import pravda.vm.watt.WattCounter.{CpuProgControl, CpuSimpleArithmetic}
+
+import pravda.vm.VmError.CallStackOverflow
+import pravda.vm.WattCounter.{CpuProgControl, CpuSimpleArithmetic}
+import pravda.vm.{Memory, VmErrorException, WattCounter}
 
 import scala.collection.mutable
 

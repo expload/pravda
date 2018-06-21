@@ -1,4 +1,4 @@
-package pravda.vm.state
+package pravda.vm
 
 import pravda.common.domain.{Address, NativeCoin}
 

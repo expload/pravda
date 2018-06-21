@@ -4,7 +4,7 @@ import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.Config
 import pravda.cli.languages._
-import pravda.vm.state.VmMemory
+import pravda.vm.impl.MemoryImpl
 import utest._
 
 import scala.collection.mutable
@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 
 object RunBytecodeSuite extends TestSuite {
 
-  final val EmptyMemory = VmMemory(stack = ArrayBuffer.empty, heap = ArrayBuffer.empty)
+  final val EmptyMemory = MemoryImpl(stack = ArrayBuffer.empty, heap = ArrayBuffer.empty)
 
   // Programs bytecode doesn't match VM bytecode format
   // because stub VM actually doesn't execute programs.
@@ -29,7 +29,7 @@ object RunBytecodeSuite extends TestSuite {
     "run using default executor and stdin" - {
       val io = new IoLanguageStub(Some(ProgramFromStdIn))
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, VmMemory]] =
+        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, MemoryImpl]] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
               Right(
@@ -52,7 +52,7 @@ object RunBytecodeSuite extends TestSuite {
         files = mutable.Map(ProgramFromFileName -> ProgramFromFile)
       )
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, VmMemory]] =
+        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, MemoryImpl]] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
               Right(
@@ -72,7 +72,7 @@ object RunBytecodeSuite extends TestSuite {
     "check file not found error" - {
       val io = new IoLanguageStub()
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, VmMemory]] =
+        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, MemoryImpl]] =
           Right(EmptyMemory)
       }
       val program = new RunBytecode[Id](io, vm)

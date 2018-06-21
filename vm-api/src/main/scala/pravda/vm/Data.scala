@@ -1,4 +1,4 @@
-package pravda.vm.state
+package pravda.vm
 
 import java.nio.ByteBuffer
 
@@ -11,8 +11,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 @strictfp sealed trait Data {
 
   import Data._
-  import Primitive._
   import Array._
+  import Primitive._
 
   // TODO optimize me. better way to save count of bytes on deserialization
   lazy val volume: Int = {

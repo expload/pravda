@@ -7,8 +7,8 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import pravda.node.db.{DB, Operation}
-import pravda.vm.{Vm, state}
-import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
+import pravda.vm._
+import pravda.vm.state.{Environment, ProgramContext, Storage}
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
 import pravda.node.data.common.{ApplicationStateInfo, TransactionId}
@@ -312,14 +312,14 @@ object Abci {
 
       private final class WsProgramStorage(dbPath: DbPath) extends Storage {
 
-        def get(key: state.Data): Option[state.Data] = {
+        def get(key: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
           transactionEffects += StorageRead(dbPath.mkKey(hexKey), value)
           value.map(Data.fromBytes)
         }
 
-        def put(key: state.Data, value: state.Data): Option[state.Data] = {
+        def put(key: Data, value: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val array = value.toByteString.toByteArray
           val prev = dbPath.putRawBytes(hexKey, array)
@@ -327,7 +327,7 @@ object Abci {
           prev.map(Data.fromBytes)
         }
 
-        def delete(key: state.Data): Option[state.Data] = {
+        def delete(key: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.remove(hexKey)
           transactionEffects += StorageRemove(dbPath.mkKey(hexKey), value)

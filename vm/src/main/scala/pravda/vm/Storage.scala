@@ -1,4 +1,4 @@
-package pravda.vm.state
+package pravda.vm
 
 trait Storage {
   def get(key: Data): Option[Data]

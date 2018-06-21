@@ -1,11 +1,9 @@
 package pravda.vm.operations
 
 import pravda.common.domain
-import pravda.vm.state.VmError.OperationDenied
-import pravda.vm.state._
-import pravda.vm.watt.WattCounter
-import pravda.vm.watt.WattCounter._
-import pravda.vm.Vm
+import pravda.vm.VmError.OperationDenied
+import pravda.vm.WattCounter._
+import pravda.vm._
 
 final class SystemOperations(memory: Memory,
                              currentStorage: Option[Storage],

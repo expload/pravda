@@ -1,4 +1,4 @@
-package pravda.vm.state
+package pravda.vm
 
 trait Memory {
   def stack: Seq[Data.Primitive]

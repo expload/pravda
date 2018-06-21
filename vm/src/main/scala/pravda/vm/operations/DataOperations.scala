@@ -1,11 +1,11 @@
 //package pravda.vm.operations
 //
-//import pravda.vm.state.Data.Array._
-//import pravda.vm.state.Data.Utf8
-//import pravda.vm.state.VmError.WrongType
+//import pravda.vm.Data.Array._
+//import pravda.vm.Data.Utf8
+//import pravda.vm.VmError.WrongType
 //import pravda.vm.state.{Data, Memory, VmErrorException}
-//import pravda.vm.watt.WattCounter
-//import pravda.vm.watt.WattCounter.CpuWordOperation
+//import pravda.vm.WattCounter
+//import pravda.vm.WattCounter.CpuWordOperation
 //
 //final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 //

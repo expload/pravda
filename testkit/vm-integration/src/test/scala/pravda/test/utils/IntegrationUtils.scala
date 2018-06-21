@@ -5,11 +5,9 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.forth.Compiler
-import pravda.vm.Vm
+import pravda.vm._
 import pravda.vm.serialization._
 import pravda.vm.state._
-import pravda.vm.asm
-import pravda.vm.watt.WattCounter
 
 import scala.collection.mutable
 
@@ -87,7 +85,7 @@ object IntegrationUtils {
       override def withdraw(address: Address, amount: NativeCoin): Unit = ???
       override def accrue(address: Address, amount: NativeCoin): Unit = ???
     }
-    val memory = VmMemory.empty
+    val memory = MemoryImpl.empty
     Vm.runProgram(programAddress, memory, executor, stateWithAccount, 0, new WattCounter(Long.MaxValue))
     (memory.stack.map(stackItem.get).toList, programStorageMap.mapValues(stackItem.get).toMap)
   }

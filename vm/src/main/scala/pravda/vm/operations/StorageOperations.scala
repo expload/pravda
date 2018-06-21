@@ -1,10 +1,9 @@
 package pravda.vm.operations
 
-import pravda.vm.state.Data.Primitive
-import pravda.vm.state.VmError.OperationDenied
-import pravda.vm.state.{Data, Memory, Storage, VmErrorException}
-import pravda.vm.watt.WattCounter
-import pravda.vm.watt.WattCounter._
+import pravda.vm.VmError.OperationDenied
+import pravda.vm.WattCounter._
+import pravda.vm.Data.Primitive
+import pravda.vm._
 
 /**
   * Pravda VM storage pravda.vm.Opcodes implementation.

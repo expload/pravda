@@ -1,7 +1,7 @@
 package pravda.cli.languages
 
 import com.google.protobuf.ByteString
-import pravda.vm.state.Memory
+import pravda.vm.Memory
 
 import scala.language.higherKinds
 

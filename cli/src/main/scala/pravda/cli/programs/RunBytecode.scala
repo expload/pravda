@@ -6,7 +6,7 @@ import cats.implicits._
 import pravda.cli.Config
 import pravda.cli.languages.{IoLanguage, VmLanguage}
 import pravda.common.bytes
-import pravda.vm.state.Memory
+import pravda.vm.Memory
 
 import scala.language.higherKinds
 

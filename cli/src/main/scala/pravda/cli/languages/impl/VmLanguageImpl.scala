@@ -7,8 +7,8 @@ import pravda.common.domain.Address
 import pravda.node.data.common.TransactionId
 import pravda.node.db.DB
 import pravda.node.servers
-import pravda.vm.Vm
-import pravda.vm.state.{Memory, VmErrorException}
+import pravda.vm.{Memory, Vm}
+import pravda.vm.state.Memory
 
 import scala.concurrent.{ExecutionContext, Future}
 
