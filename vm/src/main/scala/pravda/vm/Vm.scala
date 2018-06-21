@@ -68,11 +68,10 @@ object Vm extends Vm {
     val logicalOperations = new LogicalOperations(memory, counter)
     val arithmeticOperations = new ArithmeticOperations(memory, counter)
     val storageOperations = new StorageOperations(memory, maybeStorage, counter)
-    val heapOperations = new HeapOperations(memory, counter)
+    val heapOperations = new HeapOperations(memory, program, counter)
     val stackOperations = new StackOperations(memory, counter)
     val controlOperations = new ControlOperations(program, callStack, memory, counter)
     val nativeCoinOperations = new NativeCoinOperations(memory, environment, counter, maybeProgramAddress)
-    val dataOperations = new DataOperations(memory, counter)
     val systemOperations = new SystemOperations(memory, maybeStorage, counter, environment, maybeProgramAddress, this)
 
     var lastOpcodePosition: Int = -1
@@ -91,9 +90,6 @@ object Vm extends Vm {
           // Native coin operations
           case TRANSFER  => nativeCoinOperations.transfer()
           case PTRANSFER => nativeCoinOperations.ptransfer()
-          // Data? operations
-          case SLICE  => dataOperations.slice()
-          case CONCAT => dataOperations.concat()
           // Stack operations
           case PUSHX =>
             Data.readFromByteBuffer(program) match {
@@ -108,8 +104,15 @@ object Vm extends Vm {
           case SWAP  => stackOperations.swap()
           case SWAPN => stackOperations.swapN()
           // Heap operations
-          case MPUT => heapOperations.mput()
-          case MGET => heapOperations.mget()
+          case NEW => heapOperations.`new`()
+          case ARRAY_GET => heapOperations.arrayGet()
+          case STRUCT_GET => heapOperations.structGet()
+          case STRUCT_GET_STATIC => heapOperations.structGetStatic()
+          case ARRAY_MUT => heapOperations.arrayMut()
+          case STRUCT_MUT => heapOperations.structMut()
+          case STRUCT_MUT_STATIC => heapOperations.structMutStatic()
+          case PRIMITE_PUT => heapOperations.primitivePut()
+          case PRIMITIVE_GET => heapOperations.primitiveGet()
           // Storage operations
           case SPUT   => storageOperations.put()
           case SGET   => storageOperations.get()
