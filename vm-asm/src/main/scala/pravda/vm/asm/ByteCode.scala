@@ -325,15 +325,7 @@ class ByteCode {
       case Op.Transfer => code += VM.TRANSFER
 
       case Op.Meta(info) =>
-        info match {
-          case MetaInfo.Method(name, returnTpe, argsTpes) =>
-            code += VM.META
-            code += VM.META_METHOD
-            code += returnTpe
-            code += argsTpes.length.toByte
-            code ++= argsTpes
-            code ++= vm.bytesToWord(name.getBytes(StandardCharsets.UTF_8))
-        }
+        throw new UnsupportedOperationException(s"Meta information is not supporeted")
 
       case Op.Nop =>
     }
@@ -399,18 +391,8 @@ class ByteCode {
         case VM.int.SGET   => obuf += ((pos, Op.SGet))
         case VM.int.SPUT   => obuf += ((pos, Op.SPut))
         case VM.int.SEXIST => obuf += ((pos, Op.SExst))
-        case VM.int.META => {
-          (ubuf.get() & 0xFF) match {
-            case VM.int.META_METHOD =>
-              val returnTpe = ubuf.get()
-              val argsCnt = ubuf.get() & 0xFF
-              val args = new Array[Byte](argsCnt)
-              ubuf.get(args)
-              val name = new String(wordToBytes(ubuf), StandardCharsets.UTF_8)
-              obuf += ((pos, Op.Meta(MetaInfo.Method(name, returnTpe, args.toList))))
-            case b => throw new UnsupportedOperationException(s"Meta byte $b is not supporeted")
-          }
-        }
+        case VM.int.META =>
+          throw new UnsupportedOperationException(s"Meta information is not supported")
       }
     }
 

@@ -66,7 +66,6 @@ object Opcodes {
 
   // Meta
   final val META = int.META.toByte
-  final val META_METHOD = int.META_METHOD.toByte
 
   object int {
     // Control
@@ -134,6 +133,5 @@ object Opcodes {
 
     // Meta
     final val META = 0xb0
-    final val META_METHOD = 0x01
   }
 }

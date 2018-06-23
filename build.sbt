@@ -62,7 +62,7 @@ lazy val vm = (project in file("vm")).
   dependsOn(common)
 
 lazy val `vm-asm` = (project in file("vm-asm")).
-  dependsOn(vm).
+  dependsOn(vmApi).
   settings(normalizedName := "pravda-vm-asm").
   settings( commonSettings: _* ).
   settings( mainClass in Compile := Some("pravda.vm.asm.Application") ).

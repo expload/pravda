@@ -1,7 +1,6 @@
 package pravda.vm.asm
 
 import pravda.common.bytes
-import pravda.vm.state.Data_
 
 sealed trait Op {
   def toAsm: String
@@ -27,31 +26,6 @@ object Datum {
 
 sealed trait MetaInfo {
   def toAsm: String
-}
-
-object MetaInfo {
-
-  def tpeToString(tpe: Byte): String = tpe match {
-    case Data_.TypeNull    => "null"
-    case Data_.TypeInt8    => "int8"
-    case Data_.TypeInt16   => "int16"
-    case Data_.TypeInt32   => "int32"
-    case Data_.TypeBigInt  => "bigInt"
-    case Data_.TypeUint8   => "uint8"
-    case Data_.TypeUint16  => "uint16"
-    case Data_.TypeUint32  => "uint32"
-    case Data_.TypeNumber  => "number"
-    case Data_.TypeBoolean => "bool"
-    case Data_.TypeRef     => "ref"
-    case Data_.TypeUtf8    => "utf8"
-    case Data_.TypeArray   => "array"
-    case Data_.TypeStruct  => "struct"
-  }
-
-  final case class Method(name: String, returnTpe: Byte, argsTpes: List[Byte]) extends MetaInfo {
-    override def toAsm: String =
-      s"method $name [${tpeToString(returnTpe)}] [${argsTpes.map(tpeToString).mkString(", ")}]"
-  }
 }
 
 object Op {

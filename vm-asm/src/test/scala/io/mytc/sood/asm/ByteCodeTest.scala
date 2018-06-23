@@ -49,10 +49,6 @@ object ByteCodeTest extends TestSuite {
       "swapn" - {
         roundTrip(Seq(Op.SwapN))
       }
-
-      "metamethod" - {
-        roundTrip(Seq(Op.Meta(MetaInfo.Method("method", 0x01, List(0x02, 0x03, 0x04)))))
-      }
     }
   }
 
