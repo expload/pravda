@@ -22,7 +22,7 @@ import pravda.node.data.serialization._
 import cats.data.OptionT
 import cats.implicits._
 import com.google.protobuf.ByteString
-import pravda.vm.asm.{Assembler, Op}
+import pravda.vm.asm.{PravdaAssembler, Operation}
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.cryptography
@@ -127,15 +127,15 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           else (thisName, effect :: Nil) :: acc
       }
 
-  private def asmAstToAsm(asmAst: Seq[(Int, Op)]) = {
+  private def asmAstToAsm(asmAst: Seq[(Int, Operation)]) = {
     asmAst.map { case (no, op) => "%06X:\t%s".format(no, op.toAsm) }.mkString("\n")
   }
 
   private def programToAsm(program: Array[Byte]) =
-    asmAstToAsm(Assembler().decompile(program))
+    asmAstToAsm(PravdaAssembler().decompile(program))
 
   private def programToAsm(program: ByteString) =
-    asmAstToAsm(Assembler().decompile(program))
+    asmAstToAsm(PravdaAssembler().decompile(program))
 
   private val codeArea = elementId()
   private val wattLimitField = elementId()

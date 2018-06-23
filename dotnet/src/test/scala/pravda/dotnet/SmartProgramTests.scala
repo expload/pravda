@@ -298,7 +298,7 @@ object SmartProgramTests extends TestSuite {
       )
 
       import pravda.vm.asm.Datum._
-      import pravda.vm.asm.Op._
+      import pravda.vm.asm.Operation._
 
       def bytes(is: Int*): Array[Byte] =
         Array[Byte](is.map(_.toByte): _*)
@@ -328,7 +328,7 @@ object SmartProgramTests extends TestSuite {
           Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
           Call("method_getDefault"),
           Push(Integral(2)),
-          SwapN,
+          Swapn,
           Pop,
           Nop,
           Push(Integral(1)),
@@ -350,7 +350,7 @@ object SmartProgramTests extends TestSuite {
           Swap,
           LCall("Typed", "typedClt", 2),
           Push(Integral(3)),
-          SwapN,
+          Swapn,
           Pop,
           Push(Integral(2)),
           Dupn,
@@ -370,7 +370,7 @@ object SmartProgramTests extends TestSuite {
           Eq,
           LCall("Typed", "typedBool", 1),
           Push(Integral(2)),
-          SwapN,
+          Swapn,
           Pop,
           Push(Integral(1)),
           Dupn,
@@ -462,13 +462,13 @@ object SmartProgramTests extends TestSuite {
           Dupn,
           Swap,
           Concat,
-          SExst,
+          SExist,
           LCall("Typed", "typedBool", 1),
           Push(Rawbytes(bytes(1, 0, 0, 0, 0))),
           Eq,
           LCall("Typed", "typedBool", 1),
           Push(Integral(3)),
-          SwapN,
+          Swapn,
           Pop,
           Push(Integral(2)),
           Dupn,
@@ -480,7 +480,7 @@ object SmartProgramTests extends TestSuite {
           Push(Integral(3)),
           Dupn,
           Push(Integral(2)),
-          SwapN,
+          Swapn,
           Pop,
           Jump("br31"),
           Label("br20"),
@@ -493,7 +493,7 @@ object SmartProgramTests extends TestSuite {
           Concat,
           SGet,
           Push(Integral(2)),
-          SwapN,
+          Swapn,
           Pop,
           Nop,
           Label("br31"),

@@ -96,11 +96,11 @@ object IntegrationUtils {
       implicit stackItem: StackItem[T]): Either[String, (List[T], Map[Data, T])] =
     Compiler().compile(code).map(c => runProgram(c, storageItems, executor))
 
-  def runAsmProgram[T](code: Seq[asm.Op],
+  def runAsmProgram[T](code: Seq[asm.Operation],
                        storageItems: Seq[(Data, Data)] = Seq.empty,
                        executor: Address = Address @@ ByteString.EMPTY)(
       implicit stackItem: StackItem[T]): (List[T], Map[Data, T]) =
-    runProgram(asm.Assembler().compile(code), storageItems, executor)
+    runProgram(asm.PravdaAssembler().compile(code), storageItems, executor)
 
   def runWithEnviroment[T](code: Array[Byte],
                            from: Address,

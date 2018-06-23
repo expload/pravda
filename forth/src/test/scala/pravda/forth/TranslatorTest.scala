@@ -6,7 +6,7 @@ import utest._
 object TranslatorTest extends TestSuite {
 
   import Statement._
-  import pravda.vm.asm.Op
+  import pravda.vm.asm.Operation
   import pravda.vm.asm.Datum
 
   def tests = Tests {
@@ -22,22 +22,22 @@ object TranslatorTest extends TestSuite {
           Dword("seq&add", Seq(Integ(1), Integ(2), Integ(3), Ident("add"), Ident("add")))
         )) ==
         Seq(
-          Op.Push(Datum.Integral(1)),
-          Op.Push(Datum.Integral(2)),
-          Op.Call("add"),
-          Op.Call("pushseq"),
-          Op.Stop,
+          Operation.Push(Datum.Integral(1)),
+          Operation.Push(Datum.Integral(2)),
+          Operation.Call("add"),
+          Operation.Call("pushseq"),
+          Operation.Stop,
 
-          Op.Label("pushseq"),
-          Op.Push(Datum.Integral(1)), Op.Push(Datum.Integral(2)),
-          Op.Push(Datum.Integral(3)), Op.Push(Datum.Integral(4)),
-          Op.Push(Datum.Integral(5)),
-          Op.Ret,
+          Operation.Label("pushseq"),
+          Operation.Push(Datum.Integral(1)), Operation.Push(Datum.Integral(2)),
+          Operation.Push(Datum.Integral(3)), Operation.Push(Datum.Integral(4)),
+          Operation.Push(Datum.Integral(5)),
+          Operation.Ret,
 
-          Op.Label("seq&add"),
-          Op.Push(Datum.Integral(1)), Op.Push(Datum.Integral(2)), Op.Push(Datum.Integral(3)),
-          Op.Call("add"), Op.Call("add"),
-          Op.Ret
+          Operation.Label("seq&add"),
+          Operation.Push(Datum.Integral(1)), Operation.Push(Datum.Integral(2)), Operation.Push(Datum.Integral(3)),
+          Operation.Call("add"), Operation.Call("add"),
+          Operation.Ret
         )
       )
     }
@@ -49,8 +49,8 @@ object TranslatorTest extends TestSuite {
           Integ(1)
         )) ==
         Seq(
-          Op.Push(Datum.Integral(1)),
-          Op.Stop
+          Operation.Push(Datum.Integral(1)),
+          Operation.Stop
         )
       )
     }
@@ -62,8 +62,8 @@ object TranslatorTest extends TestSuite {
           Integ(0xFFFFFFFF)
         )) ==
         Seq(
-          Op.Push(Datum.Integral(0xFFFFFFFF)),
-          Op.Stop
+          Operation.Push(Datum.Integral(0xFFFFFFFF)),
+          Operation.Stop
         )
       )
     }
@@ -75,8 +75,8 @@ object TranslatorTest extends TestSuite {
           Float(1.0)
         )) ==
         Seq(
-          Op.Push(Datum.Floating(1.0)),
-          Op.Stop
+          Operation.Push(Datum.Floating(1.0)),
+          Operation.Stop
         )
       )
     }
@@ -88,10 +88,10 @@ object TranslatorTest extends TestSuite {
           Dword("seq", Seq(Ident("nop")))
         )) ==
         Seq(
-          Op.Stop,
-          Op.Label("seq"),
-          Op.Call("nop"),
-          Op.Ret
+          Operation.Stop,
+          Operation.Label("seq"),
+          Operation.Call("nop"),
+          Operation.Ret
         )
       )
     }
@@ -104,15 +104,15 @@ object TranslatorTest extends TestSuite {
           If(pos = Seq(Ident("nop"), Ident("nop")), neg = Seq())
         )) ==
         Seq(
-          Op.Not,
-          Op.JumpI(t.mangleIf(t.mainName, 0)),
-          Op.Call("nop"),
-          Op.Call("nop"),
-          Op.Label(t.mangleIf(t.mainName, 0)),
-          Op.Stop,
-          Op.Label("seq"),
-          Op.Call("nop"),
-          Op.Ret
+          Operation.Not,
+          Operation.JumpI(t.mangleIf(t.mainName, 0)),
+          Operation.Call("nop"),
+          Operation.Call("nop"),
+          Operation.Label(t.mangleIf(t.mainName, 0)),
+          Operation.Stop,
+          Operation.Label("seq"),
+          Operation.Call("nop"),
+          Operation.Ret
         )
       )
     }

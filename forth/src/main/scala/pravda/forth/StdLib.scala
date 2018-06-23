@@ -2,7 +2,7 @@ package pravda.forth
 
 object StdLib {
 
-  import pravda.vm.asm.Op
+  import pravda.vm.asm.Operation
   import pravda.vm.asm.Datum
 
   def defs: String = { """
@@ -20,7 +20,7 @@ object StdLib {
     : dup dup1 ;
   """ }
 
-  def words: Seq[Op] =
+  def words: Seq[Operation] =
     Seq(
       add,
       mul,
@@ -54,155 +54,155 @@ object StdLib {
       pop
     ).flatten
 
-  val fadd: Seq[Op] = Seq(
-    Op.Label("fadd"),
-    Op.FAdd,
-    Op.Ret
+  val fadd: Seq[Operation] = Seq(
+    Operation.Label("fadd"),
+    Operation.FAdd,
+    Operation.Ret
   )
 
-  val fmul: Seq[Op] = Seq(
-    Op.Label("fmul"),
-    Op.FMul,
-    Op.Ret
+  val fmul: Seq[Operation] = Seq(
+    Operation.Label("fmul"),
+    Operation.FMul,
+    Operation.Ret
   )
 
-  val fdiv: Seq[Op] = Seq(
-    Op.Label("fdiv"),
-    Op.FDiv,
-    Op.Ret
+  val fdiv: Seq[Operation] = Seq(
+    Operation.Label("fdiv"),
+    Operation.FDiv,
+    Operation.Ret
   )
 
-  val fmod: Seq[Op] = Seq(
-    Op.Label("fmod"),
-    Op.FMod,
-    Op.Ret
+  val fmod: Seq[Operation] = Seq(
+    Operation.Label("fmod"),
+    Operation.FMod,
+    Operation.Ret
   )
 
-  val add: Seq[Op] = Seq(
-    Op.Label("add"),
-    Op.Add,
-    Op.Ret
+  val add: Seq[Operation] = Seq(
+    Operation.Label("add"),
+    Operation.Add,
+    Operation.Ret
   )
 
-  val mul: Seq[Op] = Seq(
-    Op.Label("mul"),
-    Op.Mul,
-    Op.Ret
+  val mul: Seq[Operation] = Seq(
+    Operation.Label("mul"),
+    Operation.Mul,
+    Operation.Ret
   )
 
-  val div: Seq[Op] = Seq(
-    Op.Label("div"),
-    Op.Div,
-    Op.Ret
+  val div: Seq[Operation] = Seq(
+    Operation.Label("div"),
+    Operation.Div,
+    Operation.Ret
   )
 
-  val mod: Seq[Op] = Seq(
-    Op.Label("mod"),
-    Op.Mod,
-    Op.Ret
+  val mod: Seq[Operation] = Seq(
+    Operation.Label("mod"),
+    Operation.Mod,
+    Operation.Ret
   )
 
-  val sget: Seq[Op] = Seq(
-    Op.Label("sget"),
-    Op.SGet,
-    Op.Ret
+  val sget: Seq[Operation] = Seq(
+    Operation.Label("sget"),
+    Operation.SGet,
+    Operation.Ret
   )
 
-  val sput: Seq[Op] = Seq(
-    Op.Label("sput"),
-    Op.SPut,
-    Op.Ret
+  val sput: Seq[Operation] = Seq(
+    Operation.Label("sput"),
+    Operation.SPut,
+    Operation.Ret
   )
 
-  val sexst: Seq[Op] = Seq(
-    Op.Label("sexst"),
-    Op.SExst,
-    Op.Ret
+  val sexst: Seq[Operation] = Seq(
+    Operation.Label("sexst"),
+    Operation.SExist,
+    Operation.Ret
   )
 
-  val eqls: Seq[Op] = Seq(
-    Op.Label("eq"),
-    Op.Eq,
-    Op.Ret
+  val eqls: Seq[Operation] = Seq(
+    Operation.Label("eq"),
+    Operation.Eq,
+    Operation.Ret
   )
 
-  val neq: Seq[Op] = Seq(
-    Op.Label("neq"),
-    Op.Eq,
-    Op.Not,
-    Op.Ret
+  val neq: Seq[Operation] = Seq(
+    Operation.Label("neq"),
+    Operation.Eq,
+    Operation.Not,
+    Operation.Ret
   )
 
-  val lt: Seq[Op] = Seq(
-    Op.Label("lt"),
-    Op.Lt,
-    Op.Ret
+  val lt: Seq[Operation] = Seq(
+    Operation.Label("lt"),
+    Operation.Lt,
+    Operation.Ret
   )
 
-  val gt: Seq[Op] = Seq(
-    Op.Label("gt"),
-    Op.Gt,
-    Op.Ret
+  val gt: Seq[Operation] = Seq(
+    Operation.Label("gt"),
+    Operation.Gt,
+    Operation.Ret
   )
 
-  val not: Seq[Op] = Seq(
-    Op.Label("not"),
-    Op.Not,
-    Op.Ret
+  val not: Seq[Operation] = Seq(
+    Operation.Label("not"),
+    Operation.Not,
+    Operation.Ret
   )
 
-  val concat: Seq[Op] = Seq(
-    Op.Label("concat"),
-    Op.Concat,
-    Op.Ret
+  val concat: Seq[Operation] = Seq(
+    Operation.Label("concat"),
+    Operation.Concat,
+    Operation.Ret
   )
 
-  val from: Seq[Op] = Seq(
-    Op.Label("from"),
-    Op.From,
-    Op.Ret
+  val from: Seq[Operation] = Seq(
+    Operation.Label("from"),
+    Operation.From,
+    Operation.Ret
   )
 
-  val pcreate: Seq[Op] = Seq(
-    Op.Label("pcreate"),
-    Op.PCreate,
-    Op.Ret
+  val pcreate: Seq[Operation] = Seq(
+    Operation.Label("pcreate"),
+    Operation.PCreate,
+    Operation.Ret
   )
 
-  val pupdate: Seq[Op] = Seq(
-    Op.Label("pupdate"),
-    Op.PUpdate,
-    Op.Ret
+  val pupdate: Seq[Operation] = Seq(
+    Operation.Label("pupdate"),
+    Operation.PUpdate,
+    Operation.Ret
   )
 
-  val pcall: Seq[Op] = Seq(
-    Op.Label("pcall"),
-    Op.PCall,
-    Op.Ret
+  val pcall: Seq[Operation] = Seq(
+    Operation.Label("pcall"),
+    Operation.PCall,
+    Operation.Ret
   )
 
-  val swap: Seq[Op] = Seq(
-    Op.Label("swap"),
-    Op.Swap,
-    Op.Ret
+  val swap: Seq[Operation] = Seq(
+    Operation.Label("swap"),
+    Operation.Swap,
+    Operation.Ret
   )
 
-  def dup(n: Int): Seq[Op] = Seq(
-    Op.Label(s"dup${n}"),
-    Op.Push(Datum.Integral(n)),
-    Op.Dupn,
-    Op.Ret
+  def dup(n: Int): Seq[Operation] = Seq(
+    Operation.Label(s"dup${n}"),
+    Operation.Push(Datum.Integral(n)),
+    Operation.Dupn,
+    Operation.Ret
   )
 
-  val transfer: Seq[Op] = Seq(
-    Op.Label("transfer"),
-    Op.Transfer,
-    Op.Ret
+  val transfer: Seq[Operation] = Seq(
+    Operation.Label("transfer"),
+    Operation.Transfer,
+    Operation.Ret
   )
 
-  def pop: Seq[Op] = Seq(
-    Op.Label("pop"),
-    Op.Pop,
-    Op.Ret
+  def pop: Seq[Operation] = Seq(
+    Operation.Label("pop"),
+    Operation.Pop,
+    Operation.Ret
   )
 }

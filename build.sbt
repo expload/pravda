@@ -9,6 +9,15 @@ git.gitTagToVersionNumber := { tag: String =>
   else None
 }
 
+val scalacheckOps = Seq(
+  libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+  testOptions in Test ++= Seq(
+    Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
+    Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1"),
+    Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "100")
+  )
+)
+
 val commonSettings = Seq(
   organization := "io.mytc",
   crossScalaVersions := Seq("2.12.4"),
@@ -50,16 +59,11 @@ lazy val `vm-api` = (project in file("vm-api")).
     normalizedName := "pravda-vm-api",
   ).
   settings( commonSettings: _* ).
+  settings(scalacheckOps:_*).
   settings(
     libraryDependencies ++= Seq(
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
       "com.lihaoyi" %% "fastparse"  % "1.0.0"
-    ),
-    testOptions in Test ++= Seq(
-      Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "8"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
     )
   ).
   dependsOn(common)
@@ -71,10 +75,16 @@ lazy val vm = (project in file("vm")).
   dependsOn(common)
 
 lazy val `vm-asm` = (project in file("vm-asm")).
-  dependsOn(`vm-api`).
+  dependsOn(`vm-api` % "test->test;compile->compile").
   settings(normalizedName := "pravda-vm-asm").
   settings(commonSettings: _*).
+  settings(scalacheckOps:_*).
   settings(
+    testOptions in Test ++= Seq(
+      // Reduce size to prevent 'give up' error
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "4"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "5000")
+    ),
     libraryDependencies ++= Seq (
       "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )

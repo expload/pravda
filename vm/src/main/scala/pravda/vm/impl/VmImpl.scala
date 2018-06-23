@@ -16,7 +16,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class VmImpl extends Vm {
 
-  import Opcodes.int._
+  import Opcodes._
 
   def spawn(program: ByteString,
             environment: Environment,
@@ -129,6 +129,7 @@ class VmImpl extends Vm {
           case PCREATE => systemOperations.pcreate()
           case PUPDATE => systemOperations.pupdate()
           case PADDR   => systemOperations.paddr()
+          case META    => Meta.readFromByteBuffer(program)
           case PCALL =>
             if (pcallAllowed) {
               systemOperations.pcall()

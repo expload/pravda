@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 
 class Translator {
 
-  import pravda.vm.asm.Op
+  import pravda.vm.asm.Operation
   import pravda.vm.asm.Datum
 
   val mainName = "__main__"
@@ -23,34 +23,34 @@ class Translator {
     }
   }
 
-  def translateStmts(stmts: Seq[Statement], prefix: String): Seq[Op] = {
+  def translateStmts(stmts: Seq[Statement], prefix: String): Seq[Operation] = {
     stmts.zipWithIndex.flatMap { w =>
       w match {
-        case (Statement.Ident(n), i) => List(Op.Call(mangle(n)))
-        case (Statement.Integ(v), i) => List(Op.Push(Datum.Integral(v)))
-        case (Statement.Float(v), i) => List(Op.Push(Datum.Floating(v)))
-        case (Statement.Hexar(v), i) => List(Op.Push(Datum.Rawbytes(v)))
+        case (Statement.Ident(n), i) => List(Operation.Call(mangle(n)))
+        case (Statement.Integ(v), i) => List(Operation.Push(Datum.Integral(v)))
+        case (Statement.Float(v), i) => List(Operation.Push(Datum.Floating(v)))
+        case (Statement.Hexar(v), i) => List(Operation.Push(Datum.Rawbytes(v)))
         case (Statement.If(p, n), i) =>
           List(
-            List(Op.Not),
-            List(Op.JumpI(mangleIf(prefix, i))),
+            List(Operation.Not),
+            List(Operation.JumpI(mangleIf(prefix, i))),
             translateStmts(p, prefix + prefix),
-            List(Op.Label(mangleIf(prefix, i)))
+            List(Operation.Label(mangleIf(prefix, i)))
           ).flatten
-        case (Statement.Chrar(s), i) => List(Op.Push(Datum.Rawbytes(s.getBytes(StandardCharsets.UTF_8))))
-        case _                       => List(Op.Nop)
+        case (Statement.Chrar(s), i) => List(Operation.Push(Datum.Rawbytes(s.getBytes(StandardCharsets.UTF_8))))
+        case _                       => List(Operation.Nop)
       }
     }
   }
 
-  def translateWords(words: Seq[Statement.Dword]): Seq[Op] = {
+  def translateWords(words: Seq[Statement.Dword]): Seq[Operation] = {
     words.map { w =>
-      Op.Label(name = w.name) +: translateStmts(w.block, w.name) :+ Op.Ret
+      Operation.Label(name = w.name) +: translateStmts(w.block, w.name) :+ Operation.Ret
     }.flatten
   }
 
-  def translate(unit: Seq[Statement], useStdLib: Boolean = false): Seq[Op] = {
-    val mainUnit = translateStmts(stmts(unit), mainName) ++ Seq(Op.Stop) ++ translateWords(words(unit))
+  def translate(unit: Seq[Statement], useStdLib: Boolean = false): Seq[Operation] = {
+    val mainUnit = translateStmts(stmts(unit), mainName) ++ Seq(Operation.Stop) ++ translateWords(words(unit))
     if (useStdLib) {
       mainUnit ++ StdLib.words
     } else {

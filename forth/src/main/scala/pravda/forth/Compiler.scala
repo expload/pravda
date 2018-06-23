@@ -5,9 +5,9 @@ import com.google.protobuf.ByteString
 class Compiler {
 
   def compile(code: String, useStdLib: Boolean = true): Either[String, Array[Byte]] = {
-    import pravda.vm.asm.Assembler
+    import pravda.vm.asm.PravdaAssembler
     val parser = Parser()
-    val assemb = Assembler()
+    val assemb = PravdaAssembler()
     val transl = Translator()
     val prog = if (useStdLib) StdLib.defs ++ code else code
     parser.parse(prog) match {
