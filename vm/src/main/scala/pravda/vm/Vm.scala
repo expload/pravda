@@ -374,18 +374,8 @@ object Vm {
             aux()
           case STOP => ()
           case META =>
-            // just ignoring the meta info
-            (program.get() & 0xFF) match {
-              case META_METHOD =>
-                program.get()
-                val argsCnt = program.get() & 0xFF
-                val args = new Array[Byte](argsCnt)
-                program.get(args)
-                wordToBytes(program)
-                aux()
-              case b =>
-                throw VmErrorException(SomethingWrong(new UnsupportedOperationException(s"Unssupported meta byte $b")))
-            }
+            throw VmErrorException(
+              SomethingWrong(new UnsupportedOperationException(s"Meta information is not supported")))
         }
       }
 
