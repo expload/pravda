@@ -1,5 +1,7 @@
 package pravda.vm.asm
 
+import pravda.common.bytes
+
 sealed trait Op {
   def toAsm: String
 }
@@ -18,8 +20,12 @@ object Datum {
       case Rawbytes(array) => this.value sameElements array
       case _               => false
     }
-    override def toAsm = value.map("%02X".format(_)).mkString(" ")
+    override def toAsm = bytes.bytes2hex(value)
   }
+}
+
+sealed trait MetaInfo {
+  def toAsm: String
 }
 
 object Op {
@@ -74,5 +80,7 @@ object Op {
   case object SExst extends Op { override def toAsm = "sexist" }
 
   case object Transfer extends Op { override def toAsm = "transfer" }
+
+  final case class Meta(info: MetaInfo) extends Op { override def toAsm: String = s"meta $info" }
 
 }

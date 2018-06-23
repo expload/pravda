@@ -64,6 +64,9 @@ object Opcodes {
   final val TRANSFER = int.TRANSFER.toByte
   final val PTRANSFER = int.PTRANSFER.toByte
 
+  // Meta
+  final val META = int.META.toByte
+
   object int {
     // Control
     final val STOP = 0x00
@@ -128,5 +131,7 @@ object Opcodes {
     final val TRANSFER = 0xa3
     final val PTRANSFER = 0xa4
 
+    // Meta
+    final val META = 0xb0
   }
 }

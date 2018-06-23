@@ -241,6 +241,10 @@ class ByteCode {
           val offset = code.size
           (Op.Label(n), offset)
         }
+
+        case Op.Meta(info) =>
+          val offset = code.size
+          (Op.Meta(info), offset)
       }
       .collect { case (Op.Label(n), v) => (n, v) }
       .toMap
@@ -319,7 +323,11 @@ class ByteCode {
       case Op.PCreate  => code += VM.PCREATE
       case Op.PUpdate  => code += VM.PUPDATE
       case Op.Transfer => code += VM.TRANSFER
-      case Op.Nop      =>
+
+      case Op.Meta(info) =>
+        throw new UnsupportedOperationException(s"Meta information is not supporeted")
+
+      case Op.Nop =>
     }
 
     code.toArray
@@ -383,6 +391,8 @@ class ByteCode {
         case VM.int.SGET   => obuf += ((pos, Op.SGet))
         case VM.int.SPUT   => obuf += ((pos, Op.SPut))
         case VM.int.SEXIST => obuf += ((pos, Op.SExst))
+        case VM.int.META =>
+          throw new UnsupportedOperationException(s"Meta information is not supported")
       }
     }
 

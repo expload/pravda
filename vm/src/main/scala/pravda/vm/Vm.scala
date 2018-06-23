@@ -373,6 +373,9 @@ object Vm {
             memory.push(executor)
             aux()
           case STOP => ()
+          case META =>
+            throw VmErrorException(
+              SomethingWrong(new UnsupportedOperationException(s"Meta information is not supported")))
         }
       }
 
