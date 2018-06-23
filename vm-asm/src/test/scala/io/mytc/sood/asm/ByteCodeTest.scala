@@ -28,7 +28,7 @@ object ByteCodeTest extends TestSuite {
       assert(unit == Seq(
         (0, Op.Push(raw(3))),
         (6, Op.Push(raw(5))),
-        (12, Op.I32Add)
+        (12, Op.Add)
       ))
     }
 

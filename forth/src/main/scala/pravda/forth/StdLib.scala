@@ -80,25 +80,25 @@ object StdLib {
 
   val add: Seq[Op] = Seq(
     Op.Label("add"),
-    Op.I32Add,
+    Op.Add,
     Op.Ret
   )
 
   val mul: Seq[Op] = Seq(
     Op.Label("mul"),
-    Op.I32Mul,
+    Op.Mul,
     Op.Ret
   )
 
   val div: Seq[Op] = Seq(
     Op.Label("div"),
-    Op.I32Div,
+    Op.Div,
     Op.Ret
   )
 
   val mod: Seq[Op] = Seq(
     Op.Label("mod"),
-    Op.I32Mod,
+    Op.Mod,
     Op.Ret
   )
 
@@ -135,13 +135,13 @@ object StdLib {
 
   val lt: Seq[Op] = Seq(
     Op.Label("lt"),
-    Op.I32LT,
+    Op.Lt,
     Op.Ret
   )
 
   val gt: Seq[Op] = Seq(
     Op.Label("gt"),
-    Op.I32GT,
+    Op.Gt,
     Op.Ret
   )
 

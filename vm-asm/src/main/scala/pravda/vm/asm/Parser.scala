@@ -2,16 +2,17 @@ package pravda.vm.asm
 
 class Parser {
 
-  object grammar {
+  private val grammar = {
+
     import fastparse.all._
 
+    val digit = P(CharIn('0' to '9'))
     val nSgnPart = P(CharIn("+-"))
     val nIntPart = P("0" | CharIn('1' to '9') ~ digit.rep)
     val nFrcPart = P("." ~ digit.rep)
     val nExpPart = P(CharIn("eE") ~ CharIn("+-").? ~ digit.rep)
 
     val alpha = P(CharIn("!@#$%^&*-_+=.<>/\\|~'") | CharIn('a' to 'z') | CharIn('A' to 'Z'))
-    val digit = P(CharIn('0' to '9'))
     val aldig = P(alpha | digit)
     val ident = P((digit.rep ~ alpha ~ aldig.rep) | (aldig.rep ~ alpha ~ aldig.rep))
 
@@ -28,10 +29,6 @@ class Parser {
 
     val numbr =
       P(nSgnPart.? ~ nIntPart.? ~ nFrcPart ~ nExpPart.?).!.map(x => Datum.Floating(java.lang.Double.valueOf(x)))
-
-    // val alpha = P( CharIn('a' to 'z') | CharIn('A' to 'Z') | CharIn("_") )
-    // val digit = P( CharIn('0' to '9') )
-    // val ident = P( alpha ~ ( alpha | digit ).rep )
 
     val label = P("@" ~ ident.! ~ ":")
 
@@ -58,18 +55,12 @@ class Parser {
     val clt = P(IgnoreCase("clt"))
     val cgt = P(IgnoreCase("cgt"))
 
-    val fadd = P(IgnoreCase("fadd"))
-    val fmul = P(IgnoreCase("fmul"))
-    val fdiv = P(IgnoreCase("fdiv"))
-    val fmod = P(IgnoreCase("fmod"))
-
     val eqls = P(IgnoreCase("eq"))
-    val conc = P(IgnoreCase("concat"))
     val from = P(IgnoreCase("from"))
     val pcrt = P(IgnoreCase("pcreate"))
     val pupd = P(IgnoreCase("pupdate"))
 
-    val lcall = P(IgnoreCase("lcall") ~ delim ~ ident.! ~ delim ~ ident.! ~ delim ~ word.map(_.intValue))
+    val lcall = P(IgnoreCase("lcall"))
     val pcall = P(IgnoreCase("pcall"))
 
     val transfer = P(IgnoreCase("transfer"))
@@ -91,34 +82,29 @@ class Parser {
           mput.!.map(_ => Op.MPut) |
           mget.!.map(_ => Op.MGet) |
 
-          add.!.map(_ => Op.I32Add) |
-          mul.!.map(_ => Op.I32Mul) |
-          div.!.map(_ => Op.I32Div) |
-          mod.!.map(_ => Op.I32Mod) |
+          add.!.map(_ => Op.Add) |
+          mul.!.map(_ => Op.Mul) |
+          div.!.map(_ => Op.Div) |
+          mod.!.map(_ => Op.Mod) |
 
-          clt.!.map(_ => Op.I32LT) |
-          cgt.!.map(_ => Op.I32GT) |
+          clt.!.map(_ => Op.Lt) |
+          cgt.!.map(_ => Op.Gt) |
 
           eqls.!.map(_ => Op.Eq) |
-          conc.!.map(_ => Op.Concat) |
           from.!.map(_ => Op.From) |
           pcrt.!.map(_ => Op.PCreate) |
           pupd.!.map(_ => Op.PUpdate) |
 
-          fadd.!.map(_ => Op.FAdd) |
-          fmul.!.map(_ => Op.FMul) |
-          fdiv.!.map(_ => Op.FDiv) |
-          fmod.!.map(_ => Op.FMod) |
           pcall.map(_ => Op.PCall) |
-          lcall.map(Op.LCall.tupled) |
+          lcall.map(_ => Op.LCall) |
 
           transfer.map(_ => Op.Transfer)
       ).rep(sep = delim))
 
-    val unit = P(Start ~ delim.rep ~ opseq ~ delim.rep ~ End)
+    P(Start ~ delim.rep ~ opseq ~ delim.rep ~ End)
   }
 
-  def parse(code: String): Either[String, Seq[Op]] = grammar.unit.parse(code) match {
+  def parse(code: String): Either[String, Seq[Op]] = grammar.parse(code) match {
     case fastparse.all.Parsed.Success(ast, idx) => Right(ast)
     case e: fastparse.all.Parsed.Failure        => Left(e.extra.traced.trace)
   }

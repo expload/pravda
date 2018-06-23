@@ -53,7 +53,8 @@ lazy val `vm-api` = (project in file("vm-api")).
   settings(
     libraryDependencies ++= Seq(
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+      "com.lihaoyi" %% "fastparse"  % "1.0.0"
     ),
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),

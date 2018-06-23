@@ -23,12 +23,14 @@ object Opcodes {
 
   // Heap
   final val NEW = int.NEW.toByte
-  final val ARRAYGET = int.ARRAY_GET.toByte
-  final val STRUCTGET = int.STRUCT_GET.toByte
-  final val ARRAYMUT = int.ARRAY_MUT.toByte
-  final val STRUCTMUT = int.STRUCT_MUT.toByte
-  final val PRIMITEPUT = int.PRIMITE_PUT.toByte
-  final val PRIMITIVEGET = int.PRIMITIVE_GET.toByte
+  final val ARRAY_GET = int.ARRAY_GET.toByte
+  final val STRUCT_GET = int.STRUCT_GET.toByte
+  final val STRUCT_GET_STATIC = int.STRUCT_GET_STATIC.toByte
+  final val ARRAY_MUT = int.ARRAY_MUT.toByte
+  final val STRUCT_MUT = int.STRUCT_MUT.toByte
+  final val STRUCT_MUT_STATIC = int.STRUCT_MUT_STATIC.toByte
+  final val PRIMITIVE_PUT = int.PRIMITIVE_PUT.toByte
+  final val PRIMITIVE_GET = int.PRIMITIVE_GET.toByte
 
   // Storage
   final val SPUT = int.SPUT.toByte
@@ -86,7 +88,7 @@ object Opcodes {
     final val ARRAY_MUT = 0x24
     final val STRUCT_MUT = 0x25
     final val STRUCT_MUT_STATIC = 0x26
-    final val PRIMITE_PUT = 0x27
+    final val PRIMITIVE_PUT = 0x27
     final val PRIMITIVE_GET = 0x28
     
     // Storage

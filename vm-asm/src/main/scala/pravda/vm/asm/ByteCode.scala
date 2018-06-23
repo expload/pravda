@@ -96,40 +96,40 @@ class ByteCode {
           (Op.MGet, offset)
         }
 
-        case Op.I32Add => {
+        case Op.Add => {
           val offset = code.size
           code += VM.ADD
-          (Op.I32Add, offset)
+          (Op.Add, offset)
         }
 
-        case Op.I32Mul => {
+        case Op.Mul => {
           val offset = code.size
           code += VM.MUL
-          (Op.I32Mul, offset)
+          (Op.Mul, offset)
         }
 
-        case Op.I32Div => {
+        case Op.Div => {
           val offset = code.size
           code += VM.DIV
-          (Op.I32Div, offset)
+          (Op.Div, offset)
         }
 
-        case Op.I32Mod => {
+        case Op.Mod => {
           val offset = code.size
           code += VM.MOD
-          (Op.I32Mod, offset)
+          (Op.Mod, offset)
         }
 
-        case Op.I32LT => {
+        case Op.Lt => {
           val offset = code.size
           code += VM.LT
-          (Op.I32LT, offset)
+          (Op.Lt, offset)
         }
 
-        case Op.I32GT => {
+        case Op.Gt => {
           val offset = code.size
           code += VM.GT
-          (Op.I32GT, offset)
+          (Op.Gt, offset)
         }
 
         case Op.Eq => {
@@ -292,29 +292,24 @@ class ByteCode {
       case Op.SPut  => code += VM.SPUT
       case Op.SExst => code += VM.SEXIST
 
-      case Op.Label(n) => {}
+      case Op.Label(n) =>
       case Op.Stop     => code += VM.STOP
       case Op.Pop      => code += VM.POP
       case Op.Dup      => code += VM.DUP
       case Op.Swap     => code += VM.SWAP
       case Op.SwapN    => code += VM.SWAPN
       case Op.Ret      => code += VM.RET
-      case Op.MPut     => code += VM.MPUT
-      case Op.MGet     => code += VM.MGET
-      case Op.I32Add   => code += VM.ADD
-      case Op.I32Mul   => code += VM.MUL
-      case Op.I32Div   => code += VM.DIV
-      case Op.I32Mod   => code += VM.MOD
-      case Op.I32LT    => code += VM.LT
-      case Op.I32GT    => code += VM.GT
+      case Op.MPut     => code += VM.PRIMITIVE_PUT
+      case Op.MGet     => code += VM.PRIMITIVE_GET
+      case Op.Add   => code += VM.ADD
+      case Op.Mul   => code += VM.MUL
+      case Op.Div   => code += VM.DIV
+      case Op.Mod   => code += VM.MOD
+      case Op.Lt    => code += VM.LT
+      case Op.Gt    => code += VM.GT
       case Op.Eq       => code += VM.EQ
       case Op.Not      => code += VM.NOT
-      case Op.FAdd     => code += VM.FADD
-      case Op.FMul     => code += VM.FMUL
-      case Op.FDiv     => code += VM.FDIV
-      case Op.FMod     => code += VM.FMOD
       case Op.Dupn     => code += VM.DUPN
-      case Op.Concat   => code += VM.CONCAT
       case Op.From     => code += VM.FROM
       case Op.PCreate  => code += VM.PCREATE
       case Op.PUpdate  => code += VM.PUPDATE
@@ -340,7 +335,7 @@ class ByteCode {
     while (ubuf.remaining > 0) {
       val pos = ubuf.position()
       val ins = ubuf.get()
-      (ins & 0xFF) match {
+      ins & 0xFF match {
         case VM.int.PUSHX    => obuf += ((pos, Op.Push(Datum.Rawbytes(wordToBytes(ubuf)))))
         case VM.int.CALL     => obuf += ((pos, Op.Call("")))
         case VM.int.STOP     => obuf += ((pos, Op.Stop))
@@ -351,35 +346,23 @@ class ByteCode {
         case VM.int.SWAP     => obuf += ((pos, Op.Swap))
         case VM.int.SWAPN    => obuf += ((pos, Op.SwapN))
         case VM.int.RET      => obuf += ((pos, Op.Ret))
-        case VM.int.PRIMITE_PUT     => obuf += ((pos, Op.MPut))
+        case VM.int.PRIMITIVE_PUT     => obuf += ((pos, Op.MPut))
         case VM.int.PRIMITIVE_GET     => obuf += ((pos, Op.MGet))
-        case VM.int.ADD   => obuf += ((pos, Op.I32Add))
-        case VM.int.MUL   => obuf += ((pos, Op.I32Mul))
-        case VM.int.DIV   => obuf += ((pos, Op.I32Div))
-        case VM.int.MOD   => obuf += ((pos, Op.I32Mod))
-        case VM.int.LT    => obuf += ((pos, Op.I32LT))
-        case VM.int.GT    => obuf += ((pos, Op.I32GT))
+        case VM.int.ADD   => obuf += ((pos, Op.Add))
+        case VM.int.MUL   => obuf += ((pos, Op.Mul))
+        case VM.int.DIV   => obuf += ((pos, Op.Div))
+        case VM.int.MOD   => obuf += ((pos, Op.Mod))
+        case VM.int.LT    => obuf += ((pos, Op.Lt))
+        case VM.int.GT    => obuf += ((pos, Op.Gt))
         case VM.int.NOT      => obuf += ((pos, Op.Not))
         case VM.int.EQ       => obuf += ((pos, Op.Eq))
-        case VM.int.FADD     => obuf += ((pos, Op.FAdd))
-        case VM.int.FMUL     => obuf += ((pos, Op.FMul))
-        case VM.int.FDIV     => obuf += ((pos, Op.FDiv))
-        case VM.int.FMOD     => obuf += ((pos, Op.FMod))
         case VM.int.DUPN     => obuf += ((pos, Op.Dupn))
-        case VM.int.CONCAT   => obuf += ((pos, Op.Concat))
         case VM.int.FROM     => obuf += ((pos, Op.From))
         case VM.int.PCREATE  => obuf += ((pos, Op.PCreate))
         case VM.int.PUPDATE  => obuf += ((pos, Op.PUpdate))
         case VM.int.PCALL    => obuf += ((pos, Op.PCall))
         case VM.int.TRANSFER => obuf += ((pos, Op.Transfer))
-        case VM.int.LCALL =>
-          obuf += ((pos,
-                    Op.LCall(
-                      new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
-                      new String(wordToBytes(ubuf), StandardCharsets.UTF_8),
-                      wordToInt32(ubuf)
-                    )))
-
+        case VM.int.LCALL => obuf += ((pos, Op.LCall))
         case VM.int.SGET   => obuf += ((pos, Op.SGet))
         case VM.int.SPUT   => obuf += ((pos, Op.SPut))
         case VM.int.SEXIST => obuf += ((pos, Op.SExst))

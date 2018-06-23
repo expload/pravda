@@ -19,7 +19,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     * Puts top item from the stack to the memory.
     * Pushes reference to the stack.
     *
-    * @see [[pravda.vm.Opcodes.PRIMITEPUT]]
+    * @see [[pravda.vm.Opcodes.PRIMITIVE_PUT]]
     */
   def primitivePut(): Unit = {
     val data = memory.pop()
@@ -32,7 +32,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     * Uses top item from the stack as reference
     * to data in the memory of program. Pushes
     * retrieved data to the stack.
-    * @see [[pravda.vm.Opcodes.PRIMITIVEGET]]
+    * @see [[pravda.vm.Opcodes.PRIMITIVE_GET]]
     */
   def primitiveGet(): Unit = {
     val i = ref(memory.pop())
