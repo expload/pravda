@@ -74,19 +74,19 @@ import scala.collection.mutable
   )
 
   property("mkString -> fromString") = forAll(data) { data =>
-    Data.fromString(data.mkString()) == data
+    Data.parser.all.parse(data.mkString()).get.value == data
   }
 
   property("mkString(pretty = true) -> fromString") = forAll(data) { data =>
-    Data.fromString(data.mkString(pretty = true)) == data
+    Data.parser.all.parse(data.mkString(pretty = true)).get.value == data
   }
 
   property("mkString(untypedNumerics = true) -> fromString") = forAll(data) { data =>
-    Data.fromString(data.mkString(untypedNumerics = true)) == data
+    Data.parser.all.parse(data.mkString(untypedNumerics = true)).get.value == data
   }
 
   property("mkString(escapeUnicode = true) -> fromString") = forAll(data) { data =>
-    Data.fromString(data.mkString(escapeUnicode = true)) == data
+    Data.parser.all.parse(data.mkString(escapeUnicode = true)).get.value == data
   }
 
   property("writeToByteBuffer -> readFromByteBuffer") = forAll(data) { data =>

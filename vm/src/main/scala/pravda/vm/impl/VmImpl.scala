@@ -60,7 +60,7 @@ class VmImpl extends Vm {
     val arithmeticOperations = new ArithmeticOperations(memory, counter)
     val storageOperations = new StorageOperations(memory, maybeStorage, counter)
     val heapOperations = new HeapOperations(memory, program, counter)
-    val stackOperations = new StackOperations(memory, counter)
+    val stackOperations = new StackOperations(memory, program, counter)
     val controlOperations = new ControlOperations(program, callStack, memory, counter)
     val nativeCoinOperations = new NativeCoinOperations(memory, environment, counter, maybeProgramAddress)
     val systemOperations = new SystemOperations(memory, maybeStorage, counter, environment, maybeProgramAddress, this)
@@ -82,14 +82,8 @@ class VmImpl extends Vm {
           case TRANSFER  => nativeCoinOperations.transfer()
           case PTRANSFER => nativeCoinOperations.ptransfer()
           // Stack operations
-          case PUSHX =>
-            Data.readFromByteBuffer(program) match {
-              case data: Data.Primitive =>
-                counter.memoryUsage(data.volume.toLong)
-                memory.push(data)
-              case _ => throw VmErrorException(VmError.WrongType)
-            }
           case POP   => memory.pop()
+          case PUSHX => stackOperations.push()
           case DUP   => stackOperations.dup()
           case DUPN  => stackOperations.dupN()
           case SWAP  => stackOperations.swap()

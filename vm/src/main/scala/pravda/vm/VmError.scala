@@ -19,7 +19,8 @@ object VmError {
   case object NoSuchElement        extends VmError(400)
   case object OutOfWatts           extends VmError(500)
   case object CallStackOverflow    extends VmError(600)
-  case object ExtCallStackOverflow extends VmError(601)
+  case object CallStackUnderflow   extends VmError(601)
+  case object ExtCallStackOverflow extends VmError(602)
 
   final case class SomethingWrong(ex: Throwable) extends VmError(999)
 }

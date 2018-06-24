@@ -2,7 +2,7 @@ package pravda.vm.operations
 
 import java.nio.ByteBuffer
 
-import pravda.vm.VmError.CallStackOverflow
+import pravda.vm.VmError.{CallStackOverflow, CallStackUnderflow}
 import pravda.vm.WattCounter.{CpuProgControl, CpuSimpleArithmetic}
 import pravda.vm.{Memory, VmErrorException, WattCounter}
 
@@ -39,6 +39,9 @@ final class ControlOperations(program: ByteBuffer,
   }
 
   def ret(): Unit = {
+    if (callStack.isEmpty) {
+      throw VmErrorException(CallStackUnderflow)
+    }
     val offset = callStack.remove(callStack.length - 1)
     program.position(offset)
   }

@@ -373,7 +373,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   object parser {
 
-    val (primitive, all) = {
+    val (primitive, all, utf8) = {
       import fastparse.all._
 
       val ws = P(CharIn(Seq(' ', '\t', '\n', '\r')).rep)
@@ -390,7 +390,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       }
 
       val uint = {
-        val hexInt = P("0x" ~/ hexDigs.!).map(s => BigInt(s, 16))
+        val hexInt = P(IgnoreCase("0x") ~/ hexDigs.!).map(s => BigInt(s, 16))
         val decInt = P(decDigs.!).map(BigInt.apply)
         P(hexInt | decInt)
       }
@@ -399,14 +399,14 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         case (m, i) => i * m.fold(1)(_ => -1)
       }
 
-      val int8 = P("int8(" ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int8(x.toByte))
-      val int16 = P("int16(" ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int16(x.toShort))
-      val int32 = P("int32(" ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int32(x.toInt))
-      val uint8 = P("uint8(" ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint8(x.toInt))
-      val uint16 = P("uint16(" ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint16(x.toInt))
-      val uint32 = P("uint32(" ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint32(x.toLong))
-      val bigint = P("bigint(" ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.BigInt(x))
-      val number = P("number(" ~/ ws ~ float ~ ws ~ ")").map(x => Primitive.Number(x))
+      val int8 = P(IgnoreCase("int8(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int8(x.toByte))
+      val int16 = P(IgnoreCase("int16(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int16(x.toShort))
+      val int32 = P(IgnoreCase("int32(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int32(x.toInt))
+      val uint8 = P(IgnoreCase("uint8(") ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint8(x.toInt))
+      val uint16 = P(IgnoreCase("uint16(") ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint16(x.toInt))
+      val uint32 = P(IgnoreCase("uint32(") ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint32(x.toLong))
+      val bigint = P(IgnoreCase("bigint(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.BigInt(x))
+      val number = P(IgnoreCase("number(") ~/ ws ~ float ~ ws ~ ")").map(x => Primitive.Number(x))
 
       val inferredNumeric = P {
         float.map(Primitive.Number) | int.map {
@@ -422,21 +422,20 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val numeric = P(number | int8 | int16 | int32 | uint8 | uint16 | uint32 | bigint | inferredNumeric)
 
-      val bool = P("true").map(_ => Primitive.Bool.True) | P("false").map(_ => Primitive.Bool.False)
+      val bool = P(IgnoreCase("true")).map(_ => Primitive.Bool.True) |
+        P(IgnoreCase("false")).map(_ => Primitive.Bool.False)
 
       val ref = P("#" ~ uint).map(_.toInt).map(Primitive.Ref)
 
-      val `null` = P("null").map(_ => Primitive.Null)
+      val `null` = P(IgnoreCase("null")).map(_ => Primitive.Null)
 
       val primitive: Parser[Primitive] = P(bool | ref | numeric | `null`)
 
       def arrayParser[P1, P2, T, A](prefix: String, p1: Parser[P1], p2: Parser[P2])(array: mutable.Buffer[T] => A,
                                                                                     f1: P1 => T,
                                                                                     f2: P2 => T): Parser[A] = {
-        P(
-          P(s"$prefix[" ~ ws ~ p1.rep(sep = comma) ~ ws ~ "]").map(xs => array(xs.map(f1).toBuffer)) |
+          P(IgnoreCase(s"$prefix[") ~ ws ~ p1.rep(sep = comma) ~ ws ~ "]").map(xs => array(xs.map(f1).toBuffer)) |
             P("[" ~ p2.rep(sep = comma, min = 1) ~ "]").map(xs => array(xs.map(f2).toBuffer))
-        )
       }
 
       val int8Array = arrayParser("int8", int, int8)(Array.Int8Array, _.toByte, _.data)
@@ -473,7 +472,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val utf8 = string.map(Utf8)
 
-      val byteArray = P("x" ~ hexDigs.!)
+      val byteArray = P(IgnoreCase("x") ~ hexDigs.!)
         .map(s => Array.Int8Array(bytes.hex2bytes(s).toBuffer))
 
       val struct = P("{" ~/ ws ~ (string ~ ws ~ ":" ~ ws ~ primitive).rep(sep = comma) ~ ws ~ "}")
@@ -481,15 +480,19 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val all = P(struct | byteArray | utf8 | array | primitive)
 
-      (primitive, all)
+      // exports
+      (primitive, all, utf8)
     }
   }
 
-  def fromString(string: String): Data = {
-    parser.all.parse(string).get.value
+  def fromByteString(byteString: ByteString, offset: Int = 0): (Int, Data) = {
+    val buffer = byteString.asReadOnlyByteBuffer()
+    buffer.position(offset)
+    val result = readFromByteBuffer(buffer)
+    (buffer.position, result)
   }
 
-  def fromBytes(bytes: ScalaArray[Byte]): Data = {
+  def fromBytes(bytes: scala.Array[Byte]): Data = {
     val buffer = getByteStringBuffer
     buffer.put(bytes)
     buffer.flip()

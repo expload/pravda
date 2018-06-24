@@ -95,8 +95,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val struct = memory.heapGet(reference.data)
     val field = memory.heapGet(fieldRef.data)
     val datum = (struct, field) match {
-      case (Struct(_, data), Utf8(fieldName)) => data(fieldName)
-      case _                                  => throw VmErrorException(WrongType)
+      case (Struct(data), Utf8(fieldName)) => data(fieldName)
+      case _                               => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
@@ -107,8 +107,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val field = Data.readFromByteBuffer(program)
     val struct = memory.heapGet(reference.data)
     val datum = (struct, field) match {
-      case (Struct(_, data), Utf8(fieldName)) => data(fieldName)
-      case _                                  => throw VmErrorException(WrongType)
+      case (Struct(data), Utf8(fieldName)) => data(fieldName)
+      case _                               => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
@@ -121,8 +121,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val struct = memory.heapGet(reference.data)
     val field = memory.heapGet(fieldRef.data)
     (struct, field) match {
-      case (Struct(_, data), Utf8(fieldName)) => data(fieldName) = value
-      case _                                  => throw VmErrorException(WrongType)
+      case (Struct(data), Utf8(fieldName)) => data(fieldName) = value
+      case _                               => throw VmErrorException(WrongType)
     }
   }
 
@@ -132,8 +132,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val struct = memory.heapGet(reference.data)
     val field = Data.readFromByteBuffer(program)
     (struct, field) match {
-      case (Struct(_, data), Utf8(fieldName)) => data(fieldName) = value
-      case _                                  => throw VmErrorException(WrongType)
+      case (Struct(data), Utf8(fieldName)) => data(fieldName) = value
+      case _                               => throw VmErrorException(WrongType)
     }
   }
 }

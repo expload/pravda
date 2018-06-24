@@ -2,77 +2,76 @@ package pravda.vm.asm
 
 import pravda.vm.{Data, Opcodes}
 
-sealed trait Operation
+sealed trait Operation {
+  def mnemonic: String
+}
 
 object Operation {
 
-  final case class Comment(value: String)      extends Operation
-  final case class Push(d: Data)               extends Operation
-  final case class New(d: Data)                extends Operation
-  final case class Label(name: String)         extends Operation
-  final case class Jump(name: Option[String])  extends Operation
-  final case class JumpI(name: Option[String]) extends Operation
-  final case class Call(name: Option[String])  extends Operation
-  final case class Meta(meta: pravda.vm.Meta)  extends Operation
+  import Opcodes._
 
-  case object Pop      extends Operation
-  case object Dup      extends Operation
-  case object Swap     extends Operation
-  case object Swapn    extends Operation
-  case object Ret      extends Operation
-  case object Add      extends Operation
-  case object Mul      extends Operation
-  case object Div      extends Operation
-  case object Mod      extends Operation
-  case object Not      extends Operation
-  case object Lt       extends Operation
-  case object Gt       extends Operation
-  case object Eq       extends Operation
-  case object Nop      extends Operation
-  case object Dupn     extends Operation
-  case object From     extends Operation
-  case object PCreate  extends Operation
-  case object PUpdate  extends Operation
-  case object PCall    extends Operation
-  case object LCall    extends Operation
-  case object SGet     extends Operation
-  case object SPut     extends Operation
-  case object SExist   extends Operation
-  case object Stop     extends Operation
-  case object Transfer extends Operation
+  sealed abstract class ParametrizedOperation(val mnemonic: String) extends Operation
 
-  val operationToCode: Map[Operation, Int] = Map(
-    Pop      -> Opcodes.POP,
-    Dup      -> Opcodes.DUP,
-    Dupn     -> Opcodes.DUPN,
-    Swap     -> Opcodes.SWAP,
-    Swapn    -> Opcodes.SWAPN,
-    Ret      -> Opcodes.RET,
-    Add      -> Opcodes.ADD,
-    Mul      -> Opcodes.MUL,
-    Div      -> Opcodes.DIV,
-    Mod      -> Opcodes.MOD,
-    Not      -> Opcodes.NOT,
-    Lt       -> Opcodes.LT,
-    Gt       -> Opcodes.GT,
-    Eq       -> Opcodes.EQ,
-    From     -> Opcodes.FROM,
-    PCreate  -> Opcodes.PCREATE,
-    PUpdate  -> Opcodes.PUPDATE,
-    PCall    -> Opcodes.PCALL,
-    LCall    -> Opcodes.LCALL,
-    SGet     -> Opcodes.SGET,
-    SPut     -> Opcodes.SPUT,
-    SExist   -> Opcodes.SEXIST,
-    Stop     -> Opcodes.STOP,
-    Transfer -> Opcodes.TRANSFER
+  // Virtual operations (which don't included to bytecode)
+  case object Nop                              extends ParametrizedOperation("")
+  final case class Comment(value: String)      extends ParametrizedOperation("")
+  final case class Label(name: String)         extends ParametrizedOperation("")
+
+  // TODO add meta to parser
+  final case class Meta(meta: pravda.vm.Meta)  extends ParametrizedOperation("")
+  final case class Push(d: Data)               extends ParametrizedOperation("push")
+  final case class New(d: Data)                extends ParametrizedOperation("new")
+  final case class Jump(name: Option[String])  extends ParametrizedOperation("jump")
+  final case class JumpI(name: Option[String]) extends ParametrizedOperation("jumpi")
+  final case class Call(name: Option[String])  extends ParametrizedOperation("call")
+  final case class StaticMut(field: String)    extends ParametrizedOperation("static_mut")
+  final case class StaticGet(field: String)    extends ParametrizedOperation("static_get")
+
+  final case class Orphan(opcode: Int, mnemonic: String) extends Operation
+
+//  final val STRUCT_GET_STATIC = 0x23
+//  final val STRUCT_MUT_STATIC = 0x26
+
+  val Orphans: Seq[Operation.Orphan] = Seq(
+    Orphan(STOP, "stop"),
+    Orphan(RET, "ret"),
+    Orphan(PCALL, "pcall"),
+    Orphan(LCALL, "lcall"),
+    Orphan(POP, "pop"),
+    Orphan(DUPN, "dupn"),
+    Orphan(DUP, "dup"),
+    Orphan(SWAPN, "swapn"),
+    Orphan(SWAP, "swap"),
+    Orphan(ARRAY_GET, "array_get"),
+    Orphan(STRUCT_GET, "struct_get"),
+    Orphan(ARRAY_MUT, "array_mut"),
+    Orphan(STRUCT_MUT, "struct_mut"),
+    Orphan(PRIMITIVE_PUT, "primitive_put"),
+    Orphan(PRIMITIVE_GET, "primitive_get"),
+    Orphan(SPUT, "sput"),
+    Orphan(SGET, "sget"),
+    Orphan(SDROP, "sdrop"),
+    Orphan(SEXIST, "sexist"),
+    Orphan(ADD, "add"),
+    Orphan(MUL, "mul"),
+    Orphan(DIV, "div"),
+    Orphan(MOD, "mod"),
+    Orphan(LT, "lt"),
+    Orphan(GT, "gt"),
+    Orphan(NOT, "not"),
+    Orphan(AND, "and"),
+    Orphan(OR, "or"),
+    Orphan(XOR, "xor"),
+    Orphan(EQ, "eq"),
+    Orphan(FROM, "from"),
+    Orphan(PADDR, "paddr"),
+    Orphan(PCREATE, "pcreate"),
+    Orphan(PUPDATE, "pupdate"),
+    Orphan(TRANSFER, "transfer"),
+    Orphan(PTRANSFER, "ptransfer")
   )
 
-  val codeToOperation: Map[Int, Operation] = operationToCode map {
-    case (k, v) =>
-      (v, k)
-  }
-
-  val SimpleOperations: Set[Operation] =
-    operationToCode.keys.toSet
+  val operationByCode: Map[Int, Operation] = Orphans
+    .map(o => o.opcode -> o)
+    .toMap
 }

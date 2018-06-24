@@ -9,6 +9,8 @@ git.gitTagToVersionNumber := { tag: String =>
   else None
 }
 
+val `tendermint-version` = "0.16.0"
+
 val scalacheckOps = Seq(
   libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
   testOptions in Test ++= Seq(
@@ -70,8 +72,14 @@ lazy val `vm-api` = (project in file("vm-api")).
 
 lazy val vm = (project in file("vm")).
   settings(normalizedName := "pravda-vm").
-  settings( commonSettings: _* ).
-	dependsOn(`vm-api`).
+  settings(commonSettings: _*).
+  settings(scalacheckOps:_*).
+  settings(
+    libraryDependencies ++= Seq(
+      "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"
+    )
+  ).
+	dependsOn(`vm-api`, `vm-asm` % "compile->test").
   dependsOn(common)
 
 lazy val `vm-asm` = (project in file("vm-asm")).
@@ -82,19 +90,9 @@ lazy val `vm-asm` = (project in file("vm-asm")).
   settings(
     testOptions in Test ++= Seq(
       // Reduce size to prevent 'give up' error
-      Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "4"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "3"),
       Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "5000")
     ),
-    libraryDependencies ++= Seq (
-      "com.lihaoyi" %% "fastparse"  % "1.0.0"
-    )
-  )
-
-lazy val forth = (project in file("forth")).
-  settings(normalizedName := "pravda-forth").
-  dependsOn(`vm-asm`).
-  settings( commonSettings: _* ).
-  settings(
     libraryDependencies ++= Seq (
       "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )
@@ -109,16 +107,6 @@ lazy val dotnet = (project in file("dotnet")).
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
     )
   )
-
-lazy val `vm-integration-test` = (project in file("testkit/vm-integration")).
-	dependsOn(vm).
-	dependsOn(`vm-asm`).
-	dependsOn(forth).
-	dependsOn(dotnet).
-	settings(normalizedName := "pravda-testkit-vm-integration").
-	settings( commonSettings: _* )
-
-val `tendermint-version` = "0.16.0"
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
@@ -187,7 +175,6 @@ lazy val node = (project in file("node"))
 	.dependsOn(`node-db`)
 	.dependsOn(vm)
   .dependsOn(`vm-asm`)
-  .dependsOn(forth)
 
 lazy val cli = (project in file("cli"))
   .enablePlugins(JavaAppPackaging)
@@ -200,7 +187,6 @@ lazy val cli = (project in file("cli"))
     )
   )
   .dependsOn(common)
-  .dependsOn(forth)
   .dependsOn(`vm-asm`)
   .dependsOn(vm)
   .dependsOn(node)
