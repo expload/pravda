@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import pravda.vm.Data.Array._
 import pravda.vm.Data.Primitive.{Bool, _}
-import pravda.vm.Data.{Struct, Utf8}
+import pravda.vm.Data.Struct
 import pravda.vm.VmError.WrongType
 import pravda.vm._
 
@@ -91,9 +91,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
 
   def structGet(): Unit = {
     val reference = ref(memory.pop())
-    val fieldRef = ref(memory.pop())
+    val field = memory.pop()
     val struct = memory.heapGet(reference.data)
-    val field = memory.heapGet(fieldRef.data)
     val datum = (struct, field) match {
       case (Struct(data), Utf8(fieldName)) => data(fieldName)
       case _                               => throw VmErrorException(WrongType)
@@ -116,10 +115,9 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
 
   def structMut(): Unit = {
     val reference = ref(memory.pop())
-    val fieldRef = ref(memory.pop())
+    val field = memory.pop()
     val value = memory.pop()
     val struct = memory.heapGet(reference.data)
-    val field = memory.heapGet(fieldRef.data)
     (struct, field) match {
       case (Struct(data), Utf8(fieldName)) => data(fieldName) = value
       case _                               => throw VmErrorException(WrongType)

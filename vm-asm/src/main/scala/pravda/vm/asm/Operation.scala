@@ -13,9 +13,9 @@ object Operation {
   sealed abstract class ParametrizedOperation(val mnemonic: String) extends Operation
 
   // Virtual operations (which don't included to bytecode)
-  case object Nop                              extends ParametrizedOperation("")
-  final case class Comment(value: String)      extends ParametrizedOperation("")
-  final case class Label(name: String)         extends ParametrizedOperation("")
+  case object Nop                         extends ParametrizedOperation("")
+  final case class Comment(value: String) extends ParametrizedOperation("")
+  final case class Label(name: String)    extends ParametrizedOperation("")
 
   // TODO add meta to parser
   final case class Meta(meta: pravda.vm.Meta)  extends ParametrizedOperation("")

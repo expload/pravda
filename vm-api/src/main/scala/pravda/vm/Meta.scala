@@ -1,6 +1,7 @@
 package pravda.vm
 
 import java.nio.ByteBuffer
+import Data.Primitive._
 
 import scala.annotation.switch
 
@@ -11,13 +12,13 @@ sealed trait Meta {
   def writeToByteBuffer(buffer: ByteBuffer): Unit = this match {
     case LabelDef(name) =>
       buffer.put(TypeLabelDef.toByte)
-      Data.Utf8(name).writeToByteBuffer(buffer)
+      Data.Primitive.Utf8(name).writeToByteBuffer(buffer)
     case LabelUse(name) =>
       buffer.put(TypeLabelUse.toByte)
-      Data.Utf8(name).writeToByteBuffer(buffer)
+      Utf8(name).writeToByteBuffer(buffer)
     case Custom(name) =>
       buffer.put(TypeCustom.toByte)
-      Data.Utf8(name).writeToByteBuffer(buffer)
+      Utf8(name).writeToByteBuffer(buffer)
   }
 }
 
@@ -30,8 +31,8 @@ object Meta {
   def readFromByteBuffer(buffer: ByteBuffer): Meta = {
 
     def readString() = Data.readFromByteBuffer(buffer) match {
-      case Data.Utf8(data) => data
-      case value           => throw Data.TypeUnexpectedException(value.getClass, buffer.position)
+      case Utf8(data) => data
+      case value      => throw Data.TypeUnexpectedException(value.getClass, buffer.position)
     }
 
     (buffer.get & 0xFF: @switch) match {

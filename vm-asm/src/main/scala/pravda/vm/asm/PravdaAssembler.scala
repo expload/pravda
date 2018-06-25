@@ -29,7 +29,7 @@ object PravdaAssembler {
     *                   It can be used by disassembler.
     * @return Error | Bytecode
     */
-  def assemble(text: String, saveLabels: Boolean = true): Either[String, ByteString] = {
+  def assemble(text: String, saveLabels: Boolean): Either[String, ByteString] = {
     parser.parse(text) match {
       case Parsed.Success(operations, _) => Right(assemble(operations, saveLabels))
       case failure @ Parsed.Failure(_, _, _) =>
@@ -43,7 +43,7 @@ object PravdaAssembler {
     * @param saveLabels Add META opcodes with infomation about labels.
     *                   It can be used by disassembler.
     */
-  def assemble(operations: Seq[Operation], saveLabels: Boolean = true): ByteString = {
+  def assemble(operations: Seq[Operation], saveLabels: Boolean): ByteString = {
     val labels = mutable.Map.empty[String, Int] // label -> offset
     val gotos = mutable.Map.empty[Int, String] // offset -> label
     val bytecode = ByteBuffer.allocate(1024 * 1024)
@@ -68,10 +68,10 @@ object PravdaAssembler {
     for (operation <- operations if operation != Nop) operation match {
       case StaticGet(name) =>
         putOp(Opcodes.STRUCT_GET_STATIC)
-        Utf8(name).writeToByteBuffer(bytecode)
+        Primitive.Utf8(name).writeToByteBuffer(bytecode)
       case StaticMut(name) =>
         putOp(Opcodes.STRUCT_MUT_STATIC)
-        Utf8(name).writeToByteBuffer(bytecode)
+        Primitive.Utf8(name).writeToByteBuffer(bytecode)
       case Push(data) =>
         putOp(Opcodes.PUSHX)
         data.writeToByteBuffer(bytecode)
@@ -96,7 +96,7 @@ object PravdaAssembler {
       case Call(None)        => putOp(Opcodes.CALL)
       case Orphan(opcode, _) => putOp(opcode)
       // Simple operations
-      case Nop => ()
+      case Nop        => ()
       case _: Comment => ()
     }
 
@@ -137,14 +137,14 @@ object PravdaAssembler {
           case Opcodes.STRUCT_GET_STATIC =>
             val offset = buffer.position
             Data.readFromByteBuffer(buffer) match {
-              case Utf8(name) => StaticGet(name)
-              case data => throw TypeUnexpectedException(data.getClass, offset)
+              case Primitive.Utf8(name) => StaticGet(name)
+              case data                 => throw TypeUnexpectedException(data.getClass, offset)
             }
           case Opcodes.STRUCT_MUT_STATIC =>
             val offset = buffer.position
             Data.readFromByteBuffer(buffer) match {
-              case Utf8(field) => StaticMut(field)
-              case data => throw TypeUnexpectedException(data.getClass, offset)
+              case Primitive.Utf8(field) => StaticMut(field)
+              case data                  => throw TypeUnexpectedException(data.getClass, offset)
             }
           case Opcodes.PUSHX if label.nonEmpty =>
             Data.readFromByteBuffer(buffer)

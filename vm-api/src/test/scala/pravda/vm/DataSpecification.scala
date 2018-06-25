@@ -49,14 +49,16 @@ import scala.collection.mutable
   val `null`: Gen[Primitive.Null.type] =
     Gen.const(Data.Primitive.Null)
 
+  val string: Gen[String] = Gen.oneOf(arbitrary[String], Gen.asciiPrintableStr)
+  val utf8: Gen[Primitive.Utf8] = string.map(Primitive.Utf8)
+  val utf8Array: Gen[Utf8Array] = Gen.containerOf[mutable.Buffer, String](string).map(Array.Utf8Array)
+
   val primitive: Gen[Primitive] = Gen.oneOf(
-    int8, int16, int32,
+    int8, int16, int32, utf8,
     uint8, uint16, uint32,
     bigInt, number,
     boolean, ref, `null`
   )
-
-  val utf8: Gen[Utf8] = Gen.oneOf(arbitrary[String], Gen.asciiPrintableStr).map(Utf8)
 
   val struct: Gen[Struct] = {
     val recordGen = arbitrary[String].flatMap(field => primitive.map(value => (field, value)))
@@ -66,11 +68,11 @@ import scala.collection.mutable
   }
 
   val data: Gen[Data] = Gen.oneOf(
-    utf8, primitive, struct,
+    primitive, struct,
     int8Array, int16Array, int32Array,
     uint8Array, uint16Array, uint32Array,
     bigIntArray, numberArray,
-    refArray, booleanArray
+    refArray, booleanArray, utf8Array
   )
 
   property("mkString -> fromString") = forAll(data) { data =>
@@ -90,7 +92,7 @@ import scala.collection.mutable
   }
 
   property("writeToByteBuffer -> readFromByteBuffer") = forAll(data) { data =>
-    val buffer = ByteBuffer.allocate(64 * 1024)
+    val buffer = ByteBuffer.allocate(1024 * 1024)
     data.writeToByteBuffer(buffer)
     buffer.flip()
     Data.readFromByteBuffer(buffer) == data
