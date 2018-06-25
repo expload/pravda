@@ -34,7 +34,7 @@ import scala.collection.mutable
   val (bigInt, bigIntArray) = genPrimitive(arbitrary[BigInt].suchThat(x => x < Int.MinValue && x > 0xFFFFFFFFl), Primitive.BigInt, BigIntArray)
   val (number, numberArray) = genPrimitive(arbitrary[Double], Primitive.Number, NumberArray)
 
-  val (ref, refArray) = genPrimitive(arbitrary[Int], Primitive.Ref, RefArray)
+  val (ref, refArray) = genPrimitive(arbitrary[Int], Primitive.Ref.apply, RefArray)
   val (boolean, booleanArray) = {
     val f: Boolean => Primitive.Bool = {
       case true => Primitive.Bool.True

@@ -34,13 +34,12 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
   }
 
   val genControlOps: Gen[List[Operation]] = for {
-    shuffle <- genShuffler
     labels <- Gen.listOf(Gen.alphaStr.suchThat(s => s.length > 2 && s.length < 6))
     calls = labels.map(s => Call(Some(s)))
     jumps = labels.map(s => Jump(Some(s)))
     jumpis = labels.map(s => JumpI(Some(s)))
   } yield {
-    labels.map(Label) ++ shuffle(calls ++ jumps ++ jumpis)
+    labels.map(Label) ++ calls ++ jumps ++ jumpis
   }
 
   val genCommentOps: Gen[List[Comment]] =
@@ -52,13 +51,13 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
       if (!addComments) all
       else genCommentOps :: all
     }
-    genShuffler flatMap { shuffler =>
+    genShuffler flatMap { shuffle =>
       import collection.JavaConverters._ // WAT??
       // Randomize and select only two generators.
       // Otherwise generator is too complex and it leads to 'give up' error.
-      val selectedComponents = shuffler(components).take(3)
+      val selectedComponents = shuffle(components).take(3)
       Gen.sequence(selectedComponents)
-        .map(x => x.asScala.toList.flatten)
+        .map(x => shuffle(x.asScala.toList.flatten))
     }
   }
 

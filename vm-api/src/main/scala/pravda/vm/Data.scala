@@ -277,8 +277,12 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class Uint32(data: Long)         extends Numeric[Long]
     final case class BigInt(data: scala.BigInt) extends Numeric[scala.BigInt]
     final case class Number(data: Double)       extends Numeric[Double]
-    final case class Ref(data: Int)             extends Primitive
     case object Null                            extends Primitive
+
+    final case class Ref(data: Int)             extends Primitive
+    object Ref {
+      final val Void = Ref(-1)
+    }
 
     sealed trait Bool extends Primitive
 
@@ -430,7 +434,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val bool = P(IgnoreCase("true")).map(_ => Primitive.Bool.True) |
         P(IgnoreCase("false")).map(_ => Primitive.Bool.False)
 
-      val ref = P("#" ~ uint).map(_.toInt).map(Primitive.Ref)
+      val ref = P("#" ~ uint).map(_.toInt).map(Primitive.Ref.apply)
 
       val `null` = P(IgnoreCase("null")).map(_ => Primitive.Null)
 

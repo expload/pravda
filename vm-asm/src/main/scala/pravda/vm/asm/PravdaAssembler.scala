@@ -30,6 +30,7 @@ object PravdaAssembler {
     */
   def assemble(operations: Seq[Operation], saveLabels: Boolean = false): ByteString = {
     val labels = mutable.Map.empty[String, Int] // label -> offset
+    val gotos = mutable.Map.empty[Int, String] // offset -> label
     val bytecode = ByteBuffer.allocate(1024 * 1024)
 
     def putOp(opcode: Int): Unit =
@@ -37,13 +38,15 @@ object PravdaAssembler {
 
     /** Go to `name` using `opcode` */
     def goto(name: String, opcode: Int): Unit = {
-      val data = Primitive.Int32(labels(name))
       if (saveLabels) {
         putOp(Opcodes.META)
         Metadata.LabelUse(name).writeToByteBuffer(bytecode)
       }
       putOp(Opcodes.PUSHX)
-      data.writeToByteBuffer(bytecode)
+      // Save goto offset to set in a future
+      gotos.put(bytecode.position, name)
+      // Just a placeholer. Ref is constant sized
+      Primitive.Ref.Void.writeToByteBuffer(bytecode)
       putOp(opcode)
     }
 
@@ -82,7 +85,17 @@ object PravdaAssembler {
       case _: Comment => ()
     }
 
+    // Size will be not changed anymore
     bytecode.flip()
+
+    for ((offset, label) <- gotos) {
+      val data = Primitive.Ref(labels(label))
+      // Replace placeholder with real offset
+      bytecode.position(offset)
+      data.writeToByteBuffer(bytecode)
+    }
+
+    bytecode.rewind()
     ByteString.copyFrom(bytecode)
   }
 

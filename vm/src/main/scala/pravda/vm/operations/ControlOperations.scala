@@ -15,27 +15,27 @@ final class ControlOperations(program: ByteBuffer,
 
   def jumpi(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic, CpuProgControl)
-    val offset = int32(memory.pop())
+    val offset = ref(memory.pop())
     val condition = boolean(memory.pop())
     if (condition) {
-      program.position(offset)
+      program.position(offset.data)
     }
   }
 
   def jump(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    program.position(int32(memory.pop()))
+    program.position(ref(memory.pop()).data)
   }
 
   def call(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
     val currentOffset = program.position()
-    val callOffset = int32(memory.pop())
+    val callOffset = ref(memory.pop())
     callStack += currentOffset
     if (callStack.size > 1024) {
       throw VmErrorException(CallStackOverflow)
     }
-    program.position(callOffset)
+    program.position(callOffset.data)
   }
 
   def ret(): Unit = {
