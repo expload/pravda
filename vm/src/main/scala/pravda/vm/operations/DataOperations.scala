@@ -3,7 +3,7 @@
 //import pravda.vm.Data.Array._
 //import pravda.vm.Data.Utf8
 //import pravda.vm.VmError.WrongType
-//import pravda.vm.state.{Data, Memory, VmErrorException}
+//import pravda.vm.{Data, Memory, VmErrorException}
 //import pravda.vm.WattCounter
 //import pravda.vm.WattCounter.CpuWordOperation
 //

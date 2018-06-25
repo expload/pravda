@@ -8,7 +8,7 @@ import pravda.node.data.common.TransactionId
 import pravda.node.db.DB
 import pravda.node.servers
 import pravda.vm.{Memory, Vm}
-import pravda.vm.state.Memory
+import pravda.vm.Memory
 
 import scala.concurrent.{ExecutionContext, Future}
 

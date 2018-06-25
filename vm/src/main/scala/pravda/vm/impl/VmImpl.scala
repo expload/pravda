@@ -8,7 +8,7 @@ import pravda.common.domain.Address
 import pravda.vm.StackTrace.Point
 import pravda.vm.VmError.{NoSuchProgram, SomethingWrong}
 import pravda.vm.WattCounter.{CpuBasic, CpuStorageUse}
-import pravda.vm.{Data, _}
+import pravda.vm._
 import pravda.vm.operations._
 
 import scala.annotation.switch

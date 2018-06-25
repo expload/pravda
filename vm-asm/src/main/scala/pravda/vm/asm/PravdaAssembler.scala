@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import fastparse.all
+import fastparse.core.Parsed
 import fastparse.parsers.Combinators.Rule
 import pravda.vm.{Data, Opcodes, Meta => Metadata}
 
@@ -23,12 +24,26 @@ object PravdaAssembler {
   import Operation._
 
   /**
+    * Parses text and assemble to Pravda VM bytecode.
+    * @param saveLabels Add META opcodes with infomation about labels.
+    *                   It can be used by disassembler.
+    * @return Error | Bytecode
+    */
+  def assemble(text: String, saveLabels: Boolean = true): Either[String, ByteString] = {
+    parser.parse(text) match {
+      case Parsed.Success(operations, _) => Right(assemble(operations, saveLabels))
+      case failure @ Parsed.Failure(_, _, _) =>
+        Left(failure.extra.input.repr.errorMessage(failure.extra.input, failure.extra.traced.expected, failure.index))
+    }
+  }
+
+  /**
     * Generates Pavda VM compatible bytecode from sequence of operations.
     * You can obtain sequence of operations using [[parser]].
     * @param saveLabels Add META opcodes with infomation about labels.
     *                   It can be used by disassembler.
     */
-  def assemble(operations: Seq[Operation], saveLabels: Boolean = false): ByteString = {
+  def assemble(operations: Seq[Operation], saveLabels: Boolean = true): ByteString = {
     val labels = mutable.Map.empty[String, Int] // label -> offset
     val gotos = mutable.Map.empty[Int, String] // offset -> label
     val bytecode = ByteBuffer.allocate(1024 * 1024)
@@ -195,6 +210,7 @@ object PravdaAssembler {
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z'))
     val alphadig = P(alpha | digit)
     val ident = P("@" ~ (alpha.rep(1) ~ alphadig.rep(1).?).!)
+    val whitespace = P(CharIn(" \t\r\n").rep)
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 
     val label = P(ident ~ ":").map(n => Operation.Label(n))
@@ -212,6 +228,6 @@ object PravdaAssembler {
       .++(Seq(jumpi, jump, call, push, `new`, static_get, static_mut, label, comment))
       .reduce(_ | _)
 
-    P(Start ~ operation.rep(sep = delim) ~ End)
+    P(Start ~ whitespace ~ operation.rep(sep = delim) ~ whitespace ~ End)
   }
 }

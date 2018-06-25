@@ -1,5 +1,6 @@
 package pravda.vm
 
+import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
 
 trait Environment {
@@ -10,8 +11,8 @@ trait Environment {
   def executor: Address
 
   // Programs
-  def updateProgram(address: Address, code: Data): Data
-  def createProgram(owner: Address, code: Data): Address
+  def updateProgram(address: Address, code: ByteString): Unit
+  def createProgram(owner: Address, code: ByteString): Address
   def getProgram(address: Address): Option[ProgramContext]
   def getProgramOwner(address: Address): Option[Address]
 

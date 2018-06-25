@@ -28,8 +28,8 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
   }
 
   def dupN(): Unit = {
-    val n = int32(memory.pop())
-    val data = memory.get(memory.length - n)
+    val n = integer(memory.pop())
+    val data = memory.get(memory.length - n.toInt)
     wattCounter.memoryUsage(data.volume.toLong)
     memory.push(data)
   }
@@ -41,9 +41,9 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
   }
 
   def swapN(): Unit = {
-    val n = int32(memory.pop())
+    val n = integer(memory.pop())
     val fsti = memory.length - 1
     val sndi = memory.length - n
-    memory.swap(fsti, sndi)
+    memory.swap(fsti, sndi.toInt)
   }
 }

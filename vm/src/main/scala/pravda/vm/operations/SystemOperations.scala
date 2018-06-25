@@ -20,12 +20,12 @@ final class SystemOperations(memory: Memory,
     */
   def pcall(): Unit = {
     wattCounter.cpuUsage(CpuExtCall, CpuStorageUse)
-    val argumentsCount = int32(memory.pop())
+    val argumentsCount = integer(memory.pop())
     val programAddress = address(memory.pop())
     environment.getProgram(programAddress) match {
       case None => throw VmErrorException(VmError.InvalidAddress)
       case Some(ProgramContext(storage, code)) =>
-        memory.limit(argumentsCount)
+        memory.limit(argumentsCount.toInt)
         vm.spawn(code, environment, memory, wattCounter, Some(storage), Some(programAddress), pcallAllowed = true)
         memory.dropLimit()
     }
@@ -38,7 +38,7 @@ final class SystemOperations(memory: Memory,
     * and environment.
     */
   def lcall(): Unit = {
-    val argumentsCount = int32(memory.pop())
+    val argumentsCount = integer(memory.pop())
     memory.pop() match {
       case Data.Primitive.Null =>
       // TODO use standard library
@@ -47,7 +47,7 @@ final class SystemOperations(memory: Memory,
         environment.getProgram(address(rawAddress)) match {
           case None => throw VmErrorException(VmError.InvalidAddress)
           case Some(ProgramContext(_, code)) =>
-            memory.limit(argumentsCount)
+            memory.limit(argumentsCount.toInt)
             vm.spawn(code, environment, memory, wattCounter, currentStorage, maybeProgramAddress, pcallAllowed = false)
             memory.dropLimit()
         }
@@ -55,17 +55,21 @@ final class SystemOperations(memory: Memory,
   }
 
   /**
-    *
+    * Takes reference from stack and take byte
+    * array from heap follow the reference.
+    * Next takes address from stack and updates
+    * program code following the address.
     */
   def pupdate(): Unit = {
     val programAddress = address(memory.pop())
-    val code = memory.pop()
+    val reference = ref(memory.pop())
+    val code = bytes(memory.heapGet(reference.data))
     wattCounter.cpuUsage(CpuStorageUse)
     if (environment.getProgramOwner(programAddress) == environment.executor) {
       val oldProgram = environment.getProgram(programAddress)
       val oldProgramSize = oldProgram.fold(0L)(_.code.remaining.toLong)
       wattCounter.cpuUsage(CpuStorageUse)
-      wattCounter.storageUsage(occupiedBytes = code.volume.toLong, oldProgramSize)
+      wattCounter.storageUsage(occupiedBytes = code.size().toLong, oldProgramSize)
       environment.updateProgram(programAddress, code)
     } else {
       throw VmErrorException(OperationDenied)
@@ -73,13 +77,18 @@ final class SystemOperations(memory: Memory,
   }
 
   /**
+    * Takes reference from stack and take byte
+    * array from heap follow the reference.
+    * Next uploads code to state.
+    * Pushes address to stack.
     */
   def pcreate(): Unit = {
-    val code = memory.pop()
+    val reference = ref(memory.pop())
+    val code = bytes(memory.heapGet(reference.data))
     val programAddress = environment.createProgram(environment.executor, code)
     val data = address(programAddress)
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.volume.toLong)
+    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
     wattCounter.memoryUsage(data.volume.toLong)
     memory.push(address(programAddress))
   }

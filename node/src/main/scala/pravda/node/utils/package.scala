@@ -1,31 +1,30 @@
 package pravda.node
 
-import com.google.protobuf.ByteString
+import pravda.node.data.blockchain.ExecutionInfo
+import pravda.vm.Data
 
 import scala.concurrent.Future
-import pravda.common.bytes.byteString2hex
-import pravda.node.data.blockchain.ExecutionInfo
 
 package object utils {
 
   def showExecInfo(info: ExecutionInfo): String = {
-    s"""
-       | Status       : ${info.status}
-       | Watts        : total ${info.totalWatts}, spent ${info.spentWatts}, refund: ${info.refundWatts}
-       | Stack        : ${showStack(info.stack)}
-       | Heap         : ${showHeap(info.heap)}
-     """.stripMargin
+    s"""Status: ${info.status}
+       |Watts: total ${info.totalWatts}, spent ${info.spentWatts}, refund: ${info.refundWatts}
+       |Stack:
+       |${showStack(info.stack)}
+       |Heap:
+       |${showHeap(info.heap)}""".stripMargin
   }
 
-  def showHeap(heap: Seq[ByteString]): String =
+  def showHeap(heap: Seq[Data]): String =
     heap.zipWithIndex
-      .map { case (bs, i) => s"$i: " + byteString2hex(bs) + '"' }
-      .mkString("[", ", ", "]")
+      .map { case (data, i) => s"  ${i.toHexString}: ${data.mkString(pretty = true)}" }
+      .mkString("\n")
 
-  def showStack(stack: Seq[ByteString]): String =
+  def showStack(stack: Seq[Data]): String =
     stack
-      .map(bs => '"' + byteString2hex(bs) + '"')
-      .mkString("[", ", ", "]")
+      .map(data => "  " + data.mkString(pretty = true))
+      .mkString("\n")
 
   def detectCpuArchitecture(): Future[CpuArchitecture] = Future.successful {
     System.getProperty("os.arch").toLowerCase match {
