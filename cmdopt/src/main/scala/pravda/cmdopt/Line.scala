@@ -1,6 +1,6 @@
 package pravda
 
 package object cmdopt {
-  type Line = Seq[String]
-  val EmptyLine = Seq.empty[String]
+  type Line = List[String]
+  val EmptyLine = List.empty[String]
 }

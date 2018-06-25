@@ -37,11 +37,11 @@ object CommandLineTest extends TestSuite {
     , opt[Unit]("debug").action( (x, c) => c.copy(debug = true) )
   ) }
   def unitParser(args: String*): Unit = {
-    val result = unitParser1.parse(args.toSeq, Config())
+    val result = unitParser1.parse(args.toList, Config())
     assert(result == Ok(Config(flag = true)))
   }
   def unitParserHidden(args: String*): Unit = {
-    val result = unitParser1.parse(args.toSeq, Config())
+    val result = unitParser1.parse(args.toList, Config())
     assert(result == Ok(Config(debug = true)))
   }
 
@@ -51,7 +51,7 @@ object CommandLineTest extends TestSuite {
     opt[Unit]("alicebob").abbr("ab").action{ (x, c) => c.copy(flag = true) }
   ) }
   def groupParser(args: String*): Unit = {
-    val result = groupParser1.parse(args.toSeq, Config())
+    val result = groupParser1.parse(args.toList, Config())
     assert(result == Ok(Config(flag = true)))
   }
 
@@ -59,11 +59,11 @@ object CommandLineTest extends TestSuite {
     opt[Int]('f', "foo").action{ (x, c) => c.copy(intValue = x) }
   ) }
   def intParser(args: String*): Unit = {
-    val result = intParser1.parse(args.toSeq, Config())
+    val result = intParser1.parse(args.toList, Config())
     assert(result == Ok(Config(intValue = 1)))
   }
   def intParserFail(args: String*): Unit = {
-    val result = intParser1.parse(args.toSeq, Config())
+    val result = intParser1.parse(args.toList, Config())
     assert(result.isInstanceOf[ParseError])
   }
 

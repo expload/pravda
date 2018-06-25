@@ -1,11 +1,10 @@
 package pravda.cli
 
-import pravda.cmdopt.CommandLine
 import pravda.common.domain.NativeCoin
 
-sealed trait Config
+sealed trait PravdaConfig
 
-object Config {
+object PravdaConfig {
 
   final val DefaultExecutor = "e74b91ee9dda326116a08703eb387cc27a47e5d832072346fd65c40b89629b86"
 
@@ -20,12 +19,9 @@ object Config {
     case object DotNet extends CompileMode
   }
 
-  case object Nope extends Config
+  case object Nope extends PravdaConfig
 
-  final case class GenAddress(output: Option[String] = None) extends Config
-
-  final case class GenDocs(outDir: String = "docs", mainPageName: String = "main.md", cl: CommandLine[Config])
-      extends Config
+  final case class GenAddress(output: Option[String] = None) extends PravdaConfig
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
@@ -33,7 +29,7 @@ object Config {
                              wattLimit: Long = 300,
                              wattPrice: NativeCoin = NativeCoin.amount(1),
                              endpoint: String = "http://localhost:8080/api/public/broadcast")
-      extends Config
+      extends PravdaConfig
 
   object Broadcast {
 
@@ -49,12 +45,12 @@ object Config {
   }
 
   final case class Compile(compiler: CompileMode, input: Option[String] = None, output: Option[String] = None)
-      extends Config
+      extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,
                                input: Option[String] = None,
                                executor: String = DefaultExecutor)
-      extends Config
+      extends PravdaConfig
 
   object Node {
 
@@ -74,5 +70,5 @@ object Config {
     }
   }
 
-  final case class Node(mode: Node.Mode, dataDir: Option[String]) extends Config
+  final case class Node(mode: Node.Mode, dataDir: Option[String]) extends PravdaConfig
 }

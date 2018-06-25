@@ -2,8 +2,8 @@ package pravda.cli.programs
 
 import cats.Id
 import com.google.protobuf.ByteString
-import pravda.cli.Config
-import pravda.cli.Config.CompileMode
+import pravda.cli.PravdaConfig
+import pravda.cli.PravdaConfig.CompileMode
 import pravda.cli.languages.{CompilersLanguage, IoLanguageStub}
 import utest._
 
@@ -36,7 +36,7 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
-      compile(Config.Compile(Asm))
+      compile(PravdaConfig.Compile(Asm))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
     "disasm" - {
@@ -55,7 +55,7 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
-      compile(Config.Compile(Disasm))
+      compile(PravdaConfig.Compile(Disasm))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
     "forth" - {
@@ -74,7 +74,7 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
-      compile(Config.Compile(Forth))
+      compile(PravdaConfig.Compile(Forth))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
 
@@ -94,7 +94,7 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
-      compile(Config.Compile(DotNet))
+      compile(PravdaConfig.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
 

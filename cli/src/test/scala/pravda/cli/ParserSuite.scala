@@ -4,7 +4,7 @@ import utest._
 
 object ParserSuite extends TestSuite {
 
-  import Config._
+  import PravdaConfig._
   import pravda.cmdopt.CommandLine.Ok
 
   final val Address = "0000000000000000000000000000000000000000000000000000000000000000"
@@ -12,13 +12,13 @@ object ParserSuite extends TestSuite {
   val tests: Tests = Tests {
     "gen" - {
       "address" - assert {
-        ArgumentsParser
-          .parse(Seq("gen", "address"), Nope) == Ok(GenAddress())
+        PravdaArgsParser
+          .parse(List("gen", "address"), Nope) == Ok(GenAddress())
       }
       "address -o a.out" - {
         assert {
-          ArgumentsParser.parse(Seq("gen", "address", "-o", "a.out"), Config.Nope) match {
-            case Ok(Config.GenAddress(Some(file))) => file.endsWith("a.out")
+          PravdaArgsParser.parse(List("gen", "address", "-o", "a.out"), PravdaConfig.Nope) match {
+            case Ok(PravdaConfig.GenAddress(Some(file))) => file.endsWith("a.out")
             case _ => false
           }
         }
@@ -26,25 +26,25 @@ object ParserSuite extends TestSuite {
     }
     "run" - {
       "-i a.out" - assert {
-        ArgumentsParser.parse(Seq("run", "-i", "a.out"), Config.Nope) match {
+        PravdaArgsParser.parse(List("run", "-i", "a.out"), PravdaConfig.Nope) match {
           case Ok(RunBytecode(_, Some(file), _)) => file.endsWith("a.out")
           case _ => false
         }
       }
       "--storage db" - assert {
-        ArgumentsParser.parse(Seq("run", "--storage", "db"), Config.Nope) match {
+        PravdaArgsParser.parse(List("run", "--storage", "db"), PravdaConfig.Nope) match {
           case Ok(RunBytecode(Some(file), _, _)) => file.endsWith("db")
           case _ => false
         }
       }
       "--executor <address>" - assert {
-        ArgumentsParser.parse(Seq("run", "--executor", Address), Config.Nope) match {
+        PravdaArgsParser.parse(List("run", "--executor", Address), PravdaConfig.Nope) match {
           case Ok(config: RunBytecode) => config.executor == Address
           case _ => false
         }
       }
       "run " - assert {
-        ArgumentsParser.parse(Seq("run"), Config.Nope) match {
+        PravdaArgsParser.parse(List("run"), PravdaConfig.Nope) match {
           case Ok(config) => config == RunBytecode()
           case _ => false
         }
@@ -52,7 +52,7 @@ object ParserSuite extends TestSuite {
     }
     "compile" - {
       "-i program.forth -o a.out" - assert {
-        ArgumentsParser.parse(Seq("compile", "asm", "-i", "program.forth", "-o", "a.out"), Config.Nope) match {
+        PravdaArgsParser.parse(List("compile", "asm", "-i", "program.forth", "-o", "a.out"), PravdaConfig.Nope) match {
           case Ok(config: Compile) =>
             config.input.exists(_.endsWith("program.forth")) &&
                 config.output.exists(_.endsWith("a.out"))
@@ -63,7 +63,7 @@ object ParserSuite extends TestSuite {
         import CompileMode._
 
         def compile(name: String, compiler: CompileMode) = {
-          ArgumentsParser.parse(Seq("compile", name), Config.Nope) match {
+          PravdaArgsParser.parse(List("compile", name), PravdaConfig.Nope) match {
             case Ok(config: Compile) =>
               config.compiler == compiler &&
               config.output.isEmpty &&
@@ -72,14 +72,14 @@ object ParserSuite extends TestSuite {
           }
         }
 
-        Seq("asm" -> Asm,"disasm" -> Disasm, "dotnet" -> DotNet, "forth" -> Forth)
+        List("asm" -> Asm,"disasm" -> Disasm, "dotnet" -> DotNet, "forth" -> Forth)
           .map { case (name, compiler) => compile(name, compiler) }
           .reduce(_ && _)
       }
     }
     "broadcast" - {
       "run -e http://example.com -w hw.json" - assert {
-        ArgumentsParser.parse(Seq("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), Config.Nope) match {
+        PravdaArgsParser.parse(List("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), PravdaConfig.Nope) match {
           case Ok(Broadcast(Broadcast.Mode.Run, Some(wallet), None, _, _, "http://example.com"))
             if wallet.endsWith("hw.json") => true
           case x => false

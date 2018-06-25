@@ -4,8 +4,8 @@ import cats._
 import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
-import pravda.cli.Config
-import pravda.cli.Config.Node.{Mode, Network}
+import pravda.cli.PravdaConfig
+import pravda.cli.PravdaConfig.Node.{Mode, Network}
 import pravda.cli.languages.{IoLanguage, NodeLanguage, RandomLanguage}
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes, crypto}
@@ -110,7 +110,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
     result.value
   }
 
-  def apply(config: Config.Node): F[Unit] = {
+  def apply(config: PravdaConfig.Node): F[Unit] = {
     val errorOrOk =
       for {
         dataDir <- EitherT.liftF {
