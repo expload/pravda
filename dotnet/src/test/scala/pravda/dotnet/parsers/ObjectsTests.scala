@@ -1,9 +1,10 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
-import pravda.dotnet.CIL._
-import pravda.dotnet.Signatures.SigType._
-import pravda.dotnet.Signatures._
-import pravda.dotnet.TablesData._
+import pravda.dotnet.data.Method
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parsers.Signatures.SigType._
+import pravda.dotnet.parsers.Signatures._
 import utest._
 
 object ObjectsTests extends TestSuite {
@@ -42,15 +43,15 @@ object ObjectsTests extends TestSuite {
           List(
             Nop,
             LdcI4S(-42),
-            NewObj(MethodDefData(0, 6278, ".ctor", 1, List(ParamData(0, 1, "_a")))),
+            NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_a")))),
             StLoc0,
             LdcI40,
-            NewObj(MethodDefData(0, 6278, ".ctor", 1, List(ParamData(0, 1, "_b")))),
+            NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_b")))),
             StLoc1,
             LdLoc0,
-            CallVirt(MethodDefData(0, 134, "answerA", 40, List())),
+            CallVirt(MethodDefData(0, 134, "answerA", 40, Vector())),
             LdLoc1,
-            CallVirt(MethodDefData(0, 134, "answerB", 40, List())),
+            CallVirt(MethodDefData(0, 134, "answerB", 40, Vector())),
             Add,
             StLoc2,
             Ret
@@ -82,9 +83,9 @@ object ObjectsTests extends TestSuite {
                  "A",
                  "",
                  Ignored,
-                 List(FieldData(1, "a", 37)),
-                 List(MethodDefData(0, 6278, ".ctor", 1, List(ParamData(0, 1, "_a"))),
-                      MethodDefData(0, 134, "answerA", 40, List()))
+                 Vector(FieldData(1, "a", 37)),
+                 Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_a"))),
+                        MethodDefData(0, 134, "answerA", 40, Vector()))
                )),
                false
              ),
@@ -94,9 +95,9 @@ object ObjectsTests extends TestSuite {
                  "B",
                  "",
                  Ignored,
-                 List(FieldData(1, "b", 37)),
-                 List(MethodDefData(0, 6278, ".ctor", 1, List(ParamData(0, 1, "_b"))),
-                      MethodDefData(0, 134, "answerB", 40, List()))
+                 Vector(FieldData(1, "b", 37)),
+                 Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_b"))),
+                        MethodDefData(0, 134, "answerB", 40, Vector()))
                )),
                false
              ),

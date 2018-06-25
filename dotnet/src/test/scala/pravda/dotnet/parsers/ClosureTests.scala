@@ -1,4 +1,4 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import utest._
 

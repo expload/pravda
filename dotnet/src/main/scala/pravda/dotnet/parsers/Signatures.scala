@@ -1,36 +1,42 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import fastparse.byte.all._
-import pravda.dotnet.CIL.CilData
-import pravda.dotnet.TablesData.TableRowData
+import pravda.dotnet.parsers.CIL.CilData
 import pravda.dotnet.utils._
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.data.{Heaps, TablesData}
+
+import cats.instances.vector._
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
 
 object Signatures {
 
   sealed trait SigType
 
   object SigType {
-    case object TypedByRef                                          extends SigType
-    case object Void                                                extends SigType
-    case object Boolean                                             extends SigType
-    case object Char                                                extends SigType
-    case object I1                                                  extends SigType
-    case object U1                                                  extends SigType
-    case object I2                                                  extends SigType
-    case object U2                                                  extends SigType
-    case object I4                                                  extends SigType
-    case object U4                                                  extends SigType
-    case object I8                                                  extends SigType
-    case object U8                                                  extends SigType
-    case object R4                                                  extends SigType
-    case object R8                                                  extends SigType
-    case object String                                              extends SigType
-    case object I                                                   extends SigType
-    case object U                                                   extends SigType
-    final case class Cls(typeDefOrRef: TableRowData)                extends SigType
-    final case class ValueTpe(typeDefOrRef: TableRowData)           extends SigType
-    final case class Generic(tpe: SigType, tpeParams: Seq[SigType]) extends SigType
-    final case class Var(num: Long)                                 extends SigType
+    case object TypedByRef                                           extends SigType
+    case object Void                                                 extends SigType
+    case object Boolean                                              extends SigType
+    case object Char                                                 extends SigType
+    case object I1                                                   extends SigType
+    case object U1                                                   extends SigType
+    case object I2                                                   extends SigType
+    case object U2                                                   extends SigType
+    case object I4                                                   extends SigType
+    case object U4                                                   extends SigType
+    case object I8                                                   extends SigType
+    case object U8                                                   extends SigType
+    case object R4                                                   extends SigType
+    case object R8                                                   extends SigType
+    case object String                                               extends SigType
+    case object I                                                    extends SigType
+    case object U                                                    extends SigType
+    final case class Cls(typeDefOrRef: TableRowData)                 extends SigType
+    final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
+    final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
+    final case class Var(num: Long)                                  extends SigType
     // FIXME complex types are ignored
   }
 
@@ -39,15 +45,15 @@ object Signatures {
   final case class LocalVar(tpe: SigType, byRef: Boolean)
   final case class Tpe(tpe: SigType, byRef: Boolean)
 
-  final case class LocalVarSig(types: Seq[LocalVar]) extends Signature
-  final case class FieldSig(tpe: SigType)            extends Signature
+  final case class LocalVarSig(types: List[LocalVar]) extends Signature
+  final case class FieldSig(tpe: SigType)             extends Signature
   final case class MethodRefDefSig(instance: Boolean,
                                    explicit: Boolean,
                                    default: Boolean,
                                    vararg: Boolean,
                                    generics: Int,
                                    retType: Tpe,
-                                   params: Seq[Tpe])
+                                   params: List[Tpe])
       extends Signature
   final case class TypeSig(tpe: Tpe) extends Signature
 
@@ -61,8 +67,8 @@ object Signatures {
     }
   })
 
-  def sigType(tablesData: TablesData): P[Validated[SigType]] = {
-    def simpleType(t: SigType): P[Validated[SigType]] = PassWith(validated(t))
+  def sigType(tablesData: TablesData): P[Either[String, SigType]] = {
+    def simpleType(t: SigType): P[Either[String, SigType]] = PassWith(Right(t))
 
     P(Int8).flatMap {
       case 0x01 => simpleType(SigType.Void)
@@ -81,7 +87,7 @@ object Signatures {
       case 0x0E => simpleType(SigType.String)
       case 0x11 => typeDefOrRef(tablesData).map(_.map(SigType.ValueTpe))
       case 0x12 => typeDefOrRef(tablesData).map(_.map(SigType.Cls))
-      case 0x13 => compressedUInt.map(i => validated(SigType.Var(i)))
+      case 0x13 => compressedUInt.map(i => Right(SigType.Var(i)))
       case 0x15 =>
         for {
           tpeV <- sigType(tablesData)
@@ -90,28 +96,27 @@ object Signatures {
         } yield
           for {
             tpe <- tpeV
-            tpes <- tpesV.sequence
+            tpes <- tpesV.toList.sequence
           } yield SigType.Generic(tpe, tpes)
       case 0x18 => simpleType(SigType.I)
       case 0x19 => simpleType(SigType.U)
       case c =>
-        println(c)
         throw new NotImplementedError
     }
   }
 
-  private def typeDefOrRef(tablesData: TablesData): P[Validated[TableRowData]] =
+  private def typeDefOrRef(tablesData: TablesData): P[Either[String, TableRowData]] =
     P(compressedUInt).map(i => {
       val mode = i & 0x03
       val idx = (i >> 2) - 1
       mode match {
-        case 0 => tablesData.typeDefTable.lift(idx.toInt).toValidated(s"Index out of TypeDef table bounds: $idx")
-        case 1 => tablesData.typeRefTable.lift(idx.toInt).toValidated(s"Index out of TypeRef table bounds: $idx")
-        case 2 => validationError("Unimplemented: TypeSpec table")
+        case 0 => tablesData.typeDefTable.lift(idx.toInt).toRight(s"Index out of TypeDef table bounds: $idx")
+        case 1 => tablesData.typeRefTable.lift(idx.toInt).toRight(s"Index out of TypeRef table bounds: $idx")
+        case 2 => Left("Unimplemented: TypeSpec table")
       }
     })
 
-  private def localVar(tablesData: TablesData): P[Validated[LocalVar]] = {
+  private def localVar(tablesData: TablesData): P[Either[String, LocalVar]] = {
     val byRef = BS(0x10).!.?.map(_.isDefined)
 
     // FIXME Some fields are ignored, it might cause parsing errors
@@ -120,30 +125,31 @@ object Signatures {
     }
   }
 
-  def localVarSig(tablesData: TablesData): P[Validated[LocalVarSig]] = {
-    val typedByRef = BS(0x16).map(_ => validated(LocalVar(SigType.TypedByRef, false)))
+  def localVarSig(tablesData: TablesData): P[Either[String, LocalVarSig]] = {
+    val typedByRef = BS(0x16).map(_ => Right(LocalVar(SigType.TypedByRef, false)))
 
     P(BS(0x07) ~ compressedUInt).flatMap(
       count =>
         P(typedByRef | localVar(tablesData))
           .rep(exactly = count.toInt)
-          .map(tpes => tpes.sequence.map(LocalVarSig))
+          .map(tpes => tpes.toList.sequence.map(LocalVarSig))
     )
   }
 
-  def fieldSig(tablesData: TablesData): P[Validated[FieldSig]] = P(BS(0x06) ~ sigType(tablesData)).map(_.map(FieldSig))
+  def fieldSig(tablesData: TablesData): P[Either[String, FieldSig]] =
+    P(BS(0x06) ~ sigType(tablesData)).map(_.map(FieldSig))
 
-  private def tpe(tablesData: TablesData): P[Validated[Tpe]] = {
+  private def tpe(tablesData: TablesData): P[Either[String, Tpe]] = {
     val byRef = BS(0x10).!.?.map(_.isDefined)
-    val typedByRef = BS(0x16).map(_ => validated(Tpe(SigType.TypedByRef, false)))
-    val void = BS(0x01).map(_ => validated(Tpe(SigType.Void, false)))
+    val typedByRef = BS(0x16).map(_ => Right(Tpe(SigType.TypedByRef, false)))
+    val void = BS(0x01).map(_ => Right(Tpe(SigType.Void, false)))
 
     P(
       /* CustomMod */ (byRef ~ sigType(tablesData)).map { case (b, t) => t.map(Tpe(_, b)) } | typedByRef | void
     )
   }
 
-  def methodRefDefSig(tablesData: TablesData): P[Validated[MethodRefDefSig]] = {
+  def methodRefDefSig(tablesData: TablesData): P[Either[String, MethodRefDefSig]] = {
     val instance = 0x20
     val explicity = 0x40
     val default = 0x00
@@ -160,7 +166,7 @@ object Signatures {
     } yield
       for {
         retTpe <- retTpeV
-        params <- paramsV.sequence
+        params <- paramsV.toList.sequence
       } yield
         MethodRefDefSig((b & instance) != 0,
                         (b & explicity) != 0,
@@ -171,11 +177,11 @@ object Signatures {
                         params)
   }
 
-  def collectSignatures(cilData: CilData): Validated[Map[Long, Signature]] = {
-    def parseSignature[T <: Signature](idx: Long, p: P[Validated[T]]): Validated[T] =
+  def collectSignatures(cilData: CilData): Either[String, Map[Long, Signature]] = {
+    def parseSignature[T <: Signature](idx: Long, p: P[Either[String, T]]): Either[String, T] =
       for {
         signatureBytes <- Heaps.blob(cilData.blobHeap, idx)
-        signature <- p.parse(signatureBytes).toValidated.joinRight
+        signature <- p.parse(signatureBytes).toEither.joinRight
       } yield signature
 
     val idxToSig = cilData.tables.fieldTable.map(f =>

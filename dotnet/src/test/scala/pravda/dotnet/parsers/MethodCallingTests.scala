@@ -1,9 +1,10 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
-import pravda.dotnet.CIL._
-import pravda.dotnet.Signatures._
-import pravda.dotnet.Signatures.SigType._
-import pravda.dotnet.TablesData._
+import pravda.dotnet.data.Method
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parsers.Signatures.SigType._
+import pravda.dotnet.parsers.Signatures._
 import utest._
 
 object MethodCallingTests extends TestSuite {
@@ -20,21 +21,21 @@ object MethodCallingTests extends TestSuite {
         Method(
           List(
             Nop,
-            Call(MethodDefData(0, 150, "answer", 39, List())),
+            Call(MethodDefData(0, 150, "answer", 39, Vector())),
             StLoc0,
-            Call(MethodDefData(0, 145, "secretAnswer", 39, List())),
+            Call(MethodDefData(0, 145, "secretAnswer", 39, Vector())),
             StLoc1,
             LdLoc0,
             LdLoc1,
-            Call(MethodDefData(0, 150, "sum", 43, List(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
+            Call(MethodDefData(0, 150, "sum", 43, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
             StLoc2,
-            NewObj(MethodDefData(0, 6278, ".ctor", 6, List())),
+            NewObj(MethodDefData(0, 6278, ".ctor", 6, Vector())),
             StLoc3,
             LdLoc3,
-            CallVirt(MethodDefData(0, 134, "personalAnswer", 49, List())),
+            CallVirt(MethodDefData(0, 134, "personalAnswer", 49, Vector())),
             StLocS(4),
             LdLoc3,
-            CallVirt(MethodDefData(0, 129, "personalSecretAnswer", 49, List())),
+            CallVirt(MethodDefData(0, 129, "personalSecretAnswer", 49, Vector())),
             StLocS(5),
             Ret
           ),
@@ -62,9 +63,14 @@ object MethodCallingTests extends TestSuite {
              LocalVar(I4, false),
              LocalVar(I4, false),
              LocalVar(I4, false),
-             LocalVar(
-               Cls(TypeDefData(1048577, "Program", "", Ignored, List(), List(MethodDefData(0, 150, "answer", 39, List())))),
-               false),
+             LocalVar(Cls(
+                        TypeDefData(1048577,
+                                    "Program",
+                                    "",
+                                    Ignored,
+                                    Vector(),
+                                    Vector(MethodDefData(0, 150, "answer", 39, Vector())))),
+                      false),
              LocalVar(I4, false),
              LocalVar(I4, false)
            ))),

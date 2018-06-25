@@ -1,9 +1,10 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
-import pravda.dotnet.CIL._
-import pravda.dotnet.Signatures.SigType._
-import pravda.dotnet.Signatures._
-import pravda.dotnet.TablesData._
+import pravda.dotnet.data.Method
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parsers.Signatures.SigType._
+import pravda.dotnet.parsers.Signatures._
 import utest._
 
 object LoopTests extends TestSuite {
@@ -11,6 +12,7 @@ object LoopTests extends TestSuite {
   val tests = Tests {
     'loopParse - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
+
       methods ==> List(
         Method(
           List(
@@ -73,7 +75,6 @@ object LoopTests extends TestSuite {
            List(LocalVar(I4, false), LocalVar(I4, false), LocalVar(Boolean, false), LocalVar(Boolean, false)))),
         (32, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
       )
-
     }
   }
 }

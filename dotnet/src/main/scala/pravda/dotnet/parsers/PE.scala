@@ -1,8 +1,13 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import fastparse.byte.all._
 import LE._
 import pravda.dotnet.utils._
+import pravda.dotnet.utils
+
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
 
 // See
 //   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
@@ -51,15 +56,15 @@ object PE {
 
     final case class StreamHeader(offset: Long, size: Long, name: String)
 
-    final case class TildeStream(heapSizes: Byte, tableNumbers: Seq[Int], sorted: Long, tables: TablesInfo)
+    final case class TildeStream(heapSizes: Byte, tableNumbers: List[Int], sorted: Long, tables: TablesInfo)
 
-    final case class MetadataRoot(version: String, streamHeaders: Seq[StreamHeader])
+    final case class MetadataRoot(version: String, streamHeaders: List[StreamHeader])
 
     final case class PeHeader(peFileHeader: PeFileHeader,
                               peHeaderStandardFields: PeHeaderStandardFields,
                               ntSpecificFields: NtSpecificFields,
                               peHeaderDataDirectories: PeHeaderDataDirectories,
-                              sectionHeaders: Seq[SectionHeader])
+                              sectionHeaders: List[SectionHeader])
 
     sealed trait MethodHeader {
       val codeBytes: Bytes
@@ -74,13 +79,13 @@ object PE {
     final case class PeData(stringHeap: Bytes,
                             userStringHeap: Bytes,
                             blobHeap: Bytes,
-                            tableNumbers: Seq[Int],
+                            tableNumbers: List[Int],
                             tables: TablesInfo)
     final case class Pe(peHeader: PeHeader,
                         cliHeader: CliHeader,
                         metadataRoot: MetadataRoot,
                         peData: PeData,
-                        methods: Seq[MethodHeader])
+                        methods: List[MethodHeader])
   }
 
   import Info._
@@ -193,7 +198,7 @@ object PE {
     P(offset ~ size ~ name).map(StreamHeader.tupled)
   }
 
-  val tildeStream: P[Validated[TildeStream]] = {
+  val tildeStream: P[Either[String, TildeStream]] = {
     val heapSizes = Int8
     val valid = Int64
     val sorted = Int64
@@ -205,7 +210,7 @@ object PE {
       v <- valid
       s <- sorted
       tableNumbers = TablesInfo.validToActualTableNumbers(v)
-      rows <- P(UInt32.rep(exactly = tableNumbers.length))
+      rows <- P(UInt32.rep(exactly = tableNumbers.length)).map(_.toList)
       tables <- TablesInfo.tables(hs, tableNumbers, rows)
     } yield tables.map(ts => TildeStream(hs, tableNumbers, s, ts))
   }
@@ -214,7 +219,7 @@ object PE {
     val length = Int32
     val version = length.flatMap(l => utils.nullTerminatedString((l + 3) / 4 * 4))
     val streamsNumber = UInt16
-    val streamHeaders = streamsNumber.flatMap(l => streamHeader.rep(exactly = l))
+    val streamHeaders = streamsNumber.flatMap(l => streamHeader.rep(exactly = l)).map(_.toList)
     P(BS(0x42, 0x53, 0x4a, 0x42) ~ AnyBytes(8) ~ version ~ AnyBytes(2) ~ streamHeaders).map(MetadataRoot.tupled)
   }
 
@@ -245,11 +250,11 @@ object PE {
       offset <- msDosHeader
       fileHeader <- P(AnyBytes((offset - 128).toInt) /* 2GB for .exe file should be enough*/ ~ peFileHeader)
       (sFields, ntFields, dataDirs) <- P(peHeaderStandardFields ~ ntSpecificFields ~ peHeaderDataDirectories)
-      sections <- P(sectionHeader.rep(exactly = fileHeader.sectionNumber))
+      sections <- P(sectionHeader.rep(exactly = fileHeader.sectionNumber).map(_.toList))
     } yield PeHeader(fileHeader, sFields, ntFields, dataDirs, sections)
   }
 
-  def bytesFromRva(file: Bytes, sections: Seq[SectionHeader], rva: Long): Bytes = {
+  def bytesFromRva(file: Bytes, sections: List[SectionHeader], rva: Long): Bytes = {
     val rvaSection = sections.find(s => rva >= s.virtualAddress && rva <= s.virtualAddress + s.virtualSize)
     rvaSection match {
       case Some(s) =>
@@ -261,24 +266,24 @@ object PE {
   }
 
   def streamHeaderBytes(file: Bytes,
-                        sections: Seq[SectionHeader],
+                        sections: List[SectionHeader],
                         metadataRva: Long,
                         streamHeader: StreamHeader): Bytes = {
     val rva = metadataRva + streamHeader.offset
     bytesFromRva(file, sections, rva).take(streamHeader.size)
   }
 
-  def parseInfo(file: Bytes): Validated[Pe] = {
+  def parseInfo(file: Bytes): Either[String, Pe] = {
     for {
-      header <- peHeader.parse(file).toValidated
+      header <- peHeader.parse(file).toEither
       sections = header.sectionHeaders
 
       fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
 
-      cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toValidated
+      cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toEither
       metadataRva = cliHeader.metadataRva
 
-      metadata <- metadataRoot.parse(fileBytesFromRva(metadataRva)).toValidated
+      metadata <- metadataRoot.parse(fileBytesFromRva(metadataRva)).toEither
       streamHeaders = metadata.streamHeaders
 
       retrieveStream = (name: String) =>
@@ -292,15 +297,16 @@ object PE {
       userStringHeap <- retrieveStream("#US")
       blobHeap <- retrieveStream("#Blob")
 
-      tildeStream <- tildeStream.parse(tildeStreamBytes).toValidated.joinRight
+      tildeStream <- tildeStream.parse(tildeStreamBytes).toEither.joinRight
 
       methods <- tildeStream.tables.methodDefTable
         .map(m =>
           if (m.rva > 0) {
-            method.parse(fileBytesFromRva(m.rva)).toValidated
+            method.parse(fileBytesFromRva(m.rva)).toEither
           } else {
-            validated(EmptyHeader)
+            Right(EmptyHeader)
         })
+        .toList
         .sequence
     } yield
       Pe(header,

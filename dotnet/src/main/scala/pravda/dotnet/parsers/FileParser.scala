@@ -1,20 +1,24 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import java.nio.file.{Files, Paths}
 
 import fastparse.byte.all._
-import pravda.dotnet.CIL.CilData
-import pravda.dotnet.PE.Info.Pe
-import pravda.dotnet.utils._
+import pravda.dotnet.data.Method
+import pravda.dotnet.parsers.CIL.CilData
+import pravda.dotnet.parsers.PE.Info.Pe
+
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
 
 object FileParser {
 
-  def parseFile(file: String): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
+  def parseFile(file: String): Either[String, (Pe, CilData, List[Method], Map[Long, Signatures.Signature])] = {
     val fileBytes = Files.readAllBytes(Paths.get(this.getClass.getResource(s"/$file").getPath))
     parsePe(fileBytes)
   }
 
-  def parsePe(bytes: Array[Byte]): Validated[(Pe, CilData, Seq[Method], Map[Long, Signatures.Signature])] = {
+  def parsePe(bytes: Array[Byte]): Either[String, (Pe, CilData, List[Method], Map[Long, Signatures.Signature])] = {
     val peV = PE.parseInfo(Bytes(bytes))
 
     for {

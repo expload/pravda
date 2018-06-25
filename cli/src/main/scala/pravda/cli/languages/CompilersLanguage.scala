@@ -9,4 +9,5 @@ trait CompilersLanguage[F[_]] {
   def disasm(source: ByteString): F[String]
   def forth(source: String): F[Either[String, ByteString]]
   def dotnet(source: ByteString): F[Either[String, ByteString]]
+  def disnet(source: ByteString): F[Either[String, String]]
 }

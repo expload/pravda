@@ -1,18 +1,17 @@
-package pravda.dotnet
+package pravda.dotnet.parsers
 
 import fastparse.byte.all._
 import LE._
-import pravda.dotnet.utils._
 
 final case class TablesInfo(
-    fieldTable: Seq[TablesInfo.FieldRow] = Seq.empty,
-    memberRefTable: Seq[TablesInfo.MemberRefRow] = Seq.empty,
-    methodDefTable: Seq[TablesInfo.MethodDefRow] = Seq.empty,
-    paramTable: Seq[TablesInfo.ParamRow] = Seq.empty,
-    typeDefTable: Seq[TablesInfo.TypeDefRow] = Seq.empty,
-    typeRefTable: Seq[TablesInfo.TypeRefRow] = Seq.empty,
-    typeSpecTable: Seq[TablesInfo.TypeSpecRow] = Seq.empty,
-    standAloneSigTable: Seq[TablesInfo.StandAloneSigRow] = Seq.empty
+    fieldTable: Vector[TablesInfo.FieldRow] = Vector.empty,
+    memberRefTable: Vector[TablesInfo.MemberRefRow] = Vector.empty,
+    methodDefTable: Vector[TablesInfo.MethodDefRow] = Vector.empty,
+    paramTable: Vector[TablesInfo.ParamRow] = Vector.empty,
+    typeDefTable: Vector[TablesInfo.TypeDefRow] = Vector.empty,
+    typeRefTable: Vector[TablesInfo.TypeRefRow] = Vector.empty,
+    typeSpecTable: Vector[TablesInfo.TypeSpecRow] = Vector.empty,
+    standAloneSigTable: Vector[TablesInfo.StandAloneSigRow] = Vector.empty
 )
 
 object TablesInfo {
@@ -246,32 +245,32 @@ object TablesInfo {
   def typeSpecRow(indexes: TableIndexes): P[TypeSpecRow] =
     P(indexes.blobHeap.parser).map(TypeSpecRow)
 
-  def tableParser(num: Int, row: Long, indexes: TableIndexes): P[Validated[TablesInfo => TablesInfo]] = {
-    def tableRep[T](p: TableIndexes => P[T]): P[Seq[T]] =
-      p(indexes).rep(exactly = row.toInt)
+  def tableParser(num: Int, row: Long, indexes: TableIndexes): P[Either[String, TablesInfo => TablesInfo]] = {
+    def tableRep[T](p: TableIndexes => P[T]): P[Vector[T]] =
+      p(indexes).rep(exactly = row.toInt).map(_.toVector)
 
-    def tablesId(p: TableIndexes => P[TableRowInfo]): P[Validated[TablesInfo => TablesInfo]] =
-      tableRep(p).map(r => validated(t => t))
+    def tablesId(p: TableIndexes => P[TableRowInfo]): P[Either[String, TablesInfo => TablesInfo]] =
+      tableRep(p).map(r => Right(t => t))
 
     num match {
       case 0 => tablesId(moduleRow)
-      case 1 => tableRep(typeRefRow).map(r => validated(_.copy(typeRefTable = r)))
-      case 2 => tableRep(typeDefRow).map(r => validated(_.copy(typeDefTable = r)))
+      case 1 => tableRep(typeRefRow).map(r => Right(_.copy(typeRefTable = r)))
+      case 2 => tableRep(typeDefRow).map(r => Right(_.copy(typeDefTable = r)))
       // 3
-      case 4 => tableRep(fieldRow).map(r => validated(_.copy(fieldTable = r)))
+      case 4 => tableRep(fieldRow).map(r => Right(_.copy(fieldTable = r)))
       // 5
-      case 6 => tableRep(methodDefRow).map(r => validated(_.copy(methodDefTable = r)))
+      case 6 => tableRep(methodDefRow).map(r => Right(_.copy(methodDefTable = r)))
       // 7
-      case 8  => tableRep(paramRow).map(r => validated(_.copy(paramTable = r)))
+      case 8  => tableRep(paramRow).map(r => Right(_.copy(paramTable = r)))
       case 9  => tablesId(interfaceImplRow)
-      case 10 => tableRep(memberRefRow).map(r => validated(_.copy(memberRefTable = r)))
+      case 10 => tableRep(memberRefRow).map(r => Right(_.copy(memberRefTable = r)))
       case 11 => tablesId(constantRow)
       case 12 => tablesId(customAttributeRow)
       case 13 => tablesId(fieldMarshalRow)
       case 14 => tablesId(declSecurityRow)
       case 15 => tablesId(classLayoutRow)
       case 16 => tablesId(fieldLayoutRow)
-      case 17 => tableRep(standAloneSigRow).map(r => validated(_.copy(standAloneSigTable = r)))
+      case 17 => tableRep(standAloneSigRow).map(r => Right(_.copy(standAloneSigTable = r)))
       case 18 => tablesId(eventMapRow)
       // 19
       case 20 => tablesId(eventRow)
@@ -281,7 +280,7 @@ object TablesInfo {
       case 24 => tablesId(methodSemanticsRow)
       case 25 => tablesId(methodImplRow)
       case 26 => tablesId(moduleRefRow)
-      case 27 => tableRep(typeSpecRow).map(r => validated(_.copy(typeSpecTable = r)))
+      case 27 => tableRep(typeSpecRow).map(r => Right(_.copy(typeSpecTable = r)))
       case 28 => tablesId(implMapRow)
       case 29 => tablesId(fieldRVARow)
       // 30
@@ -299,14 +298,14 @@ object TablesInfo {
       case 42 => tablesId(genericParamRow)
       case 43 => tablesId(methodSpecRow)
       case 44 => tablesId(genericParamConstraintRow)
-      case n  => PassWith(validationError(s"Non valid table number: $n"))
+      case n  => PassWith(Left(s"Non valid table number: $n"))
     }
   }
 
-  def validToActualTableNumbers(valid: Long): Seq[Int] =
-    valid.toBinaryString.reverse.zipWithIndex.filter(_._1 == '1').map(_._2)
+  def validToActualTableNumbers(valid: Long): List[Int] =
+    valid.toBinaryString.reverse.zipWithIndex.filter(_._1 == '1').map(_._2).toList
 
-  private def tableIndexes(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): TableIndexes = {
+  private def tableIndexes(heapSizes: Byte, tableNumbers: List[Int], rows: List[Long]): TableIndexes = {
     TableIndexes(
       ShortIndex,
       ShortIndex,
@@ -336,7 +335,7 @@ object TablesInfo {
     ) // FIXME
   }
 
-  def tables(heapSizes: Byte, tableNumbers: Seq[Int], rows: Seq[Long]): P[Validated[TablesInfo]] = {
+  def tables(heapSizes: Byte, tableNumbers: List[Int], rows: List[Long]): P[Either[String, TablesInfo]] = {
     val indexes = tableIndexes(heapSizes, tableNumbers, rows)
 
     rows
@@ -344,7 +343,7 @@ object TablesInfo {
       .map {
         case (row, num) => tableParser(num, row, indexes)
       }
-      .foldLeft[P[Validated[TablesInfo]]](PassWith(validated(TablesInfo()))) {
+      .foldLeft[P[Either[String, TablesInfo]]](PassWith(Right(TablesInfo()))) {
         case (tablesP, tablesPT) =>
           for {
             tablesE <- tablesP
