@@ -157,6 +157,11 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       buffer.put(bytes)
     }
 
+    def putRef(x: Int): Unit = {
+      buffer.put(TypeRef)
+      buffer.putInt(x)
+    }
+
     def putPrimitive(typeTag: Byte)(f: ByteBuffer => Unit): Unit = {
       buffer.put(typeTag)
       putTaglessPrimitive(f)
@@ -218,7 +223,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Uint16(data)      => putPrimitive(TypeUint16)(_.putInt(data))
       case Uint32(data)      => putPrimitive(TypeUint32)(_.putLong(data))
       case BigInt(data)      => putTaggedBigInt(buffer, data)
-      case Ref(data)         => putPrimitive(TypeRef.toByte)(_.putInt(data))
+      case Ref(data)         => putRef(data)
       case Bool.True         => putBoolean(buffer, 1.toByte)
       case Bool.False        => putBoolean(buffer, 0.toByte)
       case Int8Array(data)   => putPrimitiveArray(TypeInt8, data)(_.put(_))
@@ -228,7 +233,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Uint16Array(data) => putPrimitiveArray(TypeUint16, data)(_.putInt(_))
       case Uint32Array(data) => putPrimitiveArray(TypeUint32, data)(_.putLong(_))
       case BigIntArray(data) => putArray(TypeBigInt, data)(putBigInt)
-      case RefArray(data)    => putPrimitiveArray(TypeRef, data)(_.putInt(_))
+      case RefArray(data)    => putArray(TypeRef, data)(_.putInt(_))
       case Number(data)      => putPrimitive(TypeNumber)(_.putDouble(data))
       case NumberArray(data) => putPrimitiveArray(TypeNumber, data)(_.putDouble(_))
       case BoolArray(data) =>
@@ -578,7 +583,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     def getUint32: Long = primitiveBuffer(8).getLong & 0xFFFFFFFFl
     def getBigInt = ScalaBigInt(getBytes(getLength))
     def getDouble = primitiveBuffer(8).getDouble
-    def getRef = primitiveBuffer(4).getInt
+    def getRef = buffer.getInt()
 
     buffer.get match {
       case TypeNull    => Primitive.Null
