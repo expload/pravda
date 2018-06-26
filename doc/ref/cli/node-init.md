@@ -12,6 +12,6 @@ pravda node init
 
 |Option|Description|
 |----|----|
-|-None, --local|
-|-None, --testnet|
-|-None, --init-distr-conf|
+|--local|
+|--testnet|
+|--init-distr-conf|

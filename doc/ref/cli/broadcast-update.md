@@ -12,4 +12,4 @@ pravda broadcast update
 
 |Option|Description|
 |----|----|
-|-Some(p), --program|
+|-p, --program|

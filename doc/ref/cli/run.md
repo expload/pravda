@@ -12,6 +12,6 @@ Run bytecode given from stdin or file on Pravda VM.
 
 |Option|Description|
 |----|----|
-|-Some(e), --executor|Executor address HEX representation
-|-Some(i), --input|Input file
-|-None, --storage|Storage name
+|-e, --executor|Executor address HEX representation
+|-i, --input|Input file
+|--storage|Storage name

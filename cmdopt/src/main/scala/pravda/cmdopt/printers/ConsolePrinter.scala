@@ -64,6 +64,6 @@ class ConsolePrinter[C] extends CmdDocsPrinter[C, ConsoleCtx] {
       (if (hasSubcommands) EOL else "") + s"${ctx.tab}%-${pads}s$text$EOL$body".format(cmd.name)
     case opt: Opt[C, _] =>
       val pads = 20 - ctx.tab.length
-      s"${ctx.tab}%-${pads}s${opt.text}".format(s"${opt.short.map(x => s"-$x").getOrElse("")}, --${opt.name}")
+      s"${ctx.tab}%-${pads}s${opt.text}".format(s"${opt.short.map(x => s"-$x, ").getOrElse("")}--${opt.name}")
   }
 }

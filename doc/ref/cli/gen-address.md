@@ -12,4 +12,4 @@ Generate ed25519 conforming addresses. They can be used as regular wallet or val
 
 |Option|Description|
 |----|----|
-|-Some(o), --output|Output file
+|-o, --output|Output file

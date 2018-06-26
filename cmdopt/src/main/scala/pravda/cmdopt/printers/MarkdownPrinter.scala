@@ -31,7 +31,7 @@ class MarkdownPrinter[C] extends CmdDocsPrinter[C, MarkdownCtx] {
         s"|`$comm`|$link|$desc|"
       }
       .mkString(EOL)
-    val optAll = if (opts.nonEmpty) s"$optHead$EOL$optBody" else "No options available"
+    val optAll = if (opts.nonEmpty) s"$optHead$EOL$optBody" else s"${EOL}No options available"
     val cmdAll = if (cmds.nonEmpty) s"$cmdHead$EOL$cmdBody" else ""
     List(header, optAll, cmdAll).mkString(EOL)
   }
@@ -49,6 +49,6 @@ class MarkdownPrinter[C] extends CmdDocsPrinter[C, MarkdownCtx] {
         (if (hasSubcommands) EOL else "")
       (if (hasSubcommands) EOL else "") + s"${ctx.tab}%-${pads}s${cmd.text}$EOL$body".format(cmd.name)
     case opt: Opt[C, _] =>
-      s"|-${opt.short}, --${opt.name}|${opt.text}"
+      s"|${opt.short.map(x => s"-$x, ").getOrElse("")}--${opt.name}|${opt.text}"
   }
 }

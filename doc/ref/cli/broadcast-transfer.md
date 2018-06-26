@@ -12,5 +12,5 @@ Transfer native coins to a wallet.
 
 |Option|Description|
 |----|----|
-|-Some(t), --to|
-|-Some(a), --amount|
+|-t, --to|
+|-a, --amount|
