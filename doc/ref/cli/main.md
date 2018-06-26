@@ -1,5 +1,5 @@
 ## Name
-Pravda - blockchain SDK for games.
+Pravda Command Line Interface.
 
 ## Synopsys
 ```
@@ -7,16 +7,13 @@ pravda COMMAND [...SUBCOMMAND]
 ```
 
 ## Description
-
 pravda is a unified command line interface to Pravda SDK.
-    
 No options available
 ## Commands
 
 |Command|Docs|Description|
 |----|----|----|
 |`gen-address`|[docs](gen-address.md)|Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.|
-|`gen-docs`|[docs](gen-docs.md)|Generate markdown documentation for command line tool.|
 |`run`|[docs](run.md)|Run bytecode given from stdin or file on Pravda VM.|
 |`compile-asm`|[docs](compile-asm.md)|Assemble Pravda VM bytecode from text presentation.|
 |`compile-disasm`|[docs](compile-disasm.md)|Disassemble Pravda VM bytecode to text presentation.|

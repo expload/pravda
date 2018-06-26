@@ -7,12 +7,10 @@ pravda broadcast transfer --to <wallet> --amount <amount>
 ```
 
 ## Description
-
 Transfer native coins to a wallet.
-            
 ## Options
 
 |Option|Description|
 |----|----|
-|-t, --to|
-|-a, --amount|
+|-Some(t), --to|
+|-Some(a), --amount|

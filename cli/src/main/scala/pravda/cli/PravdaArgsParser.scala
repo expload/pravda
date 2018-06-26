@@ -13,9 +13,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
     head("pravda")
       .title("Pravda Command Line Interface.")
       .text("pravda COMMAND [...SUBCOMMAND]")
-      .desc("""
-      |pravda is a unified command line interface to Pravda SDK.
-    """),
+      .desc("pravda is a unified command line interface to Pravda SDK."),
     cmd("gen")
       .text("Useful stuff generators.")
       .children(
@@ -105,10 +103,8 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
             head("pravda-compile-asm")
               .title("Assemble Pravda VM bytecode from text representation.")
               .text("pravda compile asm")
-              .desc("""
-              |Input file is a Pravda assembly language text file. Output is binary Pravda
-              |program. By default read from stdin and print to stdout.
-            """.stripMargin)
+              .desc("""|Input file is a Pravda assembly language text file. Output is binary Pravda
+                       |program. By default read from stdin and print to stdout.""".stripMargin)
           ),
         cmd("disasm")
           .text("Disassemble Pravda VM bytecode to text presentation.")
@@ -117,10 +113,8 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
             head("pravda-compile-disasm")
               .title("Disassemble Pravda programs.")
               .text("pravda compile disasm [--input <filename>] [--output <filename>]")
-              .desc("""
-              |Input file is a Pravda executable binary. Output is a text file with
-              |Pravda assembly code. By default read from stdin and print to stdout.
-            """.stripMargin)
+              .desc("""|Input file is a Pravda executable binary. Output is a text file with
+                       |Pravda assembly code. By default read from stdin and print to stdout.""".stripMargin)
           ),
         cmd("forth")
           .text("Compile Pravda pseudo-forth to Pravda VM bytecode.")
@@ -129,10 +123,8 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
             head("pravda-compile-disasm")
               .title("Disassemble Pravda programs.")
               .text("pravda compile disasm [--input <filename>] [--output <filename>]")
-              .desc("""
-              |Input file is a Pravda executable binary. Output is a text file with
-              |Pravda assembly code. By default read from stdin and print to stdout.
-            """.stripMargin)
+              .desc("""|Input file is a Pravda executable binary. Output is a text file with
+                       |Pravda assembly code. By default read from stdin and print to stdout.""".stripMargin)
           ),
         cmd("dotnet")
           .text("Compile .exe produced byt .NET compiler to Pravda VM bytecode.")
@@ -141,10 +133,8 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
             head("pravda-compile-dotnet")
               .title("Compile .Net PE executable to Pravda executable binary.")
               .text("pravda compile dotnet [--input <filename>] [--output <filename>]")
-              .desc("""
-              |Input file is a .Net PE (portable executable). Output is binary Pravda
-              |program. By default read from stdin and print to stdout.
-            """.stripMargin)
+              .desc("""|Input file is a .Net PE (portable executable). Output is binary Pravda
+                       |program. By default read from stdin and print to stdout.""".stripMargin)
           )
       ),
     cmd("broadcast")

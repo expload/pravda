@@ -7,8 +7,6 @@ pravda compile dotnet [--input <filename>] [--output <filename>]
 ```
 
 ## Description
-
 Input file is a .Net PE (portable executable). Output is binary Pravda
 program. By default read from stdin and print to stdout.
-            
 No options available

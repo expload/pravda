@@ -8,9 +8,8 @@ pravda broadcast update
 
 ## Description
 
-            
 ## Options
 
 |Option|Description|
 |----|----|
-|-p, --program|
+|-Some(p), --program|
