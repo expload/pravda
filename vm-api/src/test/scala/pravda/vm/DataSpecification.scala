@@ -2,6 +2,7 @@ package pravda.vm
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Properties, _}
@@ -50,13 +51,16 @@ import scala.collection.mutable
     Gen.const(Data.Primitive.Null)
 
   val string: Gen[String] = Gen.oneOf(arbitrary[String], Gen.asciiPrintableStr)
+  val byteString: Gen[ByteString] = Gen.nonEmptyContainerOf[scala.Array, Byte](arbitrary[Byte]).map(ByteString.copyFrom)
+  val bytes: Gen[Primitive.Bytes] = byteString.map(Primitive.Bytes)
   val utf8: Gen[Primitive.Utf8] = string.map(Primitive.Utf8)
   val utf8Array: Gen[Utf8Array] = Gen.containerOf[mutable.Buffer, String](string).map(Array.Utf8Array)
+  val bytesArray: Gen[BytesArray] = Gen.containerOf[mutable.Buffer, ByteString](byteString).map(Array.BytesArray)
 
   val primitive: Gen[Primitive] = Gen.oneOf(
     int8, int16, int32, utf8,
     uint8, uint16, uint32,
-    bigInt, number,
+    bigInt, number, bytes,
     boolean, ref, `null`
   )
 
@@ -71,7 +75,7 @@ import scala.collection.mutable
     primitive, struct,
     int8Array, int16Array, int32Array,
     uint8Array, uint16Array, uint32Array,
-    bigIntArray, numberArray,
+    bigIntArray, numberArray, bytesArray,
     refArray, booleanArray, utf8Array
   )
 
