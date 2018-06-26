@@ -25,8 +25,8 @@ object Operation {
   final case class Jump(name: Option[String])  extends ParametrizedOperation("jump")
   final case class JumpI(name: Option[String]) extends ParametrizedOperation("jumpi")
   final case class Call(name: Option[String])  extends ParametrizedOperation("call")
-  final case class StaticMut(key: Primitive)   extends ParametrizedOperation("static_mut")
-  final case class StaticGet(key: Primitive)   extends ParametrizedOperation("static_get")
+  final case class StructMut(key: Option[Primitive])   extends ParametrizedOperation("struct_mut")
+  final case class StructGet(key: Option[Primitive])   extends ParametrizedOperation("struct_get")
 
   final case class Orphan(opcode: Int, mnemonic: String) extends Operation
 
@@ -44,9 +44,7 @@ object Operation {
     Orphan(SWAPN, "swapn"),
     Orphan(SWAP, "swap"),
     Orphan(ARRAY_GET, "array_get"),
-    Orphan(STRUCT_GET, "struct_get"),
     Orphan(ARRAY_MUT, "array_mut"),
-    Orphan(STRUCT_MUT, "struct_mut"),
     Orphan(PRIMITIVE_PUT, "primitive_put"),
     Orphan(PRIMITIVE_GET, "primitive_get"),
     Orphan(SPUT, "sput"),

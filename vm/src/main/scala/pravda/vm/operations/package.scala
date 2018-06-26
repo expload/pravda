@@ -2,11 +2,8 @@ package pravda.vm
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.vm.VmError.{InvalidAddress, InvalidCoinAmount, WrongType}
-import pravda.vm.Data.Array.{Int8Array, Uint8Array}
 import pravda.vm.Data.Primitive._
-
-import scala.collection.mutable
+import pravda.vm.VmError.{InvalidAddress, InvalidCoinAmount, WrongType}
 
 package object operations {
 
@@ -39,11 +36,6 @@ package object operations {
     case _         => throw VmErrorException(WrongType)
   }
 
-  def int32(value: Data): Int = value match {
-    case Int32(x) => x
-    case _        => throw VmErrorException(WrongType)
-  }
-
   def boolean(value: Data.Primitive): Boolean = value match {
     case Bool.True  => true
     case Bool.False => false
@@ -51,17 +43,13 @@ package object operations {
   }
 
   def bytes(a: Data): ByteString = {
-    val bytes = a match {
-      case BigInt(data)     => data.toByteArray
-      case Uint8Array(data) => data.toArray.map(_.toByte)
-      case Int8Array(data)  => data.toArray
-      case _                => throw VmErrorException(WrongType)
+    a match {
+      case Bytes(data)  => data
+      case _            => throw VmErrorException(WrongType)
     }
-    ByteString.copyFrom(bytes)
   }
 
-  def bytes(a: ByteString): Int8Array =
-    Int8Array(a.toByteArray.to[mutable.Buffer])
+  def bytes(a: ByteString): Bytes = Bytes(a)
 
   def coins(a: Data): NativeCoin = a match {
     case BigInt(data) if data < Long.MinValue || data > Long.MaxValue => throw VmErrorException(InvalidCoinAmount)
@@ -74,18 +62,15 @@ package object operations {
 
   def address(a: Data): Address = {
     val bytes = a match {
-      case BigInt(data)     => data.toByteArray
-      case Uint8Array(data) => data.toArray.map(_.toByte)
-      case Int8Array(data)  => data.toArray
-      case _                => throw VmErrorException(WrongType)
+      case Bytes(data) => data
+      case _           => throw VmErrorException(WrongType)
     }
-    if (bytes.length == 32) Address @@ ByteString.copyFrom(bytes)
+    if (bytes.size() == 32) Address @@ bytes
     else throw VmErrorException(InvalidAddress)
   }
 
-  def address(a: Address): Data.Primitive = {
-    val bytes = a.toByteArray
-    if (bytes.length == 32) BigInt(scala.BigInt(bytes))
+  def address(bytes: Address): Data.Primitive = {
+    if (bytes.size() == 32) Bytes(bytes)
     else throw VmErrorException(InvalidAddress)
   }
 }

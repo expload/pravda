@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import pravda.vm.Data.Array._
 import pravda.vm.Data.Primitive.{Bool, _}
-import pravda.vm.Data.Struct
+import pravda.vm.Data.{Primitive, Struct}
 import pravda.vm.VmError.WrongType
 import pravda.vm._
 
@@ -64,6 +64,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case BigIntArray(data) => BigInt(data(index))
       case RefArray(data)    => Ref(data(index))
       case BoolArray(data)   => data(index)
+      case Utf8Array(data)   => Utf8(data(index))
+      case BytesArray(data)  => Bytes(data(index))
       case _                 => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
@@ -85,17 +87,20 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case (BigInt(value), BigIntArray(data)) => data(index) = value
       case (Ref(value), RefArray(data))       => data(index) = value
       case (value: Bool, BoolArray(data))     => data(index) = value
+      case (Utf8(value), Utf8Array(data))     => data(index) = value
+      case (Bytes(value), BytesArray(data))   => data(index) = value
       case _                                  => throw VmErrorException(WrongType)
     }
   }
 
   def structGet(): Unit = {
     val reference = ref(memory.pop())
-    val field = memory.pop()
+    val key = memory.pop()
     val struct = memory.heapGet(reference.data)
-    val datum = (struct, field) match {
-      case (Struct(data), Utf8(fieldName)) => data(fieldName)
-      case _                               => throw VmErrorException(WrongType)
+    val datum = struct match {
+      case Struct(data) =>
+        data(key)
+      case _ => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
@@ -103,11 +108,12 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
 
   def structGetStatic(): Unit = {
     val reference = ref(memory.pop())
-    val field = Data.readFromByteBuffer(program)
+    val key = Data.readFromByteBuffer(program)
     val struct = memory.heapGet(reference.data)
-    val datum = (struct, field) match {
-      case (Struct(data), Utf8(fieldName)) => data(fieldName)
-      case _                               => throw VmErrorException(WrongType)
+    val datum = (struct, key) match {
+      case (Struct(data), k: Primitive) =>
+        data(k)
+      case _ => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
@@ -115,12 +121,13 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
 
   def structMut(): Unit = {
     val reference = ref(memory.pop())
-    val field = memory.pop()
+    val key = memory.pop()
     val value = memory.pop()
     val struct = memory.heapGet(reference.data)
-    (struct, field) match {
-      case (Struct(data), Utf8(fieldName)) => data(fieldName) = value
-      case _                               => throw VmErrorException(WrongType)
+    struct match {
+      case Struct(data) =>
+        data(key) = value
+      case _ => throw VmErrorException(WrongType)
     }
   }
 
@@ -128,10 +135,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val reference = ref(memory.pop())
     val value = memory.pop()
     val struct = memory.heapGet(reference.data)
-    val field = Data.readFromByteBuffer(program)
-    (struct, field) match {
-      case (Struct(data), Utf8(fieldName)) => data(fieldName) = value
-      case _                               => throw VmErrorException(WrongType)
+    val key = Data.readFromByteBuffer(program)
+    (struct, key) match {
+      case (Struct(data), k: Primitive) =>
+        data(k) = value
+      case _ => throw VmErrorException(WrongType)
     }
   }
 }

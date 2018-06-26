@@ -27,10 +27,12 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
   val genOrthanOps: Gen[List[Operation]] =
     Gen.listOf(Gen.oneOf(Orphans))
 
-  val genStructOp: Gen[List[Operation]] = Gen.listOf {
-    DataSpecification.primitive.flatMap { key =>
-      Gen.oneOf(StaticGet(key), StaticMut(key))
+  val genStructOp: Gen[List[Operation]] = {
+    val dynamic = Gen.oneOf(StructGet(None), StructMut(None))
+    val static = DataSpecification.primitive.flatMap { key =>
+      Gen.oneOf(StructGet(Some(key)), StructMut(Some(key)))
     }
+    Gen.listOf(Gen.oneOf(static, dynamic))
   }
 
   val genControlOps: Gen[List[Operation]] = for {
@@ -68,7 +70,7 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
 
   property("render -> parser") = forAll(operationsGenerator(true)) { ops =>
     val text = PravdaAssembler.render(ops)
-    //println(s"$text\n-------")
+//    println(s"$text\n-------")
     val parsed = PravdaAssembler.parser.parse(text).get.value.toList
     parsed == ops
   }

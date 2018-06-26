@@ -66,10 +66,14 @@ object PravdaAssembler {
     }
 
     for (operation <- operations if operation != Nop) operation match {
-      case StaticGet(key) =>
+      case StructGet(Some(key)) =>
         putOp(Opcodes.STRUCT_GET_STATIC)
         key.writeToByteBuffer(bytecode)
-      case StaticMut(key) =>
+      case StructGet(None) =>
+        putOp(Opcodes.STRUCT_GET)
+      case StructMut(None) =>
+        putOp(Opcodes.STRUCT_MUT)
+      case StructMut(Some(key)) =>
         putOp(Opcodes.STRUCT_MUT_STATIC)
         key.writeToByteBuffer(bytecode)
       case Push(data) =>
@@ -137,13 +141,13 @@ object PravdaAssembler {
           case Opcodes.STRUCT_GET_STATIC =>
             val offset = buffer.position
             Data.readFromByteBuffer(buffer) match {
-              case key: Primitive => StaticGet(key)
+              case key: Primitive => StructGet(Some(key))
               case data           => throw TypeUnexpectedException(data.getClass, offset)
             }
           case Opcodes.STRUCT_MUT_STATIC =>
             val offset = buffer.position
             Data.readFromByteBuffer(buffer) match {
-              case key: Primitive => StaticMut(key)
+              case key: Primitive => StructMut(Some(key))
               case data           => throw TypeUnexpectedException(data.getClass, offset)
             }
           case Opcodes.PUSHX if label.nonEmpty =>
@@ -166,6 +170,8 @@ object PravdaAssembler {
           case Opcodes.JUMP  => Operation.Jump(None)
           case Opcodes.JUMPI => Operation.JumpI(None)
           case Opcodes.CALL  => Operation.Call(None)
+          case Opcodes.STRUCT_GET => Operation.StructGet(None)
+          case Opcodes.STRUCT_MUT => Operation.StructMut(None)
         }
       )
     }
@@ -184,8 +190,8 @@ object PravdaAssembler {
     case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty = true)}"
     case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty = true)}"
     case Label(name)        => s"@$name:"
-    case StaticGet(key)     => s"${operation.mnemonic} ${key.mkString(pretty = true)}"
-    case StaticMut(key)     => s"${operation.mnemonic} ${key.mkString(pretty = true)}"
+    case StructGet(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = true)}"
+    case StructMut(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = true)}"
     case _                  => operation.mnemonic
   }
 
@@ -214,18 +220,18 @@ object PravdaAssembler {
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 
     val label = P(ident ~ ":").map(n => Operation.Label(n))
-    val push = P(IgnoreCase("push") ~ delim ~ dataPrimitive).map(x => Operation.Push(x))
-    val `new` = P(IgnoreCase("new") ~ delim ~ dataAll).map(x => Operation.New(x))
-    val jump = P(IgnoreCase("jump") ~ (delim ~ ident).?).map(n => Operation.Jump(n))
-    val jumpi = P(IgnoreCase("jumpi") ~ (delim ~ ident).?).map(n => Operation.JumpI(n))
-    val call = P(IgnoreCase("call") ~ (delim ~ ident).?).map(n => Operation.Call(n))
-    val static_get = P(IgnoreCase("static_get") ~ delim ~ dataPrimitive).map(s => Operation.StaticGet(s))
-    val static_mut = P(IgnoreCase("static_mut") ~ delim ~ dataPrimitive).map(s => Operation.StaticMut(s))
-    val comment = P("/*" ~ (!"*/" ~ AnyChar).rep.! ~ "*/").map(s => Operation.Comment(s))
+    val push = P(IgnoreCase("push") ~ delim ~ dataPrimitive).map(Operation.Push)
+    val `new` = P(IgnoreCase("new") ~ delim ~ dataAll).map(Operation.New)
+    val jump = P(IgnoreCase("jump") ~ (delim ~ ident).?).map(Operation.Jump)
+    val jumpi = P(IgnoreCase("jumpi") ~ (delim ~ ident).?).map(Operation.JumpI)
+    val call = P(IgnoreCase("call") ~ (delim ~ ident).?).map(Operation.Call)
+    val struct_get = P(IgnoreCase("struct_get") ~ (delim ~ dataPrimitive).?).map(Operation.StructGet)
+    val struct_mut = P(IgnoreCase("struct_mut") ~ (delim ~ dataPrimitive).?).map(Operation.StructMut)
+    val comment = P("/*" ~ (!"*/" ~ AnyChar).rep.! ~ "*/").map(Operation.Comment)
 
     val operation = Operation.Orphans
       .map(op => Rule(op.mnemonic, () => IgnoreCase(op.mnemonic)).map(_ => op))
-      .++(Seq(jumpi, jump, call, push, `new`, static_get, static_mut, label, comment))
+      .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment))
       .reduce(_ | _)
 
     P(Start ~ whitespace ~ operation.rep(sep = delim) ~ whitespace ~ End)
