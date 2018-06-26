@@ -5,7 +5,7 @@ package impl
 import com.google.protobuf.ByteString
 import pravda.forth.{Compiler => ForthCompiler}
 import pravda.vm.asm.Assembler
-import pravda.dotnet.translation.{Translator => DotnetTranslator, TranslationVisualizer}
+import pravda.dotnet.translation.{Translator => DotnetTranslator}
 import pravda.dotnet.parsers.{FileParser => DotnetParser}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,13 +35,5 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
       (_, cilData, methods, signatures) = pe
       ops <- DotnetTranslator.translateAsm(methods, cilData, signatures)
     } yield ByteString.copyFrom(Assembler().compile(ops))
-  }
-
-  def disnet(source: ByteString): Future[Either[String, String]] = Future {
-    for {
-      pe <- DotnetParser.parsePe(source.toByteArray)
-      (_, cilData, methods, signatures) = pe
-      t <- DotnetTranslator.translateVerbose(methods, cilData, signatures)
-    } yield TranslationVisualizer.visualize(t)
   }
 }

@@ -32,8 +32,6 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedBinaryOutput)
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
-        def disnet(source: ByteString): Id[Either[String, String]] =
-          Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Asm))
@@ -51,8 +49,6 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedBinaryOutput)
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
-        def disnet(source: ByteString): Id[Either[String, String]] =
-          Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Disasm))
@@ -70,8 +66,6 @@ object CompileSuite extends TestSuite {
           else Right(UnexpectedBinaryOutput)
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
-        def disnet(source: ByteString): Id[Either[String, String]] =
-          Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Forth))
@@ -90,31 +84,9 @@ object CompileSuite extends TestSuite {
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           if (source == BinarySource) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
-        def disnet(source: ByteString): Id[Either[String, String]] =
-          Right(UnexpectedStringOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(DotNet))
-      assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
-    }
-
-    "disnet" - {
-      val io = new IoLanguageStub(Some(BinarySource))
-      val compilers = new CompilersLanguage[Id] {
-        def asm(source: String): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def disasm(source: ByteString): Id[String] =
-          UnexpectedStringOutput
-        def forth(source: String): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def disnet(source: ByteString): Id[Either[String, String]] =
-          if (source == BinarySource) Right(ExpectedStringOutput)
-          else Right(UnexpectedStringOutput)
-      }
-      val compile = new Compile[Id](io, compilers)
-      compile(Config.Compile(DisNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
   }
