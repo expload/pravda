@@ -64,6 +64,7 @@ class VmImpl extends Vm {
     val controlOperations = new ControlOperations(program, callStack, memory, counter)
     val nativeCoinOperations = new NativeCoinOperations(memory, environment, counter, maybeProgramAddress)
     val systemOperations = new SystemOperations(memory, maybeStorage, counter, environment, maybeProgramAddress, this)
+    val dataOperations = new DataOperations(memory, counter)
 
     var lastOpcodePosition: Int = -1
 
@@ -116,6 +117,8 @@ class VmImpl extends Vm {
           case EQ  => logicalOperations.eq()
           case LT  => logicalOperations.lt()
           case GT  => logicalOperations.gt()
+          // Data operations
+          case CAST => dataOperations.cast()
           // System operations
           case STOP    => continue = false
           case FROM    => systemOperations.from()

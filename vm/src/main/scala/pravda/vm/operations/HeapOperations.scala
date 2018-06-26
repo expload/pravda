@@ -52,8 +52,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   }
 
   def arrayGet(): Unit = {
-    val reference = ref(memory.pop())
     val index = integer(memory.pop()).toInt
+    val reference = ref(memory.pop())
     val datum = memory.heapGet(reference.data) match {
       case Int8Array(data)   => Int8(data(index))
       case Int16Array(data)  => Int16(data(index))
@@ -73,9 +73,9 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   }
 
   def arrayMut(): Unit = {
-    val reference = ref(memory.pop())
     val index = integer(memory.pop()).toInt
     val primitive = memory.pop()
+    val reference = ref(memory.pop())
     val array = memory.heapGet(reference.data)
     (primitive, array) match {
       case (Int8(value), Int8Array(data))     => data(index) = value
@@ -94,8 +94,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   }
 
   def structGet(): Unit = {
-    val reference = ref(memory.pop())
     val key = memory.pop()
+    val reference = ref(memory.pop())
     val struct = memory.heapGet(reference.data)
     val datum = struct match {
       case Struct(data) =>
@@ -120,8 +120,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   }
 
   def structMut(): Unit = {
-    val reference = ref(memory.pop())
     val key = memory.pop()
+    val reference = ref(memory.pop())
     val value = memory.pop()
     val struct = memory.heapGet(reference.data)
     struct match {
@@ -132,8 +132,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   }
 
   def structMutStatic(): Unit = {
-    val reference = ref(memory.pop())
     val value = memory.pop()
+    val reference = ref(memory.pop())
     val struct = memory.heapGet(reference.data)
     val key = Data.readFromByteBuffer(program)
     (struct, key) match {

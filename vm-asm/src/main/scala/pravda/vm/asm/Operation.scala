@@ -62,6 +62,7 @@ object Operation {
     Orphan(OR, "or"),
     Orphan(XOR, "xor"),
     Orphan(EQ, "eq"),
+    Orphan(CAST, "cast"),
     Orphan(FROM, "from"),
     Orphan(PADDR, "paddr"),
     Orphan(PCREATE, "pcreate"),

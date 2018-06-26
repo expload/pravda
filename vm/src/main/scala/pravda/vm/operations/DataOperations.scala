@@ -1,14 +1,17 @@
-//package pravda.vm.operations
-//
-//import pravda.vm.Data.Array._
-//import pravda.vm.Data.Utf8
-//import pravda.vm.VmError.WrongType
-//import pravda.vm.{Data, Memory, VmErrorException}
-//import pravda.vm.WattCounter
-//import pravda.vm.WattCounter.CpuWordOperation
-//
-//final class DataOperations(memory: Memory, wattCounter: WattCounter) {
-//
+package pravda.vm.operations
+
+import pravda.vm.{Memory, WattCounter}
+
+final class DataOperations(memory: Memory, wattCounter: WattCounter) {
+
+  def cast(): Unit = {
+    val `type` = integer(memory.pop())
+    val data = memory.pop()
+    val result = data.cast(`type`.toByte)
+    wattCounter.cpuUsage(WattCounter.CpuArithmetic)
+    memory.push(result)
+  }
+
 //  /**
 //    * Takes start index, end index and reference to item from the stack.
 //    * Gets item by reference from heap.
@@ -121,5 +124,5 @@
 //    wattCounter.memoryUsage(newRef.volume.toLong)
 //    memory.push(newRef)
 //  }
-//
-//}
+
+}

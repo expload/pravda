@@ -32,7 +32,7 @@ object Meta {
 
     def readString() = Data.readFromByteBuffer(buffer) match {
       case Utf8(data) => data
-      case value      => throw Data.TypeUnexpectedException(value.getClass, buffer.position)
+      case value      => throw Data.UnexpectedTypeException(value.getClass, buffer.position)
     }
 
     (buffer.get & 0xFF: @switch) match {

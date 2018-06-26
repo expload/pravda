@@ -51,6 +51,9 @@ object Opcodes {
   final val XOR = 0x83
   final val EQ = 0x84
 
+  // Data operations
+  final val CAST = 0x90
+
   // System operations
   final val FROM = 0xa0
   final val META = 0xa1
