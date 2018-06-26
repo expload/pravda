@@ -86,10 +86,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         val commaNl = if (pretty) ",\n" else ","
         val xs = data map {
           case (k, v) =>
-            val pk = escape(k)
+            val pk = k.mkString(untypedNumerics, escapeUnicode, pretty)
             val pv = v.mkString(untypedNumerics, escapeUnicode, pretty)
-            if (pretty) s"""  "$pk": $pv"""
-            else s""""$pk":$pv"""
+            if (pretty) s"  $pk: $pv"
+            else s"$pk:$pv"
         }
         s"{\n${xs.mkString(commaNl)}\n}"
     }
@@ -263,8 +263,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         buffer.put(TypeStruct)
         putLength(buffer, data.size)
         data.foreach {
-          case (field, value) =>
-            putString(buffer, field)
+          case (key, value) =>
+            key.writeToByteBuffer(buffer)
             value.writeToByteBuffer(buffer)
         }
       case MarshalledData(data) =>
@@ -283,7 +283,6 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   }
 
   object Primitive {
-
 
     final case class Int8(data: Byte)           extends Numeric[Byte]
     final case class Int16(data: Short)         extends Numeric[Short]
@@ -329,8 +328,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class BytesArray(data: mutable.Buffer[ByteString])    extends Array
   }
 
-  final case class Struct(data: mutable.SortedMap[String, Primitive]) extends Data
-  final case class MarshalledData(data: ByteString)                   extends Data
+  final case class Struct(data: mutable.Map[Primitive, Primitive]) extends Data
+  final case class MarshalledData(data: ByteString)                      extends Data
 
   // scalafix:off DisableSyntax.keywords.null
 
@@ -507,8 +506,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           | boolArray   | utf8Array   | bytesArray 
       )
 
-      val struct = P("{" ~/ ws ~ (string ~ ws ~ ":" ~ ws ~ primitive).rep(sep = comma) ~ ws ~ "}")
-        .map(xs => Struct(mutable.SortedMap(xs: _*)))
+      val struct = P("{" ~/ ws ~ (primitive ~ ws ~ ":" ~ ws ~ primitive).rep(sep = comma) ~ ws ~ "}")
+        .map(xs => Struct(mutable.Map(xs: _*)))
 
       val all = P(struct | array | primitive)
 
@@ -651,7 +650,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case TypeStruct =>
         val l = getLength
         if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position - 1)
-        val data = mutable.SortedMap(Seq.fill(l)(getString -> getNestedPrimitive): _*)
+        val data = mutable.Map(Seq.fill(l)(getNestedPrimitive -> getNestedPrimitive): _*)
         Struct(data)
     }
   }

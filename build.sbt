@@ -63,6 +63,9 @@ lazy val `vm-api` = (project in file("vm-api")).
   settings( commonSettings: _* ).
   settings(scalacheckOps:_*).
   settings(
+    testOptions in Test ++= Seq(
+      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
+    ),
     libraryDependencies ++= Seq(
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
       "com.lihaoyi" %% "fastparse"  % "1.0.0"
@@ -89,9 +92,9 @@ lazy val `vm-asm` = (project in file("vm-asm")).
   settings(scalacheckOps:_*).
   settings(
     testOptions in Test ++= Seq(
-      // Reduce size to prevent 'give up' error
-      Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "3"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "5000")
+      // Reduce size because PravdaAssemblerSpecification
+      // generated too big operation lists.
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "7"),
     ),
     libraryDependencies ++= Seq (
       "com.lihaoyi" %% "fastparse"  % "1.0.0"

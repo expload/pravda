@@ -66,12 +66,12 @@ object PravdaAssembler {
     }
 
     for (operation <- operations if operation != Nop) operation match {
-      case StaticGet(name) =>
+      case StaticGet(key) =>
         putOp(Opcodes.STRUCT_GET_STATIC)
-        Primitive.Utf8(name).writeToByteBuffer(bytecode)
-      case StaticMut(name) =>
+        key.writeToByteBuffer(bytecode)
+      case StaticMut(key) =>
         putOp(Opcodes.STRUCT_MUT_STATIC)
-        Primitive.Utf8(name).writeToByteBuffer(bytecode)
+        key.writeToByteBuffer(bytecode)
       case Push(data) =>
         putOp(Opcodes.PUSHX)
         data.writeToByteBuffer(bytecode)
@@ -137,14 +137,14 @@ object PravdaAssembler {
           case Opcodes.STRUCT_GET_STATIC =>
             val offset = buffer.position
             Data.readFromByteBuffer(buffer) match {
-              case Primitive.Utf8(name) => StaticGet(name)
-              case data                 => throw TypeUnexpectedException(data.getClass, offset)
+              case key: Primitive => StaticGet(key)
+              case data           => throw TypeUnexpectedException(data.getClass, offset)
             }
           case Opcodes.STRUCT_MUT_STATIC =>
             val offset = buffer.position
             Data.readFromByteBuffer(buffer) match {
-              case Primitive.Utf8(field) => StaticMut(field)
-              case data                  => throw TypeUnexpectedException(data.getClass, offset)
+              case key: Primitive => StaticMut(key)
+              case data           => throw TypeUnexpectedException(data.getClass, offset)
             }
           case Opcodes.PUSHX if label.nonEmpty =>
             Data.readFromByteBuffer(buffer)
@@ -184,8 +184,8 @@ object PravdaAssembler {
     case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty = true)}"
     case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty = true)}"
     case Label(name)        => s"@$name:"
-    case StaticGet(field)   => s"""${operation.mnemonic} "$field""""
-    case StaticMut(field)   => s"""${operation.mnemonic} "$field""""
+    case StaticGet(key)     => s"${operation.mnemonic} ${key.mkString(pretty = true)}"
+    case StaticMut(key)     => s"${operation.mnemonic} ${key.mkString(pretty = true)}"
     case _                  => operation.mnemonic
   }
 
@@ -205,7 +205,7 @@ object PravdaAssembler {
 
     import fastparse.all._
 
-    import Data.parser.{primitive => dataPrimitive, all => dataAll, utf8}
+    import Data.parser.{primitive => dataPrimitive, all => dataAll}
     val digit = P(CharIn('0' to '9'))
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z'))
     val alphadig = P(alpha | digit)
@@ -219,8 +219,8 @@ object PravdaAssembler {
     val jump = P(IgnoreCase("jump") ~ (delim ~ ident).?).map(n => Operation.Jump(n))
     val jumpi = P(IgnoreCase("jumpi") ~ (delim ~ ident).?).map(n => Operation.JumpI(n))
     val call = P(IgnoreCase("call") ~ (delim ~ ident).?).map(n => Operation.Call(n))
-    val static_get = P(IgnoreCase("static_get") ~ delim ~ utf8).map(s => Operation.StaticGet(s.data))
-    val static_mut = P(IgnoreCase("static_mut") ~ delim ~ utf8).map(s => Operation.StaticMut(s.data))
+    val static_get = P(IgnoreCase("static_get") ~ delim ~ dataPrimitive).map(s => Operation.StaticGet(s))
+    val static_mut = P(IgnoreCase("static_mut") ~ delim ~ dataPrimitive).map(s => Operation.StaticMut(s))
     val comment = P("/*" ~ (!"*/" ~ AnyChar).rep.! ~ "*/").map(s => Operation.Comment(s))
 
     val operation = Operation.Orphans

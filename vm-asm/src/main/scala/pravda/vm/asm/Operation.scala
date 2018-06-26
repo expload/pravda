@@ -1,5 +1,6 @@
 package pravda.vm.asm
 
+import pravda.vm.Data.Primitive
 import pravda.vm.{Data, Opcodes}
 
 sealed trait Operation {
@@ -24,8 +25,8 @@ object Operation {
   final case class Jump(name: Option[String])  extends ParametrizedOperation("jump")
   final case class JumpI(name: Option[String]) extends ParametrizedOperation("jumpi")
   final case class Call(name: Option[String])  extends ParametrizedOperation("call")
-  final case class StaticMut(field: String)    extends ParametrizedOperation("static_mut")
-  final case class StaticGet(field: String)    extends ParametrizedOperation("static_get")
+  final case class StaticMut(key: Primitive)   extends ParametrizedOperation("static_mut")
+  final case class StaticGet(key: Primitive)   extends ParametrizedOperation("static_get")
 
   final case class Orphan(opcode: Int, mnemonic: String) extends Operation
 

@@ -19,18 +19,18 @@ import scala.collection.mutable
     (gen.map(p), Gen.containerOf[mutable.Buffer, T](gen).map(a))
 
   val (int8, int8Array) = genPrimitive(
-    arbitrary[Byte].suchThat(x => x >= Byte.MinValue && x < 0),
+    Gen.chooseNum[Byte](Byte.MinValue, -1),
     Primitive.Int8, Int8Array)
   val (int16, int16Array) = genPrimitive(
-    arbitrary[Short].suchThat(x => x >= Short.MinValue && x < Byte.MinValue && x < 0),
+    Gen.chooseNum[Short](Short.MinValue, (Byte.MinValue - 1).toShort),
     Primitive.Int16, Int16Array)
   val (int32, int32Array) = genPrimitive(
-    arbitrary[Int].suchThat(x => x >= Int.MinValue && x < Short.MinValue && x < 0),
+    Gen.chooseNum[Int](Int.MinValue, Short.MinValue - 1),
     Primitive.Int32, Int32Array)
 
-  val (uint8, uint8Array) = genPrimitive(arbitrary[Int].suchThat(x => x >= 0 && x <= 0xFF), Primitive.Uint8, Uint8Array)
-  val (uint16, uint16Array) = genPrimitive(arbitrary[Int].suchThat(x => x >= 0 && x > 0xFF && x <= 0xFFFF), Primitive.Uint16, Uint16Array)
-  val (uint32, uint32Array) = genPrimitive(arbitrary[Long].suchThat(x => x >= 0 && x > 0xFFFF && x <= 0xFFFFFFFFl), Primitive.Uint32, Uint32Array)
+  val (uint8, uint8Array) = genPrimitive(Gen.chooseNum(0, 0xFF), Primitive.Uint8, Uint8Array)
+  val (uint16, uint16Array) = genPrimitive(Gen.chooseNum(0xFF + 1, 0xFFFF), Primitive.Uint16, Uint16Array)
+  val (uint32, uint32Array) = genPrimitive(Gen.chooseNum(0xFFFFl + 1, 0xFFFFFFFFl), Primitive.Uint32, Uint32Array)
 
   val (bigInt, bigIntArray) = genPrimitive(arbitrary[BigInt].suchThat(x => x < Int.MinValue && x > 0xFFFFFFFFl), Primitive.BigInt, BigIntArray)
   val (number, numberArray) = genPrimitive(arbitrary[Double], Primitive.Number, NumberArray)
@@ -65,34 +65,41 @@ import scala.collection.mutable
   )
 
   val struct: Gen[Struct] = {
-    val recordGen = arbitrary[String].flatMap(field => primitive.map(value => (field, value)))
-    Gen.containerOf[Seq, (String, Primitive)](recordGen).map(xs => mutable.SortedMap(xs:_*)) map { fields =>
-      Struct(fields)
+    val recordGen = primitive.flatMap(k => primitive.map(v => (k, v)))
+    Gen.containerOf[Seq, (Primitive, Primitive)](recordGen).map(xs => mutable.Map(xs:_*)) map { records =>
+      Struct(records)
     }
   }
 
-  val data: Gen[Data] = Gen.oneOf(
-    primitive, struct,
+  val array: Gen[Array] = Gen.oneOf(
     int8Array, int16Array, int32Array,
     uint8Array, uint16Array, uint32Array,
     bigIntArray, numberArray, bytesArray,
     refArray, booleanArray, utf8Array
   )
 
+  val data: Gen[Data] = Gen.oneOf(
+    primitive, array, struct
+  )
+
   property("mkString -> fromString") = forAll(data) { data =>
-    Data.parser.all.parse(data.mkString()).get.value == data
+    val text = data.mkString()
+    Data.parser.all.parse(text).get.value == data
   }
 
   property("mkString(pretty = true) -> fromString") = forAll(data) { data =>
-    Data.parser.all.parse(data.mkString(pretty = true)).get.value == data
+    val text = data.mkString(pretty = true)
+    Data.parser.all.parse(text).get.value == data
   }
 
   property("mkString(untypedNumerics = true) -> fromString") = forAll(data) { data =>
-    Data.parser.all.parse(data.mkString(untypedNumerics = true)).get.value == data
+    val text = data.mkString(untypedNumerics = true)
+    Data.parser.all.parse(text).get.value == data
   }
 
   property("mkString(escapeUnicode = true) -> fromString") = forAll(data) { data =>
-    Data.parser.all.parse(data.mkString(escapeUnicode = true)).get.value == data
+    val text = data.mkString(escapeUnicode = true)
+    Data.parser.all.parse(text).get.value == data
   }
 
   property("writeToByteBuffer -> readFromByteBuffer") = forAll(data) { data =>
