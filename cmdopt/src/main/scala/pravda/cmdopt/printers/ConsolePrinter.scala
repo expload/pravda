@@ -6,6 +6,7 @@ import pravda.cmdopt.CommandLine.{Cmd, CmdPath}
 import scala.collection.mutable.ListBuffer
 
 object ConsolePrinter {
+
   object ConsoleCtx {
     val Default = ConsoleCtx("  ")
   }
@@ -13,27 +14,41 @@ object ConsolePrinter {
 
   private val EOL = sys.props("line.separator")
 
-  private def wrapWordsToLines(words: List[String], maxWidth: Int): List[String] = {
+  private def wrapToLines(text: String, maxWidth: Int): List[String] = {
+    val lines = text.split("\n").toList.map(_.split("\\s+").toList)
     val res = ListBuffer[List[String]]()
     val buffer = ListBuffer[String]()
     var curWidth = 0
 
-    words.foreach(word => {
-      if (curWidth + word.length + 1 > maxWidth) {
-        res += buffer.toList
-        buffer.clear()
-        curWidth = -1
-      }
+    def nextLine(): Unit = {
+      res += buffer.toList
+      buffer.clear()
+      curWidth = -1
+    }
+
+    def addWord(word: String): Unit = {
       buffer += word
       curWidth += word.length + 1
+    }
+
+    lines.foreach(line => {
+      line.foreach { word =>
+        if (curWidth + word.length + 1 > maxWidth) {
+          nextLine()
+        }
+        addWord(word)
+      }
+      nextLine()
     })
 
-    res += buffer.toList
+    if (buffer.nonEmpty) {
+      nextLine()
+    }
     res.toList.map(_.mkString(" "))
   }
 
   def printPath[C](cmdPath: CmdPath[C], ctx: ConsoleCtx = ConsoleCtx.Default): String = {
-    val cmds = cmdPath.verbs.collect { case x: Cmd[C]    => x }
+    val cmds = cmdPath.verbs.collect { case x: Cmd[C] => x }
     val opts = cmdPath.opts
     val cmdP = cmds.map(printCmd(_, ctx)).mkString
     val optP = opts.map(printOpt(_, ctx)).mkString(EOL)
@@ -49,7 +64,7 @@ object ConsolePrinter {
     val hasSubcommands = cmd.verbs.collect { case x: Cmd[_] => x }.nonEmpty
     val body = printNestedCmds(cmd.verbs, ConsoleCtx(tab = ctx.tab + "  ", lvl = ctx.lvl + 1)) +
       (if (hasSubcommands) "" else "")
-    val textLines = wrapWordsToLines(cmd.text.split("\\s+").toList, 80 - 20)
+    val textLines = wrapToLines(cmd.text, 80 - 20)
     val text = (textLines.head :: textLines.tail.map(" " * 20 + _)).mkString("\n")
     (if (hasSubcommands) "" else "") + s"${ctx.tab}%-${pads}s$text$EOL$body".format(cmd.name)
   }

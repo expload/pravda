@@ -1,8 +1,4 @@
-## Name
-pravda-gen-address
-
-## Usage
-```pravda gen address```
+```pravda gen address --output <file>```
 
 ## Description
 Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.

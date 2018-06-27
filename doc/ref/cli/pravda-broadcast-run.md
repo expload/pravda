@@ -1,8 +1,4 @@
-## Name
-pravda-broadcast-run
-
-## Usage
-```pravda broadcast run```
+```pravda broadcast run --input <file> --wallet <file> --limit <long> --price <long> --endpoint <string>```
 
 ## Description
 Send a transaction with Pravda Program address to the blockchain to run it

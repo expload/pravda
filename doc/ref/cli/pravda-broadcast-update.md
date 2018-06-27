@@ -1,8 +1,4 @@
-## Name
-pravda-broadcast-update
-
-## Usage
-```pravda broadcast update```
+```pravda broadcast update --input <file> --wallet <file> --limit <long> --price <long> --endpoint <string> --program <string>```
 
 ## Description
 Update existing Pravda program in the blockchain.

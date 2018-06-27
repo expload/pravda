@@ -39,6 +39,8 @@ object CommandLine {
       validateF: A => Either[String, Unit] = (_: Any) => Right(()),
   ) extends Verb[C] {
 
+    def paramInfo: Option[String] = implicitly[CmdDecoder[A]].optInfo
+
     def decodeLine(line: Line, cfg: C): Either[String, (Line, C)] = {
       val decoder = implicitly[CmdDecoder[A]]
       decoder.decode(line) map {

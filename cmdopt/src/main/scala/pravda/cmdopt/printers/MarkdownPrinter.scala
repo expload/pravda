@@ -32,10 +32,9 @@ object MarkdownPrinter {
   }
 
   private def printHeader[C](cmdPath: CmdPath[C]): String = {
-    val name = s"## Name$EOL${cmdPath.toString}"
-    val synopsys = s"## Usage$EOL```${cmdPath.toUsageString}```"
+    val usage = s"```${cmdPath.toUsageString}```"
     val desc = s"## Description$EOL${cmdPath.text}"
-    List(name, synopsys, desc).mkString(s"$EOL$EOL")
+    List(usage, desc).mkString(s"$EOL$EOL")
   }
 
   private def printOpt[C](opt: CommandLine.Opt[C, _], ctx: MarkdownCtx): String =

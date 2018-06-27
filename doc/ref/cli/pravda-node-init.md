@@ -1,8 +1,4 @@
-## Name
-pravda-node-init
-
-## Usage
-```pravda node init```
+```pravda node init --local --testnet --init-distr-conf <string>```
 
 ## Description
 Create data directory and configuration for a new node.

@@ -1,8 +1,4 @@
-## Name
-pravda-node-run
-
-## Usage
-```pravda node run```
+```pravda node run --data-dir <file>```
 
 ## Description
 Run initialized node.

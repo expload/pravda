@@ -1,8 +1,4 @@
-## Name
-pravda-broadcast-transfer
-
-## Usage
-```pravda broadcast transfer```
+```pravda broadcast transfer --input <file> --wallet <file> --limit <long> --price <long> --endpoint <string> --to <string> --amount <long>```
 
 ## Description
 Transfer native coins to a given wallet.

@@ -1,8 +1,4 @@
-## Name
-pravda-run
-
-## Usage
-```pravda run```
+```pravda run --executor <string> --input <file> --storage <file>```
 
 ## Description
 Run byte-code on Pravda VM

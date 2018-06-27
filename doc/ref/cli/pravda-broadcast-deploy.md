@@ -1,8 +1,4 @@
-## Name
-pravda-broadcast-deploy
-
-## Usage
-```pravda broadcast deploy```
+```pravda broadcast deploy --input <file> --wallet <file> --limit <long> --price <long> --endpoint <string>```
 
 ## Description
 Deploy Pravda program to the blockchain.
