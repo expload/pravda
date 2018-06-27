@@ -5,7 +5,7 @@ import akka.stream.ActorMaterializer
 import cats.implicits._
 import pravda.cli.languages.impl._
 import pravda.cli.programs._
-import pravda.cmdopt.CommandLine.{HelpNeeded, Ok, ParseError}
+import pravda.yopt.CommandLine.{HelpNeeded, Ok, ParseError}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}

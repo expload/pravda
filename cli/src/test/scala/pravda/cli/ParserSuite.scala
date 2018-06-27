@@ -5,7 +5,7 @@ import utest._
 object ParserSuite extends TestSuite {
 
   import PravdaConfig._
-  import pravda.cmdopt.CommandLine.Ok
+  import pravda.yopt.CommandLine.Ok
 
   final val Address = "0000000000000000000000000000000000000000000000000000000000000000"
 

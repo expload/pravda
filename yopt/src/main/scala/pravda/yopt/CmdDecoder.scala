@@ -1,4 +1,4 @@
-package pravda.cmdopt
+package pravda.yopt
 
 import java.io.File
 

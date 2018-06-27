@@ -1,4 +1,4 @@
-package pravda.cmdopt
+package pravda.yopt
 
 import utest._
 import java.net.URI

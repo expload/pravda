@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import cats.implicits._
 import pravda.cli.languages.impl.IoLanguageImpl
 import pravda.cli.programs
-import pravda.cmdopt.CommandLine.{HelpNeeded, Ok, ParseError}
+import pravda.yopt.CommandLine.{HelpNeeded, Ok, ParseError}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}

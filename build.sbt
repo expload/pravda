@@ -178,10 +178,10 @@ lazy val node = (project in file("node"))
   .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
-lazy val cmdopt = (project in file("cmdopt"))
+lazy val yopt = (project in file("yopt"))
   .settings(commonSettings: _*)
   .settings(
-    normalizedName := "cmdopt"
+    normalizedName := "yopt"
   )
 
 lazy val cli = (project in file("cli"))
@@ -195,7 +195,7 @@ lazy val cli = (project in file("cli"))
     ),
     bashScriptExtraDefines += """set -- -- "$@""""
   )
-  .dependsOn(cmdopt)
+  .dependsOn(yopt)
   .dependsOn(common)
   .dependsOn(forth)
   .dependsOn(`vm-asm`)

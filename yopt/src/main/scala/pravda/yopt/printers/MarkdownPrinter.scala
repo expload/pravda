@@ -1,7 +1,7 @@
-package pravda.cmdopt.printers
+package pravda.yopt.printers
 
-import pravda.cmdopt.CommandLine
-import pravda.cmdopt.CommandLine.CmdPath
+import pravda.yopt.CommandLine
+import pravda.yopt.CommandLine.CmdPath
 
 object MarkdownPrinter {
 

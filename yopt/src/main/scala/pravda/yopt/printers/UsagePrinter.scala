@@ -1,6 +1,6 @@
-package pravda.cmdopt.printers
+package pravda.yopt.printers
 
-import pravda.cmdopt.CommandLine.{Cmd, CmdPath}
+import pravda.yopt.CommandLine.{Cmd, CmdPath}
 
 object UsagePrinter {
 

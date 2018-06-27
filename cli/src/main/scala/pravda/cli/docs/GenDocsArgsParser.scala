@@ -2,7 +2,7 @@ package pravda.cli.docs
 
 import java.io.File
 
-import pravda.cmdopt.CommandLine
+import pravda.yopt.CommandLine
 
 final case class GenDocsConfig(outDir: String = "docs", mainPageName: String = "main.md")
 

@@ -1,7 +1,7 @@
-package pravda.cmdopt.printers
+package pravda.yopt.printers
 
-import pravda.cmdopt.CommandLine
-import pravda.cmdopt.CommandLine.{Cmd, CmdPath}
+import pravda.yopt.CommandLine
+import pravda.yopt.CommandLine.{Cmd, CmdPath}
 
 import scala.collection.mutable.ListBuffer
 

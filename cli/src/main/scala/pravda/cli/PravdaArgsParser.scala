@@ -5,7 +5,7 @@ import java.io.File
 import pravda.cli.PravdaConfig.CompileMode
 import pravda.common.bytes
 import pravda.common.domain.NativeCoin
-import pravda.cmdopt._
+import pravda.yopt._
 
 object PravdaArgsParser extends CommandLine[PravdaConfig] {
 

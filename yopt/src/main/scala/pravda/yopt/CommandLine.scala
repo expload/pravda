@@ -1,6 +1,6 @@
-package pravda.cmdopt
+package pravda.yopt
 
-import pravda.cmdopt.printers.{ConsolePrinter, MarkdownPrinter, UsagePrinter}
+import pravda.yopt.printers.{ConsolePrinter, MarkdownPrinter, UsagePrinter}
 
 object CommandLine {
 
