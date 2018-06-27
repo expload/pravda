@@ -9,15 +9,15 @@ final case class GenDocsConfig(outDir: String = "docs", mainPageName: String = "
 object GenDocsArgsParser extends CommandLine[GenDocsConfig] {
 
   val model =
-      head("gen-docs")
-        .text("Generate documentation for Pravda Command line tool.")
-        .children(
-          opt[File]('o', "output")
-            .text("Output directory")
-            .action {
-              case (file, GenDocsConfig(outDir, mainPageName)) =>
-                GenDocsConfig(file.getAbsolutePath, mainPageName)
-              case (_, otherwise) => otherwise
-            }
-    )
+    head("gen-docs")
+      .text("Generate documentation for Pravda Command line tool.")
+      .children(
+        opt[File]('o', "output")
+          .text("Output directory")
+          .action {
+            case (file, GenDocsConfig(outDir, mainPageName)) =>
+              GenDocsConfig(file.getAbsolutePath, mainPageName)
+            case (_, otherwise) => otherwise
+          }
+      )
 }
