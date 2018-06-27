@@ -1,13 +1,11 @@
 ## Name
-Run and debug Pravda programs.
+pravda-run
 
-## Synopsys
-```
-pravda run
-```
+## Usage
+```pravda run```
 
 ## Description
-Run bytecode given from stdin or file on Pravda VM.
+Run byte-code on Pravda VM
 ## Options
 
 |Option|Description|

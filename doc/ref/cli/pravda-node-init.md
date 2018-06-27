@@ -1,13 +1,11 @@
 ## Name
-Create data directory and configuration for a new node.
+pravda-node-init
 
-## Synopsys
-```
-pravda node init
-```
+## Usage
+```pravda node init```
 
 ## Description
-
+Create data directory and configuration for a new node.
 ## Options
 
 |Option|Description|
