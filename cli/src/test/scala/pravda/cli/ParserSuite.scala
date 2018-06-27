@@ -11,9 +11,8 @@ object ParserSuite extends TestSuite {
 
   val tests: Tests = Tests {
     "gen" - {
-      "address" - assert {
-        PravdaArgsParser
-          .parse(List("gen", "address"), Nope) == Ok(GenAddress())
+      "address" - {
+        PravdaArgsParser.parse(List("gen", "address"), Nope) ==> Ok(GenAddress())
       }
       "address -o a.out" - {
         assert {
@@ -79,6 +78,7 @@ object ParserSuite extends TestSuite {
     }
     "broadcast" - {
       "run -e http://example.com -w hw.json" - assert {
+        println(PravdaArgsParser.parse(List("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), PravdaConfig.Nope))
         PravdaArgsParser.parse(List("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), PravdaConfig.Nope) match {
           case Ok(Broadcast(Broadcast.Mode.Run, Some(wallet), None, _, _, "http://example.com"))
             if wallet.endsWith("hw.json") => true

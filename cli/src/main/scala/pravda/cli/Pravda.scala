@@ -6,7 +6,6 @@ import cats.implicits._
 import pravda.cli.languages.impl._
 import pravda.cli.programs._
 import pravda.cmdopt.CommandLine.{HelpNeeded, Ok, ParseError}
-import pravda.cmdopt.printers.ConsolePrinter
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
@@ -33,8 +32,6 @@ object Pravda extends App {
   lazy val broadcast = new Broadcast(io, nodeLanguage, compilers)
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
 
-  lazy val consolePrinter = new ConsolePrinter[PravdaConfig]
-
   // FIXME programs should be composed by another one
   val eventuallyExitCode = PravdaArgsParser.parse(args.toList, PravdaConfig.Nope) match {
     case Ok(config: PravdaConfig.Compile)     => compile(config).map(_ => 0)
@@ -44,18 +41,18 @@ object Pravda extends App {
     case Ok(config: PravdaConfig.Node)        => nodeProgram(config).map(_ => 0)
     case Ok(PravdaConfig.Nope) =>
       Future {
-        print(consolePrinter.printCL(PravdaArgsParser))
+        print(PravdaArgsParser.root.toHelpString)
         0
       }
     case HelpNeeded(cli) =>
       Future {
-        print(consolePrinter.printCL(cli))
+        print(cli.toHelpString)
         0
       }
     case ParseError(msg) =>
       Future {
         stderr.println(msg)
-        stderr.print(consolePrinter.printCL(PravdaArgsParser))
+        stderr.print(PravdaArgsParser.root.toHelpString)
         1 // every non zero exit code says about error
       }
   }

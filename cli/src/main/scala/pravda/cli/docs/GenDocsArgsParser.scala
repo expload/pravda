@@ -8,18 +8,10 @@ final case class GenDocsConfig(outDir: String = "docs", mainPageName: String = "
 
 object GenDocsArgsParser extends CommandLine[GenDocsConfig] {
 
-  def model =
-    List(
+  val model =
       head("gen-docs")
-        .title("Generate documentation for Pravda Command line tool."),
-      cmd("markdown")
-        .text("Generate markdown documentation for command line tool.")
-        .action(_ => GenDocsConfig())
+        .text("Generate documentation for Pravda Command line tool.")
         .children(
-          head("pravda-gen-docs")
-            .title("Generate markdown documentation.")
-            .text("pravda gen docs")
-            .desc("Generate and write to a given folder (docs/ref/ by default) comprehensive markdown docs for CLI."),
           opt[File]('o', "output")
             .text("Output directory")
             .action {
@@ -27,6 +19,5 @@ object GenDocsArgsParser extends CommandLine[GenDocsConfig] {
                 GenDocsConfig(file.getAbsolutePath, mainPageName)
               case (_, otherwise) => otherwise
             }
-        )
     )
 }

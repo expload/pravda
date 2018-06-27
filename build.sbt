@@ -192,7 +192,8 @@ lazy val cli = (project in file("cli"))
     libraryDependencies ++= Seq(
       "com.github.scopt" %% "scopt" % "3.7.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
-    )
+    ),
+    bashScriptExtraDefines += """set -- -- "$@""""
   )
   .dependsOn(cmdopt)
   .dependsOn(common)
