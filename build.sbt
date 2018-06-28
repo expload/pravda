@@ -143,11 +143,6 @@ lazy val node = (project in file("node"))
       "name.pellet.jp" %% "bsonpickle" % "0.4.4.2",
       "com.chuusai" %% "shapeless" % "2.3.3"
     ),
-    scalacOptions ++= Seq(
-      "-Xmacro-settings:materialize-derivations",
-      "-Ypartial-unification"
-      //  , "-Xlog-implicits"
-    ),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     // Download tendermint
     resourceGenerators in Compile += Def.task {

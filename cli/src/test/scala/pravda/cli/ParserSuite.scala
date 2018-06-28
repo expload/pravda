@@ -71,7 +71,7 @@ object ParserSuite extends TestSuite {
           }
         }
 
-        List("asm" -> Asm,"disasm" -> Disasm, "dotnet" -> DotNet, "forth" -> Forth)
+        List("asm" -> Asm,"disasm" -> Disasm, "dotnet" -> DotNet)
           .map { case (name, compiler) => compile(name, compiler) }
           .reduce(_ && _)
       }

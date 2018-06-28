@@ -328,7 +328,7 @@ object CIL {
     override val size = 2
   }
 
-  case object Mull      extends OpCode
+  case object Mul      extends OpCode
   case object MullOvf   extends OpCode
   case object MullOvfUn extends OpCode
 
@@ -626,7 +626,7 @@ object CIL {
     0x57 -> opCode(StIndR8),
     0x58 -> opCode(Add),
     0x59 -> opCode(Sub),
-    0x5A -> opCode(Mull),
+    0x5A -> opCode(Mul),
     0x5B -> opCode(Div),
     0x5C -> opCode(DivUn),
     0x5D -> opCode(Rem),

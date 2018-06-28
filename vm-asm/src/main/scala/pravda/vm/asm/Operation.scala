@@ -73,7 +73,17 @@ object Operation {
     Orphan(PTRANSFER, "ptransfer")
   )
 
+  /**
+    * Orphan operation by opcode.
+    * @see [[pravda.vm.Opcodes]]
+    */
   val operationByCode: Map[Int, Operation] = Orphans
     .map(o => o.opcode -> o)
     .toMap
+
+  /**
+    * Alias to [[operationByCode]]
+    */
+  def apply(opcode: Int): Operation =
+    operationByCode(opcode)
 }

@@ -477,6 +477,40 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8 => Utf8(data.toString)
           case Type.Bytes => Bytes(ByteString.copyFrom(data.toByteArray))
         }
+      case Bool.False =>
+        `type` match {
+          case Type.Int8 => Int8(0.toByte)
+          case Type.Int16 => Int16(0.toShort)
+          case Type.Int32 => Int32(0)
+          case Type.Uint8 => Uint8(0)
+          case Type.Uint16 => Uint16(0)
+          case Type.Uint32 => Uint32(0L)
+          case Type.BigInt => BigInt(scala.BigInt(0))
+          case Type.Number => Number(0d)
+          case Type.Boolean => Bool.False
+          case Type.Utf8 => Utf8("false")
+          case Type.Bytes =>
+            val array = new scala.Array[Byte](1)
+            array(0) = 0.toByte
+            Bytes(ByteString.copyFrom(array))
+        }
+      case Bool.True =>
+        `type` match {
+          case Type.Int8 => Int8(1.toByte)
+          case Type.Int16 => Int16(1.toShort)
+          case Type.Int32 => Int32(1)
+          case Type.Uint8 => Uint8(1)
+          case Type.Uint16 => Uint16(1)
+          case Type.Uint32 => Uint32(1L)
+          case Type.BigInt => BigInt(scala.BigInt(1))
+          case Type.Number => Number(1d)
+          case Type.Boolean => Bool.True
+          case Type.Utf8 => Utf8("true")
+          case Type.Bytes =>
+            val array = new scala.Array[Byte](1)
+            array(0) = 1.toByte
+            Bytes(ByteString.copyFrom(array))
+        }
       case _ =>
         throw UnexpectedTypeException(this.getClass, -1)
     }

@@ -1,11 +1,13 @@
 package pravda.dotnet.translation
 
+import pravda.vm.asm.PravdaAssembler
+
 object TranslationVisualizer {
   private def visualizeOpcode(opcode: Translator.OpCodeTranslation): List[(String, String)] = {
     val source = opcode.source.fold(identity, _.toString)
     val opcodeInfo = s"[<$source> stack_offset=${opcode.stackOffset.fold("none")(_.toString)}]"
 
-    opcode.asm.map(_.toAsm) match {
+    opcode.asm.map(PravdaAssembler.render(_, pretty = false)) match {
       case head :: tail =>
         (head, opcodeInfo) :: tail.map((_, ""))
       case _ => List(("", opcodeInfo))
@@ -27,12 +29,12 @@ object TranslationVisualizer {
 
   def visualize(translation: Translator.Translation): String = {
     s"""|[jump to methods]
-        |${translation.jumpToMethods.map(_.toAsm).mkString("\n")}
+        |${translation.jumpToMethods.map(PravdaAssembler.render(_, pretty = false)).mkString("\n")}
         |
         |[methods]
         |${translation.methods.map(visualizeMethod).mkString("\n")}
         |
         |[finish]
-        |${translation.finishOps.map(_.toAsm).mkString("\n")}""".stripMargin
+        |${translation.finishOps.map(PravdaAssembler.render(_, pretty = false)).mkString("\n")}""".stripMargin
   }
 }

@@ -1,7 +1,5 @@
 package pravda.dotnet.translation
 
-import java.nio.charset.StandardCharsets
-
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
@@ -10,8 +8,8 @@ import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.Signatures
 import pravda.dotnet.parsers.Signatures._
+import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm._
-import pravda.vm.serialization._
 
 object Translator {
 
@@ -23,14 +21,14 @@ object Translator {
 
   final case class OpCodeTranslation(source: Either[String, OpCode], // some name or actual opcode
                                      stackOffset: Option[Int],
-                                     asm: List[Op])
+                                     asm: List[Operation])
   final case class MethodTranslation(name: String,
                                      argsCount: Int,
                                      localsCount: Int,
                                      local: Boolean,
                                      void: Boolean,
                                      opcodes: List[OpCodeTranslation])
-  final case class Translation(jumpToMethods: List[Op], methods: List[MethodTranslation], finishOps: List[Op])
+  final case class Translation(jumpToMethods: List[Operation], methods: List[MethodTranslation], finishOps: List[Operation])
 
   private def resolveBranches(opcodes: List[OpCode]): List[OpCode] = {
 
@@ -126,7 +124,7 @@ object Translator {
         case LdcR4(f)   => 1
         case LdcR8(d)   => 1
         case Add        => -1
-        case Mull       => -1
+        case Mul       => -1
         case Div        => -1
         case Rem        => -1
         case Sub        => -1
@@ -196,12 +194,12 @@ object Translator {
       defltaOffset.lift(opcode).map(Right(_)).getOrElse(Left(s"Unknown opcode: $opcode"))
     }
 
-    def translateOpcode(opcode: OpCode, stackOffsetO: Option[Int]): Either[String, List[Op]] = {
-      def pushTypedInt(i: Int): Op =
-        Op.Push(Datum.Rawbytes(Array(1.toByte) ++ int32ToData(i).toByteArray))
+    def translateOpcode(opcode: OpCode, stackOffsetO: Option[Int]): Either[String, List[Operation]] = {
+      def pushTypedInt(i: Int): Operation =
+        Operation.Push(Data.Primitive.Int32(i))
 
-      def pushTypedFloat(d: Double): Op =
-        Op.Push(Datum.Rawbytes(Array(2.toByte) ++ doubleToData(d).toByteArray))
+      def pushTypedFloat(d: Double): Operation =
+        Operation.Push(Data.Primitive.Number(d))
 
       def computeLocalOffset(num: Int, stackOffset: Int): Int =
         (localsCount - num - 1) + stackOffset + 1
@@ -211,37 +209,37 @@ object Translator {
       // for local there's additional object arg
       // for not local there's name of the method
 
-      def storeLocal(num: Int): Either[String, List[Op]] =
+      def storeLocal(num: Int): Either[String, List[Operation]] =
         stackOffsetO
           .map { s =>
             Right(
               List(
-                Op.Push(Datum.Integral(computeLocalOffset(num, s))),
-                Op.SwapN,
-                Op.Pop
+                Operation.Push(Data.Primitive.Int32(computeLocalOffset(num, s))),
+                Operation(Opcodes.SWAPN),
+                Operation(Opcodes.POP)
               ))
           }
           .getOrElse(Left("Stack offset is required for storing local variables"))
 
-      def loadLocal(num: Int): Either[String, List[Op]] =
+      def loadLocal(num: Int): Either[String, List[Operation]] =
         stackOffsetO
           .map { s =>
             Right(
               List(
-                Op.Push(Datum.Integral(computeLocalOffset(num, s))),
-                Op.Dupn
+                Operation.Push(Data.Primitive.Int32(computeLocalOffset(num, s))),
+                Operation(Opcodes.DUPN)
               ))
           }
           .getOrElse(Left("Stack offset is required for loading local variables"))
 
-      def loadArg(num: Int): Either[String, List[Op]] =
+      def loadArg(num: Int): Either[String, List[Operation]] =
         stackOffsetO
           .map { s =>
             if (local) {
               Right(
                 List(
-                  Op.Push(Datum.Integral(computeArgOffset(num, s))),
-                  Op.Dupn
+                  Operation.Push(Data.Primitive.Int32(computeArgOffset(num, s))),
+                  Operation(Opcodes.DUPN)
                 )
               )
             } else {
@@ -250,8 +248,8 @@ object Translator {
               } else {
                 Right(
                   List(
-                    Op.Push(Datum.Integral(computeArgOffset(num - 1, s))),
-                    Op.Dupn
+                    Operation.Push(Data.Primitive.Int32(computeArgOffset(num - 1, s))),
+                    Operation(Opcodes.DUPN)
                   )
                 )
               }
@@ -259,47 +257,47 @@ object Translator {
           }
           .getOrElse(Left("Stack offset is required for arguments loading"))
 
-      def loadField(name: String, sigIdx: Long): List[Op] = { // FIXME should process static fields too
+      def loadField(name: String, sigIdx: Long): List[Operation] = { // FIXME should process static fields too
         lazy val defaultLoad = List(
-          Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-          Op.SGet
+          Operation.Push(Data.Primitive.Utf8(name)),
+          Operation(Opcodes.SGET)
         )
 
         signatures.get(sigIdx) match {
           case Some(FieldSig(tpe)) =>
             tpe match {
               case SigType.Generic(SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)), _) =>
-                List(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))))
+                List(Operation.Push(Data.Primitive.Utf8(name)))
               case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
-                List(Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))))
+                List(Operation.Push(Data.Primitive.Utf8(name)))
               case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
-                List(Op.From)
+                List(Operation(Opcodes.FROM))
               case _ => defaultLoad
             }
           case _ => defaultLoad
         }
       }
 
-      def storeField(name: String, sigIdx: Long): List[Op] = { // FIXME should process static fields too
+      def storeField(name: String, sigIdx: Long): List[Operation] = { // FIXME should process static fields too
         lazy val defaultStore = List(
-          Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-          Op.SPut
+          Operation.Push(Data.Primitive.Utf8(name)),
+          Operation(Opcodes.SPUT)
         )
 
         signatures.get(sigIdx) match {
           case Some(FieldSig(tpe)) =>
             tpe match {
               case SigType.Cls(TypeDefData(_, "Mapping`2", "io.mytc.pravda", _, _, _)) =>
-                List(Op.Stop) // error user shouldn't modify mappings
+                List(Operation(Opcodes.STOP)) // error user shouldn't modify mappings
               case SigType.Cls(TypeDefData(_, "Address", "io.mytc.pravda", _, _, _)) if name == "sender" =>
-                List(Op.Stop) // error user shouldn't modify sender address
+                List(Operation(Opcodes.STOP)) // error user shouldn't modify sender address
               case _ => defaultStore
             }
           case _ => defaultStore
         }
       }
 
-      def callVirt(name: String, parentSigIdx: Long, methodSigIdx: Long): List[Op] = {
+      def callVirt(name: String, parentSigIdx: Long, methodSigIdx: Long): List[Operation] = {
         val resO = for {
           parentSig <- signatures.get(parentSigIdx)
           methodSig <- signatures.get(methodSigIdx)
@@ -307,29 +305,30 @@ object Translator {
           lazy val defaultCall = {
             val paramsCnt = MethodTranslationUtils.methodParamsCount(methodSig)
             if (MethodTranslationUtils.isMethodVoid(methodSig)) {
-              List.fill(paramsCnt)(Op.Pop)
+              List.fill(paramsCnt)(Operation(Opcodes.POP))
             } else {
-              List.fill(paramsCnt)(Op.Pop) :+ Op.Push(Datum.Rawbytes(Array[Byte](0)))
+              // TODO should throw error
+              List.fill(paramsCnt)(Operation(Opcodes.POP)) :+ Operation.Push(Data.Primitive.Null)
             }
           }
 
           if (TypeTranslationUtils.detectMapping(parentSig)) {
             name match {
-              case "get" => List(Op.Swap, Op.Concat, Op.SGet)
+              case "get" => List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SGET))
               case "getDefault" =>
-                List(Op.Call("method_getDefault"))
+                List(Operation.Call(Some("method_getDefault")))
               // FIXME we need some way to distinguish local functions and methods of program
-              case "exists" => List(Op.Swap, Op.Concat, Op.SExst, Op.LCall("Typed", "typedBool", 1))
+              case "exists" => List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SEXIST))
               case "put" =>
-                List(Op.Push(Datum.Integral(2)),
-                     Op.Dupn,
-                     Op.Push(Datum.Integral(4)),
-                     Op.Dupn,
-                     Op.Concat,
-                     Op.Swap,
-                     Op.SPut,
-                     Op.Pop,
-                     Op.Pop)
+                List(Operation.Push(Data.Primitive.Int32(2)),
+                     Operation(Opcodes.DUPN),
+                     Operation.Push(Data.Primitive.Int32(4)),
+                     Operation(Opcodes.DUPN),
+                     Operation(Opcodes.CONCAT),
+                     Operation(Opcodes.SWAP),
+                     Operation(Opcodes.SPUT),
+                     Operation(Opcodes.POP),
+                     Operation(Opcodes.POP))
               case _ => defaultCall
             }
           } else {
@@ -340,7 +339,7 @@ object Translator {
         resO.getOrElse(List.empty)
       }
 
-      val translate: PartialFunction[OpCode, Either[String, List[Op]]] = {
+      val translate: PartialFunction[OpCode, Either[String, List[Operation]]] = {
         case LdcI40     => Right(List(pushTypedInt(0)))
         case LdcI41     => Right(List(pushTypedInt(1)))
         case LdcI42     => Right(List(pushTypedInt(2)))
@@ -355,16 +354,37 @@ object Translator {
         case LdcI4S(v)  => Right(List(pushTypedInt(v.toInt)))
         case LdcR4(f)   => Right(List(pushTypedFloat(f.toDouble)))
         case LdcR8(d)   => Right(List(pushTypedFloat(d)))
-        case Add        => Right(List(Op.LCall("Typed", "typedAdd", 2)))
-        case Mull       => Right(List(Op.LCall("Typed", "typedMul", 2)))
-        case Div        => Right(List(Op.LCall("Typed", "typedDiv", 2)))
-        case Rem        => Right(List(Op.LCall("Typed", "typedMod", 2)))
-        case Sub =>
-          Right(List(pushTypedInt(-1), Op.LCall("Typed", "typedMul", 2), Op.LCall("Typed", "typedAdd", 2)))
-        case Clt => Right(List(Op.LCall("Typed", "typedClt", 2)))
-        case Cgt => Right(List(Op.Swap, Op.LCall("Typed", "typedClt", 2)))
-        case Ceq => Right(List(Op.Eq, Op.LCall("Typed", "typedBool", 1)))
-        case Not => Right(List(Op.LCall("Typed", "typedNot", 1)))
+        case Add        => Right(List(Operation(Opcodes.ADD)))
+        case Mul        => Right(List(Operation(Opcodes.MUL)))
+        case Div        => Right(List(Operation(Opcodes.DIV)))
+        case Rem        => Right(List(Operation(Opcodes.MOD)))
+        case Sub        => Right(List(pushTypedInt(-1), Operation(Opcodes.MUL), Operation(Opcodes.ADD)))
+        case Clt        =>
+          Right(List(
+            Operation(Opcodes.LT),
+            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+            Operation(Opcodes.CAST)
+          ))
+        case Cgt =>
+          Right(List(
+            Operation(Opcodes.LT),
+            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+            Operation(Opcodes.CAST)
+          ))
+        case Ceq =>
+          Right(List(
+            Operation(Opcodes.LT),
+            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+            Operation(Opcodes.CAST)
+          ))
+        case Not =>
+          Right(List(
+            Operation.Push(Data.Primitive.Int8(Data.Type.Boolean)), // cast to boolean
+            Operation(Opcodes.CAST),
+            Operation(Opcodes.NOT),
+            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+            Operation(Opcodes.CAST)
+          ))
 
         case LdSFld(FieldData(_, name, sig)) =>
           Right(loadField(name, sig))
@@ -396,11 +416,11 @@ object Translator {
         case LdLoc(num)  => loadLocal(num)
         case LdLocS(num) => loadLocal(num.toInt)
 
-        case Nop          => Right(List(Op.Nop))
+        case Nop          => Right(List(Operation.Nop))
         case Ret          => Right(List())
-        case Jump(label)  => Right(List(Op.Jump(label)))
-        case JumpI(label) => Right(List(pushTypedInt(1), Op.Eq, Op.JumpI(label)))
-        case Label(label) => Right(List(Op.Label(label)))
+        case Jump(label)  => Right(List(Operation.Jump(Some(label))))
+        case JumpI(label) => Right(List(pushTypedInt(1), Operation(Opcodes.EQ), Operation.JumpI(Some(label))))
+        case Label(label) => Right(List(Operation.Label(label)))
 
         case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
           Right(callVirt(name, parentSigIdx, methodSigIdx))
@@ -409,12 +429,12 @@ object Translator {
       translate.lift(opcode).map(Right(_)).getOrElse(Left(s"Unknown opcode: $opcode")).joinRight
     }
 
-    def transformStackOffset(op: OpCode,
+    def transformStackOffset(Operation: OpCode,
                              labelOffsets: Map[String, Int],
                              stackOffsetO: Option[Int]): Either[String, (Map[String, Int], Option[Int])] = {
       val unstableStackError = Left("Unsupported sequence of instructions: stack is unstable")
 
-      op match {
+      Operation match {
         case Label(label) =>
           (labelOffsets.get(label), stackOffsetO) match {
             case (Some(offset), Some(stackOffset)) if offset != stackOffset + Constants.labelStackOffset =>
@@ -489,9 +509,9 @@ object Translator {
 
     val clear =
       if (void) {
-        List.fill(localsCount + argsCount + 1)(Op.Pop)
+        List.fill(localsCount + argsCount + 1)(Operation(Opcodes.POP))
       } else {
-        List.fill(localsCount + argsCount + 1)(List(Op.Swap, Op.Pop)).flatten
+        List.fill(localsCount + argsCount + 1)(List(Operation(Opcodes.SWAP), Operation(Opcodes.POP))).flatten
       }
 
     for {
@@ -504,12 +524,12 @@ object Translator {
         local,
         void,
         List(
-          OpCodeTranslation(Left("method name"), None, List(Op.Label("method_" + name))),
-          OpCodeTranslation(Left("local vars"), None, List.fill(localsCount)(Op.Push(Datum.Integral(0)))) // FIXME Should be replaced by proper value for local var type
+          OpCodeTranslation(Left("method name"), None, List(Operation.Label("method_" + name))),
+          OpCodeTranslation(Left("local vars"), None, List.fill(localsCount)(Operation.Push(Data.Primitive.Int32(0)))) // FIXME Should be replaced by proper value for local var type
         ) ++ opTranslations ++
           List(
             OpCodeTranslation(Left("local vars clearing"), None, clear),
-            OpCodeTranslation(Left("end of a method"), None, if (local) List(Op.Ret) else List(Op.Jump("stop")))
+            OpCodeTranslation(Left("end of a method"), None, if (local) List(Operation(Opcodes.RET)) else List(Operation.Jump(Some("stop"))))
           )
       )
   }
@@ -539,10 +559,10 @@ object Translator {
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
           List(
-            Op.Dup,
-            Op.Push(Datum.Rawbytes(name.getBytes(StandardCharsets.UTF_8))),
-            Op.Eq,
-            Op.JumpI("method_" + name)
+            Operation(Opcodes.DUP),
+            Operation.Push(Data.Primitive.Utf8(name)),
+            Operation(Opcodes.EQ),
+            Operation.JumpI(Some("method_" + name))
           )
         } else {
           List.empty
@@ -582,12 +602,12 @@ object Translator {
 
     for {
       methodsOps <- methodsOpsE
-    } yield Translation(jumpToMethods :+ Op.Jump("stop"), methodsOps, List(Op.Label("stop")))
+    } yield Translation(jumpToMethods :+ Operation.Jump(Some("stop")), methodsOps, List(Operation.Label("stop")))
   }
 
   def translateAsm(rawMethods: List[Method],
                    cilData: CilData,
-                   signatures: Map[Long, Signatures.Signature]): Either[String, List[Op]] =
+                   signatures: Map[Long, Signatures.Signature]): Either[String, List[Operation]] =
     for {
       t <- translateVerbose(rawMethods, cilData, signatures)
     } yield t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asm)) ++ t.finishOps

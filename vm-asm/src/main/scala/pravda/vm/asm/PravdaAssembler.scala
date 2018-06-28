@@ -113,6 +113,7 @@ object PravdaAssembler {
 
   /**
     * Disassembles bytecode to sequence of operations.
+    * Use [[render]] to build text from sequence of operations.
     */
   def disassemble(bytecode: ByteString): Seq[Operation] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
@@ -174,27 +175,29 @@ object PravdaAssembler {
 
   /**
     * Prints one operation to string.
+    * @param pretty uses line breaks for structs,
+    *               adds space after commas and colons, etc.
     */
-  def render(operation: Operation): String = operation match {
+  def render(operation: Operation, pretty: Boolean): String = operation match {
     case Jump(Some(label))  => s"${operation.mnemonic} @$label"
     case JumpI(Some(label)) => s"${operation.mnemonic} @$label"
     case Call(Some(label))  => s"${operation.mnemonic} @$label"
     case Comment(value)     => s"/*$value*/"
-    case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty = true)}"
-    case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty = true)}"
+    case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty)}"
+    case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty)}"
     case Label(name)        => s"@$name:"
-    case StructGet(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = true)}"
-    case StructMut(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = true)}"
+    case StructGet(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty)}"
+    case StructMut(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty)}"
     case _                  => operation.mnemonic
   }
 
   /**
-    * Prints sequence of operation to string.
+    * Pretty prints sequence of operation to string.
     * Received text is valid assembler text
     * which may be parsed by [[parser]].
     */
   def render(operations: Seq[Operation]): String =
-    operations.map(render).mkString("\n")
+    operations.map(render(_, pretty = true)).mkString("\n")
 
   /**
     * Parses text to sequence of operation.
