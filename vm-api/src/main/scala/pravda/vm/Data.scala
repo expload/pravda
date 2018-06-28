@@ -106,7 +106,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
     def isZeroLength(value: Long) = value > 0 && value < 64
 
-    /** @param value byte < 64 */
+    // value < 64
     def putZeroLengthValue(value: Byte) = {
       //println(s"putZeroLengthValue: value = $value")
       if (!isZeroLength(value.toLong))

@@ -7,7 +7,6 @@ import pravda.vm.{Memory, VmErrorException, WattCounter}
 
 /**
   * Pravda VM arithmetic opcodes implementation.
-  * @see [[pravda.vm.Opcodes]]
   * @param memory Access to VM memory
   * @param wattCounter CPU, memory, storage usage counter
   */
@@ -16,7 +15,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Makes '%' operation on two top items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.MOD]]
+    * @see pravda.vm.Opcodes.MOD
     */
   def mod(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
@@ -126,7 +125,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Makes '+' operation on two top items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.ADD]]
+    * @see pravda.vm.Opcodes$.ADD
     */
   def add(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
@@ -236,7 +235,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Makes '/' operation on two top items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.DIV]]
+    * @see pravda.vm.Opcodes.DIV
     */
   def div(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
@@ -346,7 +345,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Makes '*' operation on two top items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.MUL]]
+    * @see pravda.vm.Opcodes.MUL
     */
   def mul(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)

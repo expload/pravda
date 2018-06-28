@@ -75,7 +75,6 @@ object Operation {
 
   /**
     * Orphan operation by opcode.
-    * @see [[pravda.vm.Opcodes]]
     */
   val operationByCode: Map[Int, Operation] = Orphans
     .map(o => o.opcode -> o)

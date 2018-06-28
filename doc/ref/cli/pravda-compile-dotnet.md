@@ -1,3 +1,7 @@
+<!--
+THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
+-->
+
 ```pravda compile dotnet --input <file> --output <file>```
 
 ## Description
@@ -9,5 +13,5 @@ By default read from stdin and print to stdout.
 
 |Option|Description|
 |----|----|
-|-i, --input|Input file
-|-o, --output|Output file
+|`-i`, `--input`|Input file
+|`-o`, `--output`|Output file

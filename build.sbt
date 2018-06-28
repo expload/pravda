@@ -188,6 +188,7 @@ lazy val cli = (project in file("cli"))
   .settings(commonSettings: _*)
   .settings(
     normalizedName := "pravda",
+    mainClass in Compile := Some("pravda.cli.Pravda"),
     libraryDependencies ++= Seq(
       "com.github.scopt" %% "scopt" % "3.7.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
@@ -200,3 +201,7 @@ lazy val cli = (project in file("cli"))
   .dependsOn(vm)
   .dependsOn(node)
   .dependsOn(dotnet)
+
+lazy val `cli-gen-docs` = (project in file("doc") / "ref" / "cli")
+  .settings(normalizedName := "pravda-cli-gen-docs")
+  .dependsOn(cli)

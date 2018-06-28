@@ -21,7 +21,7 @@ object MarkdownPrinter {
     val cmdBody = cmds
       .map { path =>
         val desc = path.text.replace('\n', ' ')
-        val comm = path.toString
+        val comm = path.cmds.map(_.name).mkString(" ")
         val link = s"[docs]($comm.md)"
         s"|`$comm`|$link|$desc|"
       }
@@ -32,11 +32,12 @@ object MarkdownPrinter {
   }
 
   private def printHeader[C](cmdPath: CmdPath[C]): String = {
+    val dne = s"<!--${EOL}THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!$EOL-->"
     val usage = s"```${cmdPath.toUsageString}```"
     val desc = s"## Description$EOL${cmdPath.text}"
-    List(usage, desc).mkString(s"$EOL$EOL")
+    List(dne, usage, desc).mkString(s"$EOL$EOL")
   }
 
   private def printOpt[C](opt: CommandLine.Opt[C, _], ctx: MarkdownCtx): String =
-    s"|${opt.short.map(x => s"-$x, ").getOrElse("")}--${opt.name}|${opt.text.replace('\n', ' ')}"
+    s"|${opt.short.map(x => s"`-$x`, ").getOrElse("")}`--${opt.name}`|${opt.text.replace('\n', ' ')}"
 }

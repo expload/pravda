@@ -17,7 +17,9 @@
 
 \section{Introduction}
 
-As part of the Mytime Project, Pravda VM is designed to solve challenges of the game industry in section of decentralization. The purpose of Pravda VM is programmatic management of global state of the network. We're offering minimalistic deterministic virtual machine and runtime library for managed execution of smart-contracts.
+THIS SPEC IS OUTDATED
+
+As part of the Expload Project, Pravda VM is designed to solve challenges of the game industry in section of decentralization. The purpose of Pravda VM is programmatic management of global state of the network. We're offering minimalistic deterministic virtual machine and runtime library for managed execution of smart-contracts.
 
 In our work we're focusing on simplicity and extensibility. We don't set ourselves a task to invent something new, but using solid foundation of computer science we consider requirements of the network.
 
@@ -44,7 +46,7 @@ As noted above persistence is an integral part of Pravda VM. Executions can read
 
 \section{Bytecode}
 
-BVM executes bytecode in the format described below. Every program is a linear sequence of \textit{opcodes}. Any opcode is represented by one byte. Exception is "PUSHX" opcode which is represented by one byte for opcode itself and a word to represent a constant.
+BVM executes bytecode in the format described below. Every program is a linear sequence of \textit{opcodes.md}. Any opcode is represented by one byte. Exception is "PUSHX" opcode which is represented by one byte for opcode itself and a word to represent a constant.
 
 First 3 bits of the word encode length. This is the length of the length of the encoded data. For example, $256$ bytes of the data are encoded by the word of $258$ bytes , which are
 
@@ -211,12 +213,12 @@ There are several groups of operations that needs different omount of CPU time a
 
 $$
 C_{extra} = \begin{cases} 
-			5 & \text{for opcodes I32ADD,I32LT,I32GT,NOT,AND,OR,XOR,EQ} \\ % SimpleArithmetic
-			5 & \text{for opcodes CALL,JUMP} \\ % Control
-			10 & \text{for opcodes I32DIV,I32MUL,I32MOD,FDIV,FMUL,FMOD} \\ % Arithmetic
-			10 & \text{for opcodes PCALL,LCALL} \\ % ExtCall
-			15 & \text{for opcodes JUMPI} \\
-			0 & \text{for other opcodes} \\
+			5 & \text{for opcodes.md I32ADD,I32LT,I32GT,NOT,AND,OR,XOR,EQ} \\ % SimpleArithmetic
+			5 & \text{for opcodes.md CALL,JUMP} \\ % Control
+			10 & \text{for opcodes.md I32DIV,I32MUL,I32MOD,FDIV,FMUL,FMOD} \\ % Arithmetic
+			10 & \text{for opcodes.md PCALL,LCALL} \\ % ExtCall
+			15 & \text{for opcodes.md JUMPI} \\
+			0 & \text{for other opcodes.md} \\
 			\end{cases}
 $$
 
@@ -236,7 +238,7 @@ $$M_w = 100\cdot(\lfloor b_m/100,000,000 \rfloor + 1)^3 $$
 
 \subsection{Storage}
 
-Every time you put something into the storage using SPUT or SDROP opcodes, pravda calculates amount of bytes you occupy $o_s$ and amount of bytes you release $r_s$. Total storage watts are calculates as:
+Every time you put something into the storage using SPUT or SDROP opcodes.md, pravda calculates amount of bytes you occupy $o_s$ and amount of bytes you release $r_s$. Total storage watts are calculates as:
 
 $$S_w = 8 \cdot o_s $$
 

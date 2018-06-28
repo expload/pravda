@@ -6,7 +6,7 @@ import pravda.vm._
 
 /**
   * Pravda VM stack control pravda.vm.Opcodes implementation.
-  * @see [[pravda.vm.Opcodes]]
+  * @see pravda.vm.Opcodes
   * @param memory Access to VM memory
   */
 final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: WattCounter) {

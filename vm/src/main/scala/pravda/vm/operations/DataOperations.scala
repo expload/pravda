@@ -11,8 +11,8 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Casts primitive to another type.
     * new_type :: data :: stack
-    * @see [[pravda.vm.Data.Type]]
-    * @see [[pravda.vm.Opcodes.SLICE]]
+    * @see pravda.vm.Data.Type
+    * @see pravda.vm.Opcodes.SLICE
     */
   def cast(): Unit = {
     val `type` = integer(memory.pop())
@@ -25,7 +25,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Takes start index, end index and item from the stack.
     * Makes slice of item and puts result to the stack.
-    * @see [[pravda.vm.Opcodes.SLICE]]
+    * @see pravda.vm.Opcodes.SLICE
     */
   def slice(): Unit = {
     val from = integer(memory.pop()).toInt
@@ -43,7 +43,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
   /**
     * Takes two items from stack.
     * Concatenates them and put result to stack.
-    * @see [[pravda.vm.Opcodes.CONCAT]]
+    * @see pravda.vm.Opcodes.CONCAT
     */
   def concat(): Unit = {
     val data = (memory.pop(), memory.pop()) match {

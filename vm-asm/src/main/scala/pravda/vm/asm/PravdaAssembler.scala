@@ -44,7 +44,7 @@ object PravdaAssembler {
     def putOp(opcode: Int): Unit =
       bytecode.put(opcode.toByte)
 
-    /** Go to `name` using `opcode` */
+    // Go to `name` using `opcode`
     def goto(name: String, opcode: Int): Unit = {
       if (saveLabels) {
         putOp(Opcodes.META)
@@ -113,7 +113,7 @@ object PravdaAssembler {
 
   /**
     * Disassembles bytecode to sequence of operations.
-    * Use [[render]] to build text from sequence of operations.
+    * Use render() to build text from sequence of operations.
     */
   def disassemble(bytecode: ByteString): Seq[Operation] = {
     val buffer = bytecode.asReadOnlyByteBuffer()

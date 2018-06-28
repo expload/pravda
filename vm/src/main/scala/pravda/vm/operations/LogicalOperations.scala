@@ -8,7 +8,7 @@ import scala.annotation.strictfp
 
 /**
   * Pravda VM logical pravda.vm.Opcodes implementation.
-  * @see [[pravda.vm.Opcodes]]
+  * @see pravda.vm.Opcodes
   * @param memory Access to VM memory
   * @param wattCounter CPU, memory, storage usage counter
   */
@@ -22,7 +22,7 @@ import scala.annotation.strictfp
     * Pops items from stack.
     * If it's 'true' pushes 'false' to stack.
     * Its it's 'false' pushes 'true' to stack.
-    * @see [[pravda.vm.Opcodes.NOT]]
+    * @see pravda.vm.Opcodes.NOT
     */
   def not(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -39,7 +39,7 @@ import scala.annotation.strictfp
   /**
     * Makes 'and' operation on two items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.AND]]
+    * @see pravda.vm.Opcodes.AND
     */
   def and(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -60,7 +60,7 @@ import scala.annotation.strictfp
   /**
     * Makes 'or' operation on two items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.OR]]
+    * @see pravda.vm.Opcodes.OR
     */
   def or(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -81,7 +81,7 @@ import scala.annotation.strictfp
   /**
     * Makes 'xor' operation on two items from stack.
     * Pushes result to stack.
-    * @see [[pravda.vm.Opcodes.XOR]]
+    * @see pravda.vm.Opcodes.XOR
     */
   def xor(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -172,7 +172,7 @@ import scala.annotation.strictfp
   /**
     * Checks top stack item is equal to subsequent stack item.
     * Pushes Bool result to stack.
-    * @see [[pravda.vm.Opcodes.EQ]]
+    * @see pravda.vm.Opcodes.EQ
     */
   def eq(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -182,7 +182,7 @@ import scala.annotation.strictfp
   /**
     * Checks top stack item is greater than subsequent stack item.
     * Pushes Bool result to stack.
-    * @see [[pravda.vm.Opcodes.GT]]
+    * @see pravda.vm.Opcodes.GT
     */
   def gt(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -192,7 +192,7 @@ import scala.annotation.strictfp
   /**
     * Checks top stack item is less than subsequent stack item.
     * Pushes Bool result to stack.
-    * @see [[pravda.vm.Opcodes.LT]]
+    * @see pravda.vm.Opcodes.LT
     */
   def lt(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
