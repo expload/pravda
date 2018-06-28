@@ -81,18 +81,19 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .text("""|Assemble Pravda VM bytecode from text representation.
                        |Input file is a Pravda assembly language text file.
                        |Output is binary Pravda program.
-                       |By default read from stdin and print to stdout""".stripMargin)
+                       |By default read from stdin and print to stdout.""".stripMargin)
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Asm)),
             cmd("disasm")
               .text("""|Disassemble Pravda VM bytecode to text presentation.
                        |Input file is a Pravda executable binary.
                        |Output is a text file with Pravda assembly code.
-                       |By default read from stdin and print to stdout""".stripMargin)
+                       |By default read from stdin and print to stdout.""".stripMargin)
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Disasm)),
             cmd("forth")
               .text("""|Compile Pravda pseudo-forth to Pravda VM bytecode.
-                       |Input file is a Pravda executable binary. Output is a text file with
-                       |Pravda assembly code. By default read from stdin and print to stdout.""".stripMargin)
+                       |Input file is a Pravda executable binary.
+                       |Output is a text file with Pravda assembly code.
+                       |By default read from stdin and print to stdout.""".stripMargin)
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Forth)),
             cmd("dotnet")
               .text("""|Compile .exe produced by .NET compiler to Pravda VM bytecode.
