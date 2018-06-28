@@ -119,6 +119,8 @@ class VmImpl extends Vm {
           case GT  => logicalOperations.gt()
           // Data operations
           case CAST => dataOperations.cast()
+          case CONCAT => dataOperations.concat()
+          case SLICE => dataOperations.slice()
           // System operations
           case STOP    => continue = false
           case FROM    => systemOperations.from()

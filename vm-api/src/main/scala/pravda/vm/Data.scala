@@ -604,7 +604,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   object parser {
 
-    val (primitive, all, utf8) = {
+    val (primitive, all, utf8, ref, bytes, bigint, uint, int) = {
       import fastparse.all._
 
       val ws = P(CharIn(Seq(' ', '\t', '\n', '\r')).rep)
@@ -653,8 +653,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val numeric = P(number | int8 | int16 | int32 | uint8 | uint16 | uint32 | bigint | inferredNumeric)
 
-      val bool = P(IgnoreCase("true")).map(_ => Primitive.Bool.True) |
-        P(IgnoreCase("false")).map(_ => Primitive.Bool.False)
+      val bool = P(IgnoreCase("true").map(_ => Primitive.Bool.True) | IgnoreCase("false").map(_ => Primitive.Bool.False))
 
       val ref = P("#" ~ uint).map(_.toInt).map(Primitive.Ref.apply)
 
@@ -717,7 +716,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val all = P(struct | array | primitive)
 
       // exports
-      (primitive, all, utf8)
+      (primitive, all, utf8, ref, bytes, bigint, uint, int)
     }
   }
 

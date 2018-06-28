@@ -76,7 +76,6 @@ lazy val `vm-api` = (project in file("vm-api")).
 lazy val vm = (project in file("vm")).
   settings(normalizedName := "pravda-vm").
   settings(commonSettings: _*).
-  settings(scalacheckOps:_*).
   settings(
     libraryDependencies ++= Seq(
       "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"

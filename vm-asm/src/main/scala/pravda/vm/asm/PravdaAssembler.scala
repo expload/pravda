@@ -3,8 +3,6 @@ package pravda.vm.asm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import fastparse.all
-import fastparse.core.Parsed
 import fastparse.parsers.Combinators.Rule
 import pravda.vm.{Data, Opcodes, Meta => Metadata}
 
@@ -29,13 +27,8 @@ object PravdaAssembler {
     *                   It can be used by disassembler.
     * @return Error | Bytecode
     */
-  def assemble(text: String, saveLabels: Boolean): Either[String, ByteString] = {
-    parser.parse(text) match {
-      case Parsed.Success(operations, _) => Right(assemble(operations, saveLabels))
-      case failure @ Parsed.Failure(_, _, _) =>
-        Left(failure.extra.input.repr.errorMessage(failure.extra.input, failure.extra.traced.expected, failure.index))
-    }
-  }
+  def assemble(text: String, saveLabels: Boolean): Either[String, ByteString] =
+    parse(text).map(assemble(_, saveLabels))
 
   /**
     * Generates Pavda VM compatible bytecode from sequence of operations.
@@ -204,10 +197,22 @@ object PravdaAssembler {
     operations.map(render).mkString("\n")
 
   /**
+    * Parses text to sequence of operation.
+    * @return Error | Operations
+    */
+  def parse(text: String): Either[String, Seq[Operation]] = {
+    import fastparse.all._
+    P(Start ~ parser ~ End).parse(text) match {
+      case Parsed.Success(operations, _) => Right(operations)
+      case failure @ Parsed.Failure(_, _, _) => Left(failure.extra.input.repr.errorMessage(failure.extra.input, failure.extra.traced.expected, failure.index))
+    }
+  }
+
+  /**
     * Use this to parse assembler text
     * to sequence of operations.
     */
-  val parser: all.Parser[Seq[Operation]] = {
+  val parser: fastparse.all.Parser[Seq[Operation]] = {
 
     import fastparse.all._
 
@@ -234,6 +239,6 @@ object PravdaAssembler {
       .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment))
       .reduce(_ | _)
 
-    P(Start ~ whitespace ~ operation.rep(sep = delim) ~ whitespace ~ End)
+    P(whitespace ~ operation.rep(sep = delim) ~ whitespace)
   }
 }

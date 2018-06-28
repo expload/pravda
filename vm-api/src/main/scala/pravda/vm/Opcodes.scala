@@ -53,6 +53,8 @@ object Opcodes {
 
   // Data operations
   final val CAST = 0x90
+  final val CONCAT = 0x91
+  final val SLICE = 0x92
 
   // System operations
   final val FROM = 0xa0

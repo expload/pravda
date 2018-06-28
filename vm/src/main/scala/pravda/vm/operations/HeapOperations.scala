@@ -55,6 +55,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val index = integer(memory.pop()).toInt
     val reference = ref(memory.pop())
     val datum = memory.heapGet(reference.data) match {
+      case Bytes(data)       => Uint8(data.byteAt(index) & 0xFF)
+      case Utf8(data)        => Uint8(data.charAt(index).toByte & 0xFF)
       case Int8Array(data)   => Int8(data(index))
       case Int16Array(data)  => Int16(data(index))
       case Int32Array(data)  => Int32(data(index))
