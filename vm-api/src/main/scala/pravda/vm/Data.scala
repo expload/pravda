@@ -647,12 +647,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val hexDig = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
       val hexDigs = P(hexDig.rep(1))
 
-      val float = P("-".!.? ~ decDigs.! ~ "." ~ decDigs.! ~ (CharIn("eE") ~ CharIn("+-").? ~ decDigs.rep).!.?) map {
-        case (maybeMinus, integerPart, fractionalPart, maybeExpPart) =>
-          val m = maybeMinus.getOrElse("")
-          val e = maybeExpPart.getOrElse("")
-          s"$m$integerPart.$fractionalPart$e".toDouble
-      }
+      val float = P(("-".? ~ decDigs ~ "." ~ decDigs ~ (CharIn("eE") ~ CharIn("+-").? ~ decDigs.rep).?).!)
+        .map(_.toDouble)
 
       val uint = {
         val hexInt = P(IgnoreCase("0x") ~/ hexDigs.!).map(s => BigInt(s, 16))
