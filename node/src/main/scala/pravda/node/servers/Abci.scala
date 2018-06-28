@@ -288,7 +288,8 @@ object Abci {
 
     final class TransactionDependentEnvironment(val executor: Address,
                                                 transactionId: TransactionId,
-                                                effects: mutable.Buffer[EnvironmentEffect]) extends Environment {
+                                                effects: mutable.Buffer[EnvironmentEffect])
+        extends Environment {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
       private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]

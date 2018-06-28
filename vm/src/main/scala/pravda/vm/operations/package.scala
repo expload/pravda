@@ -44,8 +44,8 @@ package object operations {
 
   def bytes(a: Data): ByteString = {
     a match {
-      case Bytes(data)  => data
-      case _            => throw VmErrorException(WrongType)
+      case Bytes(data) => data
+      case _           => throw VmErrorException(WrongType)
     }
   }
 

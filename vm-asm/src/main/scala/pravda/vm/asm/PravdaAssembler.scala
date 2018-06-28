@@ -159,11 +159,11 @@ object PravdaAssembler {
             val op = Operation.Call(label)
             label = None
             op
-          case Opcodes.NEW   => Operation.New(Data.readFromByteBuffer(buffer))
-          case Opcodes.PUSHX => Operation.Push(Data.readFromByteBuffer(buffer))
-          case Opcodes.JUMP  => Operation.Jump(None)
-          case Opcodes.JUMPI => Operation.JumpI(None)
-          case Opcodes.CALL  => Operation.Call(None)
+          case Opcodes.NEW        => Operation.New(Data.readFromByteBuffer(buffer))
+          case Opcodes.PUSHX      => Operation.Push(Data.readFromByteBuffer(buffer))
+          case Opcodes.JUMP       => Operation.Jump(None)
+          case Opcodes.JUMPI      => Operation.JumpI(None)
+          case Opcodes.CALL       => Operation.Call(None)
           case Opcodes.STRUCT_GET => Operation.StructGet(None)
           case Opcodes.STRUCT_MUT => Operation.StructMut(None)
         }
@@ -207,7 +207,8 @@ object PravdaAssembler {
     import fastparse.all._
     P(Start ~ parser ~ End).parse(text) match {
       case Parsed.Success(operations, _) => Right(operations)
-      case failure @ Parsed.Failure(_, _, _) => Left(failure.extra.input.repr.errorMessage(failure.extra.input, failure.extra.traced.expected, failure.index))
+      case failure @ Parsed.Failure(_, _, _) =>
+        Left(failure.extra.input.repr.errorMessage(failure.extra.input, failure.extra.traced.expected, failure.index))
     }
   }
 

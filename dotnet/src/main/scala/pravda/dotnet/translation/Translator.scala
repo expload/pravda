@@ -28,7 +28,9 @@ object Translator {
                                      local: Boolean,
                                      void: Boolean,
                                      opcodes: List[OpCodeTranslation])
-  final case class Translation(jumpToMethods: List[Operation], methods: List[MethodTranslation], finishOps: List[Operation])
+  final case class Translation(jumpToMethods: List[Operation],
+                               methods: List[MethodTranslation],
+                               finishOps: List[Operation])
 
   private def resolveBranches(opcodes: List[OpCode]): List[OpCode] = {
 
@@ -124,7 +126,7 @@ object Translator {
         case LdcR4(f)   => 1
         case LdcR8(d)   => 1
         case Add        => -1
-        case Mul       => -1
+        case Mul        => -1
         case Div        => -1
         case Rem        => -1
         case Sub        => -1
@@ -320,15 +322,17 @@ object Translator {
               // FIXME we need some way to distinguish local functions and methods of program
               case "exists" => List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SEXIST))
               case "put" =>
-                List(Operation.Push(Data.Primitive.Int32(2)),
-                     Operation(Opcodes.DUPN),
-                     Operation.Push(Data.Primitive.Int32(4)),
-                     Operation(Opcodes.DUPN),
-                     Operation(Opcodes.CONCAT),
-                     Operation(Opcodes.SWAP),
-                     Operation(Opcodes.SPUT),
-                     Operation(Opcodes.POP),
-                     Operation(Opcodes.POP))
+                List(
+                  Operation.Push(Data.Primitive.Int32(2)),
+                  Operation(Opcodes.DUPN),
+                  Operation.Push(Data.Primitive.Int32(4)),
+                  Operation(Opcodes.DUPN),
+                  Operation(Opcodes.CONCAT),
+                  Operation(Opcodes.SWAP),
+                  Operation(Opcodes.SPUT),
+                  Operation(Opcodes.POP),
+                  Operation(Opcodes.POP)
+                )
               case _ => defaultCall
             }
           } else {
@@ -359,32 +363,36 @@ object Translator {
         case Div        => Right(List(Operation(Opcodes.DIV)))
         case Rem        => Right(List(Operation(Opcodes.MOD)))
         case Sub        => Right(List(pushTypedInt(-1), Operation(Opcodes.MUL), Operation(Opcodes.ADD)))
-        case Clt        =>
-          Right(List(
-            Operation(Opcodes.LT),
-            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
-            Operation(Opcodes.CAST)
-          ))
+        case Clt =>
+          Right(
+            List(
+              Operation(Opcodes.LT),
+              Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+              Operation(Opcodes.CAST)
+            ))
         case Cgt =>
-          Right(List(
-            Operation(Opcodes.LT),
-            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
-            Operation(Opcodes.CAST)
-          ))
+          Right(
+            List(
+              Operation(Opcodes.LT),
+              Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+              Operation(Opcodes.CAST)
+            ))
         case Ceq =>
-          Right(List(
-            Operation(Opcodes.LT),
-            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
-            Operation(Opcodes.CAST)
-          ))
+          Right(
+            List(
+              Operation(Opcodes.LT),
+              Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+              Operation(Opcodes.CAST)
+            ))
         case Not =>
-          Right(List(
-            Operation.Push(Data.Primitive.Int8(Data.Type.Boolean)), // cast to boolean
-            Operation(Opcodes.CAST),
-            Operation(Opcodes.NOT),
-            Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
-            Operation(Opcodes.CAST)
-          ))
+          Right(
+            List(
+              Operation.Push(Data.Primitive.Int8(Data.Type.Boolean)), // cast to boolean
+              Operation(Opcodes.CAST),
+              Operation(Opcodes.NOT),
+              Operation.Push(Data.Primitive.Int8(Data.Type.Int8)), // cast to int
+              Operation(Opcodes.CAST)
+            ))
 
         case LdSFld(FieldData(_, name, sig)) =>
           Right(loadField(name, sig))
@@ -529,7 +537,9 @@ object Translator {
         ) ++ opTranslations ++
           List(
             OpCodeTranslation(Left("local vars clearing"), None, clear),
-            OpCodeTranslation(Left("end of a method"), None, if (local) List(Operation(Opcodes.RET)) else List(Operation.Jump(Some("stop"))))
+            OpCodeTranslation(Left("end of a method"),
+                              None,
+                              if (local) List(Operation(Opcodes.RET)) else List(Operation.Jump(Some("stop"))))
           )
       )
   }

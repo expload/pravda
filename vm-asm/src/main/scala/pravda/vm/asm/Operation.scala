@@ -19,14 +19,14 @@ object Operation {
   final case class Label(name: String)    extends ParametrizedOperation("")
 
   // TODO add meta to parser
-  final case class Meta(meta: pravda.vm.Meta)  extends ParametrizedOperation("")
-  final case class Push(d: Data)               extends ParametrizedOperation("push")
-  final case class New(d: Data)                extends ParametrizedOperation("new")
-  final case class Jump(name: Option[String])  extends ParametrizedOperation("jump")
-  final case class JumpI(name: Option[String]) extends ParametrizedOperation("jumpi")
-  final case class Call(name: Option[String])  extends ParametrizedOperation("call")
-  final case class StructMut(key: Option[Primitive])   extends ParametrizedOperation("struct_mut")
-  final case class StructGet(key: Option[Primitive])   extends ParametrizedOperation("struct_get")
+  final case class Meta(meta: pravda.vm.Meta)        extends ParametrizedOperation("")
+  final case class Push(d: Data)                     extends ParametrizedOperation("push")
+  final case class New(d: Data)                      extends ParametrizedOperation("new")
+  final case class Jump(name: Option[String])        extends ParametrizedOperation("jump")
+  final case class JumpI(name: Option[String])       extends ParametrizedOperation("jumpi")
+  final case class Call(name: Option[String])        extends ParametrizedOperation("call")
+  final case class StructMut(key: Option[Primitive]) extends ParametrizedOperation("struct_mut")
+  final case class StructGet(key: Option[Primitive]) extends ParametrizedOperation("struct_get")
 
   final case class Orphan(opcode: Int, mnemonic: String) extends Operation
 

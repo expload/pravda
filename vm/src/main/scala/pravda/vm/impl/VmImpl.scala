@@ -97,7 +97,7 @@ class VmImpl extends Vm {
           case ARRAY_MUT         => heapOperations.arrayMut()
           case STRUCT_MUT        => heapOperations.structMut()
           case STRUCT_MUT_STATIC => heapOperations.structMutStatic()
-          case PRIMITIVE_PUT       => heapOperations.primitivePut()
+          case PRIMITIVE_PUT     => heapOperations.primitivePut()
           case PRIMITIVE_GET     => heapOperations.primitiveGet()
           // Storage operations
           case SPUT   => storageOperations.put()
@@ -118,9 +118,9 @@ class VmImpl extends Vm {
           case LT  => logicalOperations.lt()
           case GT  => logicalOperations.gt()
           // Data operations
-          case CAST => dataOperations.cast()
+          case CAST   => dataOperations.cast()
           case CONCAT => dataOperations.concat()
-          case SLICE => dataOperations.slice()
+          case SLICE  => dataOperations.slice()
           // System operations
           case STOP    => continue = false
           case FROM    => systemOperations.from()
