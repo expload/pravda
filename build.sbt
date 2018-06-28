@@ -68,7 +68,6 @@ lazy val `vm-asm` = (project in file("vm-asm"))
   .settings(mainClass in Compile := Some("pravda.vm.asm.Application"))
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.scopt" %% "scopt" % "3.7.0",
       "com.lihaoyi" %% "fastparse" % "1.0.0"
     )
   )
@@ -80,7 +79,6 @@ lazy val forth = (project in file("forth"))
   .settings(mainClass in Compile := Some("pravda.forth.Application"))
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.scopt" %% "scopt" % "3.7.0",
       "com.lihaoyi" %% "fastparse" % "1.0.0"
     )
   )
@@ -94,10 +92,9 @@ lazy val dotnet = (project in file("dotnet"))
       "org.typelevel" %% "cats-core" % "1.0.1",
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
     ))
-  .settings(
-    scalacOptions ++= Seq(
-      "-Ypartial-unification"
-    ))
+  .settings(scalacOptions ++= Seq(
+    "-Ypartial-unification"
+  ))
 
 lazy val `vm-integration-test` = (project in file("testkit/vm-integration"))
   .dependsOn(vm)
@@ -181,6 +178,12 @@ lazy val node = (project in file("node"))
   .dependsOn(`vm-asm`)
   .dependsOn(forth)
 
+lazy val yopt = (project in file("yopt"))
+  .settings(commonSettings: _*)
+  .settings(
+    normalizedName := "yopt"
+  )
+
 lazy val cli = (project in file("cli"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
@@ -189,8 +192,10 @@ lazy val cli = (project in file("cli"))
     libraryDependencies ++= Seq(
       "com.github.scopt" %% "scopt" % "3.7.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
-    )
+    ),
+    bashScriptExtraDefines += """set -- -- "$@""""
   )
+  .dependsOn(yopt)
   .dependsOn(common)
   .dependsOn(forth)
   .dependsOn(`vm-asm`)

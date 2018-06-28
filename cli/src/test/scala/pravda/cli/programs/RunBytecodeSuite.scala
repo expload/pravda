@@ -2,7 +2,7 @@ package pravda.cli.programs
 
 import cats.Id
 import com.google.protobuf.ByteString
-import pravda.cli.Config
+import pravda.cli.PravdaConfig
 import pravda.cli.languages._
 import pravda.vm.state.VmMemory
 import utest._
@@ -42,7 +42,7 @@ object RunBytecodeSuite extends TestSuite {
           }
       }
       val program = new RunBytecode[Id](io, vm)
-      program(Config.RunBytecode())
+      program(PravdaConfig.RunBytecode())
       assert(io.stdout.headOption.contains(ProgramFromStdInJson))
     }
 
@@ -65,7 +65,7 @@ object RunBytecodeSuite extends TestSuite {
           }
       }
       val program = new RunBytecode[Id](io, vm)
-      program(Config.RunBytecode(input = Some(ProgramFromFileName)))
+      program(PravdaConfig.RunBytecode(input = Some(ProgramFromFileName)))
       assert(io.stdout.headOption.contains(ProgramFromFileJson))
     }
 
@@ -76,7 +76,7 @@ object RunBytecodeSuite extends TestSuite {
           Right(EmptyMemory)
       }
       val program = new RunBytecode[Id](io, vm)
-      program(Config.RunBytecode(input = Some(ProgramFromFileName)))
+      program(PravdaConfig.RunBytecode(input = Some(ProgramFromFileName)))
       assert(
         io.stderr.headOption.contains(ProgramFromFileError),
         io.exitCode == 1

@@ -1,19 +1,20 @@
 package pravda.cli
 
-import cats.implicits._
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import cats.implicits._
 import pravda.cli.languages.impl._
 import pravda.cli.programs._
+import pravda.yopt.CommandLine.{HelpNeeded, Ok, ParseError}
 
-import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-import sys.process.stderr
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.sys.process.stderr
 
 /**
   * Pravda CLI entry point.
   */
-object Application extends App {
+object Pravda extends App {
 
   implicit val system: ActorSystem = ActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -32,15 +33,26 @@ object Application extends App {
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
 
   // FIXME programs should be composed by another one
-  val eventuallyExitCode = ArgumentsParser.parse(args, Config.Nope) match {
-    case Some(config: Config.Compile)     => compile(config).map(_ => 0)
-    case Some(config: Config.RunBytecode) => runner(config).map(_ => 0)
-    case Some(config: Config.GenAddress)  => genAddress(config).map(_ => 0)
-    case Some(config: Config.Broadcast)   => broadcast(config).map(_ => 0)
-    case Some(config: Config.Node)        => nodeProgram(config).map(_ => 0)
-    case _ =>
+  val eventuallyExitCode = PravdaArgsParser.parse(args.toList, PravdaConfig.Nope) match {
+    case Ok(config: PravdaConfig.Compile)     => compile(config).map(_ => 0)
+    case Ok(config: PravdaConfig.RunBytecode) => runner(config).map(_ => 0)
+    case Ok(config: PravdaConfig.GenAddress)  => genAddress(config).map(_ => 0)
+    case Ok(config: PravdaConfig.Broadcast)   => broadcast(config).map(_ => 0)
+    case Ok(config: PravdaConfig.Node)        => nodeProgram(config).map(_ => 0)
+    case Ok(PravdaConfig.Nope) =>
       Future {
-        stderr.println(ArgumentsParser.renderTwoColumnsUsage)
+        print(PravdaArgsParser.root.toHelpString)
+        0
+      }
+    case HelpNeeded(cli) =>
+      Future {
+        print(cli.toHelpString)
+        0
+      }
+    case ParseError(msg) =>
+      Future {
+        stderr.println(msg)
+        stderr.print(PravdaArgsParser.root.toHelpString)
         1 // every non zero exit code says about error
       }
   }
@@ -48,7 +60,7 @@ object Application extends App {
   // FIXME handle exceptions
   val exitCode = Await.result(
     awaitable = for (exitCode <- eventuallyExitCode; _ <- system.terminate()) yield exitCode,
-    atMost = 1.day // should be enough :)
+    atMost = 5.minutes
   )
 
   sys.exit(exitCode)

@@ -4,8 +4,8 @@ import cats._
 import cats.implicits._
 import cats.data.EitherT
 import com.google.protobuf.ByteString
-import pravda.cli.Config
-import pravda.cli.Config.CompileMode
+import pravda.cli.PravdaConfig
+import pravda.cli.PravdaConfig.CompileMode
 import pravda.cli.languages.{CompilersLanguage, IoLanguage}
 
 import scala.language.higherKinds
@@ -14,7 +14,7 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
 
   import CompileMode._
 
-  def apply(config: Config.Compile): F[Unit] = {
+  def apply(config: PravdaConfig.Compile): F[Unit] = {
     val errorOrResult: EitherT[F, String, ByteString] =
       for {
         input <- useOption(config.input)(
@@ -27,7 +27,6 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
             case Disasm => compilers.disasm(input).map(s => Right(ByteString.copyFromUtf8(s)))
             case Forth  => compilers.forth(input.toStringUtf8)
             case DotNet => compilers.dotnet(input)
-            case DisNet => compilers.disnet(input).map(_.map(ByteString.copyFromUtf8))
             case Nope   => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }

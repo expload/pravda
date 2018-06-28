@@ -1,7 +1,7 @@
 package pravda.cli.programs
 
 import com.google.protobuf.ByteString
-import pravda.cli.Config
+import pravda.cli.PravdaConfig
 import pravda.cli.languages._
 import utest._
 
@@ -19,14 +19,14 @@ object GenAddressSuite extends TestSuite {
       val output = new IoLanguageStub(None)
       val random = new PredictableRandomLanguage(Seed)
       val program = new GenAddress(output, random)
-      program(Config.GenAddress())
+      program(PravdaConfig.GenAddress())
       assert(output.stdout.headOption.contains(JsonBytes))
     }
     "generate to file" - {
       val output = new IoLanguageStub(None)
       val random = new PredictableRandomLanguage(Seed)
       val program = new GenAddress(output, random)
-      program(Config.GenAddress(Some(FileName)))
+      program(PravdaConfig.GenAddress(Some(FileName)))
       assert(output.files.get(FileName).contains(JsonBytes))
     }
   }
