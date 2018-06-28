@@ -32,7 +32,7 @@ object launcher extends App {
     path = new File(Config.timeChainConfig.dataDirectory, "application-state").getAbsolutePath,
     initialHash = FileStore.readApplicationStateInfo().map(_.appHash.toByteArray)
   )
-  val abci = new Abci(applicationStateDb, abciClient)
+  val abci = new Abci(applicationStateDb, abciClient, timeChainConfig.initDistr)
 
   val server = Server(
     cfg = Server.Config(

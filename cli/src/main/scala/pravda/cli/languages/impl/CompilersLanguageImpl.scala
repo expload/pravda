@@ -4,21 +4,22 @@ package impl
 
 import com.google.protobuf.ByteString
 import pravda.forth.{Compiler => ForthCompiler}
-import pravda.vm.asm.PravdaAssembler
-import pravda.dotnet.{Translator => DotnetTranslator, FileParser => DotnetParser}
+import pravda.vm.asm.Assembler
+import pravda.dotnet.translation.{Translator => DotnetTranslator}
+import pravda.dotnet.parsers.{FileParser => DotnetParser}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) extends CompilersLanguage[Future] {
 
   def asm(source: String): Future[Either[String, ByteString]] = Future {
-    PravdaAssembler()
+    Assembler()
       .compile(source)
       .map(a => ByteString.copyFrom(a))
   }
 
   def disasm(source: ByteString): Future[String] = Future {
-    PravdaAssembler()
+    Assembler()
       .decompile(source)
       .map { case (no, op) => "%06X:\t%s".format(no, op.toAsm) }
       .mkString("\n")
@@ -29,10 +30,10 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
   }
 
   def dotnet(source: ByteString): Future[Either[String, ByteString]] = Future {
-    DotnetParser.parsePe(source.toByteArray).map {
-      case (_, cilData, methods, signatures) =>
-        val ops = DotnetTranslator.translate(methods, cilData, signatures)
-        ByteString.copyFrom(PravdaAssembler().compile(ops))
-    }
+    for {
+      pe <- DotnetParser.parsePe(source.toByteArray)
+      (_, cilData, methods, signatures) = pe
+      ops <- DotnetTranslator.translateAsm(methods, cilData, signatures)
+    } yield ByteString.copyFrom(Assembler().compile(ops))
   }
 }

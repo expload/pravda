@@ -1,24 +1,9 @@
-## Name
-`pravda-gen-address` - Compile public/private key pair.
-
-## Synopsys
-```
-pravda gen address
-```
+```pravda gen address --output <file>```
 
 ## Description
-Generated pair conforms to ED25519.
-
-
+Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.
 ## Options
 
-
-## Examples
-
-
-
-## See also
-
-
-## Pravda
-Part of the [Pravda](main.md) suite.
+|Option|Description|
+|----|----|
+|-o, --output|Output file

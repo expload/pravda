@@ -4,7 +4,7 @@ import cats._
 import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
-import pravda.cli.Config
+import pravda.cli.PravdaConfig
 import pravda.cli.languages.{CompilersLanguage, IoLanguage, NodeLanguage}
 import pravda.common.bytes
 import tethys.JsonReader
@@ -18,9 +18,9 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
 
   import Broadcast._
 
-  import Config.Broadcast.Mode
+  import PravdaConfig.Broadcast.Mode
 
-  def apply(config: Config.Broadcast): F[Unit] = {
+  def apply(config: PravdaConfig.Broadcast): F[Unit] = {
 
     val readFromFile = (path: String) =>
       io.readFromFile(path)

@@ -3,7 +3,7 @@ package pravda.cli.programs
 import cats._
 import cats.implicits._
 import com.google.protobuf.ByteString
-import pravda.cli.Config
+import pravda.cli.PravdaConfig
 import pravda.cli.languages.{IoLanguage, RandomLanguage}
 import pravda.common.{bytes, crypto}
 
@@ -15,7 +15,7 @@ class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
     * Generates Pravda address and private key for it.
     * Writes to stdout or file depends on config.
     */
-  def apply(config: Config.GenAddress): F[Unit] =
+  def apply(config: PravdaConfig.GenAddress): F[Unit] =
     for {
       randomBytes <- random.secureBytes64()
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
