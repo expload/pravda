@@ -1,10 +1,12 @@
 package pravda.vm
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes.{byteString2hex, hex2byteString}
 import supertagged.TaggedType
+
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable
 import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
@@ -162,7 +164,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     }
 
     def putString(buffer: ByteBuffer, data: String) = {
-      val bytes = data.getBytes
+      val bytes = data.getBytes(StandardCharsets.UTF_8)
       putLength(buffer, bytes.length)
       buffer.put(bytes)
     }
@@ -444,7 +446,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Ref     => Ref(data.toInt)
           case Type.Boolean => if (data.isEmpty) Bool.False else Bool.True
           case Type.Utf8    => value
-          case Type.Bytes   => Bytes(ByteString.copyFrom(data.getBytes))
+          case Type.Bytes   => Bytes(ByteString.copyFrom(data.getBytes(StandardCharsets.UTF_8)))
         }
       case value @ Bytes(data) =>
         lazy val buffer = data.asReadOnlyByteBuffer()
@@ -459,7 +461,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Number  => Number(buffer.getDouble)
           case Type.Ref     => Ref(buffer.getInt)
           case Type.Boolean => if (data.isEmpty) Bool.False else Bool.True
-          case Type.Utf8    => Utf8(new String(data.toByteArray))
+          case Type.Utf8    => Utf8(new String(data.toByteArray, StandardCharsets.UTF_8))
           case Type.Bytes   => value
         }
       case value @ BigInt(data) =>
@@ -693,6 +695,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val string = {
         val unicodeEscape = P("u" ~ (hexDig ~ hexDig ~ hexDig ~ hexDig).!)
           .map(s => new String(Character.toChars(Integer.parseInt(s, 16))))
+
         val special = P(CharIn("\"bfnrt\\").!) map {
           case "b" => "\b"
           case "f" => "\f"
@@ -826,7 +829,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     def getByteString =
       ByteString.copyFrom(getBytes(getLength))
 
-    def getString = new String(getBytes(getLength))
+    def getString = new String(getBytes(getLength), StandardCharsets.UTF_8)
 
     def getNestedPrimitive = {
       val offset = buffer.position()

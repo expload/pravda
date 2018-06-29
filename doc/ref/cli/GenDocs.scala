@@ -89,4 +89,3 @@ class GenDocs[F[_]: Monad](io: IoLanguage[F]) {
     } yield ()
   }
 }
-
