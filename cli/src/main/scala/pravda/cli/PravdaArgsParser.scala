@@ -89,12 +89,6 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                        |Output is a text file with Pravda assembly code.
                        |By default read from stdin and print to stdout.""".stripMargin)
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Disasm)),
-            cmd("forth")
-              .text("""|Compile Pravda pseudo-forth to Pravda VM bytecode.
-                       |Input file is a Pravda executable binary.
-                       |Output is a text file with Pravda assembly code.
-                       |By default read from stdin and print to stdout.""".stripMargin)
-              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Forth)),
             cmd("dotnet")
               .text("""|Compile .exe produced by .NET compiler to Pravda VM bytecode.
                        |Input file is a .Net PE (portable executable).

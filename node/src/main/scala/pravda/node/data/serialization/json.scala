@@ -14,6 +14,7 @@ import jackson.pretty.prettyJacksonTokenWriterProducer
 import org.json4s.JsonAST
 import org.json4s.JsonAST.JValue
 import pravda.node.data.blockchain.ExecutionInfo
+import pravda.vm.Data
 import tethys.readers.FieldName
 import tethys.readers.tokens.TokenIterator
 import tethys.writers.tokens.TokenWriter
@@ -30,6 +31,16 @@ object json {
 
   implicit def tethysReaderLifter[T: JsonReader, U]: JsonReader[Tagged[T, U]] =
     lifterF[JsonReader].lift[T, U]
+
+  //----------------------------------------------------------------------
+  // vm.Data support for tethys
+  //----------------------------------------------------------------------
+
+  implicit val dataReader: JsonReader[Data] =
+    JsonReader.stringReader.map(s => Data.parser.all.parse(s).get.value)
+
+  implicit val dataWriter: JsonWriter[Data] =
+    JsonWriter.stringWriter.contramap(_.mkString())
 
   //----------------------------------------------------------------------
   // Protobufs' ByteString support for tethys

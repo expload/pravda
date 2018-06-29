@@ -42,7 +42,7 @@ object LoopTests extends TestSuite {
             Nop,
             LdLoc0,
             LdcI42,
-            Mull,
+            Mul,
             StLoc0,
             Nop,
             LdLoc0,

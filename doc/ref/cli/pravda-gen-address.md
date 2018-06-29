@@ -1,3 +1,7 @@
+<!--
+THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
+-->
+
 ```pravda gen address --output <file>```
 
 ## Description
@@ -6,4 +10,4 @@ Generate ed25519 key pair. It can be used as regular wallet or validator node id
 
 |Option|Description|
 |----|----|
-|-o, --output|Output file
+|`-o`, `--output`|Output file

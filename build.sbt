@@ -9,11 +9,24 @@ git.gitTagToVersionNumber := { tag: String =>
   else None
 }
 
+val `tendermint-version` = "0.16.0"
+
+val scalacheckOps = Seq(
+  libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+  testOptions in Test ++= Seq(
+    Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
+    Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1"),
+    Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "100")
+  )
+)
+
 val commonSettings = Seq(
   organization := "io.mytc",
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
+    "org.typelevel" %% "cats-core" % "1.0.1",
+    "org.rudogma" %% "supertagged" % "1.4",
     "com.lihaoyi" %% "utest" % "0.6.3" % "test"
   ),
   testFrameworks += new TestFramework("utest.runner.Framework"),
@@ -25,7 +38,9 @@ val commonSettings = Seq(
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen",
     "-Ywarn-unused-import",
-    "-unchecked"
+    "-unchecked",
+    "-Xmacro-settings:materialize-derivations",
+    "-Ypartial-unification"
   )
 ) ++ scalafixSettings
 
@@ -43,14 +58,19 @@ lazy val common = (project in file("common"))
     )
   )
 
-lazy val vmApi = (project in file("vm-api"))
+lazy val `vm-api` = (project in file("vm-api"))
   .settings(
     normalizedName := "pravda-vm-api",
   )
-  .settings(commonSettings: _*)
+  .settings( commonSettings: _* )
+  .settings(scalacheckOps:_*)
   .settings(
+    testOptions in Test ++= Seq(
+      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
+    ),
     libraryDependencies ++= Seq(
-      "com.google.protobuf" % "protobuf-java" % "3.5.0"
+      "com.google.protobuf" % "protobuf-java" % "3.5.0",
+      "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )
   )
   .dependsOn(common)
@@ -58,28 +78,27 @@ lazy val vmApi = (project in file("vm-api"))
 lazy val vm = (project in file("vm"))
   .settings(normalizedName := "pravda-vm")
   .settings(commonSettings: _*)
-  .dependsOn(vmApi)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"
+    )
+  )
+	.dependsOn(`vm-api`, `vm-asm` % "compile->test")
   .dependsOn(common)
 
 lazy val `vm-asm` = (project in file("vm-asm"))
-  .dependsOn(vmApi)
+  .dependsOn(`vm-api` % "test->test;compile->compile")
   .settings(normalizedName := "pravda-vm-asm")
   .settings(commonSettings: _*)
-  .settings(mainClass in Compile := Some("pravda.vm.asm.Application"))
+  .settings(scalacheckOps:_*)
   .settings(
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "fastparse" % "1.0.0"
-    )
-  )
-
-lazy val forth = (project in file("forth"))
-  .settings(normalizedName := "pravda-forth")
-  .dependsOn(`vm-asm`)
-  .settings(commonSettings: _*)
-  .settings(mainClass in Compile := Some("pravda.forth.Application"))
-  .settings(
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "fastparse" % "1.0.0"
+    testOptions in Test ++= Seq(
+      // Reduce size because PravdaAssemblerSpecification
+      // generated too big operation lists.
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "7"),
+    ),
+    libraryDependencies ++= Seq (
+      "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )
   )
 
@@ -91,20 +110,8 @@ lazy val dotnet = (project in file("dotnet"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.0.1",
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
-    ))
-  .settings(scalacOptions ++= Seq(
-    "-Ypartial-unification"
-  ))
-
-lazy val `vm-integration-test` = (project in file("testkit/vm-integration"))
-  .dependsOn(vm)
-  .dependsOn(`vm-asm`)
-  .dependsOn(forth)
-  .dependsOn(dotnet)
-  .settings(normalizedName := "pravda-testkit-vm-integration")
-  .settings(commonSettings: _*)
-
-val `tendermint-version` = "0.16.0"
+    )
+  )
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
@@ -126,10 +133,8 @@ lazy val node = (project in file("node"))
       // UI
       "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
       // Other
-      "org.rudogma" %% "supertagged" % "1.4",
       "io.mytc" %% "scala-abci-server" % "0.9.2",
       "com.github.pureconfig" %% "pureconfig" % "0.9.0",
-      "org.typelevel" %% "cats-core" % "1.0.1",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.6.2",
       "org.json4s" %% "json4s-ast" % "3.5.3",
@@ -137,11 +142,6 @@ lazy val node = (project in file("node"))
       "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17",
       "name.pellet.jp" %% "bsonpickle" % "0.4.4.2",
       "com.chuusai" %% "shapeless" % "2.3.3"
-    ),
-    scalacOptions ++= Seq(
-      "-Xmacro-settings:materialize-derivations",
-      "-Ypartial-unification"
-      //  , "-Xlog-implicits"
     ),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     // Download tendermint
@@ -173,10 +173,9 @@ lazy val node = (project in file("node"))
     outputStrategy in run := Some(OutputStrategy.StdoutOutput)
   )
   .dependsOn(common)
-  .dependsOn(`node-db`)
-  .dependsOn(vm)
+	.dependsOn(`node-db`)
+	.dependsOn(vm)
   .dependsOn(`vm-asm`)
-  .dependsOn(forth)
 
 lazy val yopt = (project in file("yopt"))
   .settings(commonSettings: _*)
@@ -189,6 +188,7 @@ lazy val cli = (project in file("cli"))
   .settings(commonSettings: _*)
   .settings(
     normalizedName := "pravda",
+    mainClass in Compile := Some("pravda.cli.Pravda"),
     libraryDependencies ++= Seq(
       "com.github.scopt" %% "scopt" % "3.7.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
@@ -197,8 +197,11 @@ lazy val cli = (project in file("cli"))
   )
   .dependsOn(yopt)
   .dependsOn(common)
-  .dependsOn(forth)
   .dependsOn(`vm-asm`)
   .dependsOn(vm)
   .dependsOn(node)
   .dependsOn(dotnet)
+
+lazy val `cli-gen-docs` = (project in file("doc") / "ref" / "cli")
+  .settings(normalizedName := "pravda-cli-gen-docs")
+  .dependsOn(cli)

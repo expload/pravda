@@ -1,3 +1,7 @@
+<!--
+THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
+-->
+
 ```pravda node run --data-dir <file>```
 
 ## Description
@@ -6,4 +10,4 @@ Run initialized node.
 
 |Option|Description|
 |----|----|
-|-d, --data-dir|
+|`-d`, `--data-dir`|

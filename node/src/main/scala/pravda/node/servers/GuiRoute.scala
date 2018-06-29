@@ -3,31 +3,30 @@ package pravda.node.servers
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import pravda.node.db.DB
-import pravda.node.clients.AbciClient
-import pravda.node.data.common.TransactionId
-import pravda.common.domain.{Address, NativeCoin}
-
-import pravda.node.persistence.FileStore
-import pravda.node.{Config, utils}
-import pravda.common.{bytes => byteUtils}
+import cats.data.OptionT
+import cats.implicits._
+import com.google.protobuf.ByteString
 import korolev.Context
 import korolev.akkahttp._
 import korolev.execution._
 import korolev.server.{KorolevServiceConfig, ServerRouter}
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
-import pravda.node.data.serialization.bson._
-import pravda.node.data.serialization._
-import cats.data.OptionT
-import cats.implicits._
-import com.google.protobuf.ByteString
-import pravda.vm.asm.{Assembler, Op}
+import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.{bytes => byteUtils}
+import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
+import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
+import pravda.node.data.serialization._
+import pravda.node.data.serialization.bson._
+import pravda.node.db.DB
+import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
+import pravda.node.{Config, utils}
+import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -127,15 +126,15 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           else (thisName, effect :: Nil) :: acc
       }
 
-  private def asmAstToAsm(asmAst: Seq[(Int, Op)]) = {
-    asmAst.map { case (no, op) => "%06X:\t%s".format(no, op.toAsm) }.mkString("\n")
+  private def asmAstToAsm(operations: Seq[Operation]) = {
+    PravdaAssembler.render(operations)
   }
 
-  private def programToAsm(program: Array[Byte]) =
-    asmAstToAsm(Assembler().decompile(program))
+  private def programToAsm(program: Array[Byte]): String =
+    programToAsm(ByteString.copyFrom(program))
 
-  private def programToAsm(program: ByteString) =
-    asmAstToAsm(Assembler().decompile(program))
+  private def programToAsm(program: ByteString): String =
+    asmAstToAsm(PravdaAssembler.disassemble(program))
 
   private val codeArea = elementId()
   private val wattLimitField = elementId()
@@ -250,7 +249,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'margin @= 10,
                          'height @= 400,
                          codeArea,
-                         'placeholder /= "Place your p-forth code here"),
+                         'placeholder /= "Place your pravda-asm code here"),
               'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
               'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1"),
               'input ('class          /= "input",
@@ -283,10 +282,15 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
-                          val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
-                          pravda.forth.Compiler().compile(hackCode) map { data =>
+                          val hackCode = code
+                            .replace("\\t", "\t")
+                            .replace("\\r", "\r")
+                            .replace("\\n", "\n")
+                            .replace("\\\"", "\"")
+                            .replace("\\\\", "\\") // FIXME HACK CODE
+                          PravdaAssembler.assemble(hackCode, saveLabels = true) map { data =>
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
-                                                                 TransactionData @@ ByteString.copyFrom(data),
+                                                                 TransactionData @@ data,
                                                                  wattLimit.toLong,
                                                                  NativeCoin.amount(wattPrice),
                                                                  Random.nextInt())
@@ -303,7 +307,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(result.map(utils.showExecInfo).toString)
+                                maybeResult = Some(result.fold(_.toString, utils.showExecInfo))
                               )
                             }
                           } yield {
@@ -328,12 +332,17 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
-                          val compiler = pravda.forth.Compiler()
-                          val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
-                          compiler.compile(hackCode) flatMap { data =>
-                            compiler.compile(s"$$x${byteUtils.bytes2hex(data)} pcreate") map { data =>
+                          val hackCode = code
+                            .replace("\\t", "\t")
+                            .replace("\\r", "\r")
+                            .replace("\\n", "\n")
+                            .replace("\\\"", "\"")
+                            .replace("\\\\", "\\") // FIXME HACK CODE
+                          PravdaAssembler.assemble(hackCode, saveLabels = true) flatMap { data =>
+                            PravdaAssembler.assemble(s"new x${byteUtils.byteString2hex(data)} pcreate",
+                                                     saveLabels = false) map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
-                                                                   TransactionData @@ ByteString.copyFrom(data),
+                                                                   TransactionData @@ data,
                                                                    wattLimit.toLong,
                                                                    NativeCoin.amount(wattPrice),
                                                                    Random.nextInt())
@@ -351,7 +360,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(execInfo.map(utils.showExecInfo).toString)
+                                maybeResult = Some(execInfo.fold(_.toString, utils.showExecInfo))
                               )
                             }
                           } yield {

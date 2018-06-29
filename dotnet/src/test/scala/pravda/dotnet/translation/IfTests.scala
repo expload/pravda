@@ -1,10 +1,8 @@
 package pravda.dotnet.translation
 
-import pravda.common.bytes.hex._
 import pravda.dotnet.DiffUtils
 import pravda.dotnet.parsers.FileParser
-import pravda.vm.asm.Datum._
-import pravda.vm.asm.Op._
+import pravda.vm.asm.PravdaAssembler
 import utest._
 
 object IfTests extends TestSuite {
@@ -15,260 +13,311 @@ object IfTests extends TestSuite {
 
       DiffUtils.assertEqual(
         Translator.translateAsm(methods, cilData, signatures),
-        Right(
-          List(
-            Dup,
-            Push(Rawbytes("Main".getBytes)),
-            Eq,
-            JumpI("method_Main"),
-            Jump("stop"),
-            Label("method_Main"),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Push(Integral(0)),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 0a")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            LCall("Typed", "typedClt", 2),
-            Push(Integral(8)),
-            SwapN,
-            Pop,
-            Push(Integral(7)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br16"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 04")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Label("br16"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 05")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            Push(Integral(7)),
-            SwapN,
-            Pop,
-            Push(Integral(6)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br38"),
-            Nop,
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 06")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            Push(Integral(6)),
-            SwapN,
-            Pop,
-            Push(Integral(5)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br37"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 07")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Label("br37"),
-            Nop,
-            Label("br38"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 00")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            Push(Integral(5)),
-            SwapN,
-            Pop,
-            Push(Integral(4)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br54"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 04")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Jump("br58"),
-            Label("br54"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 05")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Label("br58"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 02")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br68"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 04")),
-            LCall("Typed", "typedClt", 2),
-            Jump("br69"),
-            Label("br68"),
-            Push(Rawbytes(hex"01 00 00 00 00")),
-            Label("br69"),
-            Push(Integral(4)),
-            SwapN,
-            Pop,
-            Push(Integral(3)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br81"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 06")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Jump("br85"),
-            Label("br81"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 08")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Label("br85"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 07")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br96"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 0a")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            Jump("br97"),
-            Label("br96"),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Label("br97"),
-            Push(Integral(3)),
-            SwapN,
-            Pop,
-            Push(Integral(2)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br109"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Jump("br113"),
-            Label("br109"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 00")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Label("br113"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br121"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 03")),
-            LCall("Typed", "typedClt", 2),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br128"),
-            Label("br121"),
-            Push(Integral(8)),
-            Dupn,
-            Push(Rawbytes(hex"01 00 00 00 14")),
-            Swap,
-            LCall("Typed", "typedClt", 2),
-            Jump("br129"),
-            Label("br128"),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Label("br129"),
-            Push(Integral(2)),
-            SwapN,
-            Pop,
-            Push(Integral(1)),
-            Dupn,
-            LCall("Typed", "typedNot", 1),
-            Push(Rawbytes(hex"01 00 00 00 01")),
-            Eq,
-            JumpI("br141"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 02")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Jump("br145"),
-            Label("br141"),
-            Nop,
-            Push(Rawbytes(hex"01 00 00 00 03")),
-            Push(Integral(9)),
-            SwapN,
-            Pop,
-            Nop,
-            Label("br145"),
-            Pop,
-            Pop,
-            Pop,
-            Pop,
-            Pop,
-            Pop,
-            Pop,
-            Pop,
-            Pop,
-            Jump("stop"),
-            Label("stop")
-          ))
+        PravdaAssembler.parse(
+          """
+        |dup
+        |push "Main"
+        |eq
+        |jumpi @method_Main
+        |jump @stop
+        |@method_Main:
+        |push int32(0)
+        |push int32(0)
+        |push int32(0)
+        |push int32(0)
+        |push int32(0)
+        |push int32(0)
+        |push int32(0)
+        |push int32(0)
+        |
+        |push int32(10)
+        |push int32(9)
+        |swapn
+        |pop
+        |push int32(8)
+        |dupn
+        |push int32(1)
+        |lt
+        |push int8(1)
+        |cast
+        |push int32(8)
+        |swapn
+        |pop
+        |push int32(7)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br16
+        |
+        |push int32(4)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |@br16:
+        |push int32(8)
+        |dupn
+        |push int32(5)
+        |lt
+        |push int8(1)
+        |cast
+        |push int32(7)
+        |swapn
+        |pop
+        |push int32(6)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br38
+        |
+        |push int32(8)
+        |dupn
+        |push int32(6)
+        |lt
+        |push int8(1)
+        |cast
+        |push int32(6)
+        |swapn
+        |pop
+        |push int32(5)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br37
+        |
+        |push int32(7)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |@br37:
+        |
+        |@br38:
+        |push int32(8)
+        |dupn
+        |push int32(0)
+        |lt
+        |push int8(1)
+        |cast
+        |push int32(5)
+        |swapn
+        |pop
+        |push int32(4)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br54
+        |
+        |push int32(4)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |jump @br58
+        |@br54:
+        |
+        |push int32(5)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |@br58:
+        |push int32(8)
+        |dupn
+        |push int32(2)
+        |lt
+        |push int8(1)
+        |cast
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br68
+        |push int32(8)
+        |dupn
+        |push int32(4)
+        |lt
+        |push int8(1)
+        |cast
+        |jump @br69
+        |@br68:
+        |push int32(0)
+        |@br69:
+        |push int32(4)
+        |swapn
+        |pop
+        |push int32(3)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br81
+        |
+        |push int32(6)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |jump @br85
+        |@br81:
+        |
+        |push int32(8)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |@br85:
+        |push int32(8)
+        |dupn
+        |push int32(7)
+        |lt
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br96
+        |push int32(8)
+        |dupn
+        |push int32(10)
+        |lt
+        |push int8(1)
+        |cast
+        |jump @br97
+        |@br96:
+        |push int32(1)
+        |@br97:
+        |push int32(3)
+        |swapn
+        |pop
+        |push int32(2)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br109
+        |
+        |push int32(1)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |jump @br113
+        |@br109:
+        |
+        |push int32(0)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |@br113:
+        |push int32(8)
+        |dupn
+        |push int32(1)
+        |lt
+        |push int8(1)
+        |cast
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br121
+        |push int32(8)
+        |dupn
+        |push int32(3)
+        |lt
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br128
+        |@br121:
+        |push int32(8)
+        |dupn
+        |push int32(20)
+        |lt
+        |push int8(1)
+        |cast
+        |jump @br129
+        |@br128:
+        |push int32(1)
+        |@br129:
+        |push int32(2)
+        |swapn
+        |pop
+        |push int32(1)
+        |dupn
+        |push int8(9)
+        |cast
+        |not
+        |push int8(1)
+        |cast
+        |push int32(1)
+        |eq
+        |jumpi @br141
+        |
+        |push int32(2)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |jump @br145
+        |@br141:
+        |
+        |push int32(3)
+        |push int32(9)
+        |swapn
+        |pop
+        |
+        |@br145:
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |jump @stop
+        |@stop:
+        |
+      """.stripMargin
+        ).map(_.toList)
       )
-
     }
   }
 }

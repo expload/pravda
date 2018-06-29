@@ -3,29 +3,28 @@ package pravda.node
 package servers
 
 import java.nio.ByteBuffer
+import java.security.SecureRandom
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
-import pravda.node.db.{DB, Operation}
-import pravda.vm.{Vm, state}
-import pravda.vm.state.{Data, Environment, ProgramContext, Storage}
+import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
-import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
+import pravda.node.data.blockchain.ExecutionInfo
+import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTransaction}
 import pravda.node.data.common.{ApplicationStateInfo, InitialDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
+import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.FileStore
-import pravda.common.contrib.ripemd160
-import pravda.common.domain.{Address, NativeCoin}
-import pravda.node.data.blockchain.Transaction.SignedTransaction
+import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
+import pravda.vm.{Environment, ProgramContext, Storage, _}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import pravda.common.{bytes => byteUtils}
-import pravda.node.data.blockchain.ExecutionInfo
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: Seq[InitialDistributionMember])(
     implicit ec: ExecutionContext)
@@ -99,9 +98,10 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
       _ <- checkTransaction(authTx)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
-      env = environmentProvider.transactionEnvironment(tid)
+      env = environmentProvider.transactionEnvironment(authTx.from, tid)
       _ <- Try(environmentProvider.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
-      execResult = Vm.runRaw(authTx.program, authTx.from, env, authTx.wattLimit)
+      vm = new VmImpl()
+      execResult = vm.spawn(authTx.program, env, MemoryImpl.empty, new WattCounterImpl(authTx.wattLimit), authTx.from)
     } yield {
       if (execResult.isSuccess) {
         env.commitTransaction()
@@ -280,13 +280,16 @@ object Abci {
 
     }
 
-    def transactionEnvironment(tid: TransactionId): TransactionDependentEnvironment = {
+    def transactionEnvironment(executor: Address, tid: TransactionId): TransactionDependentEnvironment = {
       val effects = mutable.Buffer.empty[EnvironmentEffect]
       effectsMap += (tid -> effects)
-      new TransactionDependentEnvironment(effects)
+      new TransactionDependentEnvironment(executor, tid, effects)
     }
 
-    final class TransactionDependentEnvironment(effects: mutable.Buffer[EnvironmentEffect]) extends Environment {
+    final class TransactionDependentEnvironment(val executor: Address,
+                                                transactionId: TransactionId,
+                                                effects: mutable.Buffer[EnvironmentEffect])
+        extends Environment {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
       private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
@@ -305,34 +308,33 @@ object Abci {
 
       private final class WsProgramStorage(dbPath: DbPath) extends Storage {
 
-        def get(key: state.Data): Option[state.Data] = {
-          val hexKey = byteUtils.byteString2hex(key)
+        def get(key: Data): Option[Data] = {
+          val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
           transactionEffects += StorageRead(dbPath.mkKey(hexKey), value)
-          value.map(ByteString.copyFrom)
+          value.map(Data.fromBytes)
         }
 
-        def put(key: state.Data, value: state.Data): Option[state.Data] = {
-          val hexKey = byteUtils.byteString2hex(key)
-          val array = value.toByteArray
-          val prev = dbPath.putRawBytes(byteUtils.byteString2hex(key), array)
+        def put(key: Data, value: Data): Option[Data] = {
+          val hexKey = byteUtils.byteString2hex(key.toByteString)
+          val array = value.toByteString.toByteArray
+          val prev = dbPath.putRawBytes(hexKey, array)
           transactionEffects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
-          prev.map(ByteString.copyFrom)
+          prev.map(Data.fromBytes)
         }
 
-        def delete(key: state.Data): Option[state.Data] = {
-          val hexKey = byteUtils.byteString2hex(key)
-          val value = dbPath.remove(byteUtils.byteString2hex(key))
+        def delete(key: Data): Option[Data] = {
+          val hexKey = byteUtils.byteString2hex(key.toByteString)
+          val value = dbPath.remove(hexKey)
           transactionEffects += StorageRemove(dbPath.mkKey(hexKey), value)
-          value.map(ByteString.copyFrom)
+          value.map(Data.fromBytes)
         }
-
       }
 
-      def createProgram(owner: Address, code: Data): Address = {
-        // FIXME fomkin: consider something better
-        val addressBytes = ripemd160.getHash(owner.concat(code).toByteArray)
-
+      def createProgram(owner: Address, code: ByteString): Address = {
+        val random = new SecureRandom(transactionId.concat(code).toByteArray)
+        val addressBytes = new Array[Byte](32)
+        random.nextBytes(addressBytes)
         val address = Address @@ ByteString.copyFrom(addressBytes)
         val sp = StoredProgram(code, owner)
 
@@ -341,12 +343,11 @@ object Abci {
         address
       }
 
-      def updateProgram(address: Address, code: Data): Data = {
+      def updateProgram(address: Address, code: ByteString): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, code.toByteArray)
-        sp.code
       }
 
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
@@ -391,15 +392,10 @@ object Abci {
 
       def getProgram(address: Address): Option[ProgramContext] =
         getStoredProgram(address) map { program =>
-          new ProgramContext {
-            def code: ByteBuffer = ByteBuffer.wrap(program.code.toByteArray)
-            def storage: Storage = {
-              val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
-              new WsProgramStorage(newPath)
-            }
-          }
+          val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
+          val storage = new WsProgramStorage(newPath)
+          ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
         }
-
     }
 
     def appendFee(coins: NativeCoin): Unit = {

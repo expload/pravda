@@ -22,9 +22,6 @@ business centric, Programs are more developer friendly entities.
 * [asm](doc/ref/cli/pravda-compile-asm.md) Pravda Assembler is the assembly
 language for Pravda Virtual Machine.
 
-* [forth](doc/ref/cli/pravda-compile-forth.md) is a Forth-like stack based
-language which can be compiled to Pravda bytecode.
-
 * [cli](doc/ref/cli/main.md) is a unified command line tool to work with Pravda
 platform. It can be used to compile programs in Forth, .Net PE, Pravda Assembly
 languages to Pravda bytecode, to execute programs and to control Pravda nodes.
@@ -61,7 +58,6 @@ the Pravda CLI in the `cli/target`.
 
 ## How to
 
-* [Work with Forth](doc/how-to-forth.md)
 * [Run single node net](doc/how-to-single-node.md)
 * [Run two nodes net locally](doc/how-to-two-nodes.md)
 
