@@ -1,256 +1,256 @@
-//package pravda.dotnet.translation
-//
-//import pravda.dotnet.DiffUtils
-//import pravda.dotnet.parsers.FileParser
-//import pravda.vm.asm.Datum._
-//import pravda.vm.asm.Op._
-//import pravda.common.bytes.hex._
-//import utest._
-//
-//object LoopTests extends TestSuite {
-//
-//  val tests = Tests {
-//    'loopTranslation - {
-//      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
-//
-//      DiffUtils.assertEqual(
-//        Translator.translateAsm(methods, cilData, signatures),
-//        Right(
-//          List(
-//            Dup,
-//            Push(Rawbytes("Main".getBytes)),
-//            Eq,
-//            JumpI("method_Main"),
-//            Jump("stop"),
-//            Label("method_Main"),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Nop,
-//            Push(Rawbytes(hex"01 00 00 00 00")),
-//            Push(Integral(5)),
-//            SwapN,
-//            Pop,
-//            Push(Rawbytes(hex"01 00 00 00 00")),
-//            Push(Integral(4)),
-//            SwapN,
-//            Pop,
-//            Jump("br17"),
-//            Label("br7"),
-//            Nop,
-//            Push(Integral(4)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 02")),
-//            LCall("Typed", "typedAdd", 2),
-//            Push(Integral(5)),
-//            SwapN,
-//            Pop,
-//            Nop,
-//            Push(Integral(3)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            LCall("Typed", "typedAdd", 2),
-//            Push(Integral(4)),
-//            SwapN,
-//            Pop,
-//            Label("br17"),
-//            Push(Integral(3)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 0a")),
-//            LCall("Typed", "typedClt", 2),
-//            Push(Integral(3)),
-//            SwapN,
-//            Pop,
-//            Push(Integral(2)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            Eq,
-//            JumpI("br7"),
-//            Jump("br34"),
-//            Label("br28"),
-//            Nop,
-//            Push(Integral(4)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 02")),
-//            LCall("Typed", "typedMul", 2),
-//            Push(Integral(5)),
-//            SwapN,
-//            Pop,
-//            Nop,
-//            Label("br34"),
-//            Push(Integral(4)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 27 10")),
-//            LCall("Typed", "typedClt", 2),
-//            Push(Integral(2)),
-//            SwapN,
-//            Pop,
-//            Push(Integral(1)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            Eq,
-//            JumpI("br28"),
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Jump("stop"),
-//            Label("stop")
-//          ))
-//      )
-//    }
-//
-//    'nestedLoopTranslation - {
-//      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop_nested.exe")
-//
-//      DiffUtils.assertEqual(
-//        Translator.translateAsm(methods, cilData, signatures),
-//        Right(
-//          List(
-//            Dup,
-//            Push(Rawbytes("Main".getBytes)),
-//            Eq,
-//            JumpI("method_Main"),
-//            Jump("stop"),
-//            Label("method_Main"),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Push(Integral(0)),
-//            Nop,
-//            Push(Rawbytes(hex"01 00 00 00 00")),
-//            Push(Integral(8)),
-//            SwapN,
-//            Pop,
-//            Push(Rawbytes(hex"01 00 00 00 00")),
-//            Push(Integral(7)),
-//            SwapN,
-//            Pop,
-//            Jump("br58"),
-//            Label("br7"),
-//            Nop,
-//            Push(Rawbytes(hex"01 00 00 00 00")),
-//            Push(Integral(6)),
-//            SwapN,
-//            Pop,
-//            Jump("br42"),
-//            Label("br12"),
-//            Nop,
-//            Push(Integral(7)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 02")),
-//            LCall("Typed", "typedMod", 2),
-//            Push(Rawbytes(hex"01 00 00 00 00")),
-//            Eq,
-//            LCall("Typed", "typedBool", 1),
-//            Push(Integral(5)),
-//            SwapN,
-//            Pop,
-//            Push(Integral(4)),
-//            Dupn,
-//            LCall("Typed", "typedNot", 1),
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            Eq,
-//            JumpI("br37"),
-//            Nop,
-//            Push(Integral(7)),
-//            Dupn,
-//            Push(Integral(7)),
-//            Dupn,
-//            Push(Integral(7)),
-//            Dupn,
-//            LCall("Typed", "typedAdd", 2),
-//            Push(Rawbytes(hex"01 3b 9a ca 07")),
-//            LCall("Typed", "typedMod", 2),
-//            LCall("Typed", "typedAdd", 2),
-//            Push(Integral(8)),
-//            SwapN,
-//            Pop,
-//            Nop,
-//            Label("br37"),
-//            Nop,
-//            Push(Integral(5)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            LCall("Typed", "typedAdd", 2),
-//            Push(Integral(6)),
-//            SwapN,
-//            Pop,
-//            Label("br42"),
-//            Push(Integral(5)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 14")),
-//            LCall("Typed", "typedClt", 2),
-//            Push(Integral(4)),
-//            SwapN,
-//            Pop,
-//            Push(Integral(3)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            Eq,
-//            JumpI("br12"),
-//            Nop,
-//            Push(Integral(6)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            LCall("Typed", "typedAdd", 2),
-//            Push(Integral(7)),
-//            SwapN,
-//            Pop,
-//            Label("br58"),
-//            Push(Integral(6)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 0a")),
-//            LCall("Typed", "typedClt", 2),
-//            Push(Integral(3)),
-//            SwapN,
-//            Pop,
-//            Push(Integral(2)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            Eq,
-//            JumpI("br7"),
-//            Jump("br77"),
-//            Label("br71"),
-//            Nop,
-//            Push(Integral(7)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 02")),
-//            LCall("Typed", "typedMul", 2),
-//            Push(Integral(8)),
-//            SwapN,
-//            Pop,
-//            Nop,
-//            Label("br77"),
-//            Push(Integral(7)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 27 10")),
-//            LCall("Typed", "typedClt", 2),
-//            Push(Integral(2)),
-//            SwapN,
-//            Pop,
-//            Push(Integral(1)),
-//            Dupn,
-//            Push(Rawbytes(hex"01 00 00 00 01")),
-//            Eq,
-//            JumpI("br71"),
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Pop,
-//            Jump("stop"),
-//            Label("stop")
-//          ))
-//      )
-//    }
-//  }
-//}
+package pravda.dotnet.translation
+
+import pravda.dotnet.DiffUtils
+import pravda.dotnet.parsers.FileParser
+import pravda.vm.asm.PravdaAssembler
+import utest._
+
+object LoopTests extends TestSuite {
+
+  val tests = Tests {
+    'loopTranslation - {
+      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
+
+      DiffUtils.assertEqual(
+        Translator.translateAsm(methods, cilData, signatures),
+        PravdaAssembler.parse(
+          """
+            |dup
+            |push "Main"
+            |eq
+            |jumpi @method_Main
+            |jump @stop
+            |@method_Main:
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(5)
+            |swapn
+            |pop
+            |push int32(0)
+            |push int32(4)
+            |swapn
+            |pop
+            |jump @br17
+            |@br7:
+            |push int32(4)
+            |dupn
+            |push int32(2)
+            |add
+            |push int32(5)
+            |swapn
+            |pop
+            |push int32(3)
+            |dupn
+            |push int32(1)
+            |add
+            |push int32(4)
+            |swapn
+            |pop
+            |@br17:
+            |push int32(3)
+            |dupn
+            |push int32(10)
+            |lt
+            |push int8(1)
+            |cast
+            |push int32(3)
+            |swapn
+            |pop
+            |push int32(2)
+            |dupn
+            |push int32(1)
+            |eq
+            |jumpi @br7
+            |jump @br34
+            |@br28:
+            |push int32(4)
+            |dupn
+            |push int32(2)
+            |mul
+            |push int32(5)
+            |swapn
+            |pop
+            |@br34:
+            |push int32(4)
+            |dupn
+            |push int32(10000)
+            |lt
+            |push int8(1)
+            |cast
+            |push int32(2)
+            |swapn
+            |pop
+            |push int32(1)
+            |dupn
+            |push int32(1)
+            |eq
+            |jumpi @br28
+            |pop
+            |pop
+            |pop
+            |pop
+            |pop
+            |jump @stop
+            |@stop:
+            |
+          """.stripMargin)
+      )
+    }
+
+    'nestedLoopTranslation - {
+      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop_nested.exe")
+
+      DiffUtils.assertEqual(
+        Translator.translateAsm(methods, cilData, signatures),
+        PravdaAssembler.parse(
+          """
+            |dup
+            |push "Main"
+            |eq
+            |jumpi @method_Main
+            |jump @stop
+            |@method_Main:
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(8)
+            |swapn
+            |pop
+            |push int32(0)
+            |push int32(7)
+            |swapn
+            |pop
+            |jump @br58
+            |@br7:
+            |push int32(0)
+            |push int32(6)
+            |swapn
+            |pop
+            |jump @br42
+            |@br12:
+            |push int32(7)
+            |dupn
+            |push int32(2)
+            |mod
+            |push int32(0)
+            |lt
+            |push int8(1)
+            |cast
+            |push int32(5)
+            |swapn
+            |pop
+            |push int32(4)
+            |dupn
+            |push int8(9)
+            |cast
+            |not
+            |push int8(1)
+            |cast
+            |push int32(1)
+            |eq
+            |jumpi @br37
+            |push int32(7)
+            |dupn
+            |push int32(7)
+            |dupn
+            |push int32(7)
+            |dupn
+            |add
+            |push int32(1000000007)
+            |mod
+            |add
+            |push int32(8)
+            |swapn
+            |pop
+            |@br37:
+            |push int32(5)
+            |dupn
+            |push int32(1)
+            |add
+            |push int32(6)
+            |swapn
+            |pop
+            |@br42:
+            |push int32(5)
+            |dupn
+            |push int32(20)
+            |lt
+            |push int8(1)
+            |cast
+            |push int32(4)
+            |swapn
+            |pop
+            |push int32(3)
+            |dupn
+            |push int32(1)
+            |eq
+            |jumpi @br12
+            |push int32(6)
+            |dupn
+            |push int32(1)
+            |add
+            |push int32(7)
+            |swapn
+            |pop
+            |@br58:
+            |push int32(6)
+            |dupn
+            |push int32(10)
+            |lt
+            |push int8(1)
+            |cast
+            |push int32(3)
+            |swapn
+            |pop
+            |push int32(2)
+            |dupn
+            |push int32(1)
+            |eq
+            |jumpi @br7
+            |jump @br77
+            |@br71:
+            |push int32(7)
+            |dupn
+            |push int32(2)
+            |mul
+            |push int32(8)
+            |swapn
+            |pop
+            |@br77:
+            |push int32(7)
+            |dupn
+            |push int32(10000)
+            |lt
+            |push int8(1)
+            |cast
+            |push int32(2)
+            |swapn
+            |pop
+            |push int32(1)
+            |dupn
+            |push int32(1)
+            |eq
+            |jumpi @br71
+            |pop
+            |pop
+            |pop
+            |pop
+            |pop
+            |pop
+            |pop
+            |pop
+            |jump @stop
+            |@stop:
+          """.stripMargin)
+      )
+    }
+  }
+}

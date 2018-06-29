@@ -1,6 +1,7 @@
 package pravda.vm.asm
 
 import org.scalacheck.Arbitrary._
+import org.scalacheck.Gen.{alphaLowerChar, alphaUpperChar, frequency, const}
 import org.scalacheck.Prop._
 import org.scalacheck._
 import pravda.vm.{Data, DataSpecification}
@@ -20,7 +21,7 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
     Gen.listOf {
       DataSpecification.data.map {
         case x: Data.Primitive => Push(x)
-        case x => New(x)
+        case x                 => New(x)
       }
     }
 
@@ -37,7 +38,8 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
 
   val genControlOps: Gen[List[Operation]] = for {
     size <- Gen.chooseNum(1, 32)
-    genArrayChar = Gen.containerOfN[Array, Char](size, Gen.alphaChar)
+    genArrayChar = Gen
+      .containerOfN[Array, Char](size, frequency((1, const('_')), (10, alphaUpperChar), (90, alphaLowerChar)))
     labels <- Gen.listOf(genArrayChar.map(xs => new String(xs)))
     calls = labels.map(s => Call(Some(s)))
     jumps = labels.map(s => Jump(Some(s)))
@@ -70,7 +72,6 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
 
   property("render -> parser") = forAll(operationsGenerator(true)) { ops =>
     val text = PravdaAssembler.render(ops)
-//    println(s"$text\n-------")
     val parsed = PravdaAssembler.parser.parse(text).get.value.toList
     parsed == ops
   }

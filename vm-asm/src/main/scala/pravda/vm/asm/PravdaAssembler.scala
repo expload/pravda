@@ -183,11 +183,11 @@ object PravdaAssembler {
     case JumpI(Some(label)) => s"${operation.mnemonic} @$label"
     case Call(Some(label))  => s"${operation.mnemonic} @$label"
     case Comment(value)     => s"/*$value*/"
-    case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty)}"
-    case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty)}"
+    case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty = pretty)}"
+    case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty = pretty)}"
     case Label(name)        => s"@$name:"
-    case StructGet(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty)}"
-    case StructMut(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty)}"
+    case StructGet(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = pretty)}"
+    case StructMut(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = pretty)}"
     case _                  => operation.mnemonic
   }
 
@@ -222,7 +222,7 @@ object PravdaAssembler {
 
     import Data.parser.{primitive => dataPrimitive, all => dataAll}
     val digit = P(CharIn('0' to '9'))
-    val alpha = P(CharIn('a' to 'z', 'A' to 'Z'))
+    val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_"))
     val alphadig = P(alpha | digit)
     val ident = P("@" ~ (alpha.rep(1) ~ alphadig.rep(1).?).!)
     val whitespace = P(CharIn(" \t\r\n").rep)

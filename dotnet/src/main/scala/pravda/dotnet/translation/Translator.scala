@@ -424,7 +424,7 @@ object Translator {
         case LdLoc(num)  => loadLocal(num)
         case LdLocS(num) => loadLocal(num.toInt)
 
-        case Nop          => Right(List(Operation.Nop))
+        case Nop          => Right(List())
         case Ret          => Right(List())
         case Jump(label)  => Right(List(Operation.Jump(Some(label))))
         case JumpI(label) => Right(List(pushTypedInt(1), Operation(Opcodes.EQ), Operation.JumpI(Some(label))))
