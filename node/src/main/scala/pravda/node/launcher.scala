@@ -47,7 +47,7 @@ object launcher extends App {
   )
 
   val httpServer = {
-    val apiRoute = new ApiRoute(abciClient)
+    val apiRoute = new ApiRoute(abciClient, applicationStateDb)
     val guiRoute = new GuiRoute(abciClient, applicationStateDb)
     HttpServer.start(timeChainConfig.api, timeChainConfig.ui, apiRoute.route, guiRoute.route)
   }
