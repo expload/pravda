@@ -3,7 +3,8 @@ package pravda.vm.operations
 import pravda.vm.Data.Primitive.{BigInt, Int16, Int32, Int8, Number, Uint16, Uint32, Uint8}
 import pravda.vm.VmError.WrongType
 import pravda.vm.WattCounter.CpuArithmetic
-import pravda.vm.{Memory, VmErrorException, WattCounter}
+import pravda.vm.operations.annotation.OpcodeImplementation
+import pravda.vm.{Memory, Opcodes, VmErrorException, WattCounter}
 
 /**
   * Pravda VM arithmetic opcodes implementation.
@@ -12,11 +13,10 @@ import pravda.vm.{Memory, VmErrorException, WattCounter}
   */
 final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
 
-  /**
-    * Makes '%' operation on two top items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes.MOD
-    */
+  @OpcodeImplementation(
+    opcode = Opcodes.MOD,
+    description = "Makes '%' operation on two top items from stack. Pushes result to stack."
+  )
   def mod(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>
@@ -122,11 +122,10 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
     }
   }
 
-  /**
-    * Makes '+' operation on two top items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes$.ADD
-    */
+  @OpcodeImplementation(
+    opcode = Opcodes.ADD,
+    description = "Makes '+' operation on two top items from stack. Pushes result to stack."
+  )
   def add(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>
@@ -232,11 +231,10 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
     }
   }
 
-  /**
-    * Makes '/' operation on two top items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes.DIV
-    */
+  @OpcodeImplementation(
+    opcode = Opcodes.DIV,
+    description = "Makes '/' operation on two top items from stack. Pushes result to stack."
+  )
   def div(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>
@@ -342,11 +340,10 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
     }
   }
 
-  /**
-    * Makes '*' operation on two top items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes.MUL
-    */
+  @OpcodeImplementation(
+    opcode = Opcodes.MUL,
+    description = "Makes '*' operation on two top items from stack. Pushes result to stack."
+  )
   def mul(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>

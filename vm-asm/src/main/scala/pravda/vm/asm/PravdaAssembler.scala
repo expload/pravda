@@ -21,7 +21,7 @@ import scala.collection.mutable
 object PravdaAssembler {
 
   import Data._
-  import Operation._
+  import Operation.{mnemonicByOpcode => mnemonic, _}
 
   /**
     * Parses text and assemble to Pravda VM bytecode.
@@ -93,7 +93,7 @@ object PravdaAssembler {
       case Jump(None)        => putOp(Opcodes.JUMP)
       case JumpI(None)       => putOp(Opcodes.JUMPI)
       case Call(None)        => putOp(Opcodes.CALL)
-      case Orphan(opcode, _) => putOp(opcode)
+      case Orphan(opcode)    => putOp(opcode)
       // Simple operations
       case Nop        => ()
       case _: Comment => ()
@@ -123,7 +123,7 @@ object PravdaAssembler {
     var label = Option.empty[String]
     while (buffer.hasRemaining) {
       val opcode = buffer.get & 0xff
-      operations += Operation.operationByCode.getOrElse(
+      operations += Operation.operationByOpcode.getOrElse(
         key = opcode,
         default = (opcode: @switch) match {
           case Opcodes.META =>
@@ -181,16 +181,23 @@ object PravdaAssembler {
     *               adds space after commas and colons, etc.
     */
   def render(operation: Operation, pretty: Boolean): String = operation match {
-    case Jump(Some(label))  => s"${operation.mnemonic} @$label"
-    case JumpI(Some(label)) => s"${operation.mnemonic} @$label"
-    case Call(Some(label))  => s"${operation.mnemonic} @$label"
+    case Jump(Some(label))  => s"${mnemonic(Opcodes.JUMP)} @$label"
+    case JumpI(Some(label)) => s"${mnemonic(Opcodes.JUMPI)} @$label"
+    case Call(Some(label))  => s"${mnemonic(Opcodes.CALL)} @$label"
+    case Jump(None)         => mnemonic(Opcodes.JUMP)
+    case JumpI(None)        => mnemonic(Opcodes.JUMPI)
+    case Call(None)         => mnemonic(Opcodes.CALL)
     case Comment(value)     => s"/*$value*/"
-    case Push(data)         => s"${operation.mnemonic} ${data.mkString(pretty = pretty)}"
-    case New(data)          => s"${operation.mnemonic} ${data.mkString(pretty = pretty)}"
+    case Push(data)         => s"${mnemonic(Opcodes.PUSHX)} ${data.mkString(pretty = pretty)}"
+    case New(data)          => s"${mnemonic(Opcodes.NEW)} ${data.mkString(pretty = pretty)}"
     case Label(name)        => s"@$name:"
-    case StructGet(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = pretty)}"
-    case StructMut(Some(k)) => s"${operation.mnemonic} ${k.mkString(pretty = pretty)}"
-    case _                  => operation.mnemonic
+    case StructGet(Some(k)) => s"${mnemonic(Opcodes.STRUCT_GET)} ${k.mkString(pretty = pretty)}"
+    case StructMut(Some(k)) => s"${mnemonic(Opcodes.STRUCT_MUT)} ${k.mkString(pretty = pretty)}"
+    case StructGet(None)    => mnemonic(Opcodes.STRUCT_GET)
+    case StructMut(None)    => mnemonic(Opcodes.STRUCT_MUT)
+    case Orphan(opcode)     => mnemonic(opcode)
+    case Nop                => ""
+    case Meta(_)            => "" // TODO
   }
 
   /**
@@ -238,7 +245,7 @@ object PravdaAssembler {
     val comment = P("/*" ~ (!"*/" ~ AnyChar).rep.! ~ "*/").map(Operation.Comment)
 
     val operation = Operation.Orphans
-      .map(op => Rule(op.mnemonic, () => IgnoreCase(op.mnemonic)).map(_ => op))
+      .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))
       .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment))
       .reduce(_ | _)
 

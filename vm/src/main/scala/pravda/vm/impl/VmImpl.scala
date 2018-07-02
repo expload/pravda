@@ -83,7 +83,7 @@ class VmImpl extends Vm {
           case TRANSFER  => nativeCoinOperations.transfer()
           case PTRANSFER => nativeCoinOperations.ptransfer()
           // Stack operations
-          case POP   => memory.pop()
+          case POP   => stackOperations.pop()
           case PUSHX => stackOperations.push()
           case DUP   => stackOperations.dup()
           case DUPN  => stackOperations.dupN()

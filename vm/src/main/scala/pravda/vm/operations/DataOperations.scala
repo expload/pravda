@@ -2,18 +2,17 @@ package pravda.vm.operations
 
 import pravda.vm.Data._
 import pravda.vm.VmError.WrongType
-import pravda.vm.{Memory, VmErrorException, WattCounter}
+import pravda.vm.operations.annotation.OpcodeImplementation
+import pravda.vm.{Memory, Opcodes, VmErrorException, WattCounter}
 
 final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 
   import Primitive._
 
-  /**
-    * Casts primitive to another type.
-    * new_type :: data :: stack
-    * @see pravda.vm.Data.Type
-    * @see pravda.vm.Opcodes.SLICE
-    */
+  @OpcodeImplementation(
+    opcode = Opcodes.CAST,
+    description = "Casts primitive to another type."
+  )
   def cast(): Unit = {
     val `type` = integer(memory.pop())
     val data = memory.pop()
@@ -22,11 +21,11 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
     memory.push(result)
   }
 
-  /**
-    * Takes start index, end index and item from the stack.
-    * Makes slice of item and puts result to the stack.
-    * @see pravda.vm.Opcodes.SLICE
-    */
+  @OpcodeImplementation(
+    opcode = pravda.vm.Opcodes.SLICE,
+    description =
+      "Takes start index, end index and item from the stack. Makes slice of item and puts result to the stack."
+  )
   def slice(): Unit = {
     val from = integer(memory.pop()).toInt
     val until = integer(memory.pop()).toInt
@@ -40,11 +39,10 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
     memory.push(sliced)
   }
 
-  /**
-    * Takes two items from stack.
-    * Concatenates them and put result to stack.
-    * @see pravda.vm.Opcodes.CONCAT
-    */
+  @OpcodeImplementation(
+    opcode = pravda.vm.Opcodes.CONCAT,
+    description = "Takes two items from stack. Concatenates them and put result to stack."
+  )
   def concat(): Unit = {
     val data = (memory.pop(), memory.pop()) match {
       case (Utf8(a), Utf8(b))   => Utf8(a + b)
