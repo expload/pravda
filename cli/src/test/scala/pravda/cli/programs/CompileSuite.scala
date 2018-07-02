@@ -26,6 +26,8 @@ object CompileSuite extends TestSuite {
         def asm(source: String): Id[Either[String, ByteString]] =
           if (source == StringSource) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] =
+          Left("nope")
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
@@ -38,6 +40,8 @@ object CompileSuite extends TestSuite {
     "disasm" - {
       val io = new IoLanguageStub(Some(BinarySource))
       val compilers = new CompilersLanguage[Id] {
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
         def asm(source: String): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
@@ -54,6 +58,8 @@ object CompileSuite extends TestSuite {
     "dotnet" - {
       val io = new IoLanguageStub(Some(BinarySource))
       val compilers = new CompilersLanguage[Id] {
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
         def asm(source: String): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =

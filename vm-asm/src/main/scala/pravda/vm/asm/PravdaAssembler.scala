@@ -4,6 +4,8 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import fastparse.parsers.Combinators.Rule
+import pravda.ParsingCommons
+import pravda.ParsingCommons.ParsingError
 import pravda.vm.{Data, Opcodes, Meta => Metadata}
 
 import scala.annotation.switch
@@ -27,7 +29,7 @@ object PravdaAssembler {
     *                   It can be used by disassembler.
     * @return Error | Bytecode
     */
-  def assemble(text: String, saveLabels: Boolean): Either[String, ByteString] =
+  def assemble(text: String, saveLabels: Boolean): Either[ParsingError, ByteString] =
     parse(text).map(assemble(_, saveLabels))
 
   /**
@@ -203,13 +205,10 @@ object PravdaAssembler {
     * Parses text to sequence of operation.
     * @return Error | Operations
     */
-  def parse(text: String): Either[String, Seq[Operation]] = {
+  def parse(text: String): Either[ParsingError, Seq[Operation]] = {
     import fastparse.all._
-    P(Start ~ parser ~ End).parse(text) match {
-      case Parsed.Success(operations, _) => Right(operations)
-      case failure @ Parsed.Failure(_, _, _) =>
-        Left(failure.extra.input.repr.errorMessage(failure.extra.input, failure.extra.traced.expected, failure.index))
-    }
+    val p = P(Start ~ parser ~ End).parse(text)
+    ParsingCommons.prettyPrintError(text, p)
   }
 
   /**

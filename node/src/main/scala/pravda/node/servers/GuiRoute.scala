@@ -299,7 +299,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         }
                       eventuallyErrorOrTransaction flatMap {
                         case Left(error) =>
-                          access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                          access.transition(_ =>
+                            SendTransactionScreen(inProgress = false, maybeResult = Some(error.mkString)))
                         case Right(tx) =>
                           for {
                             _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
@@ -352,7 +353,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         }
                       eventuallyErrorOrTransaction flatMap {
                         case Left(error) =>
-                          access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                          access.transition(_ =>
+                            SendTransactionScreen(inProgress = false, maybeResult = Some(error.mkString)))
                         case Right(tx) =>
                           for {
                             _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
