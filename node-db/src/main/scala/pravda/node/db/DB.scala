@@ -18,12 +18,19 @@ object DB {
   def apply(path: String, initialHash: Option[Array[Byte]]): DB = {
     new DB(path, initialHash)
   }
+
+  final case class Result(bytes: Array[Byte]) {
+    def as[V](implicit valueReader: ValueReader[V]): V = valueReader.fromBytes(bytes)
+  }
+
 }
 
 class DB(
     path: String,
     initialHash: Option[Array[Byte]]
 ) {
+
+  import DB._
 
   private val options = new Options
   options.createIfMissing(true)
@@ -188,10 +195,6 @@ class DB(
     // scalafix:off DisableSyntax.keywords.null
     put(key, null)(keyWriter, ValueWriter.nullWriter)
     // scalafix:on DisableSyntax.keywords.null
-  }
-
-  final case class Result(bytes: Array[Byte]) {
-    def as[V](implicit valueReader: ValueReader[V]): V = valueReader.fromBytes(bytes)
   }
 
   def get[K](key: K)(implicit keyWriter: KeyWriter[K]): Future[Option[Result]] = Future {

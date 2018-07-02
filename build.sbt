@@ -4,6 +4,9 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 enablePlugins(GitVersioning)
 
+skip in publish := true
+
+git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) }
 git.gitTagToVersionNumber := { tag: String =>
   if (tag.length > 0) Some(tag)
   else None
@@ -21,7 +24,15 @@ val scalacheckOps = Seq(
 )
 
 val commonSettings = Seq(
-  organization := "io.mytc",
+  organization := "com.expload",
+
+  licenses += ("Apache-2.0", url("http://www.opensource.org/licenses/apache2.0.php")),
+
+  skip in publish := false,
+  bintrayOrganization := Some("expload"),
+  bintrayRepository := "oss",
+  bintrayVcsUrl := Some("https://github.com/expload/pravda"),
+
   crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
@@ -45,10 +56,12 @@ val commonSettings = Seq(
 ) ++ scalafixSettings
 
 lazy val common = (project in file("common"))
-  .settings(
-    normalizedName := "pravda-common"
-  )
   .settings(commonSettings: _*)
+  .settings(
+    name := "pravda-common",
+    normalizedName := "pravda-common",
+    description := "Common utils used across Pravda"
+  )
   .settings(
     libraryDependencies ++= Seq(
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
@@ -59,10 +72,12 @@ lazy val common = (project in file("common"))
   )
 
 lazy val `vm-api` = (project in file("vm-api"))
-  .settings(
-    normalizedName := "pravda-vm-api",
-  )
   .settings( commonSettings: _* )
+  .settings(
+    name := "pravda-vm-api",
+    normalizedName := "pravda-vm-api",
+    description := "Pravda VM API"
+  )
   .settings(scalacheckOps:_*)
   .settings(
     testOptions in Test ++= Seq(
@@ -76,8 +91,12 @@ lazy val `vm-api` = (project in file("vm-api"))
   .dependsOn(common)
 
 lazy val vm = (project in file("vm"))
-  .settings(normalizedName := "pravda-vm")
   .settings(commonSettings: _*)
+  .settings(
+    name := "pravda-vm",
+    normalizedName := "pravda-vm",
+    description := "Pravda Virtual Machine"
+  )
   .settings(
     libraryDependencies ++= Seq(
       "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"
@@ -88,8 +107,12 @@ lazy val vm = (project in file("vm"))
 
 lazy val `vm-asm` = (project in file("vm-asm"))
   .dependsOn(`vm-api` % "test->test;compile->compile")
-  .settings(normalizedName := "pravda-vm-asm")
   .settings(commonSettings: _*)
+  .settings(
+    name := "pravda-vm-asm",
+    normalizedName := "pravda-vm-asm",
+    description := "Pravda Virtual Machine Assembly language"
+  )
   .settings(scalacheckOps:_*)
   .settings(
     testOptions in Test ++= Seq(
@@ -104,8 +127,12 @@ lazy val `vm-asm` = (project in file("vm-asm"))
 
 lazy val dotnet = (project in file("dotnet"))
   .dependsOn(`vm-asm`)
-  .settings(normalizedName := "pravda-dotnet")
   .settings(commonSettings: _*)
+  .settings(
+    name := "pravda-dotnet",
+    normalizedName := "pravda-dotnet",
+    description := "Pravda .Net-compatible languages"
+  )
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.0.1",
@@ -115,6 +142,12 @@ lazy val dotnet = (project in file("dotnet"))
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "pravda-node-db",
+    normalizedName := "pravda-node-db",
+    description := "Pravda Node Database"
+  )
   .settings(
     normalizedName := "pravda-node-db",
     libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
@@ -123,6 +156,11 @@ lazy val `node-db` = (project in file("node-db"))
 lazy val node = (project in file("node"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
+  .settings(
+    name := "pravda-node",
+    normalizedName := "pravda-node",
+    description := "Pravda network node"
+  )
   .settings(
     normalizedName := "pravda-node",
     libraryDependencies ++= Seq(
@@ -180,6 +218,7 @@ lazy val node = (project in file("node"))
 lazy val yopt = (project in file("yopt"))
   .settings(commonSettings: _*)
   .settings(
+    skip in publish := true,
     normalizedName := "yopt"
   )
 
@@ -187,6 +226,7 @@ lazy val cli = (project in file("cli"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
   .settings(
+    skip in publish := true,
     normalizedName := "pravda",
     mainClass in Compile := Some("pravda.cli.Pravda"),
     libraryDependencies ++= Seq(
@@ -203,5 +243,8 @@ lazy val cli = (project in file("cli"))
   .dependsOn(dotnet)
 
 lazy val `cli-gen-docs` = (project in file("doc") / "ref" / "cli")
-  .settings(normalizedName := "pravda-cli-gen-docs")
+  .settings(
+    skip in publish := true,
+    normalizedName := "pravda-cli-gen-docs"
+  )
   .dependsOn(cli)
