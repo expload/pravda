@@ -17,13 +17,13 @@ object MarkdownPrinter {
     val cmds = CmdPath.walk(cmdPath)
     val optHead = s"## Options$EOL$EOL|Option|Description|$EOL|----|----|"
     val optBody = opts.map(printOpt(_, ctx)).mkString(EOL)
-    val cmdHead = s"## Commands$EOL$EOL|Command|Docs|Description|$EOL|----|----|----|"
+    val cmdHead = s"## Commands$EOL$EOL|Command|Description|$EOL|----|----|"
     val cmdBody = cmds
       .map { path =>
         val desc = path.text.replace('\n', ' ')
         val comm = path.cmds.map(_.name).mkString(" ")
-        val link = s"[docs]($comm.md)"
-        s"|`$comm`|$link|$desc|"
+        val link = s"[`$comm`](${path.toString}.md)"
+        s"|$link|$desc|"
       }
       .mkString(EOL)
     val optAll = if (opts.nonEmpty) s"$optHead$EOL$optBody" else s"${EOL}No options available"

@@ -3,19 +3,17 @@ package pravda.node.data
 import java.io.File
 
 import pravda.common.domain.Address
-import pravda.node.data.common.InitialDistributionMember
+import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 
-final case class TimechainConfig(
-    genesis: TimechainConfig.Genesis,
-    paymentWallet: TimechainConfig.PaymentWallet,
-    isValidator: Boolean,
-    initDistr: Seq[InitialDistributionMember],
-    dataDirectory: File,
-    seeds: String,
-    api: TimechainConfig.ApiConfig,
-    tendermint: TimechainConfig.TendermintConfig
-)
+final case class TimechainConfig(genesis: TimechainConfig.Genesis,
+                                 paymentWallet: TimechainConfig.PaymentWallet,
+                                 isValidator: Boolean,
+                                 coinDistribution: Seq[CoinDistributionMember],
+                                 dataDirectory: File,
+                                 seeds: String,
+                                 api: TimechainConfig.ApiConfig,
+                                 tendermint: TimechainConfig.TendermintConfig)
 
 object TimechainConfig {
   final case class Genesis(

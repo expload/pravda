@@ -103,6 +103,8 @@ lazy val vm = (project in file("vm"))
     description := "Pravda Virtual Machine"
   )
   .settings(
+    sources in doc := Seq.empty,
+    publishArtifact in packageDoc := false,
     libraryDependencies ++= Seq(
       "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"
     )
