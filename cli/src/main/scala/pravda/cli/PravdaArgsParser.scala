@@ -38,6 +38,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   }
               ),
             cmd("unity")
+              .text("Generate auxiliary code to call program's methods from Unity")
               .action(_ => PravdaConfig.Codegen(CodegenMode.Dotnet))
               .children(
                 opt[File]('d', "dir")
