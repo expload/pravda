@@ -2,7 +2,7 @@ package pravda.cli
 
 import java.io.File
 
-import pravda.cli.PravdaConfig.CompileMode
+import pravda.cli.PravdaConfig.{CompileMode, CodegenMode}
 import pravda.common.bytes
 import pravda.common.domain.NativeCoin
 import pravda.yopt._
@@ -35,6 +35,28 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                     case (file, PravdaConfig.GenAddress(_)) =>
                       PravdaConfig.GenAddress(Some(file.getAbsolutePath))
                     case (_, otherwise) => otherwise
+                  }
+              ),
+            cmd("dotnet")
+              .action(_ => PravdaConfig.Codegen(CodegenMode.Dotnet))
+              .children(
+                opt[File]('d', "dir")
+                  .text("Output directory for generated sources.")
+                  .action {
+                    case (f, conf: PravdaConfig.Codegen) => conf.copy(outDir = Some(f.getAbsolutePath))
+                    case (_, otherwise)                  => otherwise
+                  },
+                opt[File]('i', "input")
+                  .text("Input file with assembly.")
+                  .action {
+                    case (f, conf: PravdaConfig.Codegen) => conf.copy(input = Some(f.getAbsolutePath))
+                    case (_, otherwise)                  => otherwise
+                  },
+                opt[Unit]("exclude-big-integer")
+                  .text("Exclude custom BigInteger class.")
+                  .action {
+                    case ((), conf: PravdaConfig.Codegen) => conf.copy(excludeBigInteger = true)
+                    case (_, otherwise)                   => otherwise
                   }
               )
           ),

@@ -1,6 +1,6 @@
 package pravda.dotnet.translation
 
-import pravda.dotnet.DiffUtils
+import pravda.common.DiffUtils
 import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
@@ -15,6 +15,9 @@ object SmartProgramTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures),
         PravdaAssembler.parse(
           """
+            |meta method { int8(-1): "balanceOf", int8(-2): int8(3), int8(0): int8(4) }
+            |meta method { int8(-1): "transfer", int8(-2): int8(0), int8(0): int8(4), int8(2): int8(3) }
+            |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "balanceOf"
             |eq
@@ -53,7 +56,7 @@ object SmartProgramTests extends TestSuite {
             |push int32(4)
             |dupn
             |push int32(0)
-            |lt
+            |gt
             |push int8(1)
             |cast
             |push int32(3)
@@ -79,7 +82,7 @@ object SmartProgramTests extends TestSuite {
             |push int8(1)
             |cast
             |push int32(0)
-            |lt
+            |eq
             |push int8(1)
             |cast
             |push int32(2)
@@ -173,8 +176,10 @@ object SmartProgramTests extends TestSuite {
             |swap
             |concat
             |sexist
+            |push int8(1)
+            |cast
             |push int32(0)
-            |lt
+            |eq
             |push int8(1)
             |cast
             |push int32(3)
@@ -222,7 +227,7 @@ object SmartProgramTests extends TestSuite {
             |pop
             |ret
             |@stop:
-          """.stripMargin)
+          """.stripMargin).map(_.toList)
       )
     }
   }

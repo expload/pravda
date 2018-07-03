@@ -1,6 +1,6 @@
 package pravda.dotnet.translation
 
-import pravda.dotnet.DiffUtils
+import pravda.common.DiffUtils
 import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
@@ -15,6 +15,7 @@ object LoopTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures),
         PravdaAssembler.parse(
           """
+            |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "Main"
             |eq
@@ -96,7 +97,7 @@ object LoopTests extends TestSuite {
             |jump @stop
             |@stop:
             |
-          """.stripMargin)
+          """.stripMargin).map(_.toList)
       )
     }
 
@@ -107,6 +108,7 @@ object LoopTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures),
         PravdaAssembler.parse(
           """
+            |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "Main"
             |eq
@@ -141,7 +143,7 @@ object LoopTests extends TestSuite {
             |push int32(2)
             |mod
             |push int32(0)
-            |lt
+            |eq
             |push int8(1)
             |cast
             |push int32(5)
@@ -249,7 +251,7 @@ object LoopTests extends TestSuite {
             |pop
             |jump @stop
             |@stop:
-          """.stripMargin)
+          """.stripMargin).map(_.toList)
       )
     }
   }

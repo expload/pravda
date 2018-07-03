@@ -6,6 +6,7 @@ import java.io.File
 import java.nio.file.{Files, Paths}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
+import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
 
@@ -69,6 +70,10 @@ class IoLanguageImpl(implicit executionContext: ExecutionContext) extends IoLang
     if (!Files.isDirectory(path)) {
       Files.write(path, data.toByteArray)
     }
+  }
+
+  def writeToFile(pathString: String, data: String): Future[Unit] = Future {
+    writeToFile(pathString, ByteString.copyFrom(data.getBytes(StandardCharsets.UTF_8)))
   }
 
   def exit(code: Int): Future[Unit] = Future {

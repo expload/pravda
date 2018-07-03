@@ -197,7 +197,7 @@ object PravdaAssembler {
     case StructMut(None)    => mnemonic(Opcodes.STRUCT_MUT)
     case Orphan(opcode)     => mnemonic(opcode)
     case Nop                => ""
-    case Meta(_)            => "" // TODO
+    case Meta(info)         => s"${mnemonic(Opcodes.META)} ${info.mkString}"
   }
 
   /**
@@ -244,9 +244,11 @@ object PravdaAssembler {
     val struct_mut = P(IgnoreCase("struct_mut") ~ (delim ~ dataPrimitive).?).map(Operation.StructMut)
     val comment = P("/*" ~ (!"*/" ~ AnyChar).rep.! ~ "*/").map(Operation.Comment)
 
+    val meta = P("meta " ~ pravda.vm.Meta.parser.meta).map(Meta)
+
     val operation = Operation.Orphans
       .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))
-      .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment))
+      .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment, meta))
       .reduce(_ | _)
 
     P(whitespace ~ operation.rep(sep = delim) ~ whitespace)

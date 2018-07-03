@@ -1,6 +1,6 @@
 package pravda.dotnet.translation
 
-import pravda.dotnet.DiffUtils
+import pravda.common.DiffUtils
 import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
@@ -15,6 +15,7 @@ object IfTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures),
         PravdaAssembler.parse(
           """
+        |meta method { int8(-1): "Main", int8(-2): int8(0) }
         |dup
         |push "Main"
         |eq
@@ -63,7 +64,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(5)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |push int32(7)
@@ -83,7 +84,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(6)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |push int32(6)
@@ -111,7 +112,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(0)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |push int32(5)
@@ -145,7 +146,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(2)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |push int8(9)
@@ -197,7 +198,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(7)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |push int32(1)
@@ -206,7 +207,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(10)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |jump @br97
@@ -244,7 +245,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(1)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |push int8(9)
@@ -268,7 +269,7 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(20)
-        |lt
+        |gt
         |push int8(1)
         |cast
         |jump @br129

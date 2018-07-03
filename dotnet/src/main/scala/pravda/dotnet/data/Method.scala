@@ -1,11 +1,11 @@
 package pravda.dotnet.data
 
 import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL.OpCode
+import pravda.dotnet.parsers.CIL.Op
 import pravda.dotnet.parsers.PE.Info._
 import pravda.dotnet.utils._
 
-final case class Method(opcodes: List[OpCode], maxStack: Int, localVarSigIdx: Option[Long])
+final case class Method(opcodes: List[Op], maxStack: Int, localVarSigIdx: Option[Long])
 
 object Method {
 

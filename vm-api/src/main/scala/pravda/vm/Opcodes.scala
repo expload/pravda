@@ -66,5 +66,4 @@ object Opcodes {
   // Native coins
   final val TRANSFER = 0xc0
   final val PTRANSFER = 0xc1
-
 }

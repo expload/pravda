@@ -1,5 +1,4 @@
-package pravda.dotnet
-
+package pravda.common
 
 object DiffUtils {
 

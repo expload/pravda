@@ -1,6 +1,6 @@
 package pravda.dotnet.parsers
 
-import pravda.dotnet.DiffUtils
+import pravda.common.DiffUtils
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
