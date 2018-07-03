@@ -22,6 +22,7 @@ object BroadcastSuite extends TestSuite {
       val api = new NodeLanguageStub(Right("[]"))
       val io = new IoLanguageStub(files = mutable.Map("w.json" -> Wallet))
       val compilers = new CompilersLanguage[Id] {
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
         def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
@@ -36,6 +37,7 @@ object BroadcastSuite extends TestSuite {
       val io = new IoLanguageStub()
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
         def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
       }

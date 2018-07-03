@@ -70,7 +70,7 @@ lazy val `vm-api` = (project in file("vm-api"))
     ),
     libraryDependencies ++= Seq(
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "com.lihaoyi" %% "fastparse"  % "1.0.0"
+      "com.lihaoyi" %% "fastparse" % "1.0.0"
     )
   )
   .dependsOn(common)
@@ -96,9 +96,6 @@ lazy val `vm-asm` = (project in file("vm-asm"))
       // Reduce size because PravdaAssemblerSpecification
       // generated too big operation lists.
       Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "7"),
-    ),
-    libraryDependencies ++= Seq (
-      "com.lihaoyi" %% "fastparse"  % "1.0.0"
     )
   )
 

@@ -23,7 +23,11 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
         )
         result <- EitherT[F, String, ByteString] {
           config.compiler match {
-            case Asm    => compilers.asm(input.toStringUtf8)
+            case Asm =>
+              config.input match {
+                case Some(fileName) => compilers.asm(fileName, input.toStringUtf8)
+                case None           => compilers.asm(input.toStringUtf8)
+              }
             case Disasm => compilers.disasm(input).map(s => Right(ByteString.copyFromUtf8(s)))
             case DotNet => compilers.dotnet(input)
             case Nope   => Monad[F].pure(Left("Compilation mode should be selected."))

@@ -11,8 +11,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) extends CompilersLanguage[Future] {
 
+  def asm(fileName: String, source: String): Future[Either[String, ByteString]] = Future {
+    PravdaAssembler.assemble(source, saveLabels = true).left.map(s => s"$fileName:${s.mkString}")
+  }
+
   def asm(source: String): Future[Either[String, ByteString]] = Future {
-    PravdaAssembler.assemble(source, saveLabels = true)
+    PravdaAssembler.assemble(source, saveLabels = true).left.map(_.mkString)
   }
 
   def disasm(source: ByteString): Future[String] = Future {
