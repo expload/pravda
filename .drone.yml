@@ -14,7 +14,7 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - git clone https://github.com/exploadcom/scala-abci-server.git scala-abci-server --depth 1
+      - git clone https://github.com/expload/scala-abci-server.git scala-abci-server --depth 1
       - cd /workdir/code/scala-abci-server && sbt $SBT_OPTS publishLocal
       - cd /workdir/code && sbt $SBT_OPTS -mem 2048 scalafmtCheck scalafixTest test
   package:
