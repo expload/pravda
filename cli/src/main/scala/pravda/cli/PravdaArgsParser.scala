@@ -37,7 +37,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                     case (_, otherwise) => otherwise
                   }
               ),
-            cmd("dotnet")
+            cmd("unity")
               .action(_ => PravdaConfig.Codegen(CodegenMode.Dotnet))
               .children(
                 opt[File]('d', "dir")
