@@ -26,7 +26,8 @@ val scalacheckOps = Seq(
 val commonSettings = Seq(
   organization := "com.expload",
 
-  licenses += ("Apache-2.0", url("http://www.opensource.org/licenses/apache2.0.php")),
+  //  licenses += ("Apache-2.0", url("http://www.opensource.org/licenses/apache2.0.php")),
+  bintrayOmitLicense := true,
 
   skip in publish := false,
   bintrayOrganization := Some("expload"),
