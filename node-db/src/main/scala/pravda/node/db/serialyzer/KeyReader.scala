@@ -1,8 +1,5 @@
 package pravda.node.db.serialyzer
 
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
-
 trait KeyReader[A] extends ByteReader[A]
 
 object KeyReader {

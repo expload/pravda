@@ -2,8 +2,6 @@ package pravda.node.db
 
 import pravda.node.db.serialyzer.{KeyWriter, ValueWriter}
 
-import scala.concurrent.Future
-
 sealed trait Operation {
   val key: Array[Byte]
 }
