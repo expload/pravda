@@ -52,11 +52,15 @@ val commonSettings = Seq(
     "-Ywarn-unused-import",
     "-unchecked",
     "-Xmacro-settings:materialize-derivations",
-    "-Ypartial-unification"
+    "-Ypartial-unification",
+    "-Ypatmat-exhaust-depth", "40"
   )
 ) ++ scalafixSettings
 
 lazy val common = (project in file("common"))
+  .settings(
+    normalizedName := "pravda-common"
+  )
   .settings(commonSettings: _*)
   .settings(
     name := "pravda-common",
@@ -240,9 +244,11 @@ lazy val cli = (project in file("cli"))
   .dependsOn(node)
   .dependsOn(dotnet)
 
-lazy val `cli-gen-docs` = (project in file("doc") / "ref" / "cli")
+lazy val `gen-doc` = (project in file("doc") / "gen")
   .settings(
     skip in publish := true,
-    normalizedName := "pravda-cli-gen-docs"
+    normalizedName := "pravda-gen-doc"
   )
   .dependsOn(cli)
+  .dependsOn(vm)
+  .dependsOn(`vm-asm`)

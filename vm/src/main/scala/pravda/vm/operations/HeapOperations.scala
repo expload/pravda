@@ -7,6 +7,8 @@ import pravda.vm.Data.Primitive.{Bool, _}
 import pravda.vm.Data.{Primitive, Struct}
 import pravda.vm.VmError.WrongType
 import pravda.vm._
+import pravda.vm.Opcodes._
+import pravda.vm.operations.annotation.OpcodeImplementation
 
 /**
   * Pravda VM heap pravda.vm.Opcodes implementation.
@@ -15,12 +17,10 @@ import pravda.vm._
   */
 final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: WattCounter) {
 
-  /**
-    * Puts top item from the stack to the memory.
-    * Pushes reference to the stack.
-    *
-    * @see pravda.vm.Opcodes.PRIMITIVE_PUT
-    */
+  @OpcodeImplementation(
+    opcode = PRIMITIVE_PUT,
+    description = "Puts top item from the stack to the memory.Pushes reference to the stack."
+  )
   def primitivePut(): Unit = {
     val data = memory.pop()
     val i = memory.heapPut(data)
@@ -28,12 +28,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     memory.push(Data.Primitive.Ref(i))
   }
 
-  /**
-    * Uses top item from the stack as reference
-    * to data in the memory of program. Pushes
-    * retrieved data to the stack.
-    * @see pravda.vm.Opcodes.PRIMITIVE_GET
-    */
+  @OpcodeImplementation(
+    opcode = PRIMITIVE_GET,
+    description =
+      "Uses top item from the stack as referenceto data in the memory of program. Pushesretrieved data to the stack."
+  )
   def primitiveGet(): Unit = {
     val i = ref(memory.pop())
     memory.heapGet(i.data) match {
@@ -42,6 +41,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     }
   }
 
+  @OpcodeImplementation(
+    opcode = NEW,
+    description = "Puts the data following the opcode to the heap. " +
+      "Pushes reference to the stack."
+  )
   def `new`(): Unit = {
     val data = Data.readFromByteBuffer(program)
     val i = memory.heapPut(data)
@@ -51,6 +55,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     memory.push(reference)
   }
 
+  @OpcodeImplementation(
+    opcode = ARRAY_GET,
+    description = "Takes reference to array and index from the stack." +
+      "Pushes to the stack a primitive at index in array corresponding by the given reference."
+  )
   def arrayGet(): Unit = {
     val index = integer(memory.pop()).toInt
     val reference = ref(memory.pop())
@@ -74,6 +83,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     memory.push(datum)
   }
 
+  @OpcodeImplementation(
+    opcode = ARRAY_MUT,
+    description = "Takes reference to array, primitive and index from the stack." +
+      "Puts a primitive at index in array corresponding by the given reference."
+  )
   def arrayMut(): Unit = {
     val index = integer(memory.pop()).toInt
     val primitive = memory.pop()
@@ -95,6 +109,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     }
   }
 
+  @OpcodeImplementation(
+    opcode = STRUCT_GET,
+    description = "Takes reference to struct and key from the stack." +
+      "Pushes to the stack a primitive at key in struct corresponding by the given reference."
+  )
   def structGet(): Unit = {
     val key = memory.pop()
     val reference = ref(memory.pop())
@@ -108,6 +127,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     memory.push(datum)
   }
 
+  @OpcodeImplementation(
+    opcode = STRUCT_GET_STATIC,
+    description = "Takes reference to struct from the stack and key from bytes subsequent to opcode." +
+      "Pushes to the stack a primitive at key in struct corresponding by the given reference."
+  )
   def structGetStatic(): Unit = {
     val reference = ref(memory.pop())
     val key = Data.readFromByteBuffer(program)
@@ -121,6 +145,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     memory.push(datum)
   }
 
+  @OpcodeImplementation(
+    opcode = STRUCT_MUT,
+    description = "Takes reference to struct, primitive and key from the stack." +
+      "Puts a primitive at key in struct corresponding by the given reference."
+  )
   def structMut(): Unit = {
     val key = memory.pop()
     val reference = ref(memory.pop())
@@ -133,6 +162,12 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     }
   }
 
+  @OpcodeImplementation(
+    opcode = STRUCT_MUT_STATIC,
+    description = "Takes reference to struct and primitive from " +
+      "the stack and key from bytes subsequent to opcode." +
+      "Puts a primitive at key in struct corresponding by the given reference."
+  )
   def structMutStatic(): Unit = {
     val value = memory.pop()
     val reference = ref(memory.pop())

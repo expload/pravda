@@ -2,7 +2,9 @@ package pravda.vm.operations
 
 import pravda.vm.VmError.WrongType
 import pravda.vm.WattCounter.CpuSimpleArithmetic
+import pravda.vm.operations.annotation.OpcodeImplementation
 import pravda.vm.{Data, Memory, VmErrorException, WattCounter}
+import pravda.vm.Opcodes._
 
 import scala.annotation.strictfp
 
@@ -17,13 +19,11 @@ import scala.annotation.strictfp
   import Data._
   import Primitive._
 
-  /**
-    * Logical NOT (negation).
-    * Pops items from stack.
-    * If it's 'true' pushes 'false' to stack.
-    * Its it's 'false' pushes 'true' to stack.
-    * @see pravda.vm.Opcodes.NOT
-    */
+  @OpcodeImplementation(
+    opcode = NOT,
+    description =
+      "Logical NOT (negation).Pops items from stack.If it's 'true' pushes 'false' to stack.Its it's 'false' pushes 'true' to stack."
+  )
   def not(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     val x = memory.pop()
@@ -36,11 +36,10 @@ import scala.annotation.strictfp
     memory.push(r)
   }
 
-  /**
-    * Makes 'and' operation on two items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes.AND
-    */
+  @OpcodeImplementation(
+    opcode = AND,
+    description = "Makes 'and' operation on two items from stack. Pushes result to stack."
+  )
   def and(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>
@@ -57,11 +56,10 @@ import scala.annotation.strictfp
     }
   }
 
-  /**
-    * Makes 'or' operation on two items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes.OR
-    */
+  @OpcodeImplementation(
+    opcode = OR,
+    description = "Makes 'or' operation on two items from stack. Pushes result to stack."
+  )
   def or(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>
@@ -78,11 +76,10 @@ import scala.annotation.strictfp
     }
   }
 
-  /**
-    * Makes 'xor' operation on two items from stack.
-    * Pushes result to stack.
-    * @see pravda.vm.Opcodes.XOR
-    */
+  @OpcodeImplementation(
+    opcode = XOR,
+    description = "Makes 'xor' operation on two items from stack.Pushes result to stack."
+  )
   def xor(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     binaryOperation(memory, wattCounter) { (a, b) =>
@@ -169,31 +166,28 @@ import scala.annotation.strictfp
     }
   }
 
-  /**
-    * Checks top stack item is equal to subsequent stack item.
-    * Pushes Bool result to stack.
-    * @see pravda.vm.Opcodes.EQ
-    */
+  @OpcodeImplementation(
+    opcode = EQ,
+    description = "Checks top stack item is equal to subsequent stack item. Pushes Bool result to stack."
+  )
   def eq(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     binaryOperation(memory, wattCounter)((a, b) => Bool(a == b))
   }
 
-  /**
-    * Checks top stack item is greater than subsequent stack item.
-    * Pushes Bool result to stack.
-    * @see pravda.vm.Opcodes.GT
-    */
+  @OpcodeImplementation(
+    opcode = GT,
+    description = "Checks top stack item is greater than subsequent stack item.Pushes Bool result to stack."
+  )
   def gt(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     binaryOperation(memory, wattCounter)(gtImpl)
   }
 
-  /**
-    * Checks top stack item is less than subsequent stack item.
-    * Pushes Bool result to stack.
-    * @see pravda.vm.Opcodes.LT
-    */
+  @OpcodeImplementation(
+    opcode = LT,
+    description = "Checks top stack item is less than subsequent stack item. Pushes Bool result to stack."
+  )
   def lt(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     binaryOperation(memory, wattCounter)(ltImpl)

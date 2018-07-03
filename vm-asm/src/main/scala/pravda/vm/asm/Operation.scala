@@ -3,86 +3,126 @@ package pravda.vm.asm
 import pravda.vm.Data.Primitive
 import pravda.vm.{Data, Opcodes}
 
-sealed trait Operation {
-  def mnemonic: String
-}
+sealed trait Operation
 
 object Operation {
 
   import Opcodes._
 
-  sealed abstract class ParametrizedOperation(val mnemonic: String) extends Operation
-
   // Virtual operations (which aren't included to bytecode)
-  case object Nop                         extends ParametrizedOperation("")
-  final case class Comment(value: String) extends ParametrizedOperation("")
-  final case class Label(name: String)    extends ParametrizedOperation("")
+  case object Nop                         extends Operation
+  final case class Comment(value: String) extends Operation
+  final case class Label(name: String)    extends Operation
 
   // TODO add meta to parser
-  final case class Meta(meta: pravda.vm.Meta)        extends ParametrizedOperation("")
-  final case class Push(d: Data)                     extends ParametrizedOperation("push")
-  final case class New(d: Data)                      extends ParametrizedOperation("new")
-  final case class Jump(name: Option[String])        extends ParametrizedOperation("jump")
-  final case class JumpI(name: Option[String])       extends ParametrizedOperation("jumpi")
-  final case class Call(name: Option[String])        extends ParametrizedOperation("call")
-  final case class StructMut(key: Option[Primitive]) extends ParametrizedOperation("struct_mut")
-  final case class StructGet(key: Option[Primitive]) extends ParametrizedOperation("struct_get")
+  final case class Meta(meta: pravda.vm.Meta)        extends Operation
+  final case class Push(d: Data)                     extends Operation
+  final case class New(d: Data)                      extends Operation
+  final case class Jump(name: Option[String])        extends Operation
+  final case class JumpI(name: Option[String])       extends Operation
+  final case class Call(name: Option[String])        extends Operation
+  final case class StructMut(key: Option[Primitive]) extends Operation
+  final case class StructGet(key: Option[Primitive]) extends Operation
 
-  final case class Orphan(opcode: Int, mnemonic: String) extends Operation
-
-//  final val STRUCT_GET_STATIC = 0x23
-//  final val STRUCT_MUT_STATIC = 0x26
+  final case class Orphan(opcode: Int) extends Operation
 
   val Orphans: Seq[Operation.Orphan] = Seq(
-    Orphan(STOP, "stop"),
-    Orphan(RET, "ret"),
-    Orphan(PCALL, "pcall"),
-    Orphan(LCALL, "lcall"),
-    Orphan(POP, "pop"),
-    Orphan(DUPN, "dupn"),
-    Orphan(DUP, "dup"),
-    Orphan(SWAPN, "swapn"),
-    Orphan(SWAP, "swap"),
-    Orphan(ARRAY_GET, "array_get"),
-    Orphan(ARRAY_MUT, "array_mut"),
-    Orphan(PRIMITIVE_PUT, "primitive_put"),
-    Orphan(PRIMITIVE_GET, "primitive_get"),
-    Orphan(SPUT, "sput"),
-    Orphan(SGET, "sget"),
-    Orphan(SDROP, "sdrop"),
-    Orphan(SEXIST, "sexist"),
-    Orphan(ADD, "add"),
-    Orphan(MUL, "mul"),
-    Orphan(DIV, "div"),
-    Orphan(MOD, "mod"),
-    Orphan(LT, "lt"),
-    Orphan(GT, "gt"),
-    Orphan(NOT, "not"),
-    Orphan(AND, "and"),
-    Orphan(OR, "or"),
-    Orphan(XOR, "xor"),
-    Orphan(EQ, "eq"),
-    Orphan(CAST, "cast"),
-    Orphan(CONCAT, "concat"),
-    Orphan(SLICE, "slice"),
-    Orphan(FROM, "from"),
-    Orphan(PADDR, "paddr"),
-    Orphan(PCREATE, "pcreate"),
-    Orphan(PUPDATE, "pupdate"),
-    Orphan(TRANSFER, "transfer"),
-    Orphan(PTRANSFER, "ptransfer")
+    Orphan(STOP),
+    Orphan(RET),
+    Orphan(PCALL),
+    Orphan(LCALL),
+    Orphan(POP),
+    Orphan(DUPN),
+    Orphan(DUP),
+    Orphan(SWAPN),
+    Orphan(SWAP),
+    Orphan(ARRAY_GET),
+    Orphan(ARRAY_MUT),
+    Orphan(PRIMITIVE_PUT),
+    Orphan(PRIMITIVE_GET),
+    Orphan(SPUT),
+    Orphan(SGET),
+    Orphan(SDROP),
+    Orphan(SEXIST),
+    Orphan(ADD),
+    Orphan(MUL),
+    Orphan(DIV),
+    Orphan(MOD),
+    Orphan(LT),
+    Orphan(GT),
+    Orphan(NOT),
+    Orphan(AND),
+    Orphan(OR),
+    Orphan(XOR),
+    Orphan(EQ),
+    Orphan(CAST),
+    Orphan(CONCAT),
+    Orphan(SLICE),
+    Orphan(FROM),
+    Orphan(PADDR),
+    Orphan(PCREATE),
+    Orphan(PUPDATE),
+    Orphan(TRANSFER),
+    Orphan(PTRANSFER)
+  )
+
+  val mnemonicByOpcode: Map[Int, String] = Map(
+    PUSHX -> "push",
+    NEW -> "new",
+    JUMP -> "jump",
+    JUMPI -> "jumpi",
+    CALL -> "call",
+    STRUCT_MUT -> "struct_mut",
+    STRUCT_GET -> "struct_get",
+    STOP -> "stop",
+    RET -> "ret",
+    PCALL -> "pcall",
+    LCALL -> "lcall",
+    POP -> "pop",
+    DUPN -> "dupn",
+    DUP -> "dup",
+    SWAPN -> "swapn",
+    SWAP -> "swap",
+    ARRAY_GET -> "array_get",
+    ARRAY_MUT -> "array_mut",
+    PRIMITIVE_PUT -> "primitive_put",
+    PRIMITIVE_GET -> "primitive_get",
+    SPUT -> "sput",
+    SGET -> "sget",
+    SDROP -> "sdrop",
+    SEXIST -> "sexist",
+    ADD -> "add",
+    MUL -> "mul",
+    DIV -> "div",
+    MOD -> "mod",
+    LT -> "lt",
+    GT -> "gt",
+    NOT -> "not",
+    AND -> "and",
+    OR -> "or",
+    XOR -> "xor",
+    EQ -> "eq",
+    CAST -> "cast",
+    CONCAT -> "concat",
+    SLICE -> "slice",
+    FROM -> "from",
+    PADDR -> "paddr",
+    PCREATE -> "pcreate",
+    PUPDATE -> "pupdate",
+    TRANSFER -> "transfer",
+    PTRANSFER -> "ptransfer"
   )
 
   /**
     * Orphan operation by opcode.
     */
-  val operationByCode: Map[Int, Operation] = Orphans
+  val operationByOpcode: Map[Int, Operation] = Orphans
     .map(o => o.opcode -> o)
     .toMap
 
   /**
-    * Alias to [[operationByCode]]
+    * Alias to [[operationByOpcode]]
     */
   def apply(opcode: Int): Operation =
-    operationByCode(opcode)
+    operationByOpcode(opcode)
 }

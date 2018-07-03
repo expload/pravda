@@ -1,4 +1,4 @@
-How generate CLI reference
-==========================
+How generate reference docs
+===========================
 
-`sbt "cli-gen-docs/run -o doc/ref/cli"`
+`sbt "gen-doc/run"`

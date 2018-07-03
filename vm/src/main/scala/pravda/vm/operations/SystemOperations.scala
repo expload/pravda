@@ -1,9 +1,11 @@
 package pravda.vm.operations
 
 import pravda.common.domain
+import pravda.vm.Opcodes._
 import pravda.vm.VmError.OperationDenied
 import pravda.vm.WattCounter._
 import pravda.vm._
+import pravda.vm.operations.annotation.OpcodeImplementation
 
 final class SystemOperations(memory: Memory,
                              currentStorage: Option[Storage],
@@ -12,12 +14,22 @@ final class SystemOperations(memory: Memory,
                              maybeProgramAddress: Option[domain.Address],
                              vm: Vm) {
 
-  /**
-    * Takes first item in stack as program address
-    * and second item in stack as arguments count.
-    * Spawns program instance with it's own storage
-    * and current memory and environment.
-    */
+  @OpcodeImplementation(
+    opcode = STOP,
+    description = "Stops program execution."
+  )
+  def stop(): Unit = {
+    // See VmImpl!
+  }
+
+  @OpcodeImplementation(
+    opcode = PCALL,
+    description = "Takes two words by which it is followed. " +
+      "They are address `a` and the number of parameters `n`, " +
+      "respectively. Then it executes the smart contract with " +
+      "the address `a` and passes there only $n$ top elements " +
+      "of the stack."
+  )
   def pcall(): Unit = {
     wattCounter.cpuUsage(CpuExtCall, CpuStorageUse)
     val argumentsCount = integer(memory.pop())
@@ -31,12 +43,15 @@ final class SystemOperations(memory: Memory,
     }
   }
 
-  /**
-    * Takes first item in stack as program address
-    * and second item in stack as arguments count.
-    * Spawns program instance with current storage, memory
-    * and environment.
-    */
+  @OpcodeImplementation(
+    opcode = LCALL,
+    description = "Takes three words by which it is followed." +
+      "They are address `a`, function `f` and the number of " +
+      "parameters `n`, respectively. Then it executes the " +
+      "function `f` of the library (which is a special form of program) " +
+      "with the address `a` and passes there only $n$ top elements " +
+      "of the stack."
+  )
   def lcall(): Unit = {
     val argumentsCount = integer(memory.pop())
     memory.pop() match {
@@ -54,12 +69,12 @@ final class SystemOperations(memory: Memory,
     }
   }
 
-  /**
-    * Takes reference from stack and take byte
-    * array from heap follow the reference.
-    * Next takes address from stack and updates
-    * program code following the address.
-    */
+  @OpcodeImplementation(
+    opcode = PUPDATE,
+    description = "Takes address of a program and new bytecode. " +
+      "Replaces bytecode in storage. This opcode can be performed " +
+      "only from owner of the program"
+  )
   def pupdate(): Unit = {
     val programAddress = address(memory.pop())
     val reference = ref(memory.pop())
@@ -76,12 +91,11 @@ final class SystemOperations(memory: Memory,
     }
   }
 
-  /**
-    * Takes reference from stack and take byte
-    * array from heap follow the reference.
-    * Next uploads code to state.
-    * Pushes address to stack.
-    */
+  @OpcodeImplementation(
+    opcode = PCREATE,
+    description = "Takes bytecode of a new program, put's it to " +
+      "state and returns program address."
+  )
   def pcreate(): Unit = {
     val reference = ref(memory.pop())
     val code = bytes(memory.heapGet(reference.data))
@@ -93,9 +107,10 @@ final class SystemOperations(memory: Memory,
     memory.push(address(programAddress))
   }
 
-  /**
-    *
-    */
+  @OpcodeImplementation(
+    opcode = PADDR,
+    description = "Gives current program address."
+  )
   def paddr(): Unit = {
     maybeProgramAddress match {
       case Some(programAddress) =>
@@ -106,9 +121,10 @@ final class SystemOperations(memory: Memory,
     }
   }
 
-  /**
-    *
-    */
+  @OpcodeImplementation(
+    opcode = FROM,
+    description = "Gives current executor address."
+  )
   def from(): Unit = {
     val datum = address(environment.executor)
     wattCounter.memoryUsage(datum.volume.toLong)
