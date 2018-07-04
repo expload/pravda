@@ -100,7 +100,9 @@ lazy val vm = (project in file("vm"))
   .settings(
     name := "pravda-vm",
     normalizedName := "pravda-vm",
-    description := "Pravda Virtual Machine"
+    description := "Pravda Virtual Machine",
+    sources in doc := Seq.empty,
+    publishArtifact in packageDoc := false,
   )
   .settings(
     libraryDependencies ++= Seq(
