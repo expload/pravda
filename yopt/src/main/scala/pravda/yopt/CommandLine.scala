@@ -23,7 +23,7 @@ object CommandLine {
       verbs: List[Verb[C]] = List.empty[Verb[C]]
   ) extends Verb[C] {
 
-    def children(xs: Verb[C]*): Verb[C] = {
+    def children(xs: Verb[C]*): Cmd[C] = {
       copy(verbs = verbs ++ xs)
     }
 
@@ -108,7 +108,7 @@ object CommandLine {
   final case class ParseError(msg: String)            extends Result[Nothing]
   final case class HelpNeeded[C](cmdPath: CmdPath[C]) extends Result[C]
 
-  val helpOpts = List("-h", "--help", "/?")
+  val helpOpts = List("-h", "--help")
 }
 
 trait CommandLineBuilder[C] {
