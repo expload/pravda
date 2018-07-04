@@ -9,7 +9,16 @@ import pravda.yopt._
 
 object PravdaArgsParser extends CommandLine[PravdaConfig] {
 
-  val model =
+  val broadcastInput: CommandLine.Opt[PravdaConfig, File] =
+    opt[File]('i', "input")
+      .text("Input file.")
+      .action {
+        case (file, config: PravdaConfig.Broadcast) =>
+          config.copy(input = Some(file.getAbsolutePath))
+        case (_, otherwise) => otherwise
+      }
+
+  val model: CommandLine.Head[PravdaConfig] =
     head("pravda")
       .text("Pravda Command Line Interface to Pravda SDK")
       .children(
@@ -101,7 +110,8 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
           .children(
             cmd("run")
               .text("Send a transaction with Pravda Program address to the blockchain to run it")
-              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Run)),
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Run))
+              .children(broadcastInput),
             cmd("transfer")
               .text("Transfer native coins to a given wallet.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Transfer(None, None)))
@@ -123,26 +133,23 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               ),
             cmd("deploy")
               .text("Deploy Pravda program to the blockchain.")
-              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Deploy)),
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Deploy))
+              .children(broadcastInput),
             cmd("update")
               .text("Update existing Pravda program in the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
               .children(
+                broadcastInput,
                 opt[String]('p', "program")
+                  .text("Address of the program to update")
                   .action {
                     case (hex, config: PravdaConfig.Broadcast) =>
                       config.copy(mode = PravdaConfig.Broadcast.Mode.Update(Some(hex)))
                     case (_, otherwise) => otherwise
                   }
               ),
-            opt[File]('i', "input")
-              .text("Input file.")
-              .action {
-                case (file, config: PravdaConfig.Broadcast) =>
-                  config.copy(input = Some(file.getAbsolutePath))
-                case (_, otherwise) => otherwise
-              },
             opt[File]('w', "wallet")
+              .text("File with user wallet. You can obtain it using 'pravda gen address' command. Format: {\"address\": <public key>, \"privateKey\": <private key>}")
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(wallet = Some(file.getAbsolutePath))
@@ -174,40 +181,42 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
           .text("Control Pravda Network Node.")
           .action(_ => PravdaConfig.Node(PravdaConfig.Node.Mode.Nope, None))
           .children(
+            opt[File]('d', "data-dir")
+              .action {
+                case (dataDir, config: PravdaConfig.Node) =>
+                  config.copy(dataDir = Some(dataDir.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
             cmd("init")
               .text("Create data directory and configuration for a new node.")
-              .action(_ => PravdaConfig.Node(PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local, None), None))
+              .action(_ => PravdaConfig.Node(PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local(None)), None))
               .children(
                 opt[Unit]("local")
+                  .text("Initialize local node with self-validation.")
                   .action {
-                    case (_, config @ PravdaConfig.Node(PravdaConfig.Node.Mode.Init(_, initDistrConf), _)) =>
-                      config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local, initDistrConf))
+                    case (_, config: PravdaConfig.Node) =>
+                      config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local(None)))
                     case (_, otherwise) => otherwise
                   },
-                opt[Unit]("testnet")
+//                opt[Unit]("testnet")
+//                  .action {
+//                    case (_, config: PravdaConfig.Node) =>
+//                      config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Testnet))
+//                    case (_, otherwise) => otherwise
+//                  },
+                opt[String]("coin-distribution")
+                  .text("Initialize local node with addresses which have some amount of coins at initial state. JSON file. Format: [{\"address\":<public key in hex>,\"amount\":<number>}]")
                   .action {
-                    case (_, config @ PravdaConfig.Node(PravdaConfig.Node.Mode.Init(_, initDistrConf), _)) =>
-                      config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Testnet, initDistrConf))
-                    case (_, otherwise) => otherwise
-                  },
-                opt[String]("init-distr-conf")
-                  .action {
-                    case (initDistrConf, config @ PravdaConfig.Node(PravdaConfig.Node.Mode.Init(network, _), _)) =>
-                      config.copy(mode = PravdaConfig.Node.Mode.Init(network, Some(initDistrConf)))
+                    case (coinDistribution,
+                          config @ PravdaConfig
+                            .Node(PravdaConfig.Node.Mode.Init(local: PravdaConfig.Node.Network.Local), _)) =>
+                      config.copy(mode = PravdaConfig.Node.Mode.Init(local.copy(Some(coinDistribution))))
                     case (_, otherwise) => otherwise
                   }
               ),
             cmd("run")
               .text("Run initialized node.")
               .action(_ => PravdaConfig.Node(PravdaConfig.Node.Mode.Run, None))
-              .children(
-                opt[File]('d', "data-dir")
-                  .action {
-                    case (dataDir, config: PravdaConfig.Node) =>
-                      config.copy(dataDir = Some(dataDir.getAbsolutePath))
-                    case (_, otherwise) => otherwise
-                  },
-              )
           )
       )
 }

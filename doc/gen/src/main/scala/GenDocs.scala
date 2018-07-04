@@ -81,7 +81,7 @@ object GenDocs extends App {
 
     var hline = sizes.map("-" * _).mkString("|")
 
-    new PrintWriter("doc/ref/spec/opcodes.md") {
+    new PrintWriter("doc/ref/vm/opcodes.md") {
       write(s"<!--\nTHIS FILE IS GENERATED. DO NOT EDIT MANUALLY!\n-->\n")
       write("# Pravda VM opcodes\n")
       write(header + '\n')

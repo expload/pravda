@@ -2,7 +2,7 @@ package pravda.node.data.serialization
 
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.data.TimechainConfig.{CryptoKey, GenesisValidator}
-import pravda.node.data.common.InitialDistributionMember
+import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 import pureconfig.ConfigReader
 
@@ -38,13 +38,13 @@ object config {
     }
   }
 
-  implicit val tokenSaleReader: ConfigReader[Seq[InitialDistributionMember]] = {
+  implicit val tokenSaleReader: ConfigReader[Seq[CoinDistributionMember]] = {
     ConfigReader[String] map {
       _.split(",").toSeq
         .filter(_.nonEmpty)
         .map { s =>
           val Array(address, amount) = s.split(":")
-          InitialDistributionMember(
+          CoinDistributionMember(
             address = Address.fromHex(address),
             amount = NativeCoin @@ amount.toLong
           )

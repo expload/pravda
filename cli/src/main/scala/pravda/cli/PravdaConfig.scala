@@ -55,16 +55,18 @@ object PravdaConfig {
     sealed trait Network
 
     object Network {
-      case object Local   extends Network
+      final case class Local(coinDistribution: Option[String]) extends Network
+
       case object Testnet extends Network
     }
 
     sealed trait Mode
 
     object Mode {
-      case object Nope                                                       extends Mode
-      final case class Init(network: Network, initDistrConf: Option[String]) extends Mode
-      case object Run                                                        extends Mode
+      case object Nope extends Mode
+      case object Run  extends Mode
+
+      final case class Init(network: Network) extends Mode
     }
   }
 

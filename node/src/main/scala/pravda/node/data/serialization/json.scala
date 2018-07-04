@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import fastparse.utils.Base64
 import pravda.node.clients.AbciClient._
 import pravda.node.data.TimechainConfig
-import pravda.node.data.common.{ApplicationStateInfo, InitialDistributionMember}
+import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember}
 import pravda.common.bytes._
 import tethys._
 import tethys.derivation.builder._
@@ -208,11 +208,11 @@ object json {
   implicit val domainNodeSettingsWriter: JsonWriter[ApplicationStateInfo] =
     jsonWriter[ApplicationStateInfo]
 
-  implicit val initialDistributionReader: JsonReader[InitialDistributionMember] =
-    jsonReader[InitialDistributionMember]
+  implicit val initialDistributionReader: JsonReader[CoinDistributionMember] =
+    jsonReader[CoinDistributionMember]
 
-  implicit val initialDistributionWriter: JsonWriter[InitialDistributionMember] =
-    jsonWriter[InitialDistributionMember]
+  implicit val initialDistributionWriter: JsonWriter[CoinDistributionMember] =
+    jsonWriter[CoinDistributionMember]
 
   //---------------------------------------------------------------------------
   // ABCI

@@ -10,7 +10,7 @@ import pravda.cli.languages.{IoLanguage, NodeLanguage, RandomLanguage}
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes, crypto}
 import pravda.node.data.TimechainConfig.PaymentWallet
-import pravda.node.data.common.InitialDistributionMember
+import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
@@ -25,7 +25,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                                 dataDir: String,
                                 paymentWallet: PaymentWallet,
                                 validators: Seq[String],
-                                initialDistribution: Seq[InitialDistributionMember],
+                                coinDistribution: Seq[CoinDistributionMember],
                                 seeds: Seq[(String, Int)]) =
     s"""timechain {
        |  api {
@@ -40,7 +40,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |  }
        |  is-validator = $isValidator
        |  data-directory = "$dataDir"
-       |  init-distr = "${initialDistribution
+       |  coin-distribution = "${coinDistribution
          .map(d => s"${bytes.byteString2hex(d.address)}:${d.amount}")
          .mkString(",")}"
        |  seeds = "${seeds.map { case (host, port) => s"$host:$port" }.mkString(",")}"
@@ -65,6 +65,8 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
     io.readFromFile(path)
       .map(_.toRight(s"`$path` is not found."))
 
+  // FIXME remove bulldozer code
+
   private def init(dataDir: String, network: Network, initDistrConf: Option[String]): F[Either[String, Unit]] = {
 
     val result = for {
@@ -75,30 +77,30 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
       initialDistribution <- initDistrConf
         .map { path =>
           EitherT[F, String, ByteString](readFromFile(path)).flatMap { bs =>
-            EitherT[F, String, Seq[InitialDistributionMember]](
+            EitherT[F, String, Seq[CoinDistributionMember]](
               Monad[F].pure(
-                Try(transcode(Json @@ bs.toStringUtf8).to[Seq[InitialDistributionMember]])
+                Try(transcode(Json @@ bs.toStringUtf8).to[Seq[CoinDistributionMember]])
                   .fold(e => Left(e.getMessage), Right(_))
               )
             )
           }
         }
         .getOrElse(
-          EitherT[F, String, Seq[InitialDistributionMember]](
+          EitherT[F, String, Seq[CoinDistributionMember]](
             Monad[F].pure(
-              Right(List(InitialDistributionMember(Address @@ pub, NativeCoin.amount(50000))))
+              Right(List(CoinDistributionMember(Address @@ pub, NativeCoin.amount(50000))))
             )
           )
         )
 
       config = network match {
-        case Network.Local =>
+        case Network.Local(_) =>
           applicationConfig(
             isValidator = true,
             chainId = "local",
             dataDir = dataDir,
             paymentWallet = paymentWallet,
-            initialDistribution = initialDistribution,
+            coinDistribution = initialDistribution,
             validators = List(s"me:10:${bytes.byteString2hex(pub)}"),
             seeds = Nil
           )
@@ -131,9 +133,10 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         }
         _ <- EitherT[F, String, Unit] {
           config.mode match {
-            case Mode.Nope                         => Monad[F].pure(Left(s"[init|run] subcommand required."))
-            case Mode.Init(network, initDistrConf) => init(dataDir, network, initDistrConf)
-            case Mode.Run                          => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
+            case Mode.Nope                              => Monad[F].pure(Left(s"[init|run] subcommand required."))
+            case Mode.Init(network @ Network.Local(cd)) => init(dataDir, network, cd)
+            case Mode.Init(network)                     => init(dataDir, network, None)
+            case Mode.Run                               => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
           }
         }
       } yield ()

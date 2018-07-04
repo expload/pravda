@@ -10,16 +10,16 @@ Pravda Command Line Interface to Pravda SDK
 No options available
 ## Commands
 
-|Command|Docs|Description|
-|----|----|----|
-|`gen address`|[docs](gen address.md)|Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.|
-|`run`|[docs](run.md)|Run byte-code on Pravda VM|
-|`compile asm`|[docs](compile asm.md)|Assemble Pravda VM bytecode from text representation. Input file is a Pravda assembly language text file. Output is binary Pravda program. By default read from stdin and print to stdout.|
-|`compile disasm`|[docs](compile disasm.md)|Disassemble Pravda VM bytecode to text presentation. Input file is a Pravda executable binary. Output is a text file with Pravda assembly code. By default read from stdin and print to stdout.|
-|`compile dotnet`|[docs](compile dotnet.md)|Compile .exe produced by .NET compiler to Pravda VM bytecode. Input file is a .Net PE (portable executable). Output is binary Pravdaprogram. By default read from stdin and print to stdout.|
-|`broadcast run`|[docs](broadcast run.md)|Send a transaction with Pravda Program address to the blockchain to run it|
-|`broadcast transfer`|[docs](broadcast transfer.md)|Transfer native coins to a given wallet.|
-|`broadcast deploy`|[docs](broadcast deploy.md)|Deploy Pravda program to the blockchain.|
-|`broadcast update`|[docs](broadcast update.md)|Update existing Pravda program in the blockchain.|
-|`node init`|[docs](node init.md)|Create data directory and configuration for a new node.|
-|`node run`|[docs](node run.md)|Run initialized node.|
+|Command|Description|
+|----|----|
+|[`gen address`](pravda-gen-address.md)|Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.|
+|[`run`](pravda-run.md)|Run byte-code on Pravda VM|
+|[`compile asm`](pravda-compile-asm.md)|Assemble Pravda VM bytecode from text representation. Input file is a Pravda assembly language text file. Output is binary Pravda program. By default read from stdin and print to stdout.|
+|[`compile disasm`](pravda-compile-disasm.md)|Disassemble Pravda VM bytecode to text presentation. Input file is a Pravda executable binary. Output is a text file with Pravda assembly code. By default read from stdin and print to stdout.|
+|[`compile dotnet`](pravda-compile-dotnet.md)|Compile .exe produced by .NET compiler to Pravda VM bytecode. Input file is a .Net PE (portable executable). Output is binary Pravdaprogram. By default read from stdin and print to stdout.|
+|[`broadcast run`](pravda-broadcast-run.md)|Send a transaction with Pravda Program address to the blockchain to run it|
+|[`broadcast transfer`](pravda-broadcast-transfer.md)|Transfer native coins to a given wallet.|
+|[`broadcast deploy`](pravda-broadcast-deploy.md)|Deploy Pravda program to the blockchain.|
+|[`broadcast update`](pravda-broadcast-update.md)|Update existing Pravda program in the blockchain.|
+|[`node init`](pravda-node-init.md)|Create data directory and configuration for a new node.|
+|[`node run`](pravda-node-run.md)|Run initialized node.|
