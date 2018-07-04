@@ -14,10 +14,10 @@ sealed trait Meta {
   import Meta._
 
   def mkString: String = this match {
-    case LabelDef(name)     => s"""labelDef ${Utf8(name).mkString()}"""
-    case LabelUse(name)     => s"""labelUse ${Utf8(name).mkString()}"""
+    case LabelDef(name)     => s"""label_def ${Utf8(name).mkString()}"""
+    case LabelUse(name)     => s"""label_use ${Utf8(name).mkString()}"""
     case m: MethodSignature => s"method ${m.toStruct.mkString()}"
-    case ProgramName(name)  => s"""programName ${Utf8(name).mkString()}"""
+    case ProgramName(name)  => s"""program_name ${Utf8(name).mkString()}"""
     case Custom(name)       => s"""custom ${Utf8(name).mkString()}"""
   }
 
@@ -126,27 +126,27 @@ object Meta {
 
   object MethodSignature {
 
-    val nameKey = Data.Primitive.Int8(0xff.toByte)
-    val returnTpeKey = Data.Primitive.Int8(0xfe.toByte)
+    final val NameKey = Data.Primitive.Int8(0xff.toByte)
+    final val ReturnTpeKey = Data.Primitive.Int8(0xfe.toByte)
 
-    val maxArgs = 0x7e // 0xfd / 2
+    final val MaxArgs = 0x7e // 0xfd / 2
 
     def fromStruct(struct: Data.Struct): MethodSignature = {
-      assert(struct.data.contains(nameKey))
-      assert(struct.data.contains(returnTpeKey))
+      assert(struct.data.contains(NameKey))
+      assert(struct.data.contains(ReturnTpeKey))
 
-      val name = struct.data.getOrElse(nameKey, throw Data.InvalidData(struct)) match {
+      val name = struct.data.getOrElse(NameKey, throw Data.InvalidData(struct)) match {
         case Data.Primitive.Utf8(n) => n
         case _                      => throw Data.InvalidData(struct)
       }
 
-      val returnTpe = struct.data.getOrElse(returnTpeKey, throw Data.InvalidData(struct)) match {
+      val returnTpe = struct.data.getOrElse(ReturnTpeKey, throw Data.InvalidData(struct)) match {
         case p: Data.Primitive => TypeSignature.fromPrimivite(p)
         case _                 => throw Data.InvalidData(struct)
       }
 
       val args = for {
-        i <- 0 to maxArgs
+        i <- 0 to MaxArgs
         pi = Data.Primitive.Int8((2 * i).toByte)
         pNameI = Data.Primitive.Int8((2 * i + 1).toByte)
         if struct.data.contains(pi)
@@ -176,12 +176,12 @@ object Meta {
     lazy val argTpes: List[TypeSignature] = args.map(_._2)
 
     def toStruct: Data.Struct = {
-      assert(args.length <= MethodSignature.maxArgs, "Too many args in method.")
+      assert(args.length <= MethodSignature.MaxArgs, "Too many args in method.")
 
       Data.Struct(
         mutable.Map[Data.Primitive, Data.Primitive](
-          MethodSignature.nameKey -> Data.Primitive.Utf8(name),
-          MethodSignature.returnTpeKey -> returnTpe.toPrimitive
+          MethodSignature.NameKey -> Data.Primitive.Utf8(name),
+          MethodSignature.ReturnTpeKey -> returnTpe.toPrimitive
         ) ++ args.zipWithIndex.flatMap {
           case ((argName, arg), i) =>
             (Data.Primitive.Int8((2 * i).toByte) -> arg.toPrimitive) ::
@@ -222,9 +222,9 @@ object Meta {
   object parser {
 
     val meta: P[Meta] = P(
-      ("labelDef " ~ Data.parser.utf8.map(s => LabelDef(s.data))) |
-        ("labelUse " ~ Data.parser.utf8.map(s => LabelUse(s.data))) |
-        ("programName " ~ Data.parser.utf8.map(s => ProgramName(s.data))) |
+      ("label_def " ~ Data.parser.utf8.map(s => LabelDef(s.data))) |
+        ("label_use " ~ Data.parser.utf8.map(s => LabelUse(s.data))) |
+        ("program_name " ~ Data.parser.utf8.map(s => ProgramName(s.data))) |
         ("custom " ~ Data.parser.utf8.map(s => Custom(s.data))) |
         ("method " ~ Data.parser.struct.map(MethodSignature.fromStruct))
     )
