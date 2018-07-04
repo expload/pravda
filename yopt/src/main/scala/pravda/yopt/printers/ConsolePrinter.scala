@@ -67,7 +67,7 @@ object ConsolePrinter {
     val text = wrapToLines(cmdPath.text, maxWidth).mkString("\n")
     val optText = if (opts.isEmpty) "" else s"Options:$EOL$optP$EOL"
     val cmdText = if (cmds.isEmpty) "" else s"Commands:$EOL$cmdP"
-    s"$usageText$EOL$EOL$text$EOL$EOL$optText$cmdText"
+    s"$usageText$EOL$EOL$text$EOL$EOL$optText$EOL$cmdText"
   }
 
   private def printCmd[C](cmd: CommandLine.Cmd[C], pad: Int, shift: Int, divideCmds: Boolean): String = {

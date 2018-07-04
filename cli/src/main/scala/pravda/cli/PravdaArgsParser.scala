@@ -78,22 +78,22 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             cmd("asm")
-              .text("""|Assemble Pravda VM bytecode from text representation.
-                       |Input file is a Pravda assembly language text file.
-                       |Output is binary Pravda program.
-                       |By default read from stdin and print to stdout.""".stripMargin)
+              .text("Assemble Pravda VM bytecode from text representation. " +
+                "Input file is a Pravda assembly language text file. " +
+                "Output is binary Pravda program. " +
+                "By default read from stdin and print to stdout.")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Asm)),
             cmd("disasm")
-              .text("""|Disassemble Pravda VM bytecode to text presentation.
-                       |Input file is a Pravda executable binary.
-                       |Output is a text file with Pravda assembly code.
-                       |By default read from stdin and print to stdout.""".stripMargin)
+              .text("Disassemble Pravda VM bytecode to text presentation. " +
+                "Input file is a Pravda executable binary. " +
+                "Output is a text file with Pravda assembly code. " +
+                "By default read from stdin and print to stdout.")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Disasm)),
             cmd("dotnet")
-              .text("""|Compile .exe produced by .NET compiler to Pravda VM bytecode.
-                       |Input file is a .Net PE (portable executable).
-                       |Output is binary Pravdaprogram.
-                       |By default read from stdin and print to stdout.""".stripMargin)
+              .text("Compile .exe produced by .NET compiler to Pravda VM bytecode. " +
+                "Input file is a .Net PE (portable executable). " +
+                "Output is binary Pravdaprogram. " +
+                "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.DotNet))
           ),
         cmd("broadcast")
