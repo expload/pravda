@@ -2,7 +2,7 @@ package pravda.dotnet.translation.data
 
 import pravda.dotnet.parsers.Signatures
 
-case class MethodTranslationCtx(argsCount: Int,
+final case class MethodTranslationCtx(argsCount: Int,
                                 localsCount: Int,
                                 name: String,
                                 signatures: Map[Long, Signatures.Signature],
