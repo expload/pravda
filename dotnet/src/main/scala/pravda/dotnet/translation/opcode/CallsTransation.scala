@@ -13,7 +13,7 @@ case object CallsTransation extends OpcodeTranslator {
 
   private def detectMapping(sig: Signature): Boolean = {
     sig match {
-      case TypeSig(Tpe(Generic(TypeUtils.Mapping(), _), _)) => true
+      case TypeSig(Tpe(Generic(TypeDetectors.Mapping(), _), _)) => true
       case _                                                => false
     }
   }

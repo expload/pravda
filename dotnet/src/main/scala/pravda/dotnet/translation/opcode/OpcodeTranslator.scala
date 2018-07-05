@@ -20,7 +20,7 @@ trait OpcodeTranslator {
 object OpcodeTranslator {
 
   val translators: List[OpcodeTranslator] =
-    List(SimpleTranslations, ArgsLocalsTranslations, FieldsTranslation, JumpsTranslation, CallsTransation)
+    List(SimpleTranslations, ArgsLocalsTranslations, FieldsTranslation, JumpsTranslation, StringTranslation, CallsTransation)
 
   private def notUnknownOpcode[T](res: Either[TranslationError, T]): Boolean = res match {
     case Left(UnknownOpcode) => false
