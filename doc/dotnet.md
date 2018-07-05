@@ -28,5 +28,3 @@ Things that are *not* supported:
 - User defined classes as values, classes is used only as _programs_ for the moment;
 - Standard C# library;
 - Standard C# collections.
-
-(All these features will be implemented soon)

@@ -139,7 +139,7 @@ lazy val dotnet = (project in file("dotnet"))
   .settings(
     name := "pravda-dotnet",
     normalizedName := "pravda-dotnet",
-    description := "Pravda .Net-compatible languages"
+    description := "Pravda .NET-compatible languages"
   )
   .settings(
     libraryDependencies ++= Seq(

@@ -126,7 +126,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
             cmd("dotnet")
               .text(
                 "Compile .exe produced by .NET compiler to Pravda VM bytecode. " +
-                  "Input file is a .Net PE (portable executable). " +
+                  "Input file is a .NET PE (portable executable). " +
                   "Output is binary Pravdaprogram. " +
                   "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.DotNet))

@@ -5,7 +5,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 ```pravda compile dotnet --input <file> --output <file>```
 
 ## Description
-Compile .exe produced by .NET compiler to Pravda VM bytecode. Input file is a .Net PE (portable executable). Output is binary Pravdaprogram. By default read from stdin and print to stdout
+Compile .exe produced by .NET compiler to Pravda VM bytecode. Input file is a .NET PE (portable executable). Output is binary Pravdaprogram. By default read from stdin and print to stdout
 ## Options
 
 |Option|Description|
