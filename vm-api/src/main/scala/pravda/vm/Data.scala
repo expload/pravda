@@ -106,10 +106,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   def writeToByteBuffer(buffer: ByteBuffer): Unit = {
 
-    def isZeroLength(value: Long) = value > 0 && value < 64
+    def isZeroLength(value: Long): Boolean = value > 0 && value < 64
 
     // value < 64
-    def putZeroLengthValue(value: Byte) = {
+    def putZeroLengthValue(buffer: ByteBuffer, value: Byte): Unit = {
       //println(s"putZeroLengthValue: value = $value")
       if (!isZeroLength(value.toLong))
         throw new IllegalArgumentException(s"`value` should be less than 64 but it is $value")
@@ -158,12 +158,12 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       }
     }
 
-    def putBytes(buffer: ByteBuffer, data: ByteString) = {
+    def putBytes(buffer: ByteBuffer, data: ByteString): Unit = {
       putLength(buffer, data.size())
       buffer.put(data.asReadOnlyByteBuffer())
     }
 
-    def putString(buffer: ByteBuffer, data: String) = {
+    def putString(buffer: ByteBuffer, data: String): Unit = {
       val bytes = data.getBytes(StandardCharsets.UTF_8)
       putLength(buffer, bytes.length)
       buffer.put(bytes)
@@ -189,7 +189,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       if (l == 0) {
         buffer.put(0.toByte)
       } else if (l == 1 && isZeroLength(pb.get(pb.position).toLong)) {
-        putZeroLengthValue(pb.get(pb.position))
+        putZeroLengthValue(buffer, pb.get(pb.position))
       } else {
         putLength(buffer, l)
         buffer.put(pb)
@@ -640,7 +640,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   object parser {
 
-    val (primitive, all, utf8, ref, bytes, bigint, uint, int) = {
+    val (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct) = {
       import fastparse.all._
 
       val ws = P(CharIn(Seq(' ', '\t', '\n', '\r')).rep)
@@ -750,7 +750,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val all = P(struct | array | primitive)
 
       // exports
-      (primitive, all, utf8, ref, bytes, bigint, uint, int)
+      (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct)
     }
   }
 
@@ -901,6 +901,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
       extends Exception(s"Unexpected length: $expected expected but $given given at $offset")
+
+  final case class InvalidData(data: Data) extends Exception(s"Invalid data: ${data.mkString()}")
 
   object Type extends TaggedType[Byte] {
     final val Null = Type @@ 0x00.toByte

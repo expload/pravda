@@ -133,11 +133,13 @@ lazy val `vm-asm` = (project in file("vm-asm"))
 
 lazy val dotnet = (project in file("dotnet"))
   .dependsOn(`vm-asm`)
+  .dependsOn(common % "test->test")
+  .settings(normalizedName := "pravda-dotnet")
   .settings(commonSettings: _*)
   .settings(
     name := "pravda-dotnet",
     normalizedName := "pravda-dotnet",
-    description := "Pravda .Net-compatible languages"
+    description := "Pravda .NET-compatible languages"
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -228,6 +230,20 @@ lazy val yopt = (project in file("yopt"))
     normalizedName := "yopt"
   )
 
+lazy val codegen = (project in file("codegen"))
+  .settings(normalizedName := "pravda-codegen")
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % "1.0.1",
+      "com.github.spullara.mustache.java" % "compiler" % "0.9.5"
+    ))
+  .settings(scalacOptions ++= Seq(
+    "-Ypartial-unification"
+  ))
+  .dependsOn(`vm-asm`)
+  .dependsOn(common % "test->test")
+
 lazy val cli = (project in file("cli"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
@@ -247,6 +263,7 @@ lazy val cli = (project in file("cli"))
   .dependsOn(vm)
   .dependsOn(node)
   .dependsOn(dotnet)
+  .dependsOn(codegen)
 
 lazy val `gen-doc` = (project in file("doc") / "gen")
   .settings(
@@ -256,3 +273,12 @@ lazy val `gen-doc` = (project in file("doc") / "gen")
   .dependsOn(cli)
   .dependsOn(vm)
   .dependsOn(`vm-asm`)
+
+lazy val testkit = (project in file("testkit"))
+  .settings(
+    skip in publish := true,
+    normalizedName := "pravda-testkit"
+  )
+  .settings(commonSettings: _*)
+  .dependsOn(dotnet)
+  .dependsOn(codegen)

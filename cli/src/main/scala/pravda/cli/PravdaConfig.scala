@@ -71,4 +71,16 @@ object PravdaConfig {
   }
 
   final case class Node(mode: Node.Mode, dataDir: Option[String]) extends PravdaConfig
+
+  sealed trait CodegenMode
+
+  object CodegenMode {
+    case object Dotnet extends CodegenMode
+  }
+
+  final case class Codegen(codegenMode: CodegenMode,
+                           input: Option[String] = None,
+                           outDir: Option[String] = None,
+                           excludeBigInteger: Boolean = false)
+      extends PravdaConfig
 }

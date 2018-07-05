@@ -27,7 +27,7 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
     for {
       pe <- DotnetParser.parsePe(source.toByteArray)
       (_, cilData, methods, signatures) = pe
-      ops <- DotnetTranslator.translateAsm(methods, cilData, signatures)
+      ops <- DotnetTranslator.translateAsm(methods, cilData, signatures).left.map(_.toString)
       code <- Right(PravdaAssembler.assemble(ops, saveLabels = true))
     } yield code
   }

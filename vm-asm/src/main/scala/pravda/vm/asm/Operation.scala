@@ -110,7 +110,8 @@ object Operation {
     PCREATE -> "pcreate",
     PUPDATE -> "pupdate",
     TRANSFER -> "transfer",
-    PTRANSFER -> "ptransfer"
+    PTRANSFER -> "ptransfer",
+    META -> "meta"
   )
 
   /**

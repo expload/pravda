@@ -22,493 +22,493 @@ object CIL {
 
   type Token = TablesData.TableRowData
 
-  sealed trait OpCode {
+  sealed trait Op {
     def size: Int = 1
   }
 
   // prefixes
-  final case class Constrained(token: Token) extends OpCode {
+  final case class Constrained(token: Token) extends Op {
     override val size = 6
   }
-  final case class No(byte: Byte) extends OpCode {
+  final case class No(byte: Byte) extends Op {
     override val size = 3
   }
-  case object Readonly extends OpCode {
+  case object Readonly extends Op {
     override val size = 2
   }
-  case object Tail extends OpCode {
+  case object Tail extends Op {
     override val size = 2
   }
-  final case class Unaligned(alignment: Byte) extends OpCode {
+  final case class Unaligned(alignment: Byte) extends Op {
     override val size = 3
   }
-  case object Volatile extends OpCode {
+  case object Volatile extends Op {
     override val size = 2
   }
 
   // base instructions
-  case object Add      extends OpCode
-  case object AddOvf   extends OpCode
-  case object AddOvfUn extends OpCode
-  case object And      extends OpCode
-  case object ArgList extends OpCode {
+  case object Add      extends Op
+  case object AddOvf   extends Op
+  case object AddOvfUn extends Op
+  case object And      extends Op
+  case object ArgList extends Op {
     override val size = 2
   }
 
-  final case class Beq(target: Int) extends OpCode {
+  final case class Beq(target: Int) extends Op {
     override val size = 5
   }
-  final case class BeqS(target: Byte) extends OpCode {
+  final case class BeqS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class Bge(target: Int) extends OpCode {
+  final case class Bge(target: Int) extends Op {
     override val size = 5
   }
-  final case class BgeS(target: Byte) extends OpCode {
+  final case class BgeS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class BgeUn(target: Int) extends OpCode {
+  final case class BgeUn(target: Int) extends Op {
     override val size = 5
   }
-  final case class BgeUnS(target: Byte) extends OpCode {
+  final case class BgeUnS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class Bgt(target: Int) extends OpCode {
+  final case class Bgt(target: Int) extends Op {
     override val size = 5
   }
-  final case class BgtS(target: Byte) extends OpCode {
+  final case class BgtS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class BgtUn(target: Int) extends OpCode {
+  final case class BgtUn(target: Int) extends Op {
     override val size = 5
   }
-  final case class BgtUnS(target: Byte) extends OpCode {
+  final case class BgtUnS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class Ble(target: Int) extends OpCode {
+  final case class Ble(target: Int) extends Op {
     override val size = 5
   }
-  final case class BleS(target: Byte) extends OpCode {
+  final case class BleS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class BleUn(target: Int) extends OpCode {
+  final case class BleUn(target: Int) extends Op {
     override val size = 5
   }
-  final case class BleUnS(target: Byte) extends OpCode {
+  final case class BleUnS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class Blt(target: Int) extends OpCode {
+  final case class Blt(target: Int) extends Op {
     override val size = 5
   }
-  final case class BltS(target: Byte) extends OpCode {
+  final case class BltS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class BltUn(target: Int) extends OpCode {
+  final case class BltUn(target: Int) extends Op {
     override val size = 5
   }
-  final case class BltUnS(target: Byte) extends OpCode {
+  final case class BltUnS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class BneUn(target: Int) extends OpCode {
+  final case class BneUn(target: Int) extends Op {
     override val size = 5
   }
-  final case class BneUnS(target: Byte) extends OpCode {
+  final case class BneUnS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class Br(target: Int) extends OpCode {
+  final case class Br(target: Int) extends Op {
     override val size = 5
   }
-  final case class BrS(target: Byte) extends OpCode {
-    override val size = 2
-  }
-
-  case object Break extends OpCode
-
-  final case class BrFalse(target: Int) extends OpCode {
-    override val size = 5
-  }
-  final case class BrFalseS(target: Byte) extends OpCode {
-    override val size = 2
-  }
-  final case class BrNull(target: Int) extends OpCode {
-    override val size = 5
-  }
-  final case class BrNullS(target: Byte) extends OpCode {
-    override val size = 2
-  }
-  final case class BrZero(target: Int) extends OpCode {
-    override val size = 5
-  }
-  final case class BrZeroS(target: Byte) extends OpCode {
+  final case class BrS(target: Byte) extends Op {
     override val size = 2
   }
 
-  final case class BrTrue(target: Int) extends OpCode {
+  case object Break extends Op
+
+  final case class BrFalse(target: Int) extends Op {
     override val size = 5
   }
-  final case class BrTrueS(target: Byte) extends OpCode {
+  final case class BrFalseS(target: Byte) extends Op {
     override val size = 2
   }
-  final case class BrInst(target: Int) extends OpCode {
+  final case class BrNull(target: Int) extends Op {
     override val size = 5
   }
-  final case class BrInstS(target: Byte) extends OpCode {
+  final case class BrNullS(target: Byte) extends Op {
+    override val size = 2
+  }
+  final case class BrZero(target: Int) extends Op {
+    override val size = 5
+  }
+  final case class BrZeroS(target: Byte) extends Op {
     override val size = 2
   }
 
-  final case class Call(token: Token) extends OpCode {
+  final case class BrTrue(target: Int) extends Op {
     override val size = 5
   }
-  final case class CallI(token: Token) extends OpCode {
+  final case class BrTrueS(target: Byte) extends Op {
+    override val size = 2
+  }
+  final case class BrInst(target: Int) extends Op {
+    override val size = 5
+  }
+  final case class BrInstS(target: Byte) extends Op {
+    override val size = 2
+  }
+
+  final case class Call(token: Token) extends Op {
+    override val size = 5
+  }
+  final case class CallI(token: Token) extends Op {
     override val size: Int = 5
   }
 
-  case object Ceq extends OpCode {
+  case object Ceq extends Op {
     override val size = 2
   }
-  case object Cgt extends OpCode {
+  case object Cgt extends Op {
     override val size = 2
   }
-  case object CgtUn extends OpCode {
+  case object CgtUn extends Op {
     override val size = 2
   }
-  case object CkFinite extends OpCode
-  case object Clt extends OpCode {
+  case object CkFinite extends Op
+  case object Clt extends Op {
     override val size = 2
   }
-  case object CltUn extends OpCode {
-    override val size = 2
-  }
-
-  case object ConvI1  extends OpCode
-  case object ConvI2  extends OpCode
-  case object ConvI4  extends OpCode
-  case object ConvI8  extends OpCode
-  case object ConvR4  extends OpCode
-  case object ConvR8  extends OpCode
-  case object ConvU1  extends OpCode
-  case object ConvU2  extends OpCode
-  case object ConvU4  extends OpCode
-  case object ConvU8  extends OpCode
-  case object ConvI   extends OpCode
-  case object ConvU   extends OpCode
-  case object ConvRUn extends OpCode
-
-  case object ConvOvfI1 extends OpCode
-  case object ConvOvfI2 extends OpCode
-  case object ConvOvfI4 extends OpCode
-  case object ConvOvfI8 extends OpCode
-  case object ConvOvfU1 extends OpCode
-  case object ConvOvfU2 extends OpCode
-  case object ConvOvfU4 extends OpCode
-  case object ConvOvfU8 extends OpCode
-  case object ConvOvfI  extends OpCode
-  case object ConvOvfU  extends OpCode
-
-  case object ConvOvfI1Un extends OpCode
-  case object ConvOvfI2Un extends OpCode
-  case object ConvOvfI4Un extends OpCode
-  case object ConvOvfI8Un extends OpCode
-  case object ConvOvfU1Un extends OpCode
-  case object ConvOvfU2Un extends OpCode
-  case object ConvOvfU4Un extends OpCode
-  case object ConvOvfU8Un extends OpCode
-  case object ConvOvfIUn  extends OpCode
-  case object ConvOvfUUn  extends OpCode
-
-  case object CpBlk extends OpCode {
+  case object CltUn extends Op {
     override val size = 2
   }
 
-  case object Div   extends OpCode
-  case object DivUn extends OpCode
-  case object Dup   extends OpCode
+  case object ConvI1  extends Op
+  case object ConvI2  extends Op
+  case object ConvI4  extends Op
+  case object ConvI8  extends Op
+  case object ConvR4  extends Op
+  case object ConvR8  extends Op
+  case object ConvU1  extends Op
+  case object ConvU2  extends Op
+  case object ConvU4  extends Op
+  case object ConvU8  extends Op
+  case object ConvI   extends Op
+  case object ConvU   extends Op
+  case object ConvRUn extends Op
 
-  case object EndFilter extends OpCode {
+  case object ConvOvfI1 extends Op
+  case object ConvOvfI2 extends Op
+  case object ConvOvfI4 extends Op
+  case object ConvOvfI8 extends Op
+  case object ConvOvfU1 extends Op
+  case object ConvOvfU2 extends Op
+  case object ConvOvfU4 extends Op
+  case object ConvOvfU8 extends Op
+  case object ConvOvfI  extends Op
+  case object ConvOvfU  extends Op
+
+  case object ConvOvfI1Un extends Op
+  case object ConvOvfI2Un extends Op
+  case object ConvOvfI4Un extends Op
+  case object ConvOvfI8Un extends Op
+  case object ConvOvfU1Un extends Op
+  case object ConvOvfU2Un extends Op
+  case object ConvOvfU4Un extends Op
+  case object ConvOvfU8Un extends Op
+  case object ConvOvfIUn  extends Op
+  case object ConvOvfUUn  extends Op
+
+  case object CpBlk extends Op {
     override val size = 2
   }
-  case object EndFinaly extends OpCode
 
-  case object InitBlk extends OpCode {
+  case object Div   extends Op
+  case object DivUn extends Op
+  case object Dup   extends Op
+
+  case object EndFilter extends Op {
+    override val size = 2
+  }
+  case object EndFinaly extends Op
+
+  case object InitBlk extends Op {
     override val size = 2
   }
 
-  final case class Jmp(token: Token) extends OpCode {
+  final case class Jmp(token: Token) extends Op {
     override val size = 5
   }
 
-  final case class LdArg(num: Int) extends OpCode {
+  final case class LdArg(num: Int) extends Op {
     override val size: Int = 6
   }
-  final case class LdArgS(num: Short) extends OpCode {
+  final case class LdArgS(num: Short) extends Op {
     override val size = 2
   }
-  case object LdArg0 extends OpCode
-  case object LdArg1 extends OpCode
-  case object LdArg2 extends OpCode
-  case object LdArg3 extends OpCode
-  final case class LdArgA(num: Int) extends OpCode {
+  case object LdArg0 extends Op
+  case object LdArg1 extends Op
+  case object LdArg2 extends Op
+  case object LdArg3 extends Op
+  final case class LdArgA(num: Int) extends Op {
     override val size = 6
   }
-  final case class LdArgAS(num: Short) extends OpCode {
+  final case class LdArgAS(num: Short) extends Op {
     override val size = 2
   }
 
-  final case class LdcI4(num: Int) extends OpCode {
+  final case class LdcI4(num: Int) extends Op {
     override val size = 5
   }
-  final case class LdcI8(num: Long) extends OpCode {
+  final case class LdcI8(num: Long) extends Op {
     override val size = 9
   }
-  final case class LdcR4(num: Float) extends OpCode {
+  final case class LdcR4(num: Float) extends Op {
     override val size = 5
   }
-  final case class LdcR8(num: Double) extends OpCode {
+  final case class LdcR8(num: Double) extends Op {
     override val size = 9
   }
-  case object LdcI40 extends OpCode
-  case object LdcI41 extends OpCode
-  case object LdcI42 extends OpCode
-  case object LdcI43 extends OpCode
-  case object LdcI44 extends OpCode
-  case object LdcI45 extends OpCode
-  case object LdcI46 extends OpCode
-  case object LdcI47 extends OpCode
-  case object LdcI48 extends OpCode
-  case object LdcI4M1 extends OpCode {
+  case object LdcI40 extends Op
+  case object LdcI41 extends Op
+  case object LdcI42 extends Op
+  case object LdcI43 extends Op
+  case object LdcI44 extends Op
+  case object LdcI45 extends Op
+  case object LdcI46 extends Op
+  case object LdcI47 extends Op
+  case object LdcI48 extends Op
+  case object LdcI4M1 extends Op {
     override val size = 2
   }
-  final case class LdcI4S(num: Byte) extends OpCode {
+  final case class LdcI4S(num: Byte) extends Op {
     override val size = 2
   }
 
-  final case class LdFtn(token: Token) extends OpCode {
+  final case class LdFtn(token: Token) extends Op {
     override val size = 6
   }
 
-  case object LdIndI1  extends OpCode
-  case object LdIndI2  extends OpCode
-  case object LdIndI4  extends OpCode
-  case object LdIndI8  extends OpCode
-  case object LdIndU1  extends OpCode
-  case object LdIndU2  extends OpCode
-  case object LdIndU4  extends OpCode
-  case object LdIndR4  extends OpCode
-  case object LdIndR8  extends OpCode
-  case object LdIndI   extends OpCode
-  case object LdIndRef extends OpCode
+  case object LdIndI1  extends Op
+  case object LdIndI2  extends Op
+  case object LdIndI4  extends Op
+  case object LdIndI8  extends Op
+  case object LdIndU1  extends Op
+  case object LdIndU2  extends Op
+  case object LdIndU4  extends Op
+  case object LdIndR4  extends Op
+  case object LdIndR8  extends Op
+  case object LdIndI   extends Op
+  case object LdIndRef extends Op
 
-  final case class LdLoc(num: Int) extends OpCode {
+  final case class LdLoc(num: Int) extends Op {
     override val size = 6
   }
-  final case class LdLocS(num: Short) extends OpCode {
+  final case class LdLocS(num: Short) extends Op {
     override val size = 2
   }
-  case object LdLoc0 extends OpCode
-  case object LdLoc1 extends OpCode
-  case object LdLoc2 extends OpCode
-  case object LdLoc3 extends OpCode
-  final case class LdLocA(num: Int) extends OpCode {
+  case object LdLoc0 extends Op
+  case object LdLoc1 extends Op
+  case object LdLoc2 extends Op
+  case object LdLoc3 extends Op
+  final case class LdLocA(num: Int) extends Op {
     override val size = 6
   }
-  final case class LdLocAS(num: Short) extends OpCode {
+  final case class LdLocAS(num: Short) extends Op {
     override val size = 2
   }
 
-  case object LdNull extends OpCode
+  case object LdNull extends Op
 
-  final case class Leave(target: Int) extends OpCode {
+  final case class Leave(target: Int) extends Op {
     override val size = 5
   }
-  final case class LeaveS(target: Byte) extends OpCode {
+  final case class LeaveS(target: Byte) extends Op {
     override val size = 2
   }
 
-  case object LocAlloc extends OpCode {
+  case object LocAlloc extends Op {
     override val size = 2
   }
 
-  case object Mul       extends OpCode
-  case object MullOvf   extends OpCode
-  case object MullOvfUn extends OpCode
+  case object Mul      extends Op
+  case object MulOvf   extends Op
+  case object MulOvfUn extends Op
 
-  case object Neg   extends OpCode
-  case object Nop   extends OpCode
-  case object Not   extends OpCode
-  case object Or    extends OpCode
-  case object Pop   extends OpCode
-  case object Rem   extends OpCode
-  case object RemUn extends OpCode
-  case object Ret   extends OpCode
-  case object Shl   extends OpCode
-  case object Shr   extends OpCode
-  case object ShrUn extends OpCode
+  case object Neg   extends Op
+  case object Nop   extends Op
+  case object Not   extends Op
+  case object Or    extends Op
+  case object Pop   extends Op
+  case object Rem   extends Op
+  case object RemUn extends Op
+  case object Ret   extends Op
+  case object Shl   extends Op
+  case object Shr   extends Op
+  case object ShrUn extends Op
 
-  final case class StArg(num: Int) extends OpCode {
+  final case class StArg(num: Int) extends Op {
     override val size = 5
   }
-  final case class StArgS(num: Short) extends OpCode {
+  final case class StArgS(num: Short) extends Op {
     override val size = 2
   }
 
-  case object StIndI1  extends OpCode
-  case object StIndI2  extends OpCode
-  case object StIndI4  extends OpCode
-  case object StIndI8  extends OpCode
-  case object StIndR4  extends OpCode
-  case object StIndR8  extends OpCode
-  case object StIndI   extends OpCode
-  case object StIndRef extends OpCode
+  case object StIndI1  extends Op
+  case object StIndI2  extends Op
+  case object StIndI4  extends Op
+  case object StIndI8  extends Op
+  case object StIndR4  extends Op
+  case object StIndR8  extends Op
+  case object StIndI   extends Op
+  case object StIndRef extends Op
 
-  final case class StLoc(num: Int) extends OpCode {
+  final case class StLoc(num: Int) extends Op {
     override val size = 6
   }
-  final case class StLocS(num: Short) extends OpCode {
+  final case class StLocS(num: Short) extends Op {
     override val size = 2
   }
-  case object StLoc0 extends OpCode
-  case object StLoc1 extends OpCode
-  case object StLoc2 extends OpCode
-  case object StLoc3 extends OpCode
+  case object StLoc0 extends Op
+  case object StLoc1 extends Op
+  case object StLoc2 extends Op
+  case object StLoc3 extends Op
 
-  case object Sub      extends OpCode
-  case object SubOvf   extends OpCode
-  case object SubOvfUn extends OpCode
+  case object Sub      extends Op
+  case object SubOvf   extends Op
+  case object SubOvfUn extends Op
 
-  final case class Switch(targets: List[Int]) extends OpCode {
+  final case class Switch(targets: List[Int]) extends Op {
     override val size = 1 + targets.length * 4
   }
 
-  case object Xor extends OpCode
+  case object Xor extends Op
 
   // object instructions
 
-  final case class Box(typeToken: Token) extends OpCode {
+  final case class Box(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class CallVirt(methodToken: Token) extends OpCode {
+  final case class CallVirt(methodToken: Token) extends Op {
     override val size = 5
   }
-  final case class CastClass(typeToken: Token) extends OpCode {
+  final case class CastClass(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class CpObj(typeToken: Token) extends OpCode {
+  final case class CpObj(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class InitObj(typeToken: Token) extends OpCode {
+  final case class InitObj(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class IsInst(typeToken: Token) extends OpCode {
-    override val size = 5
-  }
-
-  final case class LdElem(typeToken: Token) extends OpCode {
-    override val size = 5
-  }
-  case object LdElemI1  extends OpCode
-  case object LdElemI2  extends OpCode
-  case object LdElemI4  extends OpCode
-  case object LdElemI8  extends OpCode
-  case object LdElemU1  extends OpCode
-  case object LdElemU2  extends OpCode
-  case object LdElemU4  extends OpCode
-  case object LdElemU8  extends OpCode
-  case object LdElemR4  extends OpCode
-  case object LdElemR8  extends OpCode
-  case object LdElemI   extends OpCode
-  case object LdElemRef extends OpCode
-  final case class LdElemA(typeToken: Token) extends OpCode {
+  final case class IsInst(typeToken: Token) extends Op {
     override val size = 5
   }
 
-  final case class LdFld(field: Token) extends OpCode {
+  final case class LdElem(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class LdFldA(field: Token) extends OpCode {
+  case object LdElemI1  extends Op
+  case object LdElemI2  extends Op
+  case object LdElemI4  extends Op
+  case object LdElemI8  extends Op
+  case object LdElemU1  extends Op
+  case object LdElemU2  extends Op
+  case object LdElemU4  extends Op
+  case object LdElemU8  extends Op
+  case object LdElemR4  extends Op
+  case object LdElemR8  extends Op
+  case object LdElemI   extends Op
+  case object LdElemRef extends Op
+  final case class LdElemA(typeToken: Token) extends Op {
     override val size = 5
   }
-  case object LdLen extends OpCode
-  final case class LdObj(typeToken: Token) extends OpCode {
+
+  final case class LdFld(field: Token) extends Op {
     override val size = 5
   }
-  final case class LdSFld(field: Token) extends OpCode {
+  final case class LdFldA(field: Token) extends Op {
     override val size = 5
   }
-  final case class LdSFldA(field: Token) extends OpCode {
+  case object LdLen extends Op
+  final case class LdObj(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class LdStr(string: String) extends OpCode {
+  final case class LdSFld(field: Token) extends Op {
     override val size = 5
   }
-  final case class LdToken(token: Token) extends OpCode {
+  final case class LdSFldA(field: Token) extends Op {
     override val size = 5
   }
-  final case class LdVirtFtn(method: Token) extends OpCode {
+  final case class LdStr(string: String) extends Op {
+    override val size = 5
+  }
+  final case class LdToken(token: Token) extends Op {
+    override val size = 5
+  }
+  final case class LdVirtFtn(method: Token) extends Op {
     override val size = 6
   }
 
-  final case class MkRefAny(cls: Token) extends OpCode {
+  final case class MkRefAny(cls: Token) extends Op {
     override val size = 5
   }
-  final case class NewArr(etype: Token) extends OpCode {
+  final case class NewArr(etype: Token) extends Op {
     override val size = 5
   }
-  final case class NewObj(ctor: Token) extends OpCode {
-    override val size = 5
-  }
-
-  case object RefAnyType extends OpCode {
-    override val size = 2
-  }
-  final case class RefAnyVal(typeToken: Token) extends OpCode {
+  final case class NewObj(ctor: Token) extends Op {
     override val size = 5
   }
 
-  case object ReThrow extends OpCode {
+  case object RefAnyType extends Op {
     override val size = 2
   }
-  final case class SizeOf(typeToken: Token) extends OpCode {
+  final case class RefAnyVal(typeToken: Token) extends Op {
+    override val size = 5
+  }
+
+  case object ReThrow extends Op {
+    override val size = 2
+  }
+  final case class SizeOf(typeToken: Token) extends Op {
     override val size = 6
   }
 
-  final case class StElem(typeToken: Token) extends OpCode {
+  final case class StElem(typeToken: Token) extends Op {
     override val size = 5
   }
-  case object StElemI1  extends OpCode
-  case object StElemI2  extends OpCode
-  case object StElemI4  extends OpCode
-  case object StElemI8  extends OpCode
-  case object StElemR4  extends OpCode
-  case object StElemR8  extends OpCode
-  case object StElemI   extends OpCode
-  case object StElemRef extends OpCode
+  case object StElemI1  extends Op
+  case object StElemI2  extends Op
+  case object StElemI4  extends Op
+  case object StElemI8  extends Op
+  case object StElemR4  extends Op
+  case object StElemR8  extends Op
+  case object StElemI   extends Op
+  case object StElemRef extends Op
 
-  final case class StFld(field: Token) extends OpCode {
+  final case class StFld(field: Token) extends Op {
     override val size = 5
   }
-  final case class StObj(typeToken: Token) extends OpCode {
+  final case class StObj(typeToken: Token) extends Op {
     override val size = 5
   }
-  final case class StSFld(field: Token) extends OpCode {
+  final case class StSFld(field: Token) extends Op {
     override val size = 5
   }
 
-  case object Throw extends OpCode
-  final case class Unbox(valueType: Token) extends OpCode {
+  case object Throw extends Op
+  final case class Unbox(valueType: Token) extends Op {
     override val size = 5
   }
-  final case class UnboxAny(typeToken: Token) extends OpCode {
+  final case class UnboxAny(typeToken: Token) extends Op {
     override val size = 5
   }
 
   // Syntetic OpCodes used when translating CIL to assembler
-  final case class Jump(name: String) extends OpCode {
+  final case class Jump(name: String) extends Op {
     override val size = 0
   }
-  final case class JumpI(name: String) extends OpCode {
+  final case class JumpI(name: String) extends Op {
     override val size = 0
   }
-  final case class Label(name: String) extends OpCode {
+  final case class Label(name: String) extends Op {
     override val size = 0
   }
 
@@ -535,7 +535,7 @@ object CIL {
     }
   )
 
-  def parsers1Byte(cilData: CilData): Map[Int, P[Either[String, OpCode]]] = Map(
+  def parsers1Byte(cilData: CilData): Map[Int, P[Either[String, Op]]] = Map(
     0x00 -> opCode(Nop),
     0x01 -> opCode(Break),
     0x02 -> opCode(LdArg0),
@@ -737,8 +737,8 @@ object CIL {
     0xD5 -> opCode(ConvOvfU),
     0xD6 -> opCode(AddOvf),
     0xD7 -> opCode(AddOvfUn),
-    0xD8 -> opCode(MullOvf),
-    0xD9 -> opCode(MullOvfUn),
+    0xD8 -> opCode(MulOvf),
+    0xD9 -> opCode(MulOvfUn),
     0xDA -> opCode(SubOvf),
     0xDB -> opCode(SubOvfUn),
     0xDC -> opCode(EndFinaly),
@@ -748,7 +748,7 @@ object CIL {
     0xE0 -> opCode(ConvU)
   )
 
-  def parsersAfterFE(cilData: CilData): Map[Int, P[Either[String, OpCode]]] = Map(
+  def parsersAfterFE(cilData: CilData): Map[Int, P[Either[String, Op]]] = Map(
     0x00 -> opCode(ArgList),
     0x01 -> opCode(Ceq),
     0x02 -> opCode(Cgt),
@@ -781,7 +781,7 @@ object CIL {
     0x1E -> opCode(Readonly)
   )
 
-  def code(cilData: CilData): P[Either[String, List[OpCode]]] = {
+  def code(cilData: CilData): P[Either[String, List[Op]]] = {
     val p1 = parsers1Byte(cilData)
     val p2 = parsersAfterFE(cilData)
 

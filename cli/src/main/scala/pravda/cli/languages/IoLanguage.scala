@@ -18,5 +18,6 @@ trait IoLanguage[F[_]] {
   def writeStringToStderrAndExit(data: String, code: Int = 1): F[Unit]
   // TODO maybe here we should have either instead of unit
   def writeToFile(path: String, data: ByteString): F[Unit]
+  def writeToFile(path: String, data: String): F[Unit]
   def exit(code: Int): F[Unit]
 }
