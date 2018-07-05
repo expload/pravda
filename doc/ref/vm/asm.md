@@ -30,6 +30,6 @@ It pops item from the stack and multiplies it by 2. If it is less than 8 it push
 4. Write comments: `/* a comment */`.
 5. Work with structs: `struct_mut [primitive]`, `struct_get [primitive]`. This will produce `STRUCT_MUT_STATIC` and `STRUCT_GET_STATIC` opcodes which take key for struct field from bytecode. You can write `struct_mut` or `struct_get` without `[primitive]` literal. In this case `STRUCT_MUT` and `STRUCT_GET` opcodes are used and key is taken from stack.
 6. Use regular orphan [opcodes](opcodes.md).
-7. 
+7. Add meta information via `meta <meta>`, see [`<meta>` definition](meta.md) for details. 
 
-See also [string data encoding](data.md).
+See also [string `data` encoding](data.md).
