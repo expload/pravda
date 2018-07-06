@@ -62,25 +62,36 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   )
   def arrayGet(): Unit = {
     val index = integer(memory.pop()).toInt
-    val reference = ref(memory.pop())
-    val datum = memory.heapGet(reference.data) match {
-      case Bytes(data)       => Uint8(data.byteAt(index) & 0xFF)
-      case Utf8(data)        => Uint8(data.charAt(index).toByte & 0xFF)
-      case Int8Array(data)   => Int8(data(index))
-      case Int16Array(data)  => Int16(data(index))
-      case Int32Array(data)  => Int32(data(index))
-      case Uint8Array(data)  => Uint8(data(index))
-      case Uint16Array(data) => Uint16(data(index))
-      case Uint32Array(data) => Uint32(data(index))
-      case BigIntArray(data) => BigInt(data(index))
-      case RefArray(data)    => Ref(data(index))
-      case BoolArray(data)   => data(index)
-      case Utf8Array(data)   => Utf8(data(index))
-      case BytesArray(data)  => Bytes(data(index))
-      case _                 => throw VmErrorException(WrongType)
+    memory.pop() match {
+      case Ref(reference) =>
+        val datum = memory.heapGet(reference) match {
+          case Bytes(data)       => Uint8(data.byteAt(index) & 0xFF)
+          case Utf8(data)        => Uint8(data.charAt(index).toByte & 0xFF)
+          case Int8Array(data)   => Int8(data(index))
+          case Int16Array(data)  => Int16(data(index))
+          case Int32Array(data)  => Int32(data(index))
+          case Uint8Array(data)  => Uint8(data(index))
+          case Uint16Array(data) => Uint16(data(index))
+          case Uint32Array(data) => Uint32(data(index))
+          case BigIntArray(data) => BigInt(data(index))
+          case RefArray(data)    => Ref(data(index))
+          case BoolArray(data)   => data(index)
+          case Utf8Array(data)   => Utf8(data(index))
+          case BytesArray(data)  => Bytes(data(index))
+          case _                 => throw VmErrorException(WrongType)
+        }
+        wattCounter.memoryUsage(datum.volume.toLong)
+        memory.push(datum)
+      case Utf8(data) =>
+        val datum = Uint8(data.charAt(index).toByte & 0xFF)
+        wattCounter.memoryUsage(datum.volume.toLong)
+        memory.push(datum)
+      case Bytes(data) =>
+        val datum = Uint8(data.byteAt(index) & 0xFF)
+        wattCounter.memoryUsage(datum.volume.toLong)
+        memory.push(datum)
+      case _ => throw VmErrorException(WrongType)
     }
-    wattCounter.memoryUsage(datum.volume.toLong)
-    memory.push(datum)
   }
 
   @OpcodeImplementation(

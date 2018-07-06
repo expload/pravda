@@ -32,11 +32,11 @@ case object FieldsTranslation extends OpcodeTranslator {
       ctx.signatures.get(sigIdx) match {
         case Some(FieldSig(tpe)) =>
           tpe match {
-            case SigType.Generic(TypeUtils.Mapping(), _) =>
+            case SigType.Generic(TypeDetectors.Mapping(), _) =>
               List(pushString(name))
-            case TypeUtils.Mapping() =>
+            case TypeDetectors.Mapping() =>
               List(pushString(name))
-            case TypeUtils.Address() if name == "sender" =>
+            case TypeDetectors.Address() if name == "sender" =>
               List(asm.Operation(Opcodes.FROM))
             case _ => defaultLoad
           }
@@ -53,9 +53,9 @@ case object FieldsTranslation extends OpcodeTranslator {
       ctx.signatures.get(sigIdx) match {
         case Some(FieldSig(tpe)) =>
           tpe match {
-            case TypeUtils.Mapping() =>
+            case TypeDetectors.Mapping() =>
               List(asm.Operation(Opcodes.STOP)) // error user shouldn't modify mappings
-            case TypeUtils.Mapping() if name == "sender" =>
+            case TypeDetectors.Mapping() if name == "sender" =>
               List(asm.Operation(Opcodes.STOP)) // error user shouldn't modify sender address
             case _ => defaultStore
           }

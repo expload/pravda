@@ -40,6 +40,11 @@ public class HelloWorld
         if (strings.exists("lupa")) {
           strings.put("pupa", "");
         }
+
+        char c0 = salary[0];
+        char c1 = user[3];
+        string up = user.Substring(1, 2);
+        // string upa = user.Substring(1); not implemented yet
     }
 
     static public void Main ()

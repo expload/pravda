@@ -3,7 +3,7 @@ package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData.TypeDefData
 import pravda.dotnet.parsers.Signatures.SigType
 
-object TypeUtils {
+object TypeDetectors {
 
   object Address {
 
