@@ -16,7 +16,7 @@ object StringTests extends TestSuite {
         PravdaAssembler.parse(
           """
             |meta method { int8(-1): "distributeSalary", int8(-2): int8(0) }
-            |meta method { int8(-1): "Main",int8(-2): int8(0) }
+            |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "distributeSalary"
             |eq
@@ -32,30 +32,34 @@ object StringTests extends TestSuite {
             |push int32(0)
             |push int32(0)
             |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
+            |push int32(0)
             |push "zapupu"
-            |push int32(6)
+            |push int32(10)
             |swapn
             |pop
             |push "lu"
-            |push int32(5)
+            |push int32(9)
             |swapn
             |pop
             |push "pa"
-            |push int32(4)
+            |push int32(8)
             |swapn
             |pop
-            |push int32(4)
+            |push int32(8)
             |dupn
-            |push int32(4)
+            |push int32(8)
             |dupn
             |concat
-            |push int32(3)
+            |push int32(7)
             |swapn
             |pop
             |push "strings"
-            |push int32(3)
-            |dupn
             |push int32(7)
+            |dupn
+            |push int32(11)
             |dupn
             |push int32(2)
             |dupn
@@ -99,6 +103,45 @@ object StringTests extends TestSuite {
             |pop
             |pop
             |@br87:
+            |push int32(9)
+            |dupn
+            |push int32(0)
+            |array_get
+            |push int32(6)
+            |swapn
+            |pop
+            |push int32(6)
+            |dupn
+            |push int32(3)
+            |array_get
+            |push int32(5)
+            |swapn
+            |pop
+            |push int32(6)
+            |dupn
+            |push int32(1)
+            |push int32(2)
+            |push int32(2)
+            |dupn
+            |add
+            |slice
+            |push int32(4)
+            |swapn
+            |pop
+            |push int32(6)
+            |dupn
+            |push int32(1)
+            |push int32(2)
+            |dupn
+            |add
+            |slice
+            |push int32(2)
+            |swapn
+            |pop
+            |pop
+            |pop
+            |pop
+            |pop
             |pop
             |pop
             |pop
@@ -187,7 +230,7 @@ object StringTests extends TestSuite {
             |pop
             |ret
             |@stop:
-          """.stripMargin)
+          """.stripMargin).map(_.toList)
       )
     }
   }
