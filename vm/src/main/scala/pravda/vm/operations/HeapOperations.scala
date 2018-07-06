@@ -90,6 +90,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
         val datum = Uint8(data.byteAt(index) & 0xFF)
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
+      case _ => throw VmErrorException(WrongType)
     }
   }
 
