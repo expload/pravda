@@ -94,14 +94,14 @@ object Translator {
     }
 
     def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
-      case SigType.Void        => Meta.TypeSignature.Null
-      case SigType.Boolean     => Meta.TypeSignature.Boolean
-      case SigType.I1          => Meta.TypeSignature.Int8
-      case SigType.I2          => Meta.TypeSignature.Int16
-      case SigType.I4          => Meta.TypeSignature.Int32
-      case SigType.U1          => Meta.TypeSignature.Uint8
-      case SigType.U2          => Meta.TypeSignature.Uint16
-      case SigType.U4          => Meta.TypeSignature.Uint32
+      case SigType.Void            => Meta.TypeSignature.Null
+      case SigType.Boolean         => Meta.TypeSignature.Boolean
+      case SigType.I1              => Meta.TypeSignature.Int8
+      case SigType.I2              => Meta.TypeSignature.Int16
+      case SigType.I4              => Meta.TypeSignature.Int32
+      case SigType.U1              => Meta.TypeSignature.Uint8
+      case SigType.U2              => Meta.TypeSignature.Uint16
+      case SigType.U4              => Meta.TypeSignature.Uint32
       case TypeDetectors.Address() => Meta.TypeSignature.BigInt
       // TODO add more types
     }
