@@ -10,14 +10,51 @@ import scala.annotation.tailrec
 // because in general asm generation requires stack offset,
 // which itself requires delta offsets
 trait OpcodeTranslator {
+  def translate(ops: List[CIL.Op],
+                stackOffsetO: Option[Int],
+                ctx: MethodTranslationCtx): Either[TranslationError, OpcodeTranslator.TranslationResult]
+}
+
+object OneToManyTranslator {
+  final case class TranslationResult(asmOps: List[asm.Operation], deltaOffset: Int)
+}
+
+trait OneToManyTranslator extends OpcodeTranslator {
+
+  def translateOne(op: CIL.Op,
+                   stackOffsetO: Option[Int],
+                   ctx: MethodTranslationCtx): Either[TranslationError, OneToManyTranslator.TranslationResult]
+
+  def translate(ops: List[CIL.Op],
+                stackOffsetO: Option[Int],
+                ctx: MethodTranslationCtx): Either[TranslationError, OpcodeTranslator.TranslationResult] =
+    ops match {
+      case head :: tail =>
+        translateOne(head, stackOffsetO, ctx).map(res =>
+          OpcodeTranslator.TranslationResult(tail, res.asmOps, res.deltaOffset))
+      case _ => Right(OpcodeTranslator.TranslationResult(Nil, Nil, 0))
+    }
+}
+
+trait OneToManySeparateTranslator extends OneToManyTranslator {
   def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int]
 
-  def translate(op: CIL.Op,
+  def asmOps(op: CIL.Op,
                 stackOffsetO: Option[Int],
                 ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]]
+
+  def translateOne(op: CIL.Op,
+                   stackOffsetO: Option[Int],
+                   ctx: MethodTranslationCtx): Either[TranslationError, OneToManyTranslator.TranslationResult] =
+    for {
+      ops <- asmOps(op, stackOffsetO, ctx)
+      offset <- deltaOffset(op, ctx)
+    } yield OneToManyTranslator.TranslationResult(ops, offset)
 }
 
 object OpcodeTranslator {
+
+  final case class TranslationResult(restOps: List[CIL.Op], asmOps: List[asm.Operation], deltaOffset: Int)
 
   val translators: List[OpcodeTranslator] =
     List(SimpleTranslations,
@@ -44,14 +81,10 @@ object OpcodeTranslator {
     case _ => None
   }
 
-  def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] =
-    findAndReturn(translators, (t: OpcodeTranslator) => t.deltaOffset(op, ctx), notUnknownOpcode)
-      .getOrElse(Left(UnknownOpcode))
-
-  def translate(op: CIL.Op,
+  def translate(ops: List[CIL.Op],
                 stackOffsetO: Option[Int],
-                ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] =
-    findAndReturn(translators, (t: OpcodeTranslator) => t.translate(op, stackOffsetO, ctx), notUnknownOpcode)
+                ctx: MethodTranslationCtx): Either[TranslationError, TranslationResult] =
+    findAndReturn(translators, (t: OpcodeTranslator) => t.translate(ops, stackOffsetO, ctx), notUnknownOpcode)
       .getOrElse(Left(UnknownOpcode))
 
 }

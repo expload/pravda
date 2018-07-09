@@ -7,7 +7,7 @@ import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Data, Opcodes, asm}
 
-case object CallsTransation extends OpcodeTranslator {
+case object CallsTransation extends OneToManySeparateTranslator {
 
   private val mappingsMethods = Set("get", "getDefault", "exists", "put")
 
@@ -63,9 +63,9 @@ case object CallsTransation extends OpcodeTranslator {
     }
   }
 
-  override def translate(op: CIL.Op,
-                         stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+  override def asmOps(op: CIL.Op,
+                      stackOffsetO: Option[Int],
+                      ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 
     op match {
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>

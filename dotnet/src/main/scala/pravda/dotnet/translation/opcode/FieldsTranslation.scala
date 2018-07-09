@@ -7,7 +7,7 @@ import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Opcodes, asm}
 
-case object FieldsTranslation extends OpcodeTranslator {
+case object FieldsTranslation extends OneToManySeparateTranslator {
 
   override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
     op match {
@@ -19,9 +19,9 @@ case object FieldsTranslation extends OpcodeTranslator {
     }
   }
 
-  override def translate(op: CIL.Op,
-                         stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+  override def asmOps(op: CIL.Op,
+                      stackOffsetO: Option[Int],
+                      ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 
     def loadField(name: String, sigIdx: Long): List[asm.Operation] = { // FIXME should process static fields too
       lazy val defaultLoad = List(

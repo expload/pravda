@@ -19,10 +19,11 @@ object Translator {
                               name: String,
                               cil: List[CIL.Op],
                               signatures: Map[Long, Signatures.Signature],
+                              cilData: CilData,
                               local: Boolean,
                               void: Boolean): Either[TranslationError, MethodTranslation] = {
 
-    val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, local, void)
+    val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
 
     val opTranslationsE = {
       val res = for {

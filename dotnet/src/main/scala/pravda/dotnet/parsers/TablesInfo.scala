@@ -5,6 +5,7 @@ import LE._
 
 final case class TablesInfo(
     fieldTable: Vector[TablesInfo.FieldRow] = Vector.empty,
+    fieldRVATable: Vector[TablesInfo.FieldRVARow] = Vector.empty,
     memberRefTable: Vector[TablesInfo.MemberRefRow] = Vector.empty,
     methodDefTable: Vector[TablesInfo.MethodDefRow] = Vector.empty,
     paramTable: Vector[TablesInfo.ParamRow] = Vector.empty,
@@ -76,7 +77,7 @@ object TablesInfo {
   final case class FieldRow(flags: Short, nameIdx: Long, signatureIdx: Long) extends TableRowInfo
   case object FieldLayoutRow                                                 extends TableRowInfo
   case object FieldMarshalRow                                                extends TableRowInfo
-  case object FieldRVARow                                                    extends TableRowInfo
+  final case class FieldRVARow(rva: Long, fieldIdx: Long)                    extends TableRowInfo
   case object FileRow                                                        extends TableRowInfo
 
   case object GenericParamRow           extends TableRowInfo
@@ -170,8 +171,8 @@ object TablesInfo {
   def fieldMarshalRow(indexes: TableIndexes): P[FieldMarshalRow.type] =
     P(AnyBytes(indexes.hasFieldMarshal.size + indexes.blobHeap.size)).map(_ => FieldMarshalRow)
 
-  def fieldRVARow(indexes: TableIndexes): P[FieldRVARow.type] =
-    P(AnyBytes(4 + indexes.field.size)).map(_ => FieldRVARow)
+  def fieldRVARow(indexes: TableIndexes): P[FieldRVARow] =
+    P(UInt32 ~ indexes.field.parser).map(FieldRVARow.tupled)
 
   def fileRow(indexes: TableIndexes): P[FileRow.type] =
     P(AnyBytes(4 + indexes.stringHeap.size + indexes.blobHeap.size)).map(_ => FileRow)
@@ -282,7 +283,7 @@ object TablesInfo {
       case 26 => tablesId(moduleRefRow)
       case 27 => tableRep(typeSpecRow).map(r => Right(_.copy(typeSpecTable = r)))
       case 28 => tablesId(implMapRow)
-      case 29 => tablesId(fieldRVARow)
+      case 29 => tableRep(fieldRVARow).map(r => Right(_.copy(fieldRVATable = r)))
       // 30
       // 31
       case 32 => tablesId(assemblyRow)

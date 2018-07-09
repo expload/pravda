@@ -63,7 +63,8 @@ object Operation {
     Orphan(PCREATE),
     Orphan(PUPDATE),
     Orphan(TRANSFER),
-    Orphan(PTRANSFER)
+    Orphan(PTRANSFER),
+    Orphan(NEW_ARRAY)
   )
 
   val mnemonicByOpcode: Map[Int, String] = Map(
@@ -111,7 +112,8 @@ object Operation {
     PUPDATE -> "pupdate",
     TRANSFER -> "transfer",
     PTRANSFER -> "ptransfer",
-    META -> "meta"
+    META -> "meta",
+    NEW_ARRAY -> "new_array"
   )
 
   /**

@@ -555,6 +555,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   }
 
   object Array {
+
+
     final case class Int8Array(data: mutable.Buffer[Byte])           extends Array
     final case class Int16Array(data: mutable.Buffer[Short])         extends Array
     final case class Int32Array(data: mutable.Buffer[Int])           extends Array

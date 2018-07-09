@@ -6,7 +6,7 @@ import pravda.dotnet.translation.data.{MethodTranslationCtx, TranslationError, U
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
-case object StringTranslation extends OpcodeTranslator {
+case object StringTranslation extends OneToManySeparateTranslator {
   override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = op match {
     case LdStr(s)                                                                    => Right(1)
     case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", _))        => Right(-1)
@@ -15,9 +15,9 @@ case object StringTranslation extends OpcodeTranslator {
     case _                                                                           => Left(UnknownOpcode)
   }
 
-  override def translate(op: CIL.Op,
-                         stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = op match {
+  override def asmOps(op: CIL.Op,
+                      stackOffsetO: Option[Int],
+                      ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = op match {
     case LdStr(s) =>
       Right(List(Operation.Push(Data.Primitive.Utf8(s))))
     case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", _)) =>

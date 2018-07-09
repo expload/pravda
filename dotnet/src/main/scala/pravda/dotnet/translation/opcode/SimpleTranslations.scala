@@ -6,7 +6,7 @@ import pravda.dotnet.translation.data._
 import pravda.vm.asm
 import pravda.vm.{Data, Opcodes}
 
-case object SimpleTranslations extends OpcodeTranslator {
+case object SimpleTranslations extends OneToManySeparateTranslator {
 
   override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
 
@@ -45,9 +45,9 @@ case object SimpleTranslations extends OpcodeTranslator {
     offsetF.lift(op).toRight(UnknownOpcode)
   }
 
-  override def translate(op: CIL.Op,
-                         stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+  override def asmOps(op: CIL.Op,
+                      stackOffsetO: Option[Int],
+                      ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 
     val translateF: PartialFunction[CIL.Op, List[asm.Operation]] = {
       case LdcI40     => List(pushInt(0))
