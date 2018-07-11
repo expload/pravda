@@ -1,6 +1,7 @@
 import java.nio.file.Files
 
 resolvers += "jitpack" at "https://jitpack.io"
+resolvers += Resolver.bintrayRepo("expload", "oss")
 
 enablePlugins(GitVersioning)
 
@@ -55,6 +56,7 @@ val commonSettings = Seq(
     "-Ypartial-unification",
     "-Ypatmat-exhaust-depth", "40"
   ),
+  resolvers += "jitpack" at "https://jitpack.io",
   resolvers += Resolver.bintrayRepo("expload", "oss")
 ) ++ scalafixSettings
 
