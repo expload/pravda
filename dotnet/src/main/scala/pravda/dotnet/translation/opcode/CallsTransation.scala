@@ -7,7 +7,7 @@ import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Data, Opcodes, asm}
 
-case object CallsTransation extends OneToManySeparateTranslator {
+case object CallsTransation extends OneToManyTranslator {
 
   private val mappingsMethods = Set("get", "getDefault", "exists", "put")
 
@@ -38,7 +38,7 @@ case object CallsTransation extends OneToManySeparateTranslator {
     case _                  => false
   }
 
-  override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
+  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
     op match {
       // case Call(MemberRefData(TypeRefData(6, "String", "System"), "Concat", methodSigIdx)) =>
 
@@ -63,7 +63,7 @@ case object CallsTransation extends OneToManySeparateTranslator {
     }
   }
 
-  override def asmOps(op: CIL.Op,
+  override def asmOpsOne(op: CIL.Op,
                       stackOffsetO: Option[Int],
                       ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 

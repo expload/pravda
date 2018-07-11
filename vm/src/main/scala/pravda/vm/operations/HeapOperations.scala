@@ -83,6 +83,8 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case Type.Bytes   => Data.Array.BytesArray(ArrayBuffer.fill(num.toInt)(ByteString.EMPTY))
       case _            => throw VmErrorException(WrongType)
     }
+
+    memory.push(Data.Primitive.Ref(memory.heapPut(arr)))
   }
 
   @OpcodeImplementation(

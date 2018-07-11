@@ -97,7 +97,7 @@ object TablesData {
       case FieldRVARow(rva, fieldIdx) =>
         for {
           fieldList <- fieldListV
-          field <- fieldList(fieldIdx.toInt)
+          field = fieldList(fieldIdx.toInt - 1)
         } yield FieldRVAData(field, rva)
     }.sequence
 

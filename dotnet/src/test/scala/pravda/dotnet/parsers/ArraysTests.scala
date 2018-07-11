@@ -14,8 +14,6 @@ object ArraysTests extends TestSuite {
     'arrayParse - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("arrays.exe")
 
-      println(cilData.tables.fieldTable.mkString("\n"))
-
       DiffUtils.assertEqual(
         methods,
         List(
@@ -25,31 +23,31 @@ object ArraysTests extends TestSuite {
               LdcI43,
               NewArr(TypeRefData(6, "Byte", "System")),
               Dup,
-              LdToken(FieldData(307, "7037807198C22A7D2B0807371D763779A84FDFCF", 131)),
+              LdToken(FieldData(307, "7037807198C22A7D2B0807371D763779A84FDFCF", 113)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
+                              32)),
               StLoc0,
               LdcI43,
               NewArr(TypeRefData(6, "Byte", "System")),
               Dup,
-              LdToken(FieldData(307, "E809C5D1CEA47B45E34701D23F608A9A58034DC9", 131)),
+              LdToken(FieldData(307, "E809C5D1CEA47B45E34701D23F608A9A58034DC9", 113)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
-              NewObj(MethodDefData(0, 6278, ".ctor", 160, Vector(ParamData(0, 1, "bytes")))),
+                              32)),
+              NewObj(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), ".ctor", 40)),
               StLoc1,
               LdcI43,
               NewArr(TypeRefData(6, "Byte", "System")),
               Dup,
-              LdToken(FieldData(307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 131)),
+              LdToken(FieldData(307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 113)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
-              NewObj(MethodDefData(0, 6278, ".ctor", 160, Vector(ParamData(0, 1, "bytes")))),
+                              32)),
+              NewObj(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), ".ctor", 40)),
               StLoc2,
               LdLoc0,
               LdcI40,
@@ -61,53 +59,52 @@ object ArraysTests extends TestSuite {
               StLocS(4),
               LdLoc1,
               LdcI41,
-              CallVirt(MethodDefData(0, 2182, "get_Item", 166, Vector(ParamData(0, 1, "i")))),
+              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), "get_Item", 46)),
               StLocS(5),
               LdLoc2,
               LdcI41,
-              CallVirt(MethodDefData(0, 2182, "get_Item", 166, Vector(ParamData(0, 1, "i")))),
+              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), "get_Item", 46)),
               StLocS(6),
               LdLoc1,
               LdcI41,
               LdcI42,
-              CallVirt(
-                MethodDefData(0, 134, "Slice", 177, Vector(ParamData(0, 1, "start"), ParamData(0, 2, "length")))),
+              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), "Slice", 51)),
               StLocS(7),
               LdArg0,
-              LdFld(FieldData(6, "bytes", 121)),
+              LdFld(FieldData(6, "bytes", 103)),
               LdLoc1,
               LdLoc2,
-              CallVirt(MemberRefData(TypeSpecData(45), "put", 54)),
+              CallVirt(MemberRefData(TypeSpecData(58), "put", 67)),
               Nop,
               LdArg0,
-              LdFld(FieldData(6, "bytes", 121)),
+              LdFld(FieldData(6, "bytes", 103)),
               LdcI43,
               NewArr(TypeRefData(6, "Byte", "System")),
               Dup,
-              LdToken(FieldData(307, "1EAFE5ED57A26A58369E0ECC65DD21A143D475E1", 131)),
+              LdToken(FieldData(307, "1EAFE5ED57A26A58369E0ECC65DD21A143D475E1", 113)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
-              NewObj(MethodDefData(0, 6278, ".ctor", 160, Vector(ParamData(0, 1, "bytes")))),
-              CallVirt(MemberRefData(TypeSpecData(45), "exists", 62)),
+                              32)),
+              NewObj(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), ".ctor", 40)),
+              CallVirt(MemberRefData(TypeSpecData(58), "exists", 75)),
               StLocS(8),
               LdLocS(8),
               BrFalseS(37),
               Nop,
               LdArg0,
-              LdFld(FieldData(6, "bytes", 121)),
+              LdFld(FieldData(6, "bytes", 103)),
               LdLoc1,
               LdcI43,
               NewArr(TypeRefData(6, "Byte", "System")),
               Dup,
-              LdToken(FieldData(307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 131)),
+              LdToken(FieldData(307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 113)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
-              NewObj(MethodDefData(0, 6278, ".ctor", 160, Vector(ParamData(0, 1, "bytes")))),
-              CallVirt(MemberRefData(TypeSpecData(45), "put", 54)),
+                              32)),
+              NewObj(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), ".ctor", 40)),
+              CallVirt(MemberRefData(TypeSpecData(58), "put", 67)),
               Nop,
               Nop,
               LdLoc0,
@@ -121,7 +118,7 @@ object ArraysTests extends TestSuite {
               Ret
             ),
             5,
-            Some(21)
+            Some(16)
           ),
           Method(
             List(
@@ -129,29 +126,29 @@ object ArraysTests extends TestSuite {
               LdcI43,
               NewArr(TypeRefData(6, "Char", "System")),
               Dup,
-              LdToken(FieldData(307, "9F04F41A848514162050E3D68C1A7ABB441DC2B5", 143)),
+              LdToken(FieldData(307, "9F04F41A848514162050E3D68C1A7ABB441DC2B5", 125)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
+                              32)),
               StLoc0,
               LdcI43,
               NewArr(TypeRefData(6, "Int32", "System")),
               Dup,
-              LdToken(FieldData(307, "E429CCA3F703A39CC5954A6572FEC9086135B34E", 139)),
+              LdToken(FieldData(307, "E429CCA3F703A39CC5954A6572FEC9086135B34E", 121)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
+                              32)),
               StLoc1,
               LdcI43,
               NewArr(TypeRefData(6, "Double", "System")),
               Dup,
-              LdToken(FieldData(307, "380E84549CB845604C318E8E14B73622CC10AF42", 135)),
+              LdToken(FieldData(307, "380E84549CB845604C318E8E14B73622CC10AF42", 117)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
+                              32)),
               StLoc2,
               LdcI43,
               NewArr(TypeRefData(6, "String", "System")),
@@ -171,11 +168,11 @@ object ArraysTests extends TestSuite {
               LdcI43,
               NewArr(TypeRefData(6, "UInt32", "System")),
               Dup,
-              LdToken(FieldData(307, "8CFA957D76B6E190580D284C12F31AA6E3E2D41C", 139)),
+              LdToken(FieldData(307, "8CFA957D76B6E190580D284C12F31AA6E3E2D41C", 121)),
               Call(
                 MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
                               "InitializeArray",
-                              37)),
+                              32)),
               StLocS(4),
               LdLoc0,
               LdcI41,
@@ -200,87 +197,12 @@ object ArraysTests extends TestSuite {
               Ret
             ),
             4,
-            Some(68)
-          ),
-          Method(List(Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Attribute", "System"), ".ctor", 6)), Nop, Ret),
-                 0,
-                 None),
-          Method(List(), 0, None),
-          Method(List(), 0, None),
-          Method(List(), 0, None),
-          Method(
-            List(
-              Nop,
-              LdArg0,
-              LdArg1,
-              CallVirt(MemberRefData(TypeSpecData(87), "exists", 62)),
-              LdcI40,
-              Ceq,
-              StLoc0,
-              LdLoc0,
-              BrFalseS(5),
-              Nop,
-              LdArg2,
-              StLoc1,
-              BrS(11),
-              Nop,
-              LdArg0,
-              LdArg1,
-              CallVirt(MemberRefData(TypeSpecData(87), "get", 96)),
-              StLoc1,
-              BrS(0),
-              LdLoc1,
-              Ret
-            ),
-            2,
             Some(81)
           ),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Nop, Ret),
-                 0,
-                 None),
-          Method(List(Nop, LdcI40, StLoc0, BrS(0), LdLoc0, Ret), 1, Some(103)),
-          Method(List(Nop, BrS(0), Ret), 0, None),
-          Method(List(Nop, LdNull, StLoc0, BrS(0), LdLoc0, Ret), 1, Some(107))
+          Method(List(Nop, Ret), 0, None),
+          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
         )
       )
-
-      val bytesClass = Cls(
-        TypeDefData(
-          1048577,
-          "Bytes",
-          "io.mytc.pravda",
-          Ignored,
-          Vector(),
-          Vector(
-            MethodDefData(0, 6278, ".ctor", 160, Vector(ParamData(0, 1, "bytes"))),
-            MethodDefData(0, 2182, "get_Item", 166, Vector(ParamData(0, 1, "i"))),
-            MethodDefData(0, 2182, "set_Item", 171, Vector(ParamData(0, 1, "i"), ParamData(0, 2, "value"))),
-            MethodDefData(0, 134, "Slice", 177, Vector(ParamData(0, 1, "start"), ParamData(0, 2, "length")))
-          )
-        ))
-
-      val mappingClass = Cls(
-        TypeDefData(
-          1048705,
-          "Mapping`2",
-          "io.mytc.pravda",
-          Ignored,
-          Vector(),
-          Vector(
-            MethodDefData(0, 1478, "get", 96, Vector(ParamData(0, 1, "key"))),
-            MethodDefData(0, 1478, "exists", 62, Vector(ParamData(0, 1, "key"))),
-            MethodDefData(0, 1478, "put", 54, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "value"))),
-            MethodDefData(0, 134, "getDefault", 151, Vector(ParamData(0, 1, "key"), ParamData(0, 2, "def"))),
-            MethodDefData(0, 6276, ".ctor", 6, Vector())
-          )
-        ))
-
       DiffUtils.assertEqual(
         signatures.toList.sortBy(_._1),
         List(
@@ -294,21 +216,20 @@ object ArraysTests extends TestSuite {
                            0,
                            Tpe(Void, false),
                            List(Tpe(ValueTpe(TypeRefData(15, "DebuggingModes", "")), false)))),
-          (16, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
-          (21,
+          (16,
            LocalVarSig(
              List(
                LocalVar(Arr(U1, ArrayShape(1, List(), List())), false),
-               LocalVar(bytesClass, false),
-               LocalVar(bytesClass, false),
+               LocalVar(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false),
+               LocalVar(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false),
                LocalVar(U1, false),
                LocalVar(U1, false),
                LocalVar(U1, false),
                LocalVar(U1, false),
-               LocalVar(bytesClass, false),
+               LocalVar(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false),
                LocalVar(Boolean, false)
              ))),
-          (37,
+          (32,
            MethodRefDefSig(
              false,
              false,
@@ -319,16 +240,32 @@ object ArraysTests extends TestSuite {
              List(Tpe(Cls(TypeRefData(6, "Array", "System")), false),
                   Tpe(ValueTpe(TypeRefData(6, "RuntimeFieldHandle", "System")), false))
            )),
-          (45,
+          (40,
+           MethodRefDefSig(true,
+                           false,
+                           false,
+                           false,
+                           0,
+                           Tpe(Void, false),
+                           List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false)))),
+          (46, MethodRefDefSig(true, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
+          (51,
+           MethodRefDefSig(true,
+                           false,
+                           false,
+                           false,
+                           0,
+                           Tpe(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false),
+                           List(Tpe(I4, false), Tpe(I4, false)))),
+          (58,
            TypeSig(
              Tpe(
-               Generic(
-                 mappingClass,
-                 List(bytesClass, bytesClass)
-               ),
+               Generic(Cls(TypeRefData(10, "Mapping`2", "Com.Expload")),
+                       List(Cls(TypeRefData(10, "Bytes", "Com.Expload")),
+                            Cls(TypeRefData(10, "Bytes", "Com.Expload")))),
                false
              ))),
-          (54,
+          (67,
            MethodRefDefSig(true,
                            false,
                            false,
@@ -336,8 +273,8 @@ object ArraysTests extends TestSuite {
                            0,
                            Tpe(Void, false),
                            List(Tpe(Var(0), false), Tpe(Var(1), false)))),
-          (62, MethodRefDefSig(true, false, false, false, 0, Tpe(Boolean, false), List(Tpe(Var(0), false)))),
-          (68,
+          (75, MethodRefDefSig(true, false, false, false, 0, Tpe(Boolean, false), List(Tpe(Var(0), false)))),
+          (81,
            LocalVarSig(
              List(
                LocalVar(Arr(Char, ArrayShape(1, List(), List())), false),
@@ -346,70 +283,16 @@ object ArraysTests extends TestSuite {
                LocalVar(Arr(String, ArrayShape(1, List(), List())), false),
                LocalVar(Arr(U4, ArrayShape(1, List(), List())), false)
              ))),
-          (81, LocalVarSig(List(LocalVar(Boolean, false), LocalVar(Var(1), false)))),
-          (87,
-           TypeSig(
-             Tpe(
-               Generic(
-                 mappingClass,
-                 List(Var(0), Var(1))
-               ),
-               false
-             ))),
-          (96, MethodRefDefSig(true, false, false, false, 0, Tpe(Var(1), false), List(Tpe(Var(0), false)))),
-          (103, LocalVarSig(List(LocalVar(U1, false)))),
-          (107,
-           LocalVarSig(
-             List(
-               LocalVar(
-                 bytesClass,
-                 false
-               )))),
-          (121,
+          (103,
            FieldSig(
-             Generic(
-               mappingClass,
-               List(
-                 bytesClass,
-                 bytesClass
-               )
-             ))),
-          (131, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=3", "", Ignored, Vector(), Vector())))),
-          (135, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=24", "", Ignored, Vector(), Vector())))),
-          (139, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=12", "", Ignored, Vector(), Vector())))),
-          (143, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=6 ", "", Ignored, Vector(), Vector())))),
-          (147, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List())),
-          (151,
-           MethodRefDefSig(true,
-                           false,
-                           false,
-                           false,
-                           0,
-                           Tpe(Var(1), false),
-                           List(Tpe(Var(0), false), Tpe(Var(1), false)))),
-          (160,
-           MethodRefDefSig(true,
-                           false,
-                           false,
-                           false,
-                           0,
-                           Tpe(Void, false),
-                           List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false)))),
-          (166, MethodRefDefSig(true, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
-          (171, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false), Tpe(U1, false)))),
-          (177,
-           MethodRefDefSig(
-             true,
-             false,
-             false,
-             false,
-             0,
-             Tpe(
-               bytesClass,
-               false
-             ),
-             List(Tpe(I4, false), Tpe(I4, false))
-           ))
+             Generic(Cls(TypeRefData(10, "Mapping`2", "Com.Expload")),
+                     List(Cls(TypeRefData(10, "Bytes", "Com.Expload")),
+                          Cls(TypeRefData(10, "Bytes", "Com.Expload")))))),
+          (113, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=3", "", Ignored, Vector(), Vector())))),
+          (117, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=24", "", Ignored, Vector(), Vector())))),
+          (121, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=12", "", Ignored, Vector(), Vector())))),
+          (125, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=6", "", Ignored, Vector(), Vector())))),
+          (129, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )
     }

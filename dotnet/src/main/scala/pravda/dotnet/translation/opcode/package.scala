@@ -16,6 +16,9 @@ package object opcode {
   def pushString(s: String): asm.Operation =
     push(s, Data.Primitive.Utf8)
 
+  def pushType(tpe: Data.Type): asm.Operation =
+    push(tpe, Data.Primitive.Int8)
+
   def cast(tpe: Data.Type): List[asm.Operation] =
-    List(asm.Operation.Push(Data.Primitive.Int8(tpe)), asm.Operation(Opcodes.CAST))
+    List(pushType(tpe), asm.Operation(Opcodes.CAST))
 }

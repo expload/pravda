@@ -7,19 +7,9 @@ import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Opcodes, asm}
 
-case object FieldsTranslation extends OneToManySeparateTranslator {
+case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
 
-  override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
-    op match {
-      case LdSFld(FieldData(_, _, _)) => Right(1)
-      case LdFld(FieldData(_, _, _))  => Right(1)
-      case StSFld(FieldData(_, _, _)) => Right(-1)
-      case StFld(FieldData(_, _, _))  => Right(-1)
-      case _                          => Left(UnknownOpcode)
-    }
-  }
-
-  override def asmOps(op: CIL.Op,
+  override def asmOpsOne(op: CIL.Op,
                       stackOffsetO: Option[Int],
                       ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 

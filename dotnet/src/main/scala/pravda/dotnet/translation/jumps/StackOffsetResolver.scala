@@ -11,7 +11,7 @@ object StackOffsetResolver {
                            labelOffsets: Map[String, Int],
                            stackOffsetO: Option[Int]): Either[TranslationError, (Map[String, Int], Option[Int])] = {
 
-    def unstableStackError = Left(InternalError("Unsupported sequence of instructions: stack is unstable"))
+    val unstableStackError = Left(InternalError("Unsupported sequence of instructions: stack is unstable"))
 
     op match {
       case Label(label) =>
@@ -44,18 +44,25 @@ object StackOffsetResolver {
 
   private def traverseLabelOffsets(opcodes: List[CIL.Op],
                                    initLabelOffsets: Map[String, Int],
-                                   ctx: MethodTranslationCtx): Either[TranslationError, Map[String, Int]] =
-    opcodes
-      .foldLeft[Either[TranslationError, (Map[String, Int], Option[Int])]](Right((initLabelOffsets, Some(0)))) {
-        case (Right((labelOffsets, stackOffsetO)), op) =>
+                                   ctx: MethodTranslationCtx): Either[TranslationError, Map[String, Int]] = {
+
+    def doTraverse(opcodes: List[CIL.Op],
+                   offsets: Map[String, Int],
+                   stackOffsetO: Option[Int]): Either[TranslationError, Map[String, Int]] =
+      opcodes match {
+        case op :: _ =>
           for {
-            so <- transformStackOffset(op, labelOffsets, stackOffsetO)
+            so <- transformStackOffset(op, offsets, stackOffsetO)
             (newLabelOffsets, newStackOffsetO) = so
-            deltaOffset <- OpcodeTranslator.deltaOffset(op, ctx)
-          } yield (newLabelOffsets, newStackOffsetO.map(_ + deltaOffset))
-        case (other, op) => other
+            offsetRes <- OpcodeTranslator.deltaOffset(opcodes, ctx)
+            (taken, deltaOffset) = offsetRes
+            newOffsets <- doTraverse(opcodes.drop(taken), newLabelOffsets, newStackOffsetO.map(_ + deltaOffset))
+          } yield newOffsets
+        case _ => Right(offsets)
       }
-      .map(_._1)
+
+    doTraverse(opcodes, initLabelOffsets, Some(0))
+  }
 
   def convergeLabelOffsets(opcodes: List[CIL.Op],
                            ctx: MethodTranslationCtx): Either[TranslationError, Map[String, Int]] = {

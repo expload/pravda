@@ -25,25 +25,29 @@ object Translator {
 
     val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
 
-    val opTranslationsE = {
-      val res = for {
-        convergedOffsets <- StackOffsetResolver.convergeLabelOffsets(cil, ctx)
-      } yield
-        cil
-          .foldLeft[Either[TranslationError, (List[OpCodeTranslation], Option[Int])]](Right((List.empty, Some(0)))) {
-            case (Right((acc, stackOffsetO)), op) =>
-              for {
-                so <- StackOffsetResolver.transformStackOffset(op, convergedOffsets, stackOffsetO)
-                (_, newStackOffsetO) = so
-                opcodes <- OpcodeTranslator.translate(op, newStackOffsetO, ctx)
-                deltaOffset <- OpcodeTranslator.deltaOffset(op, ctx)
-              } yield (OpCodeTranslation(Right(op), stackOffsetO, opcodes) :: acc, newStackOffsetO.map(_ + deltaOffset))
-            case (other, op) => other
-          }
-          .map(_._1.reverse)
+    def doTranslation(cil: List[CIL.Op],
+                      offsets: Map[String, Int],
+                      stackOffsetO: Option[Int]): Either[TranslationError, List[OpCodeTranslation]] = {
+      cil match {
+        case op :: _ =>
+          for {
+            so <- StackOffsetResolver.transformStackOffset(op, offsets, stackOffsetO)
+            (_, newStackOffsetO) = so
+            asmRes <- OpcodeTranslator.asmOps(cil, newStackOffsetO, ctx)
+            (taken, opcodes) = asmRes
+            deltaOffset <- OpcodeTranslator.deltaOffset(cil, ctx).map(_._2)
+            restTranslations <- doTranslation(cil.drop(taken), offsets, newStackOffsetO.map(_ + deltaOffset))
+          } yield OpCodeTranslation(Right(cil.take(taken)), stackOffsetO, opcodes) :: restTranslations
 
-      res.joinRight
+        case _ => Right(List.empty)
+      }
     }
+
+    val opTranslationsE = (
+      for {
+        convergedOffsets <- StackOffsetResolver.convergeLabelOffsets(cil, ctx)
+      } yield doTranslation(cil, convergedOffsets, Some(0))
+    ).joinRight
 
     val clear =
       if (void) {
@@ -168,6 +172,7 @@ object Translator {
               name,
               BranchTransformer.transformBranches(m.opcodes),
               signatures,
+              cilData,
               isLocal(i),
               isVoid
             )

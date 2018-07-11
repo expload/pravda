@@ -3,7 +3,7 @@ package pravda.dotnet.translation.data
 import pravda.dotnet.parsers.CIL
 import pravda.vm.asm
 
-final case class OpCodeTranslation(source: Either[String, CIL.Op], // some name or actual opcode
+final case class OpCodeTranslation(source: Either[String, List[CIL.Op]], // some name or actual opcode
                                    stackOffset: Option[Int],
                                    asmOps: List[asm.Operation])
 
