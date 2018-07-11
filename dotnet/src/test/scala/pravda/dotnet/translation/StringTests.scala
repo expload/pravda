@@ -123,6 +123,7 @@ object StringTests extends TestSuite {
             |push int32(2)
             |dupn
             |add
+            |swap
             |slice
             |push int32(3)
             |swapn
