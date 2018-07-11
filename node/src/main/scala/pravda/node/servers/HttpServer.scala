@@ -23,7 +23,7 @@ object HttpServer {
       case Success(_) =>
         println(s"API server started at ${apiConfig.host}:${apiConfig.port}")
         Http().bindAndHandle(guiR, guiConfig.host, guiConfig.port) andThen {
-          case Success(_) => println(s"API server started at ${guiConfig.host}:${guiConfig.port}")
+          case Success(_) => println(s"UI server started at ${guiConfig.host}:${guiConfig.port}")
         }
     }
   }
