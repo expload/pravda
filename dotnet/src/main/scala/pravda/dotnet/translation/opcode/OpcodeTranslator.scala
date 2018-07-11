@@ -55,6 +55,7 @@ object OpcodeTranslatorOnlyAsm {
         case Opcodes.PRIMITIVE_PUT     => 0
         case Opcodes.PRIMITIVE_GET     => 0
         case Opcodes.NEW_ARRAY         => -1
+        case Opcodes.LENGTH            => 0
 
         case Opcodes.SPUT   => -2
         case Opcodes.SGET   => 0
@@ -132,12 +133,17 @@ object OpcodeTranslator {
   type Taken = Int
 
   val translators: List[OpcodeTranslator] =
-    List(SimpleTranslations,
-         ArgsLocalsTranslations,
-         FieldsTranslation,
-         JumpsTranslation,
-         StringTranslation,
-         CallsTransation)
+    List(
+      ArrayInitializationTranslation,
+      SimpleTranslations,
+      ArgsLocalsTranslations,
+      FieldsTranslation,
+      JumpsTranslation,
+      StringTranslation,
+      BytesTranslation,
+      ArrayTranslation,
+      CallsTransation
+    )
 
   private def notUnknownOpcode[T](res: Either[TranslationError, T]): Boolean = res match {
     case Left(UnknownOpcode) => false
@@ -160,9 +166,9 @@ object OpcodeTranslator {
              stackOffsetO: Option[Int],
              ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, List[asm.Operation])] =
     findAndReturn(translators, (t: OpcodeTranslator) => t.asmOps(ops, stackOffsetO, ctx), notUnknownOpcode)
-      .getOrElse(Left(UnknownOpcode))
+      .getOrElse(Left(NotSupportedOpcode(ops.head)))
 
   def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[TranslationError, (Int, Int)] =
     findAndReturn(translators, (t: OpcodeTranslator) => t.deltaOffset(ops, ctx), notUnknownOpcode)
-      .getOrElse(Left(UnknownOpcode))
+      .getOrElse(Left(NotSupportedOpcode(ops.head)))
 }

@@ -713,9 +713,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val utf8 = string.map(Primitive.Utf8)
 
-      val hexString = P(hexDigs.!).map(s => hex2byteString(s))
+      val hexString = P(hexDig.rep.!).map(s => hex2byteString(s))
 
-      val bytes = P(IgnoreCase("x") ~ hexString).map(Primitive.Bytes)
+      val bytes = P(IgnoreCase("x") ~/ hexString).map(Primitive.Bytes)
 
       val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | numeric | `null`)
 

@@ -153,6 +153,35 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   }
 
   @OpcodeImplementation(
+    opcode = LENGTH,
+    description =
+      "Takes reference to array or Bytes or Utf8 from stack. " +
+        "Pushes length of given array, Bytes or Utf8 to the stack. "
+  )
+  def length(): Unit = {
+    val len = memory.pop() match {
+      case Ref(reference) =>
+        memory.heapGet(reference) match {
+          case Int8Array(data)   => data.length
+          case Int16Array(data)  => data.length
+          case Int32Array(data)  => data.length
+          case Uint8Array(data)  => data.length
+          case Uint16Array(data) => data.length
+          case Uint32Array(data) => data.length
+          case BigIntArray(data) => data.length
+          case RefArray(data)    => data.length
+          case BoolArray(data)   => data.length
+          case Utf8Array(data)   => data.length
+          case BytesArray(data)  => data.length
+        }
+      case Bytes(data) => data.size
+      case Utf8(data)  => data.length
+    }
+
+    memory.push(Data.Primitive.Uint32(len))
+  }
+
+  @OpcodeImplementation(
     opcode = STRUCT_GET,
     description = "Takes reference to struct and key from the stack." +
       "Pushes to the stack a primitive at key in struct corresponding by the given reference."

@@ -19,9 +19,10 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
       Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "Substring", signatureIdx)) => // FIXME more accurate method detection
       Right(
-        List(Operation.Push(Data.Primitive.Int32(2)),
+        List(pushInt(2),
              Operation(Opcodes.DUPN),
              Operation(Opcodes.ADD),
+             Operation(Opcodes.SWAP),
              Operation(Opcodes.SLICE)))
     case _ => Left(UnknownOpcode)
   }
