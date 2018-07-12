@@ -13,12 +13,14 @@ import pravda.node.data.TimechainConfig
 
 object HttpServer {
 
-  def start(apiConfig: TimechainConfig.ApiConfig, guiConfig: TimechainConfig.UiConfig, apiRoute: Route, guiRoute: Route)(
-      implicit system: ActorSystem,
-      materializer: ActorMaterializer,
-      executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
-    val apiR = path("healthz") { complete{ "I'm ok :)" } } ~ pathPrefix("api")(apiRoute)
-    val guiR = path("healthz") { complete{ "I'm ok :)" } } ~ pathPrefix("ui")(guiRoute)
+  def start(apiConfig: TimechainConfig.ApiConfig,
+            guiConfig: TimechainConfig.UiConfig,
+            apiRoute: Route,
+            guiRoute: Route)(implicit system: ActorSystem,
+                             materializer: ActorMaterializer,
+                             executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
+    val apiR = path("healthz") { complete { "I'm ok :)" } } ~ pathPrefix("api")(apiRoute)
+    val guiR = path("healthz") { complete { "I'm ok :)" } } ~ pathPrefix("ui")(guiRoute)
     Http().bindAndHandle(apiR, apiConfig.host, apiConfig.port) andThen {
       case Success(_) =>
         println(s"API server started at ${apiConfig.host}:${apiConfig.port}")
