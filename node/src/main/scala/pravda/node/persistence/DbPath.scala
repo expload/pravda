@@ -35,9 +35,9 @@ trait DbPath {
 }
 
 class CachedDbPath(dbPath: DbPath,
-                                 dbCache: mutable.Map[String, Option[Array[Byte]]],
-                                 dbOperations: mutable.Buffer[Operation])
-  extends DbPath {
+                   dbCache: mutable.Map[String, Option[Array[Byte]]],
+                   dbOperations: mutable.Buffer[Operation])
+    extends DbPath {
   def mkKey(suffix: String): String = dbPath.mkKey(suffix)
 
   def :+(suffix: String) = new CachedDbPath(dbPath :+ suffix, dbCache, dbOperations)

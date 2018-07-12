@@ -222,8 +222,10 @@ object Abci {
       private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
       private val transactionCache = mutable.Map.empty[String, Option[Array[Byte]]]
 
-      private lazy val transactionProgramsPath = new CachedDbPath(blockProgramsPath, transactionCache, transactionOperations)
-      private lazy val transactionBalancesPath = new CachedDbPath(blockBalancesPath, transactionCache, transactionOperations)
+      private lazy val transactionProgramsPath =
+        new CachedDbPath(blockProgramsPath, transactionCache, transactionOperations)
+      private lazy val transactionBalancesPath =
+        new CachedDbPath(blockBalancesPath, transactionCache, transactionOperations)
 
       def commitTransaction(): Unit = {
         operations ++= transactionOperations

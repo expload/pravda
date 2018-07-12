@@ -81,19 +81,20 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
           }
         }
       } ~
-      get {
-        path("balance") {
-          parameters('address.as(hexUnmarshaller)) {
-            (address) =>
-              val f = balances.get(Address @@ address).map(
-                _.getOrElse(NativeCoin @@ 0L)
-              )
-              onSuccess(f) {
-                res => complete(res)
+        get {
+          path("balance") {
+            parameters('address.as(hexUnmarshaller)) { (address) =>
+              val f = balances
+                .get(Address @@ address)
+                .map(
+                  _.getOrElse(NativeCoin @@ 0L)
+                )
+              onSuccess(f) { res =>
+                complete(res)
               }
+            }
           }
         }
-      }
     }
 }
 
