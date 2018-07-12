@@ -187,10 +187,11 @@ object Translator {
                   List(asm.Operation.Label("stop")))
   }
 
+  def translationToAsm(t: Translation): List[asm.Operation] =
+    t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++ t.finishOps
+
   def translateAsm(rawMethods: List[Method],
                    cilData: CilData,
                    signatures: Map[Long, Signatures.Signature]): Either[TranslationError, List[asm.Operation]] =
-    for {
-      t <- translateVerbose(rawMethods, cilData, signatures)
-    } yield t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++ t.finishOps
+    translateVerbose(rawMethods, cilData, signatures).map(translationToAsm)
 }

@@ -258,22 +258,14 @@ object PE {
   private def sectionFromHeader(file: Bytes, sectionHeader: SectionHeader): Bytes =
     file.slice(sectionHeader.pointerToRawData, sectionHeader.pointerToRawData + sectionHeader.sizeOfRawData)
 
-  def bytesFromRva(sections: List[(SectionHeader, Bytes)], rva: Long): Bytes = {
+  def bytesFromRva(sections: List[(SectionHeader, Bytes)], rva: Long, sizeO: Option[Long] = None): Bytes = {
     val rvaSection = sections.find { case (h, _) => rva >= h.virtualAddress && rva <= h.virtualAddress + h.virtualSize }
     rvaSection match {
       case Some((h, s)) =>
         val start = rva - h.virtualAddress
-        s.drop(start) // probably should be padded with zeros to virtualSize
-      case None => Bytes.empty
-    }
-  }
-
-  def bytesFromRva(sections: List[(SectionHeader, Bytes)], rva: Long, size: Long): Bytes = {
-    val rvaSection = sections.find { case (h, _) => rva >= h.virtualAddress && rva <= h.virtualAddress + h.virtualSize }
-    rvaSection match {
-      case Some((h, s)) =>
-        val start = rva - h.virtualAddress
-        s.slice(start, start + size) // probably should be padded with zeros to virtualSize
+        sizeO
+          .map(size => s.slice(start, start + size))
+          .getOrElse(s.drop(start)) // probably should be padded with zeros to virtualSize
       case None => Bytes.empty
     }
   }

@@ -5,10 +5,10 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import pravda.vm.Data.Array._
 import pravda.vm.Data.Primitive.{Bool, _}
-import pravda.vm.Data.{Primitive, Struct, Type, UnexpectedTypeException}
+import pravda.vm.Data.{Primitive, Struct, Type}
+import pravda.vm.Opcodes._
 import pravda.vm.VmError.WrongType
 import pravda.vm._
-import pravda.vm.Opcodes._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
 import scala.collection.mutable.ArrayBuffer
@@ -68,7 +68,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val `type` = integer(memory.pop())
     val num = integer(memory.pop())
 
-    val arr = `type` match {
+    val arr = Type @@ `type`.toByte match {
       case Type.Int8    => Data.Array.Int8Array(ArrayBuffer.fill(num.toInt)(0))
       case Type.Int16   => Data.Array.Int16Array(ArrayBuffer.fill(num.toInt)(0))
       case Type.Int32   => Data.Array.Int32Array(ArrayBuffer.fill(num.toInt)(0))
@@ -173,12 +173,14 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
           case BoolArray(data)   => data.length
           case Utf8Array(data)   => data.length
           case BytesArray(data)  => data.length
+          case _ => throw VmErrorException(WrongType)
         }
       case Bytes(data) => data.size
       case Utf8(data)  => data.length
+      case _ => throw VmErrorException(WrongType)
     }
 
-    memory.push(Data.Primitive.Uint32(len))
+    memory.push(Data.Primitive.Uint32(len.toLong))
   }
 
   @OpcodeImplementation(

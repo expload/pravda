@@ -85,7 +85,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
         (for {
           rva <- bytesRva
           size <- bytesSize
-          bytes = PE.bytesFromRva(ctx.cilData.sections, rva, size)
+          bytes = PE.bytesFromRva(ctx.cilData.sections, rva, Some(size))
           d <- data(bytes)
         } yield (5, List(asm.Operation.New(d)))).toRight(UnknownOpcode)
       case _ => Left(UnknownOpcode)

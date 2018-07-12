@@ -1,8 +1,8 @@
 package pravda.cli.programs
 
 import cats._
-import cats.implicits._
 import cats.data.EitherT
+import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
@@ -30,6 +30,11 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               }
             case Disasm => compilers.disasm(input).map(s => Right(ByteString.copyFromUtf8(s)))
             case DotNet => compilers.dotnet(input)
+            case DotNetVisualize =>
+              for {
+                dv <- compilers.dotnetVisualize(input)
+                code <- dv.map { case (code, visualization) => io.writeToStdout(ByteString.copyFromUtf8(visualization)).map(_ => code) }.sequence
+              } yield code
             case Nope   => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }

@@ -77,7 +77,7 @@ case object CallsTransation extends OneToManyTranslator {
             name match {
               case "get" =>
                 Right(List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.CONCAT), asm.Operation(Opcodes.SGET)))
-              case "getDefault" => Right(List(asm.Operation.Call(Some("method_getDefault"))))
+              case "getDefault" => Right(List())
               case "exists" =>
                 Right(
                   List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.CONCAT), asm.Operation(Opcodes.SEXIST)) ++ cast(
