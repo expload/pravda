@@ -556,7 +556,6 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   object Array {
 
-
     final case class Int8Array(data: mutable.Buffer[Byte])           extends Array
     final case class Int16Array(data: mutable.Buffer[Short])         extends Array
     final case class Int32Array(data: mutable.Buffer[Int])           extends Array
@@ -713,9 +712,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val utf8 = string.map(Primitive.Utf8)
 
-      val hexString = P(hexDig.rep.!).map(s => hex2byteString(s))
+      val hexString = P(hexDig.rep(1).!).map(s => hex2byteString(s))
 
-      val bytes = P(IgnoreCase("x") ~/ hexString).map(Primitive.Bytes)
+      val bytes = P(IgnoreCase("x") ~/ (hexString | PassWith(ByteString.EMPTY))).map(Primitive.Bytes)
 
       val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | numeric | `null`)
 

@@ -26,6 +26,7 @@ object BroadcastSuite extends TestSuite {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
         def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] = Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
@@ -40,6 +41,7 @@ object BroadcastSuite extends TestSuite {
         def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
         def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] = Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run))

@@ -45,72 +45,12 @@ object ArraysTests extends TestSuite {
         |swapn
         |pop
         |new int8[4, 5, 6]
-        |dup
-        |length
-        |push x
-        |push int32(0)
-        |@a2b_loop_9:
-        |push int32(4)
-        |dupn
-        |push int32(2)
-        |dupn
-        |array_get
-        |push int8(14)
-        |cast
-        |push int32(3)
-        |dupn
-        |swap
-        |concat
-        |push int32(3)
-        |swapn
-        |pop
-        |push int32(1)
-        |add
-        |dup
-        |push int32(4)
-        |dupn
-        |gt
-        |jumpi @a2b_loop_9
-        |pop
-        |swap
-        |pop
-        |swap
-        |pop
+        |call @array_to_bytes
         |push int32(9)
         |swapn
         |pop
         |new int8[7, 8, 9]
-        |dup
-        |length
-        |push x
-        |push int32(0)
-        |@a2b_loop_11:
-        |push int32(4)
-        |dupn
-        |push int32(2)
-        |dupn
-        |array_get
-        |push int8(14)
-        |cast
-        |push int32(3)
-        |dupn
-        |swap
-        |concat
-        |push int32(3)
-        |swapn
-        |pop
-        |push int32(1)
-        |add
-        |dup
-        |push int32(4)
-        |dupn
-        |gt
-        |jumpi @a2b_loop_11
-        |pop
-        |swap
-        |pop
-        |swap
-        |pop
+        |call @array_to_bytes
         |push int32(8)
         |swapn
         |pop
@@ -170,37 +110,7 @@ object ArraysTests extends TestSuite {
         |pop
         |push "bytes"
         |new int8[8, 9, 10]
-        |dup
-        |length
-        |push x
-        |push int32(0)
-        |@a2b_loop_13:
-        |push int32(4)
-        |dupn
-        |push int32(2)
-        |dupn
-        |array_get
-        |push int8(14)
-        |cast
-        |push int32(3)
-        |dupn
-        |swap
-        |concat
-        |push int32(3)
-        |swapn
-        |pop
-        |push int32(1)
-        |add
-        |dup
-        |push int32(4)
-        |dupn
-        |gt
-        |jumpi @a2b_loop_13
-        |pop
-        |swap
-        |pop
-        |swap
-        |pop
+        |call @array_to_bytes
         |swap
         |concat
         |sexist
@@ -223,37 +133,7 @@ object ArraysTests extends TestSuite {
         |push int32(9)
         |dupn
         |new int8[7, 8, 9]
-        |dup
-        |length
-        |push x
-        |push int32(0)
-        |@a2b_loop_15:
-        |push int32(4)
-        |dupn
-        |push int32(2)
-        |dupn
-        |array_get
-        |push int8(14)
-        |cast
-        |push int32(3)
-        |dupn
-        |swap
-        |concat
-        |push int32(3)
-        |swapn
-        |pop
-        |push int32(1)
-        |add
-        |dup
-        |push int32(4)
-        |dupn
-        |gt
-        |jumpi @a2b_loop_15
-        |pop
-        |swap
-        |pop
-        |swap
-        |pop
+        |call @array_to_bytes
         |push int32(2)
         |dupn
         |push int32(4)
@@ -370,6 +250,39 @@ object ArraysTests extends TestSuite {
         |@method_Main:
         |pop
         |jump @stop
+        |@array_to_bytes:
+        |dup
+        |length
+        |push x
+        |push int32(0)
+        |@array_to_bytes_loop:
+        |push int32(4)
+        |dupn
+        |push int32(2)
+        |dupn
+        |array_get
+        |push int8(14)
+        |cast
+        |push int32(3)
+        |dupn
+        |swap
+        |concat
+        |push int32(3)
+        |swapn
+        |pop
+        |push int32(1)
+        |add
+        |dup
+        |push int32(4)
+        |dupn
+        |gt
+        |jumpi @array_to_bytes_loop
+        |pop
+        |swap
+        |pop
+        |swap
+        |pop
+        |ret
         |@stop:
       """.stripMargin).map(_.toList)
       )

@@ -14,6 +14,11 @@ import pravda.vm.{Data, Meta, Opcodes, asm}
 import pravda.dotnet.translation.opcode.{CallsTransation, OpcodeTranslator, TypeDetectors}
 
 object Translator {
+  private def distinctFunctions(funcs: List[OpcodeTranslator.AdditionalFunction]) = {
+    val distinctNames = funcs.map(_.name).distinct
+    distinctNames.flatMap(name => funcs.find(_.name == name))
+  }
+
   private def translateMethod(argsCount: Int,
                               localsCount: Int,
                               name: String,
@@ -25,29 +30,29 @@ object Translator {
 
     val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
 
-    def doTranslation(cil: List[CIL.Op],
-                      offsets: Map[String, Int],
-                      stackOffsetO: Option[Int]): Either[TranslationError, List[OpCodeTranslation]] = {
-      cil match {
-        case op :: _ =>
-          for {
-            so <- StackOffsetResolver.transformStackOffset(op, offsets, stackOffsetO)
-            (_, newStackOffsetO) = so
-            asmRes <- OpcodeTranslator.asmOps(cil, newStackOffsetO, ctx)
-            (taken, opcodes) = asmRes
-            deltaOffset <- OpcodeTranslator.deltaOffset(cil, ctx).map(_._2)
-            restTranslations <- doTranslation(cil.drop(taken), offsets, newStackOffsetO.map(_ + deltaOffset))
-          } yield OpCodeTranslation(Right(cil.take(taken)), stackOffsetO, opcodes) :: restTranslations
+    val opTranslationsE = {
+      def doTranslation(cil: List[CIL.Op],
+                        offsets: Map[String, Int],
+                        stackOffsetO: Option[Int]): Either[TranslationError, List[OpCodeTranslation]] = {
+        cil match {
+          case op :: _ =>
+            for {
+              so <- StackOffsetResolver.transformStackOffset(op, offsets, stackOffsetO)
+              (_, newStackOffsetO) = so
+              asmRes <- OpcodeTranslator.asmOps(cil, newStackOffsetO, ctx)
+              (taken, opcodes) = asmRes
+              deltaOffset <- OpcodeTranslator.deltaOffset(cil, ctx).map(_._2)
+              restTranslations <- doTranslation(cil.drop(taken), offsets, newStackOffsetO.map(_ + deltaOffset))
+            } yield OpCodeTranslation(Right(cil.take(taken)), stackOffsetO, opcodes) :: restTranslations
 
-        case _ => Right(List.empty)
+          case _ => Right(List.empty)
+        }
       }
-    }
 
-    val opTranslationsE = (
-      for {
+      (for {
         convergedOffsets <- StackOffsetResolver.convergeLabelOffsets(cil, ctx)
-      } yield doTranslation(cil, convergedOffsets, Some(0))
-    ).joinRight
+      } yield doTranslation(cil, convergedOffsets, Some(0))).joinRight
+    }
 
     val clear =
       if (void) {
@@ -55,6 +60,19 @@ object Translator {
       } else {
         List.fill(localsCount + argsCount + 1)(List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.POP))).flatten
       }
+
+    val functions = {
+      def searchFunctions(ops: List[CIL.Op]): List[OpcodeTranslator.AdditionalFunction] = {
+        if (ops.nonEmpty) {
+          val (taken, funcs) = OpcodeTranslator.additionalFunctions(ops, ctx)
+          funcs ++ searchFunctions(ops.drop(if (taken > 0) taken else 1))
+        } else {
+          List.empty
+        }
+      }
+
+      distinctFunctions(searchFunctions(cil))
+    }
 
     for {
       opTranslations <- opTranslationsE
@@ -74,7 +92,8 @@ object Translator {
             OpCodeTranslation(Left("end of a method"),
                               None,
                               if (local) List(asm.Operation(Opcodes.RET)) else List(asm.Operation.Jump(Some("stop"))))
-          )
+          ),
+        functions
       )
   }
 
@@ -182,13 +201,18 @@ object Translator {
     for {
       methodsOps <- methodsOpsE
     } yield
-      Translation(metaMethods ++ jumpToMethods :+ asm.Operation.Jump(Some("stop")),
-                  methodsOps,
-                  List(asm.Operation.Label("stop")))
+      Translation(
+        metaMethods ++ jumpToMethods :+ asm.Operation.Jump(Some("stop")),
+        methodsOps,
+        distinctFunctions(methodsOps.flatMap(_.additionalFunctions)),
+        List(asm.Operation.Label("stop"))
+      )
   }
 
   def translationToAsm(t: Translation): List[asm.Operation] =
-    t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++ t.finishOps
+    t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++
+      t.functions.flatMap { case OpcodeTranslator.AdditionalFunction(name, ops) => asm.Operation.Label(name) :: ops } ++
+      t.finishOps
 
   def translateAsm(rawMethods: List[Method],
                    cilData: CilData,

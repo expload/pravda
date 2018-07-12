@@ -37,7 +37,7 @@ object SmartProgramTests extends TestSuite {
             |push int32(4)
             |dupn
             |push int32(0)
-            |call @method_getDefault
+            |call @storage_get_default
             |push int32(2)
             |swapn
             |pop
@@ -75,7 +75,7 @@ object SmartProgramTests extends TestSuite {
             |push "balances"
             |from
             |push int32(0)
-            |call @method_getDefault
+            |call @storage_get_default
             |push int32(5)
             |dupn
             |lt
@@ -103,7 +103,7 @@ object SmartProgramTests extends TestSuite {
             |push "balances"
             |from
             |push int32(0)
-            |call @method_getDefault
+            |call @storage_get_default
             |push int32(7)
             |dupn
             |push int32(-1)
@@ -125,7 +125,7 @@ object SmartProgramTests extends TestSuite {
             |push int32(8)
             |dupn
             |push int32(0)
-            |call @method_getDefault
+            |call @storage_get_default
             |push int32(7)
             |dupn
             |add
@@ -149,6 +149,24 @@ object SmartProgramTests extends TestSuite {
             |@method_Main:
             |pop
             |jump @stop
+            |@storage_get_default:
+            |push int32(3)
+            |dupn
+            |push int32(3)
+            |dupn
+            |concat
+            |sexist
+            |jumpi @get_default_if
+            |swap
+            |pop
+            |swap
+            |pop
+            |ret
+            |@get_default_if:
+            |pop
+            |concat
+            |sget
+            |ret
             |@stop:
           """.stripMargin).map(_.toList)
       )

@@ -32,6 +32,8 @@ object CompileSuite extends TestSuite {
           UnexpectedStringOutput
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
+        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+          Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Asm))
@@ -49,6 +51,8 @@ object CompileSuite extends TestSuite {
           else UnexpectedStringOutput
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
+        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+          Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Disasm))
@@ -67,10 +71,36 @@ object CompileSuite extends TestSuite {
         def dotnet(source: ByteString): Id[Either[String, ByteString]] =
           if (source == BinarySource) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
+        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+          Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
+    }
+
+    "dotnet_visualize" - {
+      val io = new IoLanguageStub(Some(BinarySource))
+      val compilers = new CompilersLanguage[Id] {
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
+        def asm(source: String): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
+        def disasm(source: ByteString): Id[String] =
+          UnexpectedStringOutput
+        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+          Right(UnexpectedBinaryOutput)
+        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+          if (source == BinarySource) {
+            Right((ExpectedBinaryOutput, ExpectedStringOutput))
+          } else {
+            Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
+          }
+      }
+      val compile = new Compile[Id](io, compilers)
+      compile(PravdaConfig.Compile(DotNetVisualize))
+      assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
+      assert(io.stdout.lift(1).contains(ExpectedBinaryOutput))
     }
   }
 }

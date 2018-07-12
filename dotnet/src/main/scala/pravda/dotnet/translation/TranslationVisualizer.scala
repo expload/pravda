@@ -1,6 +1,7 @@
 package pravda.dotnet.translation
 
 import pravda.dotnet.translation.data._
+import pravda.dotnet.translation.opcode.OpcodeTranslator
 import pravda.vm.asm.PravdaAssembler
 import pravda.vm.asm
 
@@ -41,12 +42,20 @@ object TranslationVisualizer {
         |$opcodes""".stripMargin
   }
 
+  private def visualizeFunction(func: OpcodeTranslator.AdditionalFunction): String = {
+    s"""|[function ${func.name}]
+        |${func.ops.map(renderAsmOp).mkString("\n")}""".stripMargin
+  }
+
   def visualize(translation: Translation): String = {
     s"""|[jump to methods]
         |${translation.jumpToMethods.map(renderAsmOp).mkString("\n")}
         |
         |[methods]
         |${translation.methods.map(visualizeMethod).mkString("\n")}
+        |
+        |[functions]
+        |${translation.functions.map(visualizeFunction).mkString("\n")}
         |
         |[finish]
         |${translation.finishOps.map(renderAsmOp).mkString("\n")}""".stripMargin
