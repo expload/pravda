@@ -54,7 +54,8 @@ val commonSettings = Seq(
     "-Xmacro-settings:materialize-derivations",
     "-Ypartial-unification",
     "-Ypatmat-exhaust-depth", "40"
-  )
+  ),
+  resolvers += Resolver.bintrayRepo("expload", "oss")
 ) ++ scalafixSettings
 
 lazy val common = (project in file("common"))
@@ -179,7 +180,7 @@ lazy val node = (project in file("node"))
       // UI
       "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
       // Other
-      "io.mytc" %% "scala-abci-server" % "0.9.2",
+      "com.expload" %% "scala-abci-server" % "0.9.2",
       "com.github.pureconfig" %% "pureconfig" % "0.9.0",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.6.2",
