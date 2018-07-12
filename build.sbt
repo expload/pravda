@@ -27,8 +27,7 @@ val scalacheckOps = Seq(
 val commonSettings = Seq(
   organization := "com.expload",
 
-  //  licenses += ("Apache-2.0", url("http://www.opensource.org/licenses/apache2.0.php")),
-  bintrayOmitLicense := true,
+  licenses += ("AGPL-V3", url("http://www.opensource.org/licenses/agpl-v3.html")),
 
   skip in publish := false,
   bintrayOrganization := Some("expload"),
@@ -61,9 +60,6 @@ val commonSettings = Seq(
 ) ++ scalafixSettings
 
 lazy val common = (project in file("common"))
-  .settings(
-    normalizedName := "pravda-common"
-  )
   .settings(commonSettings: _*)
   .settings(
     name := "pravda-common",
@@ -118,7 +114,6 @@ lazy val vm = (project in file("vm"))
   .dependsOn(common % "compile->compile;test->test")
 
 lazy val `vm-asm` = (project in file("vm-asm"))
-  .dependsOn(`vm-api` % "test->test;compile->compile")
   .settings(commonSettings: _*)
   .settings(
     name := "pravda-vm-asm",
@@ -133,11 +128,9 @@ lazy val `vm-asm` = (project in file("vm-asm"))
       Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "7"),
     )
   )
+  .dependsOn(`vm-api` % "test->test;compile->compile")
 
 lazy val dotnet = (project in file("dotnet"))
-  .dependsOn(`vm-asm`)
-  .dependsOn(common % "test->test")
-  .settings(normalizedName := "pravda-dotnet")
   .settings(commonSettings: _*)
   .settings(
     name := "pravda-dotnet",
@@ -150,6 +143,8 @@ lazy val dotnet = (project in file("dotnet"))
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
     )
   )
+  .dependsOn(`vm-asm`)
+  .dependsOn(common % "test->test")
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
@@ -234,8 +229,8 @@ lazy val yopt = (project in file("yopt"))
   )
 
 lazy val codegen = (project in file("codegen"))
-  .settings(normalizedName := "pravda-codegen")
   .settings(commonSettings: _*)
+  .settings(normalizedName := "pravda-codegen")
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.0.1",
@@ -278,11 +273,11 @@ lazy val `gen-doc` = (project in file("doc") / "gen")
   .dependsOn(`vm-asm`)
 
 lazy val testkit = (project in file("testkit"))
+  .settings(commonSettings: _*)
   .settings(
     skip in publish := true,
     normalizedName := "pravda-testkit"
   )
-  .settings(commonSettings: _*)
   .dependsOn(common % "test->test")
   .dependsOn(vm % "compile->compile;test->test")
   .dependsOn(`vm-api`)
