@@ -173,11 +173,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
           case BoolArray(data)   => data.length
           case Utf8Array(data)   => data.length
           case BytesArray(data)  => data.length
-          case _ => throw VmErrorException(WrongType)
+          case _                 => throw VmErrorException(WrongType)
         }
       case Bytes(data) => data.size
       case Utf8(data)  => data.length
-      case _ => throw VmErrorException(WrongType)
+      case _           => throw VmErrorException(WrongType)
     }
 
     memory.push(Data.Primitive.Uint32(len.toLong))

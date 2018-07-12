@@ -114,7 +114,8 @@ object Signatures {
           } yield SigType.Generic(tpe, tpes)
       case 0x18 => simpleType(SigType.I)
       case 0x19 => simpleType(SigType.U)
-      case 0x1d => for {
+      case 0x1d =>
+        for {
           tpeV <- sigType(tablesData)
         } yield tpeV.map(SigType.Arr(_, ArrayShape(1L, List.empty, List.empty)))
       case c => PassWith(Left(s"Unknown type signature: 0x${c.toInt.toHexString}"))

@@ -33,9 +33,11 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
             case DotNetVisualize =>
               for {
                 dv <- compilers.dotnetVisualize(input)
-                code <- dv.map { case (code, visualization) => io.writeToStdout(ByteString.copyFromUtf8(visualization)).map(_ => code) }.sequence
+                code <- dv.map {
+                  case (code, visualization) => io.writeToStdout(ByteString.copyFromUtf8(visualization)).map(_ => code)
+                }.sequence
               } yield code
-            case Nope   => Monad[F].pure(Left("Compilation mode should be selected."))
+            case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }
       } yield {

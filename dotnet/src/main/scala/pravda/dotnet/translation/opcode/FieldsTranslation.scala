@@ -10,8 +10,8 @@ import pravda.vm.{Opcodes, asm}
 case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
-                      stackOffsetO: Option[Int],
-                      ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+                         stackOffsetO: Option[Int],
+                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 
     def loadField(name: String, sigIdx: Long): List[asm.Operation] = { // FIXME should process static fields too
       lazy val defaultLoad = List(
