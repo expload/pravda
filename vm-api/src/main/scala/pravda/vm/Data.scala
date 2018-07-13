@@ -644,7 +644,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     val (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct) = {
       import fastparse.all._
 
-      val ws = P(CharIn(Seq(' ', '\t', '\n', '\r')).rep)
+      val wChars = Seq(' ', '\t', '\n', '\r')
+      val ws = P(CharIn(wChars).rep)
+      val space = P(CharIn(wChars).rep(1))
       val comma = P(ws ~ "," ~ ws)
       val decDigs = P(CharIn('0' to '9').rep(1))
       val hexDig = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
@@ -714,7 +716,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val hexString = P(hexDig.rep(1).!).map(s => hex2byteString(s))
 
-      val bytes = P(IgnoreCase("x") ~/ (hexString | PassWith(ByteString.EMPTY))).map(Primitive.Bytes)
+      val bytes = P(IgnoreCase("x") ~ (hexString | (PassWith(ByteString.EMPTY) ~ &(space)))).map(Primitive.Bytes)
 
       val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | numeric | `null`)
 
