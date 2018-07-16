@@ -9,4 +9,5 @@ trait CompilersLanguage[F[_]] {
   def asm(source: String): F[Either[String, ByteString]]
   def disasm(source: ByteString): F[String]
   def dotnet(source: ByteString): F[Either[String, ByteString]]
+  def dotnetVisualize(source: ByteString): F[Either[String, (ByteString, String)]]
 }

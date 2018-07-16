@@ -5,11 +5,11 @@ import pravda.dotnet.parsers.CIL.CilData
 import pravda.dotnet.utils._
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.data.{Heaps, TablesData}
-
 import cats.instances.vector._
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
+import pravda.dotnet.parsers.Signatures.SigType.ArrayShape
 
 object Signatures {
 
@@ -37,7 +37,9 @@ object Signatures {
     final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
     final case class Var(num: Long)                                  extends SigType
-    // FIXME complex types are ignored
+
+    final case class ArrayShape(rank: Long, sizes: List[Long], loBounds: List[Long])
+    final case class Arr(tpe: SigType, shape: ArrayShape) extends SigType
   }
 
   sealed trait Signature
@@ -67,6 +69,13 @@ object Signatures {
     }
   })
 
+  private val arrayShape: P[SigType.ArrayShape] = {
+    val sizes = compressedUInt.flatMap(num => compressedUInt.rep(exactly = num.toInt)).map(_.toList)
+    val loBounds = compressedUInt.flatMap(num => compressedUInt.rep(exactly = num.toInt)).map(_.toList)
+
+    P(compressedUInt ~ sizes ~ loBounds).map(ArrayShape.tupled)
+  }
+
   def sigType(tablesData: TablesData): P[Either[String, SigType]] = {
     def simpleType(t: SigType): P[Either[String, SigType]] = PassWith(Right(t))
 
@@ -88,6 +97,11 @@ object Signatures {
       case 0x11 => typeDefOrRef(tablesData).map(_.map(SigType.ValueTpe))
       case 0x12 => typeDefOrRef(tablesData).map(_.map(SigType.Cls))
       case 0x13 => compressedUInt.map(i => Right(SigType.Var(i)))
+      case 0x14 =>
+        for {
+          tpeV <- sigType(tablesData)
+          shape <- arrayShape
+        } yield tpeV.map(SigType.Arr(_, shape))
       case 0x15 =>
         for {
           tpeV <- sigType(tablesData)
@@ -100,8 +114,11 @@ object Signatures {
           } yield SigType.Generic(tpe, tpes)
       case 0x18 => simpleType(SigType.I)
       case 0x19 => simpleType(SigType.U)
-      case c =>
-        throw new NotImplementedError
+      case 0x1d =>
+        for {
+          tpeV <- sigType(tablesData)
+        } yield tpeV.map(SigType.Arr(_, ArrayShape(1L, List.empty, List.empty)))
+      case c => PassWith(Left(s"Unknown type signature: 0x${c.toInt.toHexString}"))
     }
   }
 

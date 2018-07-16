@@ -22,7 +22,10 @@ For the moment it supports the following:
 - Integer primitive types (`int`, `short`, `byte`, `uint`) and `bool`;
 - Basic arithmetics and logical operations; 
 - Local variables and method arguments;
-- If conditions and loops.
+- If conditions and loops;
+- `String`s and auxiliary methods (`+`, access to particular chars, `Slice`);
+- `Bytes` (immutable byte arrays), auxiliary methods (access to particular bytes, `Slice`);
+- Arrays of primitive types (`int`, `byte`, `String`), reading and writing of particular elements.
 
 Things that are *not* supported:
 - User defined classes as values, classes is used only as _programs_ for the moment;

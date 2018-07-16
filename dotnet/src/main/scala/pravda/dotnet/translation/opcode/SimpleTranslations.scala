@@ -6,46 +6,9 @@ import pravda.dotnet.translation.data._
 import pravda.vm.asm
 import pravda.vm.{Data, Opcodes}
 
-case object SimpleTranslations extends OpcodeTranslator {
+case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
-  override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
-
-    val offsetF: PartialFunction[CIL.Op, Int] = {
-      case LdcI40     => 1
-      case LdcI41     => 1
-      case LdcI42     => 1
-      case LdcI43     => 1
-      case LdcI44     => 1
-      case LdcI45     => 1
-      case LdcI46     => 1
-      case LdcI47     => 1
-      case LdcI48     => 1
-      case LdcI4M1    => 1
-      case LdcI4(num) => 1
-      case LdcI4S(v)  => 1
-      case LdcR4(f)   => 1
-      case LdcR8(d)   => 1
-      case LdStr(s)   => 1
-
-      case Add => -1
-      case Mul => -1
-      case Div => -1
-      case Rem => -1
-      case Sub => -1
-
-      case Clt => -1
-      case Cgt => -1
-      case Ceq => -1
-      case Not => 0
-
-      case Nop => 0
-      case Ret => 0
-    }
-
-    offsetF.lift(op).toRight(UnknownOpcode)
-  }
-
-  override def translate(op: CIL.Op,
+  override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 
@@ -80,6 +43,8 @@ case object SimpleTranslations extends OpcodeTranslator {
         asm.Operation(Opcodes.EQ) :: cast(Data.Type.Int8)
       case Not =>
         cast(Data.Type.Boolean) ++ (asm.Operation(Opcodes.NOT) :: cast(Data.Type.Int8))
+
+      case Dup => List(asm.Operation.Orphan(Opcodes.DUP))
 
       case Nop => List()
       case Ret => List()

@@ -2,13 +2,16 @@ package pravda.vm.operations
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
 import pravda.vm.Data.Array._
 import pravda.vm.Data.Primitive.{Bool, _}
-import pravda.vm.Data.{Primitive, Struct}
+import pravda.vm.Data.{Primitive, Struct, Type}
+import pravda.vm.Opcodes._
 import pravda.vm.VmError.WrongType
 import pravda.vm._
-import pravda.vm.Opcodes._
 import pravda.vm.operations.annotation.OpcodeImplementation
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Pravda VM heap pravda.vm.Opcodes implementation.
@@ -53,6 +56,35 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     wattCounter.memoryUsage(data.volume.toLong)
     wattCounter.memoryUsage(reference.volume.toLong)
     memory.push(reference)
+  }
+
+  @OpcodeImplementation(
+    opcode = NEW_ARRAY,
+    description = "Takes type of desired array from the stack. " +
+      "Takes length of the desired array from the stack. " +
+      "Pushes reference of new array to the stack."
+  )
+  def newArray(): Unit = {
+    val `type` = integer(memory.pop())
+    val num = integer(memory.pop())
+
+    val arr = Type @@ `type`.toByte match {
+      case Type.Int8    => Data.Array.Int8Array(ArrayBuffer.fill(num.toInt)(0))
+      case Type.Int16   => Data.Array.Int16Array(ArrayBuffer.fill(num.toInt)(0))
+      case Type.Int32   => Data.Array.Int32Array(ArrayBuffer.fill(num.toInt)(0))
+      case Type.Uint8   => Data.Array.Uint8Array(ArrayBuffer.fill(num.toInt)(0))
+      case Type.Uint16  => Data.Array.Uint16Array(ArrayBuffer.fill(num.toInt)(0))
+      case Type.Uint32  => Data.Array.Uint32Array(ArrayBuffer.fill(num.toInt)(0L))
+      case Type.BigInt  => Data.Array.BigIntArray(ArrayBuffer.fill(num.toInt)(scala.BigInt(0)))
+      case Type.Number  => Data.Array.NumberArray(ArrayBuffer.fill(num.toInt)(0.0))
+      case Type.Ref     => Data.Array.RefArray(ArrayBuffer.fill(num.toInt)(0))
+      case Type.Boolean => Data.Array.BoolArray(ArrayBuffer.fill(num.toInt)(Data.Primitive.Bool.False))
+      case Type.Utf8    => Data.Array.Utf8Array(ArrayBuffer.fill(num.toInt)(""))
+      case Type.Bytes   => Data.Array.BytesArray(ArrayBuffer.fill(num.toInt)(ByteString.EMPTY))
+      case _            => throw VmErrorException(WrongType)
+    }
+
+    memory.push(Data.Primitive.Ref(memory.heapPut(arr)))
   }
 
   @OpcodeImplementation(
@@ -118,6 +150,37 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case (Bytes(value), BytesArray(data))   => data(index) = value
       case _                                  => throw VmErrorException(WrongType)
     }
+  }
+
+  @OpcodeImplementation(
+    opcode = LENGTH,
+    description =
+      "Takes reference to array or Bytes or Utf8 from stack. " +
+        "Pushes length of given array, Bytes or Utf8 to the stack. "
+  )
+  def length(): Unit = {
+    val len = memory.pop() match {
+      case Ref(reference) =>
+        memory.heapGet(reference) match {
+          case Int8Array(data)   => data.length
+          case Int16Array(data)  => data.length
+          case Int32Array(data)  => data.length
+          case Uint8Array(data)  => data.length
+          case Uint16Array(data) => data.length
+          case Uint32Array(data) => data.length
+          case BigIntArray(data) => data.length
+          case RefArray(data)    => data.length
+          case BoolArray(data)   => data.length
+          case Utf8Array(data)   => data.length
+          case BytesArray(data)  => data.length
+          case _                 => throw VmErrorException(WrongType)
+        }
+      case Bytes(data) => data.size
+      case Utf8(data)  => data.length
+      case _           => throw VmErrorException(WrongType)
+    }
+
+    memory.push(Data.Primitive.Uint32(len.toLong))
   }
 
   @OpcodeImplementation(

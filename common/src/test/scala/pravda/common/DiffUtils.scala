@@ -9,8 +9,8 @@ object DiffUtils {
       idx <- firstDiff
     } yield {
       s"""
-        |${s1.slice(idx - 20, idx + 20)}
-        |${s2.slice(idx - 20, idx + 20)}
+        |${s1.slice(idx - 40, idx + 40)}
+        |${s2.slice(idx - 40, idx + 40)}
       """.stripMargin
     }).getOrElse("<end of file>")
   }

@@ -29,6 +29,8 @@ object Opcodes {
   final val STRUCT_MUT_STATIC = 0x26
   final val PRIMITIVE_PUT = 0x27
   final val PRIMITIVE_GET = 0x28
+  final val NEW_ARRAY = 0x29
+  final val LENGTH = 0x30
 
   // Storage
   final val SPUT = 0x50

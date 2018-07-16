@@ -3,13 +3,13 @@ package pravda.dotnet.parsers
 import fastparse.byte.all._
 import LE._
 import pravda.dotnet.data.{Heaps, TablesData}
-
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 
 object CIL {
-  final case class CilData(stringHeap: Bytes,
+  final case class CilData(sections: List[(PE.Info.SectionHeader, Bytes)],
+                           stringHeap: Bytes,
                            userStringHeap: Bytes,
                            blobHeap: Bytes,
                            tableNumbers: List[Int],
@@ -18,7 +18,14 @@ object CIL {
   def fromPeData(peData: PE.Info.PeData): Either[String, CilData] =
     TablesData
       .fromInfo(peData)
-      .map(tables => CilData(peData.stringHeap, peData.userStringHeap, peData.blobHeap, peData.tableNumbers, tables))
+      .map(
+        tables =>
+          CilData(peData.sections,
+                  peData.stringHeap,
+                  peData.userStringHeap,
+                  peData.blobHeap,
+                  peData.tableNumbers,
+                  tables))
 
   type Token = TablesData.TableRowData
 

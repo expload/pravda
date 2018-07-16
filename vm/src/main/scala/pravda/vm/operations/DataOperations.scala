@@ -27,8 +27,8 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
       "Takes start index, end index and item from the stack. Makes slice of item and puts result to the stack."
   )
   def slice(): Unit = {
-    val until = integer(memory.pop()).toInt
     val from = integer(memory.pop()).toInt
+    val until = integer(memory.pop()).toInt
     val sliced = memory.pop() match {
       case Utf8(data)  => Utf8(data.substring(from, until))
       case Bytes(data) => Bytes(data.substring(from, until))

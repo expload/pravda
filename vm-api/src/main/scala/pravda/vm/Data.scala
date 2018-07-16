@@ -555,6 +555,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   }
 
   object Array {
+
     final case class Int8Array(data: mutable.Buffer[Byte])           extends Array
     final case class Int16Array(data: mutable.Buffer[Short])         extends Array
     final case class Int32Array(data: mutable.Buffer[Int])           extends Array
@@ -643,7 +644,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     val (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct) = {
       import fastparse.all._
 
-      val ws = P(CharIn(Seq(' ', '\t', '\n', '\r')).rep)
+      val wChars = Seq(' ', '\t', '\n', '\r')
+      val ws = P(CharIn(wChars).rep)
+      val space = P(CharIn(wChars).rep(1))
       val comma = P(ws ~ "," ~ ws)
       val decDigs = P(CharIn('0' to '9').rep(1))
       val hexDig = P(CharIn('0' to '9', 'a' to 'f', 'A' to 'F'))
@@ -711,9 +714,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val utf8 = string.map(Primitive.Utf8)
 
-      val hexString = P(hexDigs.!).map(s => hex2byteString(s))
+      val hexString = P(hexDig.rep(1).!).map(s => hex2byteString(s))
 
-      val bytes = P(IgnoreCase("x") ~ hexString).map(Primitive.Bytes)
+      val bytes = P(IgnoreCase("x") ~ (hexString | (PassWith(ByteString.EMPTY) ~ &(space)))).map(Primitive.Bytes)
 
       val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | numeric | `null`)
 

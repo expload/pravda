@@ -76,7 +76,8 @@ object PE {
     final case class FatMethodHeader(flags: Int, size: Int, maxStack: Int, localVarSigTok: Long, codeBytes: Bytes)
         extends MethodHeader
 
-    final case class PeData(stringHeap: Bytes,
+    final case class PeData(sections: List[(SectionHeader, Bytes)],
+                            stringHeap: Bytes,
                             userStringHeap: Bytes,
                             blobHeap: Bytes,
                             tableNumbers: List[Int],
@@ -90,12 +91,12 @@ object PE {
 
   import Info._
 
-  val msDosHeader: P[Long] = {
+  private val msDosHeader: P[Long] = {
     val lfanew = UInt32
     P(BS(0x4D, 0x5A, 0x90, 0x00) ~ AnyBytes(56) ~ lfanew ~ AnyBytes(64))
   }
 
-  val peFileHeader: P[PeFileHeader] = {
+  private val peFileHeader: P[PeFileHeader] = {
     val sectionsNumber = UInt16
     val optionHeaderSize = UInt16
     val characteristics = Int16
@@ -104,7 +105,7 @@ object PE {
         sectionsNumber ~ AnyBytes(12) ~ optionHeaderSize ~ characteristics).map(PeFileHeader.tupled)
   }
 
-  val peHeaderStandardFields: P[PeHeaderStandardFields] = {
+  private val peHeaderStandardFields: P[PeHeaderStandardFields] = {
     val codeSize = UInt32
     val initDataSize = UInt32
     val uninitDataSize = UInt32
@@ -115,7 +116,7 @@ object PE {
       .map(PeHeaderStandardFields.tupled)
   }
 
-  val ntSpecificFields: P[NtSpecificFields] = {
+  private val ntSpecificFields: P[NtSpecificFields] = {
     val imageBase = UInt32
     val sectionAligment = UInt32
     val imageSize = UInt32
@@ -124,7 +125,7 @@ object PE {
     P(imageBase ~ sectionAligment ~ AnyBytes(20) ~ imageSize ~ headerSize ~ AnyBytes(32)).map(NtSpecificFields.tupled)
   }
 
-  val peHeaderDataDirectories: P[PeHeaderDataDirectories] = {
+  private val peHeaderDataDirectories: P[PeHeaderDataDirectories] = {
     val importTableRva = UInt32
     val importTableSize = UInt32
     val baseRelocationTableRva = UInt32
@@ -147,7 +148,7 @@ object PE {
     ).map(PeHeaderDataDirectories.tupled)
   }
 
-  val sectionHeader: P[SectionHeader] = {
+  private val sectionHeader: P[SectionHeader] = {
     val name = utils.nullTerminatedString(8)
     val virtualSize = UInt32
     val virtualAddress = UInt32
@@ -159,7 +160,7 @@ object PE {
       .map(SectionHeader.tupled)
   }
 
-  val cliHeader: P[CliHeader] = {
+  private val cliHeader: P[CliHeader] = {
     val cb = UInt32
     val majorRuntimeVersion = UInt16
     val minorRuntimeVersion = UInt16
@@ -187,7 +188,7 @@ object PE {
         AnyBytes(16)).map(CliHeader.tupled)
   }
 
-  val streamHeader: P[StreamHeader] = {
+  private val streamHeader: P[StreamHeader] = {
     val offset = UInt32
     val size = UInt32
     val name = for {
@@ -198,7 +199,7 @@ object PE {
     P(offset ~ size ~ name).map(StreamHeader.tupled)
   }
 
-  val tildeStream: P[Either[String, TildeStream]] = {
+  private val tildeStream: P[Either[String, TildeStream]] = {
     val heapSizes = Int8
     val valid = Int64
     val sorted = Int64
@@ -215,7 +216,7 @@ object PE {
     } yield tables.map(ts => TildeStream(hs, tableNumbers, s, ts))
   }
 
-  val metadataRoot: P[MetadataRoot] = {
+  private val metadataRoot: P[MetadataRoot] = {
     val length = Int32
     val version = length.flatMap(l => utils.nullTerminatedString((l + 3) / 4 * 4))
     val streamsNumber = UInt16
@@ -223,7 +224,7 @@ object PE {
     P(BS(0x42, 0x53, 0x4a, 0x42) ~ AnyBytes(8) ~ version ~ AnyBytes(2) ~ streamHeaders).map(MetadataRoot.tupled)
   }
 
-  val method: P[MethodHeader] = {
+  private val method: P[MethodHeader] = {
     P(Int8)
       .flatMap(
         b => {
@@ -245,7 +246,7 @@ object PE {
       )
   }
 
-  val peHeader: P[PeHeader] = {
+  private val peHeader: P[PeHeader] = {
     for {
       offset <- msDosHeader
       fileHeader <- P(AnyBytes((offset - 128).toInt) /* 2GB for .exe file should be enough*/ ~ peFileHeader)
@@ -254,31 +255,34 @@ object PE {
     } yield PeHeader(fileHeader, sFields, ntFields, dataDirs, sections)
   }
 
-  def bytesFromRva(file: Bytes, sections: List[SectionHeader], rva: Long): Bytes = {
-    val rvaSection = sections.find(s => rva >= s.virtualAddress && rva <= s.virtualAddress + s.virtualSize)
+  private def sectionFromHeader(file: Bytes, sectionHeader: SectionHeader): Bytes =
+    file.slice(sectionHeader.pointerToRawData, sectionHeader.pointerToRawData + sectionHeader.sizeOfRawData)
+
+  def bytesFromRva(sections: List[(SectionHeader, Bytes)], rva: Long, sizeO: Option[Long] = None): Bytes = {
+    val rvaSection = sections.find { case (h, _) => rva >= h.virtualAddress && rva <= h.virtualAddress + h.virtualSize }
     rvaSection match {
-      case Some(s) =>
-        val start = s.pointerToRawData + rva - s.virtualAddress
-        val finish = s.pointerToRawData + s.sizeOfRawData
-        file.slice(start, finish) // probably should be padded with zeros to virtualSize
+      case Some((h, s)) =>
+        val start = rva - h.virtualAddress
+        sizeO
+          .map(size => s.slice(start, start + size))
+          .getOrElse(s.drop(start)) // probably should be padded with zeros to virtualSize
       case None => Bytes.empty
     }
   }
 
-  def streamHeaderBytes(file: Bytes,
-                        sections: List[SectionHeader],
-                        metadataRva: Long,
-                        streamHeader: StreamHeader): Bytes = {
+  private def streamHeaderBytes(sections: List[(SectionHeader, Bytes)],
+                                metadataRva: Long,
+                                streamHeader: StreamHeader): Bytes = {
     val rva = metadataRva + streamHeader.offset
-    bytesFromRva(file, sections, rva).take(streamHeader.size)
+    bytesFromRva(sections, rva).take(streamHeader.size)
   }
 
   def parseInfo(file: Bytes): Either[String, Pe] = {
     for {
       header <- peHeader.parse(file).toEither
-      sections = header.sectionHeaders
+      sections = header.sectionHeaders.map(h => (h, sectionFromHeader(file, h)))
 
-      fileBytesFromRva = (rva: Long) => bytesFromRva(file, sections, rva)
+      fileBytesFromRva = (rva: Long) => bytesFromRva(sections, rva)
 
       cliHeader <- cliHeader.parse(fileBytesFromRva(header.peHeaderDataDirectories.cliHeaderRva)).toEither
       metadataRva = cliHeader.metadataRva
@@ -289,7 +293,7 @@ object PE {
       retrieveStream = (name: String) =>
         streamHeaders
           .find(_.name == name)
-          .map(h => Right(streamHeaderBytes(file, sections, metadataRva, h)))
+          .map(h => Right(streamHeaderBytes(sections, metadataRva, h)))
           .getOrElse(Left(s"$name heap not found"))
 
       tildeStreamBytes <- retrieveStream("#~")
@@ -312,8 +316,7 @@ object PE {
       Pe(header,
          cliHeader,
          metadata,
-         PeData(stringHeap, userStringHeap, blobHeap, tildeStream.tableNumbers, tildeStream.tables),
+         PeData(sections, stringHeap, userStringHeap, blobHeap, tildeStream.tableNumbers, tildeStream.tables),
          methods)
   }
-
 }

@@ -5,9 +5,10 @@ import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.Signatures.SigType._
 import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
-import pravda.vm.{Data, Opcodes, asm}
+import pravda.vm.asm.Operation
+import pravda.vm.{Data, Opcodes}
 
-case object CallsTransation extends OpcodeTranslator {
+case object CallsTransation extends OneToManyTranslator {
 
   private val mappingsMethods = Set("get", "getDefault", "exists", "put")
 
@@ -38,7 +39,52 @@ case object CallsTransation extends OpcodeTranslator {
     case _                  => false
   }
 
-  override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
+  private lazy val getDefaultFunction = List(
+    pushInt(3),
+    Operation.Orphan(Opcodes.DUPN),
+    pushInt(3),
+    Operation.Orphan(Opcodes.DUPN),
+    Operation.Orphan(Opcodes.CONCAT),
+    Operation.Orphan(Opcodes.SEXIST),
+    Operation.JumpI(Some("get_default_if")),
+    Operation.Orphan(Opcodes.SWAP),
+    Operation.Orphan(Opcodes.POP),
+    Operation.Orphan(Opcodes.SWAP),
+    Operation.Orphan(Opcodes.POP),
+    Operation.Orphan(Opcodes.RET),
+    Operation.Label("get_default_if"),
+    Operation.Orphan(Opcodes.POP),
+    Operation.Orphan(Opcodes.CONCAT),
+    Operation.Orphan(Opcodes.SGET),
+    Operation.Orphan(Opcodes.RET)
+  )
+
+  override def additionalFunctionsOne(
+      op: CIL.Op,
+      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.AdditionalFunction]] = op match {
+    case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
+      val res = for {
+        parentSig <- ctx.signatures.get(parentSigIdx)
+      } yield {
+        if (detectMapping(parentSig)) {
+          name match {
+            case "getDefault" =>
+              Right(
+                List(
+                  OpcodeTranslator.AdditionalFunction("storage_get_default", getDefaultFunction)
+                ))
+            case _ => Left(UnknownOpcode)
+          }
+        } else {
+          Left(UnknownOpcode)
+        }
+      }
+
+      res.getOrElse(Left(InternalError("Invalid signatures")))
+    case _ => Left(UnknownOpcode)
+  }
+
+  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
     op match {
       // case Call(MemberRefData(TypeRefData(6, "String", "System"), "Concat", methodSigIdx)) =>
 
@@ -63,37 +109,36 @@ case object CallsTransation extends OpcodeTranslator {
     }
   }
 
-  override def translate(op: CIL.Op,
+  override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+                         ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = {
 
     op match {
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
           parentSig <- ctx.signatures.get(parentSigIdx)
-          methodSig <- ctx.signatures.get(methodSigIdx)
         } yield {
           if (detectMapping(parentSig)) {
             name match {
               case "get" =>
-                Right(List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.CONCAT), asm.Operation(Opcodes.SGET)))
-              case "getDefault" => Right(List(asm.Operation.Call(Some("method_getDefault"))))
+                Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SGET)))
+              case "getDefault" => Right(List(Operation.Call(Some("storage_get_default"))))
               case "exists" =>
                 Right(
-                  List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.CONCAT), asm.Operation(Opcodes.SEXIST)) ++ cast(
+                  List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SEXIST)) ++ cast(
                     Data.Type.Int8))
               case "put" =>
                 Right(
                   List(
                     pushInt(2),
-                    asm.Operation(Opcodes.DUPN),
+                    Operation(Opcodes.DUPN),
                     pushInt(4),
-                    asm.Operation(Opcodes.DUPN),
-                    asm.Operation(Opcodes.CONCAT),
-                    asm.Operation(Opcodes.SWAP),
-                    asm.Operation(Opcodes.SPUT),
-                    asm.Operation(Opcodes.POP),
-                    asm.Operation(Opcodes.POP)
+                    Operation(Opcodes.DUPN),
+                    Operation(Opcodes.CONCAT),
+                    Operation(Opcodes.SWAP),
+                    Operation(Opcodes.SPUT),
+                    Operation(Opcodes.POP),
+                    Operation(Opcodes.POP)
                   )
                 )
               case _ => Left(UnknownOpcode)

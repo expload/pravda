@@ -130,6 +130,12 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   "Output is binary Pravdaprogram. " +
                   "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.DotNet))
+              .children(
+                opt[Unit]("visualize").action {
+                  case ((), config: PravdaConfig.Compile) =>
+                    config.copy(compiler = PravdaConfig.CompileMode.DotNetVisualize)
+                }
+              )
           ),
         cmd("broadcast")
           .text("Broadcast transactions and programs to the Pravda blockchain.")

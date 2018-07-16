@@ -5,9 +5,9 @@ import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Opcodes, asm}
 
-case object ArgsLocalsTranslations extends OpcodeTranslator {
+case object ArgsLocalsTranslations extends OneToManyTranslator {
 
-  override def deltaOffset(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
+  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
 
     def loadArg(num: Int): Int =
       if (!ctx.local && num == 0) 0 else 1
@@ -36,7 +36,7 @@ case object ArgsLocalsTranslations extends OpcodeTranslator {
     offsetF.lift(op).toRight(UnknownOpcode)
   }
 
-  override def translate(op: CIL.Op,
+  override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
 

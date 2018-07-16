@@ -9,6 +9,7 @@ import cats.syntax.traverse._
 
 final case class TablesData(
     fieldTable: Vector[TablesData.FieldData],
+    fieldRVATable: Vector[TablesData.FieldRVAData],
     memberRefTable: Vector[TablesData.MemberRefData],
     methodDefTable: Vector[TablesData.MethodDefData],
     paramTable: Vector[TablesData.ParamData],
@@ -27,6 +28,7 @@ final case class TablesData(
     case 0xA  => Some(memberRefTable)
     case 0x11 => Some(standAloneSigTable)
     case 0x1B => Some(typeSpecTable)
+    case 0x1D => Some(fieldRVATable)
     case _    => None
   }
 }
@@ -42,6 +44,7 @@ object TablesData {
       extends TableRowData
   final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends TableRowData
   final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
+  final case class FieldRVAData(field: FieldData, rva: Long)                                   extends TableRowData
   final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData
   final case class TypeDefData(flags: Int,
                                name: String,
@@ -88,6 +91,14 @@ object TablesData {
         for {
           name <- Heaps.string(peData.stringHeap, nameIdx)
         } yield FieldData(flags, name, signatureIdx)
+    }.sequence
+
+    val fieldRVAListV = peData.tables.fieldRVATable.map {
+      case FieldRVARow(rva, fieldIdx) =>
+        for {
+          fieldList <- fieldListV
+          field = fieldList(fieldIdx.toInt - 1)
+        } yield FieldRVAData(field, rva)
     }.sequence
 
     def methodListV(paramList: Vector[ParamData]): Either[String, Vector[MethodDefData]] = {
@@ -149,12 +160,14 @@ object TablesData {
     for {
       paramList <- paramListV
       fieldList <- fieldListV
+      fieldRVAList <- fieldRVAListV
       methodList <- methodListV(paramList)
       typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
       memberRefList <- memberRefListV(typeDefList, typeRefList)
     } yield
       TablesData(fieldList,
+                 fieldRVAList,
                  memberRefList,
                  methodList,
                  paramList,
