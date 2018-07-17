@@ -1544,7 +1544,15 @@ namespace Keiwando.BigInteger
                 sb.AppendFormat(f, m_digits[i]);
             }
 
-            return sb.ToString();
+            string res = sb.ToString();
+            if (res.Length % 2 == 1)
+            {
+                return "0" + res;
+            }
+            else
+            {
+                return res;
+            }
         }
 
         /// <summary>

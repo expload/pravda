@@ -130,7 +130,7 @@ object DotnetCodegen {
         .distinct
         .map(t => ParseClass(t.capitalize, t))
         .asJava,
-      "localhost:8080/program/method"
+      "localhost:8087/api/program/method"
     )
   }
 
