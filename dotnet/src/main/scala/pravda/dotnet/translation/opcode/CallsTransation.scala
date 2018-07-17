@@ -39,25 +39,27 @@ case object CallsTransation extends OneToManyTranslator {
     case _                  => false
   }
 
-  private lazy val getDefaultFunction = List(
-    pushInt(3),
-    Operation.Orphan(Opcodes.DUPN),
-    pushInt(3),
-    Operation.Orphan(Opcodes.DUPN),
-    Operation.Orphan(Opcodes.CONCAT),
-    Operation.Orphan(Opcodes.SEXIST),
-    Operation.JumpI(Some("get_default_if")),
-    Operation.Orphan(Opcodes.SWAP),
-    Operation.Orphan(Opcodes.POP),
-    Operation.Orphan(Opcodes.SWAP),
-    Operation.Orphan(Opcodes.POP),
-    Operation.Orphan(Opcodes.RET),
-    Operation.Label("get_default_if"),
-    Operation.Orphan(Opcodes.POP),
-    Operation.Orphan(Opcodes.CONCAT),
-    Operation.Orphan(Opcodes.SGET),
-    Operation.Orphan(Opcodes.RET)
-  )
+  private lazy val getDefaultFunction =
+    dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
+      List(
+        Operation.Orphan(Opcodes.CONCAT),
+        Operation.Orphan(Opcodes.SEXIST),
+        Operation.JumpI(Some("get_default_if")),
+        Operation.Orphan(Opcodes.SWAP),
+        Operation.Orphan(Opcodes.POP),
+        Operation.Orphan(Opcodes.SWAP),
+        Operation.Orphan(Opcodes.POP),
+        Operation.Orphan(Opcodes.RET),
+        Operation.Label("get_default_if"),
+        Operation.Orphan(Opcodes.POP)
+      ) ++
+      cast(Data.Type.Bytes) ++
+      List(
+        Operation.Orphan(Opcodes.SWAP),
+        Operation.Orphan(Opcodes.CONCAT),
+        Operation.Orphan(Opcodes.SGET),
+        Operation.Orphan(Opcodes.RET)
+      )
 
   override def additionalFunctionsOne(
       op: CIL.Op,
@@ -121,25 +123,27 @@ case object CallsTransation extends OneToManyTranslator {
           if (detectMapping(parentSig)) {
             name match {
               case "get" =>
-                Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SGET)))
+                Right(
+                  cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),
+                                                Operation(Opcodes.CONCAT),
+                                                Operation(Opcodes.SGET)))
+
               case "getDefault" => Right(List(Operation.Call(Some("storage_get_default"))))
               case "exists" =>
                 Right(
-                  List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT), Operation(Opcodes.SEXIST)) ++ cast(
-                    Data.Type.Int8))
+                  cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),
+                                                Operation(Opcodes.CONCAT),
+                                                Operation(Opcodes.SEXIST)) ++ cast(Data.Type.Int8))
               case "put" =>
                 Right(
-                  List(
-                    pushInt(2),
-                    Operation(Opcodes.DUPN),
-                    pushInt(4),
-                    Operation(Opcodes.DUPN),
-                    Operation(Opcodes.CONCAT),
-                    Operation(Opcodes.SWAP),
-                    Operation(Opcodes.SPUT),
-                    Operation(Opcodes.POP),
-                    Operation(Opcodes.POP)
-                  )
+                  dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
+                    List(
+                      Operation(Opcodes.CONCAT),
+                      Operation(Opcodes.SWAP),
+                      Operation(Opcodes.SPUT),
+                      Operation(Opcodes.POP),
+                      Operation(Opcodes.POP)
+                    )
                 )
               case _ => Left(UnknownOpcode)
             }

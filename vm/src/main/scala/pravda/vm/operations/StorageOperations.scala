@@ -50,10 +50,13 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
       "Pops first item from stack, interprets it as key, retrieves corresponding record from a storage of the program and pushes the record to the stack. Otherwise throws an exception. "
   )
   def get(): Unit = ifStorage { storage =>
-    val data = storage.get(memory.pop()).getOrElse(Data.Primitive.Null)
+    val data = storage
+      .get(memory.pop())
+      .collect { case p: Data.Primitive => p }
+      .getOrElse(Data.Primitive.Null)
     wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(Data.Primitive.Null)
+    memory.push(data)
   }
 
   @OpcodeImplementation(

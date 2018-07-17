@@ -1,5 +1,7 @@
 package pravda.dotnet.translation.opcode
 
+import java.nio.charset.StandardCharsets
+
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
@@ -23,9 +25,9 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
         case Some(FieldSig(tpe)) =>
           tpe match {
             case SigType.Generic(TypeDetectors.Mapping(), _) =>
-              List(pushString(name))
+              List(pushBytes(name.getBytes(StandardCharsets.UTF_8)))
             case TypeDetectors.Mapping() =>
-              List(pushString(name))
+              List(pushBytes(name.getBytes(StandardCharsets.UTF_8)))
             case TypeDetectors.Address() if name == "sender" =>
               List(asm.Operation(Opcodes.FROM))
             case _ => defaultLoad

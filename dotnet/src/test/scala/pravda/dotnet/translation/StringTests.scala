@@ -1,6 +1,5 @@
 package pravda.dotnet.translation
 
-import pravda.common.DiffUtils
 import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
@@ -11,10 +10,9 @@ object StringTests extends TestSuite {
     'stringTranslation - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("strings.exe")
 
-      DiffUtils.assertEqual(
-        Translator.translateAsm(methods, cilData, signatures),
-        PravdaAssembler.parse(
-          """
+      assertWithAsmDiff(
+        Translator.translateAsm(methods, cilData, signatures).right.get,
+        PravdaAssembler.parse("""
             |meta method { int8(-1): "distributeSalary", int8(-2): int8(0) }
             |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
@@ -55,13 +53,15 @@ object StringTests extends TestSuite {
             |push int32(6)
             |swapn
             |pop
-            |push "strings"
+            |push x737472696E6773
             |push int32(6)
             |dupn
             |push int32(10)
             |dupn
             |push int32(2)
             |dupn
+            |push int8(14)
+            |cast
             |push int32(4)
             |dupn
             |concat
@@ -69,8 +69,10 @@ object StringTests extends TestSuite {
             |sput
             |pop
             |pop
-            |push "strings"
+            |push x737472696E6773
             |push "lupa"
+            |push int8(14)
+            |cast
             |swap
             |concat
             |sexist
@@ -89,11 +91,13 @@ object StringTests extends TestSuite {
             |push int32(1)
             |eq
             |jumpi @br87
-            |push "strings"
+            |push x737472696E6773
             |push "pupa"
             |push ""
             |push int32(2)
             |dupn
+            |push int8(14)
+            |cast
             |push int32(4)
             |dupn
             |concat
@@ -142,7 +146,7 @@ object StringTests extends TestSuite {
             |pop
             |jump @stop
             |@stop:
-          """.stripMargin).map(_.toList)
+          """.stripMargin).right.get
       )
     }
   }

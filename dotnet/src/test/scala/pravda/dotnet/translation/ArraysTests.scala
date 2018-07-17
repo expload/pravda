@@ -1,6 +1,5 @@
 package pravda.dotnet.translation
 
-import pravda.common.DiffUtils
 import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
@@ -11,8 +10,8 @@ object ArraysTests extends TestSuite {
     'arrayTranslation - {
       val Right((_, cilData, methods, signatures)) = FileParser.parseFile("arrays.exe")
 
-      DiffUtils.assertEqual(
-        Translator.translateAsm(methods, cilData, signatures),
+      assertWithAsmDiff(
+        Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
         |meta method { int8(-1): "WorkWithBytes", int8(-2): int8(0) }
         |meta method { int8(-1): "WorkWithArrays", int8(-2): int8(0) }
@@ -94,13 +93,15 @@ object ArraysTests extends TestSuite {
         |push int32(3)
         |swapn
         |pop
-        |push "bytes"
+        |push x6279746573
         |push int32(9)
         |dupn
         |push int32(9)
         |dupn
         |push int32(2)
         |dupn
+        |push int8(14)
+        |cast
         |push int32(4)
         |dupn
         |concat
@@ -108,9 +109,11 @@ object ArraysTests extends TestSuite {
         |sput
         |pop
         |pop
-        |push "bytes"
+        |push x6279746573
         |new int8[8, 9, 10]
         |call @array_to_bytes
+        |push int8(14)
+        |cast
         |swap
         |concat
         |sexist
@@ -129,13 +132,15 @@ object ArraysTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @br192
-        |push "bytes"
+        |push x6279746573
         |push int32(9)
         |dupn
         |new int8[7, 8, 9]
         |call @array_to_bytes
         |push int32(2)
         |dupn
+        |push int8(14)
+        |cast
         |push int32(4)
         |dupn
         |concat
@@ -284,7 +289,7 @@ object ArraysTests extends TestSuite {
         |pop
         |ret
         |@stop:
-      """.stripMargin).map(_.toList)
+      """.stripMargin).right.get
       )
 
     }
