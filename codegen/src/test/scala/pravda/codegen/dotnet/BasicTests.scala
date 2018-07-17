@@ -16,7 +16,7 @@ object BasicTests extends TestSuite {
           List(
             Meta.MethodSignature("balanceOf",
                                  Meta.TypeSignature.Uint32,
-                                 List((Some("tokenOwner"), Meta.TypeSignature.BigInt)))
+                                 List((Some("tokenOwner"), Meta.TypeSignature.Bytes)))
           )
         ),
         Source.fromResource("OneMethod.generated.cs").mkString
@@ -30,24 +30,24 @@ object BasicTests extends TestSuite {
           List(
             Meta.MethodSignature("balanceOf",
                                  Meta.TypeSignature.Uint32,
-                                 List((Some("tokenOwner"), Meta.TypeSignature.BigInt))),
+                                 List((Some("tokenOwner"), Meta.TypeSignature.Bytes))),
             Meta.MethodSignature("allowance",
                                  Meta.TypeSignature.Uint32,
-                                 List((Some("tokenOwner"), Meta.TypeSignature.BigInt),
-                                      (Some("spender"), Meta.TypeSignature.BigInt))),
+                                 List((Some("tokenOwner"), Meta.TypeSignature.Bytes),
+                                      (Some("spender"), Meta.TypeSignature.Bytes))),
             Meta.MethodSignature("transfer",
                                  Meta.TypeSignature.Null,
-                                 List((Some("to"), Meta.TypeSignature.BigInt),
+                                 List((Some("to"), Meta.TypeSignature.Bytes),
                                       (Some("tokens"), Meta.TypeSignature.Uint32))),
             Meta.MethodSignature("approve",
                                  Meta.TypeSignature.Null,
-                                 List((Some("spender"), Meta.TypeSignature.BigInt),
+                                 List((Some("spender"), Meta.TypeSignature.Bytes),
                                       (Some("tokens"), Meta.TypeSignature.Uint32))),
             Meta.MethodSignature(
               "transferFrom",
               Meta.TypeSignature.Null,
-              List((Some("from"), Meta.TypeSignature.BigInt),
-                   (Some("to"), Meta.TypeSignature.BigInt),
+              List((Some("from"), Meta.TypeSignature.Bytes),
+                   (Some("to"), Meta.TypeSignature.Bytes),
                    (Some("tokens"), Meta.TypeSignature.Uint32))
             )
           )

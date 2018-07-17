@@ -281,5 +281,6 @@ lazy val testkit = (project in file("testkit"))
     normalizedName := "pravda-testkit"
   )
   .settings(commonSettings: _*)
+  .dependsOn(common % "test->test")
   .dependsOn(dotnet)
   .dependsOn(codegen)

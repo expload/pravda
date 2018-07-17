@@ -15,8 +15,8 @@ object SmartProgramTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures),
         PravdaAssembler.parse(
           """
-            |meta method { int8(-1): "balanceOf", int8(-2): int8(3), int8(0): int8(4) }
-            |meta method { int8(-1): "transfer", int8(-2): int8(0), int8(0): int8(4), int8(2): int8(3) }
+            |meta method { int8(-1): "balanceOf", int8(-2): int8(3), int8(0): int8(14) }
+            |meta method { int8(-1): "transfer", int8(-2): int8(0), int8(0): int8(14), int8(2): int8(3) }
             |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "balanceOf"
