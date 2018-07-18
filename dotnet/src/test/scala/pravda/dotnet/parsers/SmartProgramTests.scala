@@ -12,7 +12,7 @@ object SmartProgramTests extends TestSuite {
 
   val tests = Tests {
     'smartProgramParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("smart_program.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("smart_program.exe")
 
       DiffUtils.assertEqual(
         methods,

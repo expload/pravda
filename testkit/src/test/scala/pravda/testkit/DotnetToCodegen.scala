@@ -1,5 +1,8 @@
 package pravda.testkit
 
+import java.io.File
+import java.nio.file.Files
+
 import pravda.codegen.dotnet.DotnetCodegen
 import pravda.common.DiffUtils
 import pravda.dotnet.parsers.FileParser
@@ -13,7 +16,8 @@ object DotnetToCodegen extends TestSuite {
 
   val tests = Tests {
     'smart_program - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("smart_program.exe")
+      val Right((_, cilData, methods, signatures)) =
+        FileParser.parsePe(Files.readAllBytes(new File(getClass.getResource("/smart_program.exe").getPath).toPath))
       val Right(asm) = Translator.translateAsm(methods, cilData, signatures)
       val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
 

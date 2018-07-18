@@ -1,45 +1,28 @@
 package pravda.testkit
 
+import java.io.File
+import java.nio.file.Files
+
 import pravda.dotnet.parsers.FileParser
 import pravda.dotnet.translation.Translator
-import pravda.vm.asm.PravdaAssembler
+import pravda.vm.{SandboxUtils, VmSandbox}
 import utest._
+
+import scala.sys.process._
 
 object SmartProgramSandbox extends TestSuite {
 
-  val tests = Tests {
-    val smartProgram = {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("smart_program.exe")
-      val Right(asm) = Translator.translateAsm(methods, cilData, signatures)
-      PravdaAssembler.render(asm)
-    }
+  val tests = SandboxUtils.constructTestsFromFolder(
+    new File(getClass.getResource("/smart_program").getPath), {
+      case VmSandbox.Macro("dotnet", List(file)) =>
+        val dotnetSrc = new File(getClass.getResource(s"/$file").getPath)
+        val exploadDll = new File(getClass.getResource("/expload.dll").getPath)
+        val exe = File.createTempFile("dotnet-", ".exe")
+        s"csc ${dotnetSrc.getAbsolutePath} /out:${exe.getAbsolutePath} /reference:${exploadDll.getAbsolutePath}".!!
 
-    'balanceOf - {
-      val c = VmSandbox.parseCase(
-        "balanceOf",
-        s"""
-        |preconditions:
-        |  watts-limit: 10000
-        |  stack:
-        |    x0011, "balanceOf"
-        |  heap:
-        |  storage:
-        |    x62616C616E6365730011 = int32(10)
-        |
-        |expectations:
-        |  watts-spent: 264
-        |  stack:
-        |    int32(10)
-        |  heap:
-        |  effects:
-        |   sget x62616C616E6365730011 int32(10),
-        |   sget x62616C616E6365730011 int32(10)
-        |---
-        |$smartProgram
-      """.stripMargin
-      )
-
-      VmSandbox.assertCase(c.right.get)
+        val Right((_, cilData, methods, signatures)) = FileParser.parsePe(Files.readAllBytes(exe.toPath))
+        val Right(asm) = Translator.translateAsm(methods, cilData, signatures)
+        asm
     }
-  }
+  )
 }

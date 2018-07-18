@@ -1,4 +1,4 @@
-package pravda.testkit
+package pravda.vm
 
 import java.nio.ByteBuffer
 
@@ -7,18 +7,23 @@ import fastparse.StringReprOps
 import fastparse.core.{Parsed, Parser}
 import pravda.common.DiffUtils
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.testkit.VmSandbox.EnvironmentEffect._
 import pravda.vm.Data.Primitive
+import pravda.vm.VmSandbox.EnvironmentEffect._
 import pravda.vm.asm.{Operation, PravdaAssembler}
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
-import pravda.vm.{Data, Environment, ProgramContext, Storage}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object VmSandbox {
 
-  final case class Case(name: String, program: Seq[Operation], expectations: Expectations, preconditions: Preconditions)
+  final case class Macro(name: String, args: List[String])
+
+  type MacroHandler = PartialFunction[Macro, Seq[Operation]]
+
+  final case class Case(program: Either[Macro, Seq[Operation]],
+                        expectations: Expectations,
+                        preconditions: Preconditions)
 
   final case class Preconditions(balances: Map[Address, Primitive.BigInt],
                                  watts: Long = 0,
@@ -52,7 +57,9 @@ object VmSandbox {
     val space = P(CharIn("\r\t\n ").rep())
     val `=` = P(space ~ "=" ~ space)
     val ws = P(CharIn("\r\t\n ").rep(min = 1))
+    val notws = P(CharsWhile(!"\r\t\n ".contains(_)))
     val `,` = P(space ~ "," ~ space)
+    val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_").rep(1).!)
 
     val memory = {
       val stack = P("stack:" ~/ space ~ primitive.rep(sep = `,`))
@@ -123,14 +130,17 @@ object VmSandbox {
       }
     }
 
+    val `macro` = ("#" ~/ alpha ~ ws ~ (notws.! ~ space).rep()).map { case (name, args) => Macro(name, args.toList) }
+    val program = `macro`.map(Left(_)) | assemblerParser.map(Right(_))
+
     P(
       Start ~ space
         ~ preconditions ~ space
         ~ expectations ~ space
-        ~ "-".rep(min = 3)
-        ~ assemblerParser ~ End) map {
-      case (p, exp, ops) =>
-        Case("", ops, exp, p)
+        ~ "-".rep(min = 3) ~ space
+        ~ program ~ End).map {
+      case (p, exp, prog) =>
+        Case(prog, exp, p)
     }
   }
 
@@ -163,10 +173,10 @@ object VmSandbox {
      """.stripMargin
   }
 
-  def parseCase(name: String, text: String): Either[String, Case] = {
+  def parseCase(text: String): Either[String, Case] = {
     parser.parse(text) match {
       case Parsed.Success(c, _) =>
-        Right(c.copy(name = name))
+        Right(c)
       case Parsed.Failure(_, index, extra) =>
         val in = extra.input
         def aux(start: Int, i: Int, lim: Int): String = {
@@ -178,13 +188,19 @@ object VmSandbox {
         }
         val pos = StringReprOps.prettyIndex(in, index)
         val found = aux(index, index, 20)
-        Left(s"$name.asm:$pos: ${extra.traced.expected} expected but '$found' found.")
+        Left(s"$pos: ${extra.traced.expected} expected but '$found' found.")
     }
   }
 
-  def assertCase(c: Case): Unit = {
+  def assertCase(c: Case, macroHandler: MacroHandler = PartialFunction.empty): Unit = {
     val vm = new VmImpl()
-    val program = PravdaAssembler.assemble(c.program, saveLabels = true)
+    val ops = c.program match {
+      case Left(m) =>
+        assert(macroHandler.isDefinedAt(m), s"Unknown macro: #${m.name} ${m.args.mkString(" ")}")
+        macroHandler(m)
+      case Right(o) => o
+    }
+    val program = PravdaAssembler.assemble(ops, saveLabels = true)
     val heap = {
       if (c.preconditions.memory.heap.nonEmpty) {
         val length = c.preconditions.memory.heap.map(_._1.data).max + 1
@@ -204,7 +220,7 @@ object VmSandbox {
       val balances = mutable.Map(c.preconditions.balances.toSeq: _*)
 
       def executor: Address =
-        Address @@ ByteString.EMPTY // TODO
+        Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0x00))
 
       def updateProgram(address: Address, code: ByteString): Unit =
         effects += EnvironmentEffect.ProgramUpdate(address, code)
@@ -274,8 +290,8 @@ object VmSandbox {
     val res =
       vm.spawn(ByteBuffer.wrap(program.toByteArray), environment, memory, wattCounter, Some(storage), None, false)
 
-    println(res.error.map(_.error))
-    println(res.error.map(_.stackTrace))
+    assert(res.error.isEmpty,
+           s"Error during VM execution: ${res.error.get.error}\n${res.error.get.stackTrace.stackTrace.mkString("\n")}")
 
     DiffUtils.assertEqual(
       printExpectations(

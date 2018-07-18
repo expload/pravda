@@ -13,7 +13,7 @@ object StringsTests extends TestSuite {
 
   val tests = Tests {
     'stringsParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("strings.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("strings.exe")
 
       DiffUtils.assertEqual(
         methods,

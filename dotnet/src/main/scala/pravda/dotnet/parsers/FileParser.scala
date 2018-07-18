@@ -1,7 +1,5 @@
 package pravda.dotnet.parsers
 
-import java.nio.file.{Files, Paths}
-
 import fastparse.byte.all._
 import pravda.dotnet.data.Method
 import pravda.dotnet.parsers.CIL.CilData
@@ -12,11 +10,6 @@ import cats.instances.either._
 import cats.syntax.traverse._
 
 object FileParser {
-
-  def parseFile(file: String): Either[String, (Pe, CilData, List[Method], Map[Long, Signatures.Signature])] = {
-    val fileBytes = Files.readAllBytes(Paths.get(this.getClass.getResource(s"/$file").getPath))
-    parsePe(fileBytes)
-  }
 
   def parsePe(bytes: Array[Byte]): Either[String, (Pe, CilData, List[Method], Map[Long, Signatures.Signature])] = {
     val peV = PE.parseInfo(Bytes(bytes))

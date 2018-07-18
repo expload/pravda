@@ -12,7 +12,7 @@ object ArraysTests extends TestSuite {
 
   val tests = Tests {
     'arrayParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("arrays.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("arrays.exe")
 
       DiffUtils.assertEqual(
         methods,

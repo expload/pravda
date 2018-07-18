@@ -12,7 +12,7 @@ object IfTests extends TestSuite {
 
   val tests = Tests {
     'ifParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("if.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("if.exe")
 
       DiffUtils.assertEqual(
         methods,
