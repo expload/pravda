@@ -1,6 +1,6 @@
-package pravda.dotnet.translation
+package pravda.dotnet
+package translation
 
-import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -8,7 +8,7 @@ object StringTests extends TestSuite {
 
   val tests = Tests {
     'stringTranslation - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("strings.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("strings.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,

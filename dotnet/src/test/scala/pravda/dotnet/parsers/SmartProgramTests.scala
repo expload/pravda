@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.common.DiffUtils
 import pravda.dotnet.data.Method

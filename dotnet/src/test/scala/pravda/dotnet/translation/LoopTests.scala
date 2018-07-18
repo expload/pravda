@@ -1,6 +1,6 @@
-package pravda.dotnet.translation
+package pravda.dotnet
+package translation
 
-import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -8,7 +8,7 @@ object LoopTests extends TestSuite {
 
   val tests = Tests {
     'loopTranslation - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("loop.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
@@ -100,7 +100,7 @@ object LoopTests extends TestSuite {
     }
 
     'nestedLoopTranslation - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop_nested.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("loop_nested.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
