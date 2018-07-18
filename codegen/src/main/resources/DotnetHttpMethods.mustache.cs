@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using Keiwando.BigInteger;
 
-namespace Io.Mytc.{{programName}} {
+namespace Com.Expload.{{programName}} {
     {{#parseClasses}}
     [System.Serializable]
     class {{resultTpeClass}}Result {
@@ -19,13 +18,13 @@ namespace Io.Mytc.{{programName}} {
 
     abstract class ProgramRequest<T>
     {
-        public BigInteger ProgramAddress { get; protected set; }
+        public byte[] ProgramAddress { get; protected set; }
 
         public T Result { get; protected set; }
         public string Error { get; protected set; }
         public bool IsError { get; protected set; }
 
-        protected ProgramRequest(BigInteger programAddress)
+        protected ProgramRequest(byte[] programAddress)
         {
             ProgramAddress = programAddress;
             IsError = false;
@@ -65,7 +64,7 @@ namespace Io.Mytc.{{programName}} {
     {{#methods}}
     class {{methodName}}Request: ProgramRequest<{{methodTpe}}> {
 
-        public {{methodName}}Request(BigInteger programAddress) : base(programAddress) { }
+        public {{methodName}}Request(byte[] programAddress) : base(programAddress) { }
 
         protected override {{methodTpe}} ParseResult(string json)
         {

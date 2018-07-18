@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using Keiwando.BigInteger;
 
-namespace Io.Mytc.ERC20 {
+namespace Com.Expload.ERC20 {
     [System.Serializable]
     class UintResult {
        public uint value;
@@ -17,13 +16,13 @@ namespace Io.Mytc.ERC20 {
 
     abstract class ProgramRequest<T>
     {
-        public BigInteger ProgramAddress { get; protected set; }
+        public byte[] ProgramAddress { get; protected set; }
 
         public T Result { get; protected set; }
         public string Error { get; protected set; }
         public bool IsError { get; protected set; }
 
-        protected ProgramRequest(BigInteger programAddress)
+        protected ProgramRequest(byte[] programAddress)
         {
             ProgramAddress = programAddress;
             IsError = false;
@@ -34,7 +33,7 @@ namespace Io.Mytc.ERC20 {
 
         protected IEnumerator SendJson(string json)
         {
-            UnityWebRequest www = UnityWebRequest.Put("localhost:8080/program/method", json);
+            UnityWebRequest www = UnityWebRequest.Put("localhost:8087/api/program/method", json);
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
 
@@ -62,16 +61,16 @@ namespace Io.Mytc.ERC20 {
 
     class BalanceOfRequest: ProgramRequest<uint> {
 
-        public BalanceOfRequest(BigInteger programAddress) : base(programAddress) { }
+        public BalanceOfRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override uint ParseResult(string json)
         {
             return UintResult.FromJson(json).value;
         }
 
-        public IEnumerator BalanceOf(BigInteger tokenOwner)
+        public IEnumerator BalanceOf(byte[] tokenOwner)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + tokenOwner.ToHexString() + "\"" );
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(tokenOwner).Replace("-","") + "\"" );
             yield return SendJson(json);
         }
     }

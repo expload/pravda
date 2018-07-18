@@ -9,7 +9,6 @@ import pravda.vm.Meta.ProgramName
 import pravda.vm.asm
 
 import scala.collection.JavaConverters._
-import scala.io.Source
 
 object DotnetCodegen {
 
@@ -36,7 +35,7 @@ object DotnetCodegen {
       case Meta.TypeSignature.Int32 => identity
       case Meta.TypeSignature.BigInt =>
         arg =>
-          s""" "\\"" + $arg.ToHexString() + "\\"" """ // to hex string
+          s"""$arg.ToString()"""
       case Meta.TypeSignature.Uint8  => identity
       case Meta.TypeSignature.Uint16 => identity
       case Meta.TypeSignature.Uint32 => identity
@@ -48,7 +47,8 @@ object DotnetCodegen {
       case Meta.TypeSignature.Utf8 =>
         arg =>
           s""" "\\"" + $arg" + "\\"" """
-      case Meta.TypeSignature.Bytes => ???
+      case Meta.TypeSignature.Bytes =>
+        arg => s""" "\\"" + BitConverter.ToString($arg).Replace("-","") + "\\"" """
     }
 
     tpe match {
@@ -94,7 +94,7 @@ object DotnetCodegen {
       .mkString(", ")
 
     val args = "ProgramAddress" +: method.argNames
-    val tpes = Meta.TypeSignature.BigInt +: method.argTpes
+    val tpes = Meta.TypeSignature.Bytes +: method.argTpes
 
     (
       s"""{{ \\"address\\": {0}, \\"method\\": \\"${method.name}\\", \\"args\\": [$argsFormat] }}""",
@@ -130,7 +130,7 @@ object DotnetCodegen {
         .distinct
         .map(t => ParseClass(t.capitalize, t))
         .asJava,
-      "localhost:8080/program/method"
+      "localhost:8087/api/program/method"
     )
   }
 
@@ -156,9 +156,8 @@ object DotnetCodegen {
     sw.toString
   }
 
-  def generate(byteCode: ByteString): (GeneratedFile, GeneratedFile) = { // (BigInteger, Methods)
+  def generate(byteCode: ByteString): GeneratedFile = { // (BigInteger, Methods)
     val (name, methods) = extractInfo(byteCode)
-    val generatedFile = (name.capitalize + ".cs", generateMethods(name, methods))
-    (("BigInteger.cs", Source.fromResource("BigInteger.cs").mkString), generatedFile)
+    (name.capitalize + ".cs", generateMethods(name, methods))
   }
 }
