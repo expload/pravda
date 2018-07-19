@@ -12,6 +12,7 @@ final class SystemOperations(memory: Memory,
                              wattCounter: WattCounter,
                              environment: Environment,
                              maybeProgramAddress: Option[domain.Address],
+                             standardLibrary: Map[Long, (Memory, WattCounter) => Unit],
                              vm: Vm) {
 
   @OpcodeImplementation(
@@ -54,18 +55,27 @@ final class SystemOperations(memory: Memory,
   )
   def lcall(): Unit = {
     val argumentsCount = integer(memory.pop())
-    memory.pop() match {
-      case Data.Primitive.Null =>
-      // TODO use standard library
-      case rawAddress =>
+    val addr = address(memory.pop())
+    environment.getProgram(addr) match {
+      case None => throw VmErrorException(VmError.InvalidAddress)
+      case Some(ProgramContext(_, code)) =>
         wattCounter.cpuUsage(CpuStorageUse)
-        environment.getProgram(address(rawAddress)) match {
-          case None => throw VmErrorException(VmError.InvalidAddress)
-          case Some(ProgramContext(_, code)) =>
-            memory.limit(argumentsCount.toInt)
-            vm.spawn(code, environment, memory, wattCounter, currentStorage, maybeProgramAddress, pcallAllowed = false)
-            memory.dropLimit()
-        }
+        memory.limit(argumentsCount.toInt)
+        vm.spawn(code, environment, memory, wattCounter, currentStorage, maybeProgramAddress, pcallAllowed = false)
+        memory.dropLimit()
+    }
+  }
+
+  @OpcodeImplementation(
+    opcode = SCALL,
+    description = "Takes id of function from standard library and execute it."
+  )
+  def scall(): Unit = {
+    val id = integer(memory.pop())
+    wattCounter.cpuUsage(CpuStorageUse)
+    standardLibrary.get(id) match {
+      case None           => throw VmErrorException(VmError.InvalidAddress)
+      case Some(function) => function(memory, wattCounter)
     }
   }
 

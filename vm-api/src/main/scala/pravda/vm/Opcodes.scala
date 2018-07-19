@@ -10,6 +10,7 @@ object Opcodes {
   final val RET = 0x05
   final val PCALL = 0x06
   final val LCALL = 0x07
+  final val SCALL = 0x08
 
   // Stack
   final val POP = 0x10

@@ -12,6 +12,7 @@ Network node is build on top of [Tendermint](http://tendermint.com/), is written
   * [Using assembler](doc/ref/vm/asm.md)
   * [Internal data format](doc/ref/vm/data.md)
   * [Opcodes](doc/ref/vm/opcodes.md)
+  * [Standard Library](doc/ref/vm/stdlib.md)
   * [Meta information](doc/ref/vm/meta.md)
 * [Dotnet translation](doc/dotnet.md)
 * [Code generation](doc/codegen.md)
@@ -23,4 +24,4 @@ Network node is build on top of [Tendermint](http://tendermint.com/), is written
   * [Participation](doc/dev/participation.md)
   * [Building from sources](doc/dev/building-from-sources.md)
   * [How to generate documentation](doc/dev/gen-doc.md)   
-  * [How to add new opcode](doc/dev/add-new-opcode.md)
+  * [How to add new functionality to VM](doc/dev/add-new-functionality.md)

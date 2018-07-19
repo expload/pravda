@@ -1,16 +1,12 @@
 preconditions:
   watts-limit: 1000
-  stack:
-    int32(2), int32(2)
-  heap:
-  storage:
-
 expectations:
-  watts-spent: 111
+  watts-spent: 233
   stack:
-    int32(4)
+    x98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f
   heap:
   effects:
-
 ---------------------------------------
-add
+push "hello world"
+push 0x02
+scall
