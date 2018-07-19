@@ -13,6 +13,7 @@ Network node is build on top of [Tendermint](http://tendermint.com/), is written
   * [Internal data format](doc/ref/vm/data.md)
   * [Opcodes](doc/ref/vm/opcodes.md)
   * [Meta information](doc/ref/vm/meta.md)
+* [DApp api specification](doc/dapp-api.md)
 * [Dotnet translation](doc/dotnet.md)
 * [Code generation](doc/codegen.md)
 * [Glossary](doc/glossary.md)
