@@ -77,8 +77,7 @@ final class SystemOperations(memory: Memory,
   )
   def pupdate(): Unit = {
     val programAddress = address(memory.pop())
-    val reference = ref(memory.pop())
-    val code = bytes(memory.heapGet(reference.data))
+    val code = bytes(memory.pop())
     wattCounter.cpuUsage(CpuStorageUse)
     if (environment.getProgramOwner(programAddress) == environment.executor) {
       val oldProgram = environment.getProgram(programAddress)
@@ -97,8 +96,7 @@ final class SystemOperations(memory: Memory,
       "state and returns program address."
   )
   def pcreate(): Unit = {
-    val reference = ref(memory.pop())
-    val code = bytes(memory.heapGet(reference.data))
+    val code = bytes(memory.pop())
     val programAddress = environment.createProgram(environment.executor, code)
     val data = address(programAddress)
     wattCounter.cpuUsage(CpuStorageUse)
