@@ -6,7 +6,7 @@ resolvers += Resolver.bintrayRepo("expload", "oss")
 enablePlugins(GitVersioning)
 
 skip in publish := true
-
+headerLicense := Some(HeaderLicense.AGPLv3("2018", "Expload"))
 git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) }
 git.gitTagToVersionNumber := { tag: String =>
   if (tag.length > 0) Some(tag)
@@ -28,7 +28,8 @@ val commonSettings = Seq(
   organization := "com.expload",
 
   licenses += ("AGPL-V3", url("http://www.opensource.org/licenses/agpl-v3.html")),
-
+  headerLicense := Some(HeaderLicense.AGPLv3("2018", "Expload.com")),
+  excludeFilter.in(headerSources) := HiddenFileFilter || "ed25519.java" || "ripemd160.java",
   skip in publish := false,
   bintrayOrganization := Some("expload"),
   bintrayRepository := "oss",
@@ -269,7 +270,8 @@ lazy val cli = (project in file("cli"))
 lazy val `gen-doc` = (project in file("doc") / "gen")
   .settings(
     skip in publish := true,
-    normalizedName := "pravda-gen-doc"
+    normalizedName := "pravda-gen-doc",
+    headerLicense := Some(HeaderLicense.AGPLv3("2018", "Expload"))
   )
   .dependsOn(cli)
   .dependsOn(vm)
