@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using Keiwando.BigInteger;
 
-namespace Io.Mytc.ERC20 {
+namespace Com.Expload.ERC20 {
     [System.Serializable]
     class UintResult {
        public uint value;
@@ -17,13 +16,13 @@ namespace Io.Mytc.ERC20 {
 
     abstract class ProgramRequest<T>
     {
-        public BigInteger ProgramAddress { get; protected set; }
+        public byte[] ProgramAddress { get; protected set; }
 
         public T Result { get; protected set; }
         public string Error { get; protected set; }
         public bool IsError { get; protected set; }
 
-        protected ProgramRequest(BigInteger programAddress)
+        protected ProgramRequest(byte[] programAddress)
         {
             ProgramAddress = programAddress;
             IsError = false;
@@ -34,7 +33,7 @@ namespace Io.Mytc.ERC20 {
 
         protected IEnumerator SendJson(string json)
         {
-            UnityWebRequest www = UnityWebRequest.Put("localhost:8080/program/method", json);
+            UnityWebRequest www = UnityWebRequest.Put("localhost:8087/api/program/method", json);
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
 
@@ -62,76 +61,76 @@ namespace Io.Mytc.ERC20 {
 
     class BalanceOfRequest: ProgramRequest<uint> {
 
-        public BalanceOfRequest(BigInteger programAddress) : base(programAddress) { }
+        public BalanceOfRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override uint ParseResult(string json)
         {
             return UintResult.FromJson(json).value;
         }
 
-        public IEnumerator BalanceOf(BigInteger tokenOwner)
+        public IEnumerator BalanceOf(byte[] tokenOwner)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + tokenOwner.ToHexString() + "\"" );
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(tokenOwner).Replace("-","") + "\"" );
             yield return SendJson(json);
         }
     }
     class AllowanceRequest: ProgramRequest<uint> {
 
-        public AllowanceRequest(BigInteger programAddress) : base(programAddress) { }
+        public AllowanceRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override uint ParseResult(string json)
         {
             return UintResult.FromJson(json).value;
         }
 
-        public IEnumerator Allowance(BigInteger tokenOwner, BigInteger spender)
+        public IEnumerator Allowance(byte[] tokenOwner, byte[] spender)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"allowance\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}, {{ \"value\": {2}, \"tpe\": \"bigint\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + tokenOwner.ToHexString() + "\"" ,  "\"" + spender.ToHexString() + "\"" );
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"allowance\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}, {{ \"value\": {2}, \"tpe\": \"bytes\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(tokenOwner).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(spender).Replace("-","") + "\"" );
             yield return SendJson(json);
         }
     }
     class TransferRequest: ProgramRequest<object> {
 
-        public TransferRequest(BigInteger programAddress) : base(programAddress) { }
+        public TransferRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override object ParseResult(string json)
         {
             return null;
         }
 
-        public IEnumerator Transfer(BigInteger to, uint tokens)
+        public IEnumerator Transfer(byte[] to, uint tokens)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"transfer\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}, {{ \"value\": {2}, \"tpe\": \"uint32\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + to.ToHexString() + "\"" , tokens);
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"transfer\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}, {{ \"value\": {2}, \"tpe\": \"uint32\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(to).Replace("-","") + "\"" , tokens);
             yield return SendJson(json);
         }
     }
     class ApproveRequest: ProgramRequest<object> {
 
-        public ApproveRequest(BigInteger programAddress) : base(programAddress) { }
+        public ApproveRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override object ParseResult(string json)
         {
             return null;
         }
 
-        public IEnumerator Approve(BigInteger spender, uint tokens)
+        public IEnumerator Approve(byte[] spender, uint tokens)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"approve\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}, {{ \"value\": {2}, \"tpe\": \"uint32\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + spender.ToHexString() + "\"" , tokens);
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"approve\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}, {{ \"value\": {2}, \"tpe\": \"uint32\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(spender).Replace("-","") + "\"" , tokens);
             yield return SendJson(json);
         }
     }
     class TransferFromRequest: ProgramRequest<object> {
 
-        public TransferFromRequest(BigInteger programAddress) : base(programAddress) { }
+        public TransferFromRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override object ParseResult(string json)
         {
             return null;
         }
 
-        public IEnumerator TransferFrom(BigInteger from, BigInteger to, uint tokens)
+        public IEnumerator TransferFrom(byte[] from, byte[] to, uint tokens)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"transferFrom\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}, {{ \"value\": {2}, \"tpe\": \"bigint\" }}, {{ \"value\": {3}, \"tpe\": \"uint32\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + from.ToHexString() + "\"" ,  "\"" + to.ToHexString() + "\"" , tokens);
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"transferFrom\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}, {{ \"value\": {2}, \"tpe\": \"bytes\" }}, {{ \"value\": {3}, \"tpe\": \"uint32\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(from).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(to).Replace("-","") + "\"" , tokens);
             yield return SendJson(json);
         }
     }

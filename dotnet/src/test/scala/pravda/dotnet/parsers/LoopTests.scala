@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
@@ -11,7 +12,7 @@ object LoopTests extends TestSuite {
 
   val tests = Tests {
     'loopParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("loop.exe")
 
       methods ==> List(
         Method(

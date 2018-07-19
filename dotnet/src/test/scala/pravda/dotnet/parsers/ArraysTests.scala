@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.common.DiffUtils
 import pravda.dotnet.data.Method
@@ -12,7 +13,7 @@ object ArraysTests extends TestSuite {
 
   val tests = Tests {
     'arrayParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("arrays.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("arrays.exe")
 
       DiffUtils.assertEqual(
         methods,

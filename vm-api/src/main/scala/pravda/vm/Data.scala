@@ -269,8 +269,6 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
             key.writeToByteBuffer(buffer)
             value.writeToByteBuffer(buffer)
         }
-      case MarshalledData(data) =>
-        buffer.put(data.toByteArray)
     }
   }
 
@@ -571,7 +569,6 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   }
 
   final case class Struct(data: mutable.Map[Primitive, Primitive]) extends Data
-  final case class MarshalledData(data: ByteString)                extends Data
 
   // scalafix:off DisableSyntax.keywords.null
 

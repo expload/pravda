@@ -1,7 +1,6 @@
-package pravda.dotnet.translation
+package pravda.dotnet
+package translation
 
-import pravda.common.DiffUtils
-import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -9,10 +8,10 @@ object IfTests extends TestSuite {
 
   val tests = Tests {
     'ifTranslation - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("if.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("if.exe")
 
-      DiffUtils.assertEqual(
-        Translator.translateAsm(methods, cilData, signatures),
+      assertWithAsmDiff(
+        Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse(
           """
         |meta method { int8(-1): "Main", int8(-2): int8(0) }
@@ -317,7 +316,7 @@ object IfTests extends TestSuite {
         |@stop:
         |
       """.stripMargin
-        ).map(_.toList)
+        ).right.get
       )
     }
   }

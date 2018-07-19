@@ -1,7 +1,6 @@
-package pravda.dotnet.translation
+package pravda.dotnet
+package translation
 
-import pravda.common.DiffUtils
-import pravda.dotnet.parsers.FileParser
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -9,12 +8,11 @@ object LoopTests extends TestSuite {
 
   val tests = Tests {
     'loopTranslation - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("loop.exe")
 
-      DiffUtils.assertEqual(
-        Translator.translateAsm(methods, cilData, signatures),
-        PravdaAssembler.parse(
-          """
+      assertWithAsmDiff(
+        Translator.translateAsm(methods, cilData, signatures).right.get,
+        PravdaAssembler.parse("""
             |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "Main"
@@ -97,17 +95,16 @@ object LoopTests extends TestSuite {
             |jump @stop
             |@stop:
             |
-          """.stripMargin).map(_.toList)
+          """.stripMargin).right.get
       )
     }
 
     'nestedLoopTranslation - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("loop_nested.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("loop_nested.exe")
 
-      DiffUtils.assertEqual(
-        Translator.translateAsm(methods, cilData, signatures),
-        PravdaAssembler.parse(
-          """
+      assertWithAsmDiff(
+        Translator.translateAsm(methods, cilData, signatures).right.get,
+        PravdaAssembler.parse("""
             |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "Main"
@@ -251,7 +248,7 @@ object LoopTests extends TestSuite {
             |pop
             |jump @stop
             |@stop:
-          """.stripMargin).map(_.toList)
+          """.stripMargin).right.get
       )
     }
   }

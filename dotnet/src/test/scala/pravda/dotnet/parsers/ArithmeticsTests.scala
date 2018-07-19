@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
@@ -11,7 +12,7 @@ object ArithmeticsTests extends TestSuite {
 
   val tests = Tests {
     'arithmepticParse - {
-      val Right((_, _, methods, signatures)) = FileParser.parseFile("arithmetics.exe")
+      val Right((_, _, methods, signatures)) = parseFile("arithmetics.exe")
 
       methods ==> List(
         Method(

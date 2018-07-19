@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
@@ -11,7 +12,7 @@ object MethodCallingTests extends TestSuite {
 
   val tests = Tests {
     'methodCallingParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("method_calling.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("method_calling.exe")
       methods ==> List(
         Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
         Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),

@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using Keiwando.BigInteger;
 
-namespace Io.Mytc.Program {
+namespace Com.Expload.Program {
     [System.Serializable]
     class IntResult {
        public int value;
@@ -17,13 +16,13 @@ namespace Io.Mytc.Program {
 
     abstract class ProgramRequest<T>
     {
-        public BigInteger ProgramAddress { get; protected set; }
+        public byte[] ProgramAddress { get; protected set; }
 
         public T Result { get; protected set; }
         public string Error { get; protected set; }
         public bool IsError { get; protected set; }
 
-        protected ProgramRequest(BigInteger programAddress)
+        protected ProgramRequest(byte[] programAddress)
         {
             ProgramAddress = programAddress;
             IsError = false;
@@ -34,7 +33,7 @@ namespace Io.Mytc.Program {
 
         protected IEnumerator SendJson(string json)
         {
-            UnityWebRequest www = UnityWebRequest.Put("localhost:8080/program/method", json);
+            UnityWebRequest www = UnityWebRequest.Put("localhost:8087/api/program/method", json);
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
 
@@ -62,37 +61,37 @@ namespace Io.Mytc.Program {
 
     class BalanceOfRequest: ProgramRequest<int> {
 
-        public BalanceOfRequest(BigInteger programAddress) : base(programAddress) { }
+        public BalanceOfRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override int ParseResult(string json)
         {
             return IntResult.FromJson(json).value;
         }
 
-        public IEnumerator BalanceOf(BigInteger arg0)
+        public IEnumerator BalanceOf(byte[] arg0)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + arg0.ToHexString() + "\"" );
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(arg0).Replace("-","") + "\"" );
             yield return SendJson(json);
         }
     }
     class TransferRequest: ProgramRequest<object> {
 
-        public TransferRequest(BigInteger programAddress) : base(programAddress) { }
+        public TransferRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override object ParseResult(string json)
         {
             return null;
         }
 
-        public IEnumerator Transfer(BigInteger arg0, int arg1)
+        public IEnumerator Transfer(byte[] arg0, int arg1)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"transfer\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bigint\" }}, {{ \"value\": {2}, \"tpe\": \"int32\" }}] }}",  "\"" + ProgramAddress.ToHexString() + "\"" ,  "\"" + arg0.ToHexString() + "\"" , arg1);
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"transfer\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}, {{ \"value\": {2}, \"tpe\": \"int32\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(arg0).Replace("-","") + "\"" , arg1);
             yield return SendJson(json);
         }
     }
     class MainRequest: ProgramRequest<object> {
 
-        public MainRequest(BigInteger programAddress) : base(programAddress) { }
+        public MainRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override object ParseResult(string json)
         {
@@ -101,7 +100,7 @@ namespace Io.Mytc.Program {
 
         public IEnumerator Main()
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"Main\", \"args\": [] }}",  "\"" + ProgramAddress.ToHexString() + "\"" );
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"Main\", \"args\": [] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" );
             yield return SendJson(json);
         }
     }

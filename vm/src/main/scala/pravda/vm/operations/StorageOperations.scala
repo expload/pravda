@@ -37,11 +37,10 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   def drop(): Unit = ifStorage { storage =>
     // TODO fomkin: consider to push removed value to the stack
     val key = memory.pop()
-    val keyBytes = key.toByteString
-    val maybePrevious = storage.delete(Data.MarshalledData(keyBytes))
+    val maybePrevious = storage.delete(key)
 
     wattCounter.cpuUsage(CpuStorageUse)
-    maybeReleaseStorage(keyBytes.size(), maybePrevious)
+    maybeReleaseStorage(key.volume, maybePrevious)
   }
 
   @OpcodeImplementation(
@@ -50,10 +49,13 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
       "Pops first item from stack, interprets it as key, retrieves corresponding record from a storage of the program and pushes the record to the stack. Otherwise throws an exception. "
   )
   def get(): Unit = ifStorage { storage =>
-    val data = storage.get(memory.pop()).getOrElse(Data.Primitive.Null)
+    val data = storage
+      .get(memory.pop())
+      .collect { case p: Data.Primitive => p }
+      .getOrElse(Data.Primitive.Null)
     wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(Data.Primitive.Null)
+    memory.push(data)
   }
 
   @OpcodeImplementation(
@@ -64,14 +66,12 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   def put(): Unit = ifStorage { storage =>
     val value = memory.pop()
     val key = memory.pop()
-    val keyBytes = key.toByteString
-    val valueBytes = value.toByteString
-    val bytesTotal = valueBytes.size().toLong + keyBytes.size().toLong
-    val maybePrevious = storage.put(Data.MarshalledData(keyBytes), Data.MarshalledData(valueBytes))
+    val bytesTotal = value.volume + key.volume
+    val maybePrevious = storage.put(key, value)
 
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = bytesTotal)
-    maybeReleaseStorage(keyBytes.size(), maybePrevious)
+    wattCounter.storageUsage(occupiedBytes = bytesTotal.toLong)
+    maybeReleaseStorage(key.volume, maybePrevious)
   }
 
   private def ifStorage(f: Storage => Unit): Unit = maybeStorage match {

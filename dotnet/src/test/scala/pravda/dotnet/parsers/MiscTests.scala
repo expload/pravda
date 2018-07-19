@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
@@ -13,7 +14,7 @@ object MiscTests extends TestSuite {
 
   val tests = Tests {
     'hello_world_exe - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("hello_world.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("hello_world.exe")
       methods ==> List(
         Method(List(Nop,
                     LdStr("Hello World!"),

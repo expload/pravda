@@ -1,4 +1,5 @@
-package pravda.dotnet.parsers
+package pravda.dotnet
+package parsers
 
 import pravda.common.DiffUtils
 import pravda.dotnet.data.Method
@@ -12,7 +13,7 @@ object IfTests extends TestSuite {
 
   val tests = Tests {
     'ifParse - {
-      val Right((_, cilData, methods, signatures)) = FileParser.parseFile("if.exe")
+      val Right((_, cilData, methods, signatures)) = parseFile("if.exe")
 
       DiffUtils.assertEqual(
         methods,

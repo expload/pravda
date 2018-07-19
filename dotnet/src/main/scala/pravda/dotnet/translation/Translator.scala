@@ -126,7 +126,7 @@ object Translator {
       case SigType.U1              => Meta.TypeSignature.Uint8
       case SigType.U2              => Meta.TypeSignature.Uint16
       case SigType.U4              => Meta.TypeSignature.Uint32
-      case TypeDetectors.Address() => Meta.TypeSignature.BigInt
+      case TypeDetectors.Address() => Meta.TypeSignature.Bytes
       // TODO add more types
     }
 

@@ -1,0 +1,18 @@
+preconditions:
+  watts-limit: 10000
+  stack:
+    x0011, "balanceOf"
+  heap:
+  storage:
+    x62616C616E6365730011 = int32(10)
+
+expectations:
+  watts-spent: 264
+  stack:
+    int32(10)
+  heap:
+  effects:
+   sget x62616C616E6365730011 int32(10),
+   sget x62616C616E6365730011 int32(10)
+---
+#dotnet smart_program.cs
