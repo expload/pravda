@@ -246,7 +246,8 @@ object PE {
       .flatMap(
         b => {
           (b & 0x3) /*method flags*/ match {
-            case 0x2 => AnyBytes(b.toInt >> 2).!.map(TinyMethodHeader)
+            case 0x2 =>
+              AnyBytes((b & 0xff) >> 2).!.map(TinyMethodHeader)
             case 0x3 =>
               val flagsAndSize =
                 P(Int8).map(b2 => (b.toInt + ((b2 & 0xf) << 8) /*flags*/, (b2 & 0x0f) >> 4) /*size*/ )

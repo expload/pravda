@@ -117,9 +117,12 @@ object Translator {
   def translateVerbose(rawMethods: List[Method],
                        cilData: CilData,
                        signatures: Map[Long, Signatures.Signature]): Either[TranslationError, Translation] = {
+
     val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
       case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
     }.toMap
+
+    val rawMethodNames = rawMethods.indices.map(cilData.tables.methodDefTable(_).name)
 
     def isLocal(methodIdx: Int): Boolean = {
       methodsToTypes.get(methodIdx) match {
@@ -129,8 +132,8 @@ object Translator {
     }
 
     val methods = rawMethods.zipWithIndex.filterNot {
-      case (m, i) =>
-        val name = cilData.tables.methodDefTable(i).name
+      case (_, i) =>
+        val name = rawMethodNames(i)
         name == ".ctor" || name == ".cctor"
     }
 
@@ -147,7 +150,7 @@ object Translator {
       // TODO add more types
     }
 
-    val metaMethods = methods.flatMap {
+    lazy val metaMethods = methods.flatMap {
       case (m, i) =>
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
@@ -168,7 +171,7 @@ object Translator {
         }
     }
 
-    val jumpToMethods = methods.flatMap {
+    lazy val jumpToMethods = methods.flatMap {
       case (m, i) =>
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
@@ -183,7 +186,18 @@ object Translator {
         }
     }
 
-    val methodsOpsE: Either[TranslationError, List[MethodTranslation]] = methods.map {
+    //def methodOps(method: Method, idx: Int): Either[TranslationError, MethodTranslation] = {}
+
+//    lazy val constructor = {
+//      val ctorMethod = rawMethods.zipWithIndex.find { case (m, i) => rawMethodNames(i) == ".ctor" }
+//      ctorMethod match {
+//        case Some((ctorM, ctorI)) =>
+//          val ctorOps = methodOps(ctorM, ctorI)
+//      }
+//
+//    }
+
+    lazy val methodsOpsE: Either[TranslationError, List[MethodTranslation]] = methods.map {
       case (m, i) =>
         val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
         cilData.tables.methodDefTable(i) match {
@@ -216,6 +230,8 @@ object Translator {
     }.sequence
 
     for {
+      _ <- if (rawMethodNames.contains(".cctor")) Left(InternalError("Static constructor isn't allowed."))
+      else Right(())
       methodsOps <- methodsOpsE
     } yield
       Translation(
