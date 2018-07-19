@@ -13,7 +13,6 @@ final case class TimechainConfig(genesis: TimechainConfig.Genesis,
                                  dataDirectory: File,
                                  seeds: String,
                                  api: TimechainConfig.ApiConfig,
-                                 ui: TimechainConfig.UiConfig,
                                  tendermint: TimechainConfig.TendermintConfig)
 
 object TimechainConfig {
@@ -39,10 +38,6 @@ object TimechainConfig {
       data: String
   )
   final case class ApiConfig(
-      host: String,
-      port: Int
-  )
-  final case class UiConfig(
       host: String,
       port: Int
   )

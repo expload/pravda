@@ -230,12 +230,13 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                       config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local(None)))
                     case (_, otherwise) => otherwise
                   },
-//                opt[Unit]("testnet")
-//                  .action {
-//                    case (_, config: PravdaConfig.Node) =>
-//                      config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Testnet))
-//                    case (_, otherwise) => otherwise
-//                  },
+                opt[Unit]("testnet")
+                  .text("Initialize node connected to official testnet.")
+                  .action {
+                    case (_, config: PravdaConfig.Node) =>
+                      config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Testnet))
+                    case (_, otherwise) => otherwise
+                  },
                 opt[String]("coin-distribution")
                   .text("Initialize local node with addresses which have some amount of coins at initial state. JSON file. Format: [{\"address\":<public key in hex>,\"amount\":<number>}]")
                   .action {
