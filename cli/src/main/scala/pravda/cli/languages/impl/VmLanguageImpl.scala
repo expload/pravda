@@ -20,7 +20,7 @@ final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends 
           wattLimit: Long): Future[Either[String, ExecutionResult]] = Future {
 
     val executorAddress = Address @@ executor
-    val envProvider = new servers.Abci.EnvironmentProvider(DB(storagePath, None))
+    val envProvider = new servers.Abci.BlockDependentEnvironment(DB(storagePath, None))
     val env = envProvider.transactionEnvironment(executorAddress, TransactionId.forEncodedTransaction(program))
     val vm = new VmImpl()
     val memory = MemoryImpl.empty

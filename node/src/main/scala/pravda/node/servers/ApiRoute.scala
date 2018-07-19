@@ -16,11 +16,15 @@ import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.serialization.json._
+import pravda.node.db.DB
+import pravda.node.persistence.BlockChainStore.balanceEntry
+import pravda.node.persistence.Entry
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Random
 
-class ApiRoute(abciClient: AbciClient) {
+class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
 
@@ -32,6 +36,8 @@ class ApiRoute(abciClient: AbciClient) {
 
   val intUnmarshaller: Unmarshaller[String, Int] =
     Unmarshaller.strict(s => s.toInt)
+
+  val balances: Entry[Address, NativeCoin] = balanceEntry(db)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -74,7 +80,21 @@ class ApiRoute(abciClient: AbciClient) {
             }
           }
         }
-      }
+      } ~
+        get {
+          path("balance") {
+            parameters('address.as(hexUnmarshaller)) { (address) =>
+              val f = balances
+                .get(Address @@ address)
+                .map(
+                  _.getOrElse(NativeCoin @@ 0L)
+                )
+              onSuccess(f) { res =>
+                complete(res)
+              }
+            }
+          }
+        }
     }
 }
 
