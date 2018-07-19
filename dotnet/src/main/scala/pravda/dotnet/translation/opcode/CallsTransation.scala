@@ -29,7 +29,7 @@ case object CallsTransation extends OneToManyTranslator {
 
   private val mappingsMethods = Set("get", "getDefault", "exists", "put")
 
-  private def detectMapping(sig: Signature): Boolean = {
+  def detectMapping(sig: Signature): Boolean = {
     sig match {
       case TypeSig(Tpe(Generic(TypeDetectors.Mapping(), _), _)) => true
       case _                                                    => false
@@ -105,7 +105,8 @@ case object CallsTransation extends OneToManyTranslator {
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
     op match {
-      // case Call(MemberRefData(TypeRefData(6, "String", "System"), "Concat", methodSigIdx)) =>
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) => Right(1)
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))     => Right(0)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
@@ -133,6 +134,9 @@ case object CallsTransation extends OneToManyTranslator {
                          ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = {
 
     op match {
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) => Right(List.empty)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
+        Right(List(Operation.Orphan(Opcodes.FROM)))
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
           parentSig <- ctx.signatures.get(parentSigIdx)

@@ -14,9 +14,13 @@ object SmartProgramTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler
           .parse("""
+            |push null
+            |sexist
+            |jumpi @methods
+            |call @ctor
+            |@methods:
             |meta method { int8(-1): "balanceOf", int8(-2): int8(3), int8(0): int8(14) }
             |meta method { int8(-1): "transfer", int8(-2): int8(0), int8(0): int8(14), int8(2): int8(3) }
-            |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "balanceOf"
             |eq
@@ -25,10 +29,6 @@ object SmartProgramTests extends TestSuite {
             |push "transfer"
             |eq
             |jumpi @method_transfer
-            |dup
-            |push "Main"
-            |eq
-            |jumpi @method_Main
             |jump @stop
             |@method_balanceOf:
             |push int32(0)
@@ -70,7 +70,7 @@ object SmartProgramTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br107
+            |jumpi @br104
             |push x62616C616E636573
             |from
             |push int32(0)
@@ -96,7 +96,7 @@ object SmartProgramTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br106
+            |jumpi @br103
             |push x62616C616E636573
             |from
             |push x62616C616E636573
@@ -141,17 +141,19 @@ object SmartProgramTests extends TestSuite {
             |sput
             |pop
             |pop
-            |@br106:
-            |@br107:
+            |@br103:
+            |@br104:
             |pop
             |pop
             |pop
             |pop
             |pop
             |jump @stop
-            |@method_Main:
-            |pop
-            |jump @stop
+            |@ctor:
+            |push null
+            |dup
+            |sput
+            |ret
             |@storage_get_default:
             |push int32(2)
             |dupn

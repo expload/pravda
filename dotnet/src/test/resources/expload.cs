@@ -4,11 +4,11 @@ namespace Com.Expload {
     public class Program : Attribute {}
 
     // access to the storage
-    public abstract class Mapping<K, V> {
-       public abstract V get(K key);
-       public abstract bool exists(K key);
-       public abstract void put(K key, V value);
-       public abstract V getDefault(K key, V def);
+    public class Mapping<K, V> {
+       public V get(K key) { return default(V); }
+       public bool exists(K key) { return false; }
+       public void put(K key, V value) { return; }
+       public V getDefault(K key, V def) { return default(V); }
     }
 
     public class Info {

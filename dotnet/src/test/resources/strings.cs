@@ -1,9 +1,10 @@
 using System;
 using Com.Expload;
 
-public class HelloWorld
+[Program]
+public class ProgramStrings
 {
-    public Mapping<String, String> strings;
+    public Mapping<String, String> strings = new Mapping<String, String>();
 
     public void distributeSalary() {
         string salary = "za" + "pupu";
@@ -19,10 +20,7 @@ public class HelloWorld
         char c0 = salary[0];
         char c1 = user[3];
         string up = user.Substring(1, 2);
-        // string upa = user.Substring(1); not implemented yet
     }
 
-    static public void Main ()
-    {
-    }
+    static public void Main () {}
 }

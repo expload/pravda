@@ -13,9 +13,13 @@ object ArraysTests extends TestSuite {
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
+        |push null
+        |sexist
+        |jumpi @methods
+        |call @ctor
+        |@methods:
         |meta method { int8(-1): "WorkWithBytes", int8(-2): int8(0) }
         |meta method { int8(-1): "WorkWithArrays", int8(-2): int8(0) }
-        |meta method { int8(-1): "Main", int8(-2): int8(0) }
         |dup
         |push "WorkWithBytes"
         |eq
@@ -24,10 +28,6 @@ object ArraysTests extends TestSuite {
         |push "WorkWithArrays"
         |eq
         |jumpi @method_WorkWithArrays
-        |dup
-        |push "Main"
-        |eq
-        |jumpi @method_Main
         |jump @stop
         |@method_WorkWithBytes:
         |push int32(0)
@@ -252,9 +252,11 @@ object ArraysTests extends TestSuite {
         |pop
         |pop
         |jump @stop
-        |@method_Main:
-        |pop
-        |jump @stop
+        |@ctor:
+        |push null
+        |dup
+        |sput
+        |ret
         |@array_to_bytes:
         |dup
         |length

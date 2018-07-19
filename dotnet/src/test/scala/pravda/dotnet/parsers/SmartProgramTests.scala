@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package parsers
 
 import pravda.common.DiffUtils
@@ -22,7 +23,7 @@ object SmartProgramTests extends TestSuite {
             List(
               Nop,
               LdArg0,
-              LdFld(FieldData(1, "balances", 59)),
+              LdFld(FieldData(1, "balances", 64)),
               LdArg1,
               LdcI40,
               CallVirt(MemberRefData(TypeSpecData(20), "getDefault", 28)),
@@ -42,12 +43,11 @@ object SmartProgramTests extends TestSuite {
               Cgt,
               StLoc0,
               LdLoc0,
-              BrFalseS(98),
+              BrFalseS(95),
               Nop,
               LdArg0,
-              LdFld(FieldData(1, "balances", 59)),
-              LdArg0,
-              LdFld(FieldData(1, "sender", 68)),
+              LdFld(FieldData(1, "balances", 64)),
+              Call(MemberRefData(TypeRefData(10, "Info", "Com.Expload"), "Sender", 42)),
               LdcI40,
               CallVirt(MemberRefData(TypeSpecData(20), "getDefault", 28)),
               LdArg2,
@@ -56,33 +56,31 @@ object SmartProgramTests extends TestSuite {
               Ceq,
               StLoc1,
               LdLoc1,
-              BrFalseS(68),
+              BrFalseS(66),
               Nop,
               LdArg0,
-              LdFld(FieldData(1, "balances", 59)),
+              LdFld(FieldData(1, "balances", 64)),
+              Call(MemberRefData(TypeRefData(10, "Info", "Com.Expload"), "Sender", 42)),
               LdArg0,
-              LdFld(FieldData(1, "sender", 68)),
-              LdArg0,
-              LdFld(FieldData(1, "balances", 59)),
-              LdArg0,
-              LdFld(FieldData(1, "sender", 68)),
+              LdFld(FieldData(1, "balances", 64)),
+              Call(MemberRefData(TypeRefData(10, "Info", "Com.Expload"), "Sender", 42)),
               LdcI40,
               CallVirt(MemberRefData(TypeSpecData(20), "getDefault", 28)),
               LdArg2,
               Sub,
-              CallVirt(MemberRefData(TypeSpecData(20), "put", 42)),
+              CallVirt(MemberRefData(TypeSpecData(20), "put", 47)),
               Nop,
               LdArg0,
-              LdFld(FieldData(1, "balances", 59)),
+              LdFld(FieldData(1, "balances", 64)),
               LdArg1,
               LdArg0,
-              LdFld(FieldData(1, "balances", 59)),
+              LdFld(FieldData(1, "balances", 64)),
               LdArg1,
               LdcI40,
               CallVirt(MemberRefData(TypeSpecData(20), "getDefault", 28)),
               LdArg2,
               Add,
-              CallVirt(MemberRefData(TypeSpecData(20), "put", 42)),
+              CallVirt(MemberRefData(TypeSpecData(20), "put", 47)),
               Nop,
               Nop,
               Nop,
@@ -94,11 +92,8 @@ object SmartProgramTests extends TestSuite {
           Method(
             List(
               LdArg0,
-              LdNull,
-              StFld(FieldData(1, "balances", 59)),
-              LdArg0,
-              LdNull,
-              StFld(FieldData(1, "sender", 68)),
+              NewObj(MemberRefData(TypeSpecData(20), ".ctor", 6)),
+              StFld(FieldData(1, "balances", 64)),
               LdArg0,
               Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)),
               Nop,
@@ -113,7 +108,7 @@ object SmartProgramTests extends TestSuite {
       )
 
       val mappingClass = Cls(TypeRefData(10, "Mapping`2", "Com.Expload"))
-      val addressClass = Cls(TypeRefData(10, "Address", "Com.Expload"))
+      val addressClass = Cls(TypeRefData(10, "Bytes", "Com.Expload"))
 
       DiffUtils.assertEqual(
         signatures.toList.sortBy(_._1),
@@ -144,38 +139,33 @@ object SmartProgramTests extends TestSuite {
                                 Tpe(Var(1), false),
                                 List(Tpe(Var(0), false), Tpe(Var(1), false))),
           37 -> LocalVarSig(List(LocalVar(Boolean, false), LocalVar(Boolean, false))),
-          42 -> MethodRefDefSig(true,
-                                false,
-                                false,
-                                false,
-                                0,
-                                Tpe(Void, false),
-                                List(Tpe(Var(0), false), Tpe(Var(1), false))),
-          59 -> FieldSig(
-            Generic(
-              mappingClass,
-              List(addressClass, I4)
-            )),
-          68 -> FieldSig(addressClass),
-          72 -> MethodRefDefSig(
-            true,
-            false,
-            false,
-            false,
-            0,
-            Tpe(I4, false),
-            List(Tpe(addressClass, false))
-          ),
-          78 -> MethodRefDefSig(
-            true,
-            false,
-            false,
-            false,
-            0,
-            Tpe(Void, false),
-            List(Tpe(addressClass, false), Tpe(I4, false))
-          ),
-          85 -> MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List())
+          42 -> MethodRefDefSig(false, false, false, false, 0, Tpe(addressClass, false), List()),
+          (47,
+           MethodRefDefSig(true,
+                           false,
+                           false,
+                           false,
+                           0,
+                           Tpe(Void, false),
+                           List(Tpe(Var(0), false), Tpe(Var(1), false)))),
+          (64, FieldSig(Generic(mappingClass, List(addressClass, I4)))),
+          (73,
+           MethodRefDefSig(true,
+                           false,
+                           false,
+                           false,
+                           0,
+                           Tpe(I4, false),
+                           List(Tpe(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false)))),
+          (79,
+           MethodRefDefSig(true,
+                           false,
+                           false,
+                           false,
+                           0,
+                           Tpe(Void, false),
+                           List(Tpe(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false), Tpe(I4, false)))),
+          (86, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )
     }

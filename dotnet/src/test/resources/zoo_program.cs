@@ -3,10 +3,10 @@ using Com.Expload;
 
 [Program]
 class ZooProgram {
-    public Mapping<String, int> PetToZoo = null;
-    public Mapping<String, Bytes> PetSignature = null;
-    public Mapping<String, Bytes> PetToOwner = null;
-    public Mapping<int, Bytes> ZooToOwner = null;
+    public Mapping<String, int> PetToZoo = new Mapping<String, int>();
+    public Mapping<String, Bytes> PetSignature = new Mapping<String, Bytes>();
+    public Mapping<String, Bytes> PetToOwner = new Mapping<String, Bytes>();
+    public Mapping<int, Bytes> ZooToOwner = new Mapping<int, Bytes>();
     public int ZooCnt = 1;
     public int PetId = 1;
 
@@ -36,7 +36,7 @@ class ZooProgram {
     public String NewPet(int zoo)
     {
         if (ZooToOwner.getDefault(zoo, Bytes.EMPTY) == Info.Sender()) {
-            String pet = "pet" + PetId;
+            String pet = "pet" + System.Convert.ToString(PetId);
             PetToOwner.put(pet, Info.Sender());
             PetSignature.put(pet, GenerateSignature(pet));
             PetId += 1;

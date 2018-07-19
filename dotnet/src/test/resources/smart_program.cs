@@ -3,17 +3,16 @@ using Com.Expload;
 
 [Program]
 class MyProgram {
-    Mapping<Address, int> balances = null;
-    Address sender = null;
+    Mapping<Bytes, int> balances = new Mapping<Bytes, int>();
 
-    public int balanceOf(Address tokenOwner) {
+    public int balanceOf(Bytes tokenOwner) {
         return balances.getDefault(tokenOwner, 0);
     }
 
-    public void transfer(Address to, int tokens) {
+    public void transfer(Bytes to, int tokens) {
         if (tokens > 0) {
-            if (balances.getDefault(sender, 0) >= tokens) {
-                balances.put(sender, balances.getDefault(sender, 0) - tokens);
+            if (balances.getDefault(Info.Sender(), 0) >= tokens) {
+                balances.put(Info.Sender(), balances.getDefault(Info.Sender(), 0) - tokens);
                 balances.put(to, balances.getDefault(to, 0) + tokens);
             }
         }
@@ -21,6 +20,5 @@ class MyProgram {
 }
 
 class MainClass {
-    public static void Main() {
-    }
+    public static void Main() {}
 }

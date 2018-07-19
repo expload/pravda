@@ -171,6 +171,7 @@ object OpcodeTranslator {
   val translators: List[OpcodeTranslator] =
     List(
       ArrayInitializationTranslation,
+      MappingInitializationTranslation,
       SimpleTranslations,
       ArgsLocalsTranslations,
       FieldsTranslation,

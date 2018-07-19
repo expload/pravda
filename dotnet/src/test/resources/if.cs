@@ -1,6 +1,9 @@
+using Com.Expload;
 
-public class Program {
-   public static void Main() {
+[Program]
+public class ProgramIfs {
+   public void ifs()
+   {
        int x = 10;
 
        if (x < 1) {
@@ -37,4 +40,6 @@ public class Program {
            x = 3;
        }
    }
+
+   public static void Main() {}
 }

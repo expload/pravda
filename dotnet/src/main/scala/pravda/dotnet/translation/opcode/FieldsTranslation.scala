@@ -45,8 +45,6 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
               List(pushBytes(name.getBytes(StandardCharsets.UTF_8)))
             case TypeDetectors.Mapping() =>
               List(pushBytes(name.getBytes(StandardCharsets.UTF_8)))
-            case TypeDetectors.Address() if name == "sender" =>
-              List(asm.Operation(Opcodes.FROM))
             case _ => defaultLoad
           }
         case _ => defaultLoad
@@ -64,8 +62,6 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
           tpe match {
             case TypeDetectors.Mapping() =>
               List(asm.Operation(Opcodes.STOP)) // error user shouldn't modify mappings
-            case TypeDetectors.Mapping() if name == "sender" =>
-              List(asm.Operation(Opcodes.STOP)) // error user shouldn't modify sender address
             case _ => defaultStore
           }
         case _ => defaultStore
