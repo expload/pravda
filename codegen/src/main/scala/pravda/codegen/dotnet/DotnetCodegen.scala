@@ -48,7 +48,8 @@ object DotnetCodegen {
         arg =>
           s""" "\\"" + $arg" + "\\"" """
       case Meta.TypeSignature.Bytes =>
-        arg => s""" "\\"" + BitConverter.ToString($arg).Replace("-","") + "\\"" """
+        arg =>
+          s""" "\\"" + BitConverter.ToString($arg).Replace("-","") + "\\"" """
     }
 
     tpe match {
