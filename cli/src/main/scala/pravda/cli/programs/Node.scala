@@ -112,7 +112,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
             paymentWallet,
             Seq("bob:10:c77f81ae0c37ea3742e16b5cf15563ca6cc063bc5e88ff55a74dc0e52bd7d632"),
             initialDistribution,
-            Seq("publicnode.expload.com" -> 5222)
+            Seq("35.234.141.154" -> 31391)
           )
       }
       _ <- EitherT[F, String, Unit](io.writeToFile(configPath, ByteString.copyFromUtf8(config)).map(Right.apply))
