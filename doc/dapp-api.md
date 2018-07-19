@@ -1,6 +1,7 @@
-# Local client API
+# DApp API Specification
 
-Expload local client provides access to the blockchain (e.g. run arbitrary code, call methods from existing programs). 
+Pravda provides unified API for DApps (Distributed Applications). 
+This API allows to run arbitrary code, call methods from existing programs and ... on the Pravda blockchain.
 
 ### Method calling
 
@@ -12,9 +13,9 @@ you should provide `bytes` value for address and `string` "balanceOf" for method
 _(See [data documentation](ref/vm/data.md) for description of typed data)_
 
 #### REST API
-Expload local client provides REST API for method calling on `localhost:8087/api/program/method` endpoint. 
+DApp API specification establishes REST API for calling methods of program. 
 
-It takes json in the following format:
+It receives json in the following format:
 ```json
 {
   "address": "<hex formatted string of program's address>",
@@ -39,19 +40,19 @@ And returns another json with computed value:
 Argument type is the regular string, format of the argument value depends on that type 
 and each such type string corresponds to one [data](ref/vm/data.md) type. Details are given in the following table: 
 
-| Type string (`"tpe"` field) | Format of `"value"` field | Data |
+| Type string (`"tpe"` field) | Example of `"value"` field | Data |
 | --- | --- | --- |
-| `"int8"` | JSON number | `int8` |
-| `"int16"` | JSON number | `int16` |
-| `"int32"` | JSON number | `int32` |
-| `"uint8"` | JSON number | `uint8` |
-| `"uint16"` | JSON number | `uint16` |
-| `"uint32"` | JSON number | `uint32` |
-| `"number"` | JSON number | `number` |
-| `"boolean"` | JSON `true` of `false` | `boolean` |
-| `"utf8"` | JSON string | `utf8` |
-| `"bytes"` | hex JSON string | `bytes` |
-| `"array <primitive type>"` | JSON array with elems of corresponding types | `array <primitive type>` |
+| `"int8"` | `-123` | `int8` |
+| `"int16"` | `23123` | `int16` |
+| `"int32"` | `123123123`| `int32` |
+| `"uint8"` | `123` | `uint8` |
+| `"uint16"` | `23123` | `uint16` |
+| `"uint32"` | `123123123` | `uint32` |
+| `"number"` | `5.6` | `number` |
+| `"boolean"` | `true` of `false` | `boolean` |
+| `"utf8"` | `"string"` | `utf8` |
+| `"bytes"` | `"6789ABCD"` | `bytes` |
+| `"array <primitive type>"` | `[1, 2, 3]` | `array <primitive type>` |
 
 For example if we are calling `balanceOf` method for user with `0xABCDEF` address of some program with `0x123456789ABCDE` address we should pass:
 ```json
@@ -60,14 +61,14 @@ For example if we are calling `balanceOf` method for user with `0xABCDEF` addres
   "method": "balanceOf",
   "args": [ 
     {
-      "value": "0xABCDEF",
+      "value": "ABCDEF",
       "tpe": "bytes"
     }
   ]
 }
 ```
 
-And Expload client will call the necessary method and will return:
+And receive: 
 ```json
 {
   "value": 1234,
