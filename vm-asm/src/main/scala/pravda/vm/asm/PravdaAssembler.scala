@@ -135,13 +135,13 @@ object PravdaAssembler {
               case metadata => Operation.Meta(metadata)
             }
           case Opcodes.STRUCT_GET_STATIC =>
-            val offset = buffer.position
+            val offset = buffer.position()
             Data.readFromByteBuffer(buffer) match {
               case key: Primitive => StructGet(Some(key))
               case data           => throw UnexpectedTypeException(data.getClass, offset)
             }
           case Opcodes.STRUCT_MUT_STATIC =>
-            val offset = buffer.position
+            val offset = buffer.position()
             Data.readFromByteBuffer(buffer) match {
               case key: Primitive => StructMut(Some(key))
               case data           => throw UnexpectedTypeException(data.getClass, offset)

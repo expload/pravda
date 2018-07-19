@@ -131,7 +131,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           buffer.put(0.toByte)
         case 1 =>
           //println(s"putLength: pb.get = ${pb.get(pb.position)}")
-          if ((pb.get(pb.position) & 0xFF) < 64) {
+          if ((pb.get(pb.position()) & 0xFF) < 64) {
             buffer.put((pb.get | 0x40).toByte)
           } else {
             //println(s"putLength: x = ${pb.get(pb.position()) & 0xFF}")
@@ -188,7 +188,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       //println(s"putTaglessPrimitive: pb.remaining = ${pb.remaining}")
       if (l == 0) {
         buffer.put(0.toByte)
-      } else if (l == 1 && isZeroLength(pb.get(pb.position).toLong)) {
+      } else if (l == 1 && isZeroLength(pb.get(pb.position()).toLong)) {
         putZeroLengthValue(buffer, pb.get(pb.position))
       } else {
         putLength(buffer, l)
@@ -625,7 +625,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   /** Seek first non zero byte in pb **/
   private[vm] def seek(pb: ByteBuffer): Unit = {
     @tailrec def aux(i: Int): Unit =
-      if (i == pb.limit) pb.position(i)
+      if (i == pb.limit()) pb.position(i)
       else if (pb.get(i) == 0) aux(i + 1)
       else pb.position(i)
     aux(0)
@@ -870,7 +870,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         val `type` = buffer.get
         val l = getLength
         //println(s"l=$l")
-        if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position - 1)
+        if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position() - 1)
         `type` match {
           case Type.Int8    => Array.Int8Array(mutable.Buffer.fill(l)(getInt8))
           case Type.Int16   => Array.Int16Array(mutable.Buffer.fill(l)(getInt16))
@@ -887,7 +887,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         }
       case Type.Struct =>
         val l = getLength
-        if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position - 1)
+        if (l < 0) throw UnexpectedLengthException("greater than 0", l, buffer.position() - 1)
         val data = mutable.Map(Seq.fill(l)(getNestedPrimitive -> getNestedPrimitive): _*)
         Struct(data)
     }
