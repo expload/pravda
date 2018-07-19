@@ -61,7 +61,7 @@ DApp API specification establishes REST API for calling methods of the program w
 
 `POST api/program/method`
 
-```json
+```
 {
     "address": "<hex formatted string of program's address>",
     "method": "<name of the method>",
@@ -76,7 +76,7 @@ DApp API specification establishes REST API for calling methods of the program w
 
 ### Response
 
-```json
+```
 {
     "value": <return value>,
     "tpe": "<type of return value>"    
@@ -111,7 +111,7 @@ curl -X POST -H "Content-Type: application/json" --data '{"address": "123456789A
 ```
 
 And receive: 
-```json
+```
 {
     "value": 1234,
     "tpe": "uint32"
@@ -127,7 +127,7 @@ This method allows you to transfer money from current user to any Pravda address
 
 `POST api/transfer`
 
-```json
+```
 {
     "to": "<hex formatted string of the receiver address>",
     "amount": <amount of coins you are going to transer>
@@ -150,7 +150,7 @@ This method allows you to execute any Pravda bytecode
 
 `POST api/execute`
 
-```json
+```
 {
     "transaction": "<hex formatted transaction>",
     "wattLimit": <watt limit> // Optional
@@ -158,7 +158,7 @@ This method allows you to execute any Pravda bytecode
 ```
 
 ### Response
-```json
+```
 {
     "error" : "<error type>", // Optional
     "totalWatts" : <spent watts>,
@@ -175,7 +175,7 @@ This method allows you to execute any Pravda bytecode
 
 `POST api/sign`
 
-```json
+```
 {
   "app": "<application name>",
   "bytes": "<hex formatted binary data>"
@@ -183,7 +183,7 @@ This method allows you to execute any Pravda bytecode
 ```
 
 ### Response
-```json
+```
 {
   "signedBytes": "<hex formatted signed binary data>"
 }
@@ -197,7 +197,7 @@ You can also sign binary data with `application/octet-stream` or `application/ba
 
 Every API method may return error.
 
-```json
+```
 {
   "error": "<error type>"
 }
