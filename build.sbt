@@ -243,9 +243,12 @@ lazy val codegen = (project in file("codegen"))
   .dependsOn(common % "test->test")
 
 lazy val cli = (project in file("cli"))
+  .enablePlugins(BuildInfoPlugin)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
   .settings(
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "pravda.cli",
     skip in publish := true,
     normalizedName := "pravda",
     mainClass in Compile := Some("pravda.cli.Pravda"),

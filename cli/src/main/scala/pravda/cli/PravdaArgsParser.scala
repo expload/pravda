@@ -20,7 +20,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
 
   val model: CommandLine.Head[PravdaConfig] =
     head("pravda")
-      .text("Pravda Command Line Interface to Pravda SDK")
+      .text(s"Pravda ${pravda.cli.BuildInfo.version} Command Line Interface")
       .children(
         cmd("gen")
           .text("Generate auxiliary data for Pravda.")
