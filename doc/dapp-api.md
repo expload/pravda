@@ -4,11 +4,15 @@ Pravda specifies unified API for DApps (Distributed Applications).
 
 This API allows client to execute different action on the Pravda blockchain, such as run arbitrary code, call methods from existing programs, get balance by address, sign binary data and transfer money from one address to another.
 
+
 # API Methods
 
 ## Get current user address
 
 You can get the _current user_ addres. The _current user_ is the user who signs a Pravda transaction by its private key, that is an executor of the transaction.
+
+If there is no current user an API implemenation should return `NoKeys` error.
+
 
 ### Request
 
@@ -55,7 +59,11 @@ will return balance of the user with address `aaeeff0abeffa0ffeea0568dfe`
 
 DApps API Specification introduces __method__ entity. This entity is similar to [Solidity](http://solidity.readthedocs.io/en/v0.4.24/) methods from Ethereum ecosystem.
 
-DApp API specification establishes REST API for calling methods of the program with a given address. 
+DApp API specification establishes REST API for calling methods of the program with a given address.
+
+An implementaion of the Standard should ask the current user if he confirms this transaction or not. If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+
+If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
 ### Request
 
@@ -122,6 +130,10 @@ And receive:
 ## Transfer money
 This method allows you to transfer money from current user to any Pravda address
 
+An implementaion of the Standard should ask the current user if he confirms this transfer or not. It should show the amount and the address of the transferring. If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+
+If there is no current user, an implemenation of the Standard should return `NoKeys` error.
+
 
 ### Request
 
@@ -144,6 +156,10 @@ curl -X POST -H "Content-Type: application/json" --data '{ "to": "aaeeff0abeffa0
 
 ## Execute VM bytecode
 This method allows you to execute any Pravda bytecode
+
+An implementaion of the Standard should ask the current user if he confirms this execution or not. It should show the bytecode translated to the Pravda assembler. If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+
+If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
 
 ### Request
@@ -169,6 +185,11 @@ This method allows you to execute any Pravda bytecode
 
 ## Sign binary data
 This method allows you to execute any Pravda bytecode
+
+An implementaion of the Standard should ask the current user if he confirms this signing or not. It should be possible to see the data. If the currenit user doesn't allow to sign the data, `NotConfirmed` error should be sent. On the other hand, if the current user allows to sign the data, the data should be signed with the current user private key and returned back.
+
+If there is no current user, an implemenation of the Standard should return `NoKeys` error.
+
 
 
 ### Request
