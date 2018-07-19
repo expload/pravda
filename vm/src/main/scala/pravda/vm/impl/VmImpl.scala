@@ -63,7 +63,13 @@ class VmImpl extends Vm {
     val stackOperations = new StackOperations(memory, program, counter)
     val controlOperations = new ControlOperations(program, callStack, memory, counter)
     val nativeCoinOperations = new NativeCoinOperations(memory, environment, counter, maybeProgramAddress)
-    val systemOperations = new SystemOperations(memory, maybeStorage, counter, environment, maybeProgramAddress, StandardLibrary.implementation, this)
+    val systemOperations = new SystemOperations(memory,
+                                                maybeStorage,
+                                                counter,
+                                                environment,
+                                                maybeProgramAddress,
+                                                StandardLibrary.implementation,
+                                                this)
     val dataOperations = new DataOperations(memory, counter)
 
     var lastOpcodePosition: Int = -1

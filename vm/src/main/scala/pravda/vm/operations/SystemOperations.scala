@@ -74,7 +74,7 @@ final class SystemOperations(memory: Memory,
     val id = integer(memory.pop())
     wattCounter.cpuUsage(CpuStorageUse)
     standardLibrary.get(id) match {
-      case None => throw VmErrorException(VmError.InvalidAddress)
+      case None           => throw VmErrorException(VmError.InvalidAddress)
       case Some(function) => function(memory, wattCounter)
     }
   }
