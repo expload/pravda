@@ -8,7 +8,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 `0x01`
 ### Signature
 
-`(pubKey: bytes, message: bytes | utf8, signature: bytes): boolean`
+`(pubKey: bytes, message: bytes | utf8, signature: bytes): bool`
 
 ### Description
 

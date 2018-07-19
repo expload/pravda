@@ -24,4 +24,4 @@ Network node is build on top of [Tendermint](http://tendermint.com/), is written
   * [Participation](doc/dev/participation.md)
   * [Building from sources](doc/dev/building-from-sources.md)
   * [How to generate documentation](doc/dev/gen-doc.md)   
-  * [How to add new opcode](doc/dev/add-new-opcode.md)
+  * [How to add new functionality to VM](doc/dev/add-new-functionality.md)

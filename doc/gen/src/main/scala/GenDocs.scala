@@ -118,7 +118,7 @@ object GenDocs extends App {
         case Data.Type.Bytes   => "bytes"
         case Data.Type.Number  => "number"
         case Data.Type.Null    => "null"
-        case Data.Type.Boolean => "boolean"
+        case Data.Type.Boolean => "bool"
         case Data.Type.Utf8    => "utf8"
         case Data.Type.Array   => "array"
         case Data.Type.BigInt  => "bigint"
