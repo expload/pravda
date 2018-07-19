@@ -61,7 +61,7 @@ DApps API Specification introduces __method__ entity. This entity is similar to 
 
 DApp API specification establishes REST API for calling methods of the program with a given address.
 
-An implementaion of the Standard should ask the current user if he confirms this transaction or not. If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+An implementaion of the Standard should ask the current user if he confirms this transaction or not. An implementaion of the Standard should show the user the programm addres, program method and arguments to be executed.  If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
 
 If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
