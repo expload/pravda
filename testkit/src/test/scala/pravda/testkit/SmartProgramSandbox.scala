@@ -12,7 +12,11 @@ import utest._
 
 object SmartProgramSandbox extends TestSuite {
 
-  val tests = Tests()
+  val tests = Tests {
+    'nope - {
+      assert(true)
+    }
+  }
 
 //  val tests = SandboxUtils.constructTestsFromFolder(
 //    new File(getClass.getResource("/smart_program").getPath), {
