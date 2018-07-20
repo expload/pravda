@@ -79,7 +79,7 @@ object ParserSuite extends TestSuite {
     "broadcast" - {
       "run -e http://example.com -w hw.json" - assert {
         PravdaArgsParser.parse(List("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), PravdaConfig.Nope) match {
-          case Ok(Broadcast(Broadcast.Mode.Run, Some(wallet), None, _, _, "http://example.com"))
+          case Ok(Broadcast(Broadcast.Mode.Run, Some(wallet), None, _, _, _, "http://example.com"))
             if wallet.endsWith("hw.json") => true
           case x => false
         }
