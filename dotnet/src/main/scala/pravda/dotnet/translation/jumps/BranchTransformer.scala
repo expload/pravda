@@ -73,6 +73,8 @@ object BranchTransformer {
             case Bge(t)      => List(Clt, Not, JumpI(mkLabel(curOffset + t + 5)))
             case BeqS(t)     => List(Ceq, JumpI(mkLabel(curOffset + t + 2)))
             case Beq(t)      => List(Ceq, JumpI(mkLabel(curOffset + t + 5)))
+            case BneUnS(t)   => List(Ceq, Not, JumpI(mkLabel(curOffset + t + 2)))
+            case BneUn(t)    => List(Ceq, Not, JumpI(mkLabel(curOffset + t + 5)))
             //case Switch(ts) => ts.filter(_ != 0).map(t => Label(mkLabel(curOffset + t + 1))) // FIXME switch
             case opcode if offsets.contains(curOffset) => List(Label(mkLabel(curOffset)), opcode)
             case opcode                                => List(opcode)

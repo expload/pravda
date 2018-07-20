@@ -1,6 +1,10 @@
+using Com.Expload;
 
-public class Program {
-   public static void Main() {
+[Program]
+public class ProgramLoops {
+
+   public void loops()
+   {
        int a = 0;
        for (int i = 0; i < 10; i++) {
            a += 2;
@@ -10,4 +14,6 @@ public class Program {
           a *= 2;
        }
    }
+
+   public static void Main() {}
 }

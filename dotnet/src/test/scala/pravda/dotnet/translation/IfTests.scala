@@ -14,13 +14,18 @@ object IfTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse(
           """
-        |meta method { int8(-1): "Main", int8(-2): int8(0) }
+        |push null
+        |sexist
+        |jumpi @methods
+        |call @ctor
+        |@methods:
+        |meta method { int8(-1): "ifs", int8(-2): int8(0) }
         |dup
-        |push "Main"
+        |push "ifs"
         |eq
-        |jumpi @method_Main
+        |jumpi @method_ifs
         |jump @stop
-        |@method_Main:
+        |@method_ifs:
         |push int32(0)
         |push int32(0)
         |push int32(0)
@@ -313,8 +318,12 @@ object IfTests extends TestSuite {
         |pop
         |pop
         |jump @stop
+        |@ctor:
+        |push null
+        |dup
+        |sput
+        |ret
         |@stop:
-        |
       """.stripMargin
         ).right.get
       )

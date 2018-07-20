@@ -22,10 +22,10 @@ import pravda.dotnet.parsers.Signatures.SigType
 
 object TypeDetectors {
 
-  object Address {
+  object Bytes {
 
     def unapply(sigType: SigType): Boolean = sigType match {
-      case SigType.Cls(TypeRefData(_, "Address", "Com.Expload")) => true
+      case SigType.Cls(TypeRefData(_, "Bytes", "Com.Expload")) => true
       case _                                                     => false
     }
   }

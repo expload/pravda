@@ -28,6 +28,8 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = op match {
+    case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "get_Length", _)) =>
+      Right(List(Operation.Orphan(Opcodes.LENGTH)))
     case LdStr(s) =>
       Right(List(Operation.Push(Data.Primitive.Utf8(s))))
     case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", _)) =>

@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package parsers
 
 import pravda.common.DiffUtils
@@ -201,7 +202,19 @@ object ArraysTests extends TestSuite {
             Some(81)
           ),
           Method(List(Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
+          Method(
+            List(
+              LdArg0,
+              NewObj(MemberRefData(TypeSpecData(58), ".ctor", 6)),
+              StFld(FieldData(6, "bytes", 103)),
+              LdArg0,
+              Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)),
+              Nop,
+              Ret
+            ),
+            0,
+            None
+          )
         )
       )
       DiffUtils.assertEqual(

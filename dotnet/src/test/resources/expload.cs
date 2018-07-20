@@ -1,33 +1,37 @@
 using System;
 
+// WARNING
+// Purpose of this dll is only to marks specific methods for translator.
+// Translator detects them and generates necessary bytecode.
 namespace Com.Expload {
-
-    // our special attribute, it will be a simple library
+    // Special attribute to mark classes to be translated to Pravda program
     public class Program : Attribute {}
 
-    // access to the storage
-    public abstract class Mapping<K, V> {
-       public abstract V get(K key);
-       public abstract bool exists(K key);
-       public abstract void put(K key, V value);
-
-       public V getDefault(K key, V def) {
-          if (!this.exists(key)) {
-              return def;
-          } else {
-              return this.get(key);
-          }
-       }
+    // Access to the storage
+    public class Mapping<K, V> {
+       public V get(K key) { return default(V); }
+       public bool exists(K key) { return false; }
+       public void put(K key, V value) { return; }
+       public V getDefault(K key, V def) { return default(V); }
     }
 
-    public class Address {}
-    public class Data {}
-    public class Word {}
+    public class Info {
+        // Get address of the sender user
+        public static Bytes Sender() { return null; }
+    }
 
+    // Immutable array of bytes
     public class Bytes {
+       // Get the empty byte array
+       public static Bytes EMPTY = null;
+
        public Bytes(params byte[] bytes) {}
 
+       // Get the i-th byte
        public byte this[int i] { get { return 0; } set { return; } }
+       // Get the sub-array
        public Bytes Slice(int start, int length) { return null; }
+       // Concatenate two Bytes
+       public Bytes Concat(Bytes other) { return null; }
     }
 }

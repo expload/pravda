@@ -13,16 +13,16 @@ object StringTests extends TestSuite {
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
+            |push null
+            |sexist
+            |jumpi @methods
+            |call @ctor
+            |@methods:
             |meta method { int8(-1): "distributeSalary", int8(-2): int8(0) }
-            |meta method { int8(-1): "Main", int8(-2): int8(0) }
             |dup
             |push "distributeSalary"
             |eq
             |jumpi @method_distributeSalary
-            |dup
-            |push "Main"
-            |eq
-            |jumpi @method_Main
             |jump @stop
             |@method_distributeSalary:
             |push int32(0)
@@ -142,9 +142,11 @@ object StringTests extends TestSuite {
             |pop
             |pop
             |jump @stop
-            |@method_Main:
-            |pop
-            |jump @stop
+            |@ctor:
+            |push null
+            |dup
+            |sput
+            |ret
             |@stop:
           """.stripMargin).right.get
       )

@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package parsers
 
 import pravda.common.DiffUtils
@@ -134,6 +135,7 @@ object IfTests extends TestSuite {
             2,
             Some(16)
           ),
+          Method(List(Nop, Ret), 0, None),
           Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
         )
       )

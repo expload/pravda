@@ -43,7 +43,9 @@ object Translator {
                               signatures: Map[Long, Signatures.Signature],
                               cilData: CilData,
                               local: Boolean,
-                              void: Boolean): Either[TranslationError, MethodTranslation] = {
+                              void: Boolean,
+                              func: Boolean,
+                              prefix: String): Either[TranslationError, MethodTranslation] = {
 
     val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
 
@@ -73,7 +75,7 @@ object Translator {
 
     val clear =
       if (void) {
-        List.fill(localsCount + argsCount + 1)(asm.Operation(Opcodes.POP))
+        List.fill(localsCount + argsCount + (if (func) 0 else 1))(asm.Operation(Opcodes.POP))
       } else {
         List.fill(localsCount + argsCount + 1)(List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.POP))).flatten
       }
@@ -101,14 +103,15 @@ object Translator {
         local,
         void,
         List(
-          OpCodeTranslation(Left("method name"), None, List(asm.Operation.Label("method_" + name))),
+          OpCodeTranslation(Left("method name"), None, List(asm.Operation.Label(prefix + name))),
           OpCodeTranslation(Left("local vars"), None, List.fill(localsCount)(opcode.pushInt(0))) // FIXME Should be replaced by proper value for local var type
         ) ++ opTranslations ++
           List(
             OpCodeTranslation(Left("local vars clearing"), None, clear),
             OpCodeTranslation(Left("end of a method"),
                               None,
-                              if (local) List(asm.Operation(Opcodes.RET)) else List(asm.Operation.Jump(Some("stop"))))
+                              if (func || local) List(asm.Operation(Opcodes.RET))
+                              else List(asm.Operation.Jump(Some("stop"))))
           ),
         functions
       )
@@ -117,37 +120,44 @@ object Translator {
   def translateVerbose(rawMethods: List[Method],
                        cilData: CilData,
                        signatures: Map[Long, Signatures.Signature]): Either[TranslationError, Translation] = {
-    val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
-      case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
-    }.toMap
 
-    def isLocal(methodIdx: Int): Boolean = {
-      methodsToTypes.get(methodIdx) match {
-        case Some(TypeDefData(_, _, "io.mytc.pravda", _, _, _)) => true
-        case _                                                  => false
-      }
+//    val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
+//      case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
+//    }.toMap
+
+    val rawMethodNames = rawMethods.indices.map(cilData.tables.methodDefTable(_).name)
+
+    def isLocal(methodIdx: Int): Boolean = false
+    def isPrivate(methodIdx: Int): Boolean =
+      (cilData.tables.methodDefTable(methodIdx).flags & 0x0001) != 0
+
+    val methods = rawMethods.zipWithIndex.filter {
+      case (_, i) =>
+        val name = rawMethodNames(i)
+        !isPrivate(i) && name != ".ctor" && name != ".cctor" && name != "Main"
     }
 
-    val methods = rawMethods.zipWithIndex.filterNot {
-      case (m, i) =>
-        val name = cilData.tables.methodDefTable(i).name
-        name == ".ctor" || name == ".cctor"
+    val funcs = rawMethods.zipWithIndex.filter {
+      case (_, i) =>
+        val name = rawMethodNames(i)
+        isPrivate(i) && name != ".ctor" && name != ".cctor" && name != "Main"
     }
 
     def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
-      case SigType.Void            => Meta.TypeSignature.Null
-      case SigType.Boolean         => Meta.TypeSignature.Boolean
-      case SigType.I1              => Meta.TypeSignature.Int8
-      case SigType.I2              => Meta.TypeSignature.Int16
-      case SigType.I4              => Meta.TypeSignature.Int32
-      case SigType.U1              => Meta.TypeSignature.Uint8
-      case SigType.U2              => Meta.TypeSignature.Uint16
-      case SigType.U4              => Meta.TypeSignature.Uint32
-      case TypeDetectors.Address() => Meta.TypeSignature.Bytes
+      case SigType.Void          => Meta.TypeSignature.Null
+      case SigType.Boolean       => Meta.TypeSignature.Boolean
+      case SigType.I1            => Meta.TypeSignature.Int8
+      case SigType.I2            => Meta.TypeSignature.Int16
+      case SigType.I4            => Meta.TypeSignature.Int32
+      case SigType.U1            => Meta.TypeSignature.Uint8
+      case SigType.U2            => Meta.TypeSignature.Uint16
+      case SigType.U4            => Meta.TypeSignature.Uint32
+      case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
+      case SigType.String        => Meta.TypeSignature.Utf8
       // TODO add more types
     }
 
-    val metaMethods = methods.flatMap {
+    lazy val metaMethods = methods.flatMap {
       case (m, i) =>
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
@@ -168,7 +178,7 @@ object Translator {
         }
     }
 
-    val jumpToMethods = methods.flatMap {
+    lazy val jumpToMethods = methods.flatMap {
       case (m, i) =>
         if (!isLocal(i)) {
           val name = cilData.tables.methodDefTable(i).name
@@ -183,7 +193,67 @@ object Translator {
         }
     }
 
-    val methodsOpsE: Either[TranslationError, List[MethodTranslation]] = methods.map {
+    lazy val jumpToConstructor = List(
+      asm.Operation.Push(Data.Primitive.Null),
+      asm.Operation.Orphan(Opcodes.SEXIST),
+      asm.Operation.JumpI(Some("methods")),
+      asm.Operation.Call(Some("ctor")),
+      asm.Operation.Label("methods")
+    )
+
+    lazy val constructorPrefix = List(
+      asm.Operation.Label("ctor"),
+      asm.Operation.Push(Data.Primitive.Null),
+      asm.Operation.Orphan(Opcodes.DUP),
+      asm.Operation.Orphan(Opcodes.SPUT)
+    )
+
+    lazy val constructorE: Either[TranslationError, Option[ConstructorTranslation]] = {
+      val ctorMethod = rawMethods.zipWithIndex.find { case (m, i) => rawMethodNames(i) == ".ctor" }
+      ctorMethod match {
+        case Some((m, i)) =>
+          val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
+          val ops = cilData.tables.methodDefTable(i) match {
+            case MethodDefData(_, _, name, sigIdx, params) =>
+              val isVoid = signatures.get(sigIdx) match {
+                case Some(MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params)) =>
+                  tpe match {
+                    case SigType.Void => true
+                    case _            => false
+                  }
+                case _ => false
+              }
+
+              if (!isVoid) {
+                Left(InternalError("Constructor can't return value."))
+              } else if (params.nonEmpty) {
+                Left(InternalError("Constructor shouldn't take arguments."))
+              } else {
+                translateMethod(
+                  0,
+                  localVarSig
+                    .map {
+                      case LocalVarSig(types) => types.length
+                      case _                  => 0
+                    }
+                    .getOrElse(0),
+                  "ctor",
+                  BranchTransformer.transformBranches(m.opcodes),
+                  signatures,
+                  cilData,
+                  false,
+                  true,
+                  true,
+                  ""
+                )
+              }
+          }
+          ops.map(o => Some(ConstructorTranslation(jumpToConstructor, constructorPrefix, o)))
+        case None => Right(None)
+      }
+    }
+
+    lazy val methodsOpsE: Either[TranslationError, List[MethodTranslation]] = methods.map {
       case (m, i) =>
         val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
         cilData.tables.methodDefTable(i) match {
@@ -210,24 +280,71 @@ object Translator {
               signatures,
               cilData,
               isLocal(i),
-              isVoid
+              isVoid,
+              false,
+              "method_"
+            )
+        }
+    }.sequence
+
+    lazy val funcOpsE: Either[TranslationError, List[MethodTranslation]] = funcs.map {
+      case (m, i) =>
+        val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
+        cilData.tables.methodDefTable(i) match {
+          case MethodDefData(_, _, name, sigIdx, params) =>
+            val isVoid = signatures.get(sigIdx) match {
+              case Some(MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params)) =>
+                tpe match {
+                  case SigType.Void => true
+                  case _            => false
+                }
+              case _ => false
+            }
+
+            translateMethod(
+              params.length,
+              localVarSig
+                .map {
+                  case LocalVarSig(types) => types.length
+                  case _                  => 0
+                }
+                .getOrElse(0),
+              name,
+              BranchTransformer.transformBranches(m.opcodes),
+              signatures,
+              cilData,
+              isLocal(i),
+              isVoid,
+              true,
+              "func_"
             )
         }
     }.sequence
 
     for {
+      _ <- if (rawMethodNames.contains(".cctor")) Left(InternalError("Static constructor isn't allowed."))
+      else Right(())
       methodsOps <- methodsOpsE
+      constructor <- constructorE
+      funcOps <- funcOpsE
     } yield
       Translation(
         metaMethods ++ jumpToMethods :+ asm.Operation.Jump(Some("stop")),
         methodsOps,
-        distinctFunctions(methodsOps.flatMap(_.additionalFunctions)),
+        constructor,
+        funcOps,
+        distinctFunctions((constructor.map(_.ctor).toList ++ methodsOps).flatMap(_.additionalFunctions)),
         List(asm.Operation.Label("stop"))
       )
   }
 
   def translationToAsm(t: Translation): List[asm.Operation] =
-    t.jumpToMethods ++ t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++
+    t.constructor.map(_.jumpToConstructor).getOrElse(List.empty) ++
+      t.jumpToMethods ++
+      t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++
+      t.constructor.map(_.ctorPrefix).getOrElse(List.empty) ++
+      t.constructor.map(_.ctor.opcodes.flatMap(_.asmOps).drop(1)).getOrElse(List.empty) ++
+      t.funcs.flatMap(_.opcodes.flatMap(_.asmOps)) ++
       t.functions.flatMap { case OpcodeTranslator.AdditionalFunction(name, ops) => asm.Operation.Label(name) :: ops } ++
       t.finishOps
 

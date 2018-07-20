@@ -50,6 +50,7 @@ object Signatures {
     case object String                                               extends SigType
     case object I                                                    extends SigType
     case object U                                                    extends SigType
+    case object Object                                               extends SigType
     final case class Cls(typeDefOrRef: TableRowData)                 extends SigType
     final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
@@ -131,6 +132,7 @@ object Signatures {
           } yield SigType.Generic(tpe, tpes)
       case 0x18 => simpleType(SigType.I)
       case 0x19 => simpleType(SigType.U)
+      case 0x1c => simpleType(SigType.Object)
       case 0x1d =>
         for {
           tpeV <- sigType(tablesData)
@@ -221,7 +223,7 @@ object Signatures {
     val idxToSig = cilData.tables.fieldTable.map(f =>
       f.signatureIdx -> parseSignature(f.signatureIdx, fieldSig(cilData.tables))) ++
       cilData.tables.memberRefTable.map(m =>
-        m.signatureIdx -> parseSignature(m.signatureIdx, methodRefDefSig(cilData.tables))) ++
+        m.signatureIdx -> parseSignature(m.signatureIdx, methodRefDefSig(cilData.tables) | fieldSig(cilData.tables))) ++
       cilData.tables.methodDefTable.map(m =>
         m.signatureIdx -> parseSignature(m.signatureIdx, methodRefDefSig(cilData.tables))) ++
       cilData.tables.standAloneSigTable.map(s =>

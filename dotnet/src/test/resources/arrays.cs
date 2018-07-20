@@ -1,9 +1,10 @@
 using System;
 using Com.Expload;
 
-public class HelloWorld
+[Program]
+public class ProgramArrays
 {
-    public Mapping<Bytes, Bytes> bytes;
+    public Mapping<Bytes, Bytes> bytes = new Mapping<Bytes, Bytes>();
 
     public void WorkWithBytes() {
         byte[] arr1 = new byte[] {1, 2, 3};
@@ -40,7 +41,5 @@ public class HelloWorld
         uints[1] = 7;
     }
 
-    static public void Main ()
-    {
-    }
+    static public void Main () {}
 }

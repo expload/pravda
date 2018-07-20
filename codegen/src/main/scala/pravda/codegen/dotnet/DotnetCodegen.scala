@@ -50,13 +50,11 @@ object DotnetCodegen {
       case Meta.TypeSignature.Int8  => identity
       case Meta.TypeSignature.Int16 => identity
       case Meta.TypeSignature.Int32 => identity
-      case Meta.TypeSignature.BigInt =>
-        arg =>
-          s"""$arg.ToString()"""
+      case Meta.TypeSignature.BigInt => ???
       case Meta.TypeSignature.Uint8  => identity
       case Meta.TypeSignature.Uint16 => identity
       case Meta.TypeSignature.Uint32 => identity
-      case Meta.TypeSignature.Number => ???
+      case Meta.TypeSignature.Number => identity
       case Meta.TypeSignature.Boolean =>
         arg =>
           s"""$arg ? "true" : "false" """
@@ -73,7 +71,7 @@ object DotnetCodegen {
       case p: Meta.TypeSignature.PrimitiveType => primitiveFormat(p)
       case Meta.TypeSignature.Array(p) =>
         arg =>
-          s""" "[" + string.Join(",", $arg) + "]" """ // FIXME doesn't work for boolean and bigint
+          s""" "[" + string.Join(",", $arg) + "]" """ // FIXME doesn't work for bool, utf8, bytes
       case Meta.TypeSignature.Struct(name, fields) => ???
     }
   }
