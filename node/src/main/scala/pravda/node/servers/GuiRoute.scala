@@ -357,7 +357,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             .replace("\\\"", "\"")
                             .replace("\\\\", "\\") // FIXME HACK CODE
                           PravdaAssembler.assemble(hackCode, saveLabels = true) flatMap { data =>
-                            PravdaAssembler.assemble(s"new x${byteUtils.byteString2hex(data)} pcreate",
+                            PravdaAssembler.assemble(s"push x${byteUtils.byteString2hex(data)} pcreate",
                                                      saveLabels = false) map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
                                                                    TransactionData @@ data,
