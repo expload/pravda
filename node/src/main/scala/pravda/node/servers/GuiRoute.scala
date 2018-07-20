@@ -273,14 +273,14 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       'margin         @= 10,
                       addressField,
                       'placeholder /= "Address",
-                      'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.address)),
+                      'value       /= byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
               'input (
                 'class  /= "input",
                 'margin @= 10,
                 pkField,
                 'placeholder /= "Private key",
                 'type        /= "password",
-                'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.privateKey)
+                'value       /= byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
               ),
               'div (
                 'button (

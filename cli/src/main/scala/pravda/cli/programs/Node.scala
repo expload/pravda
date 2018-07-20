@@ -26,7 +26,7 @@ import pravda.cli.PravdaConfig.Node.{Mode, Network}
 import pravda.cli.languages.{IoLanguage, NodeLanguage, RandomLanguage}
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes, crypto}
-import pravda.node.data.TimechainConfig.PaymentWallet
+import pravda.node.data.PravdaConfig.Validator
 import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
@@ -40,12 +40,12 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
   private def applicationConfig(isValidator: Boolean,
                                 chainId: String,
                                 dataDir: String,
-                                paymentWallet: PaymentWallet,
+                                paymentWallet: Validator,
                                 validators: Seq[String],
                                 coinDistribution: Seq[CoinDistributionMember],
                                 seeds: Seq[(String, Int)]) =
-    s"""timechain {
-       |  api {
+    s"""pravda {
+       |  http {
        |    host = "127.0.0.1"
        |    port = 8080
        |  }
@@ -68,7 +68,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    app-hash = ""
        |    distribution = true
        |  }
-       |  payment-wallet {
+       |  validator {
        |    private-key = "${bytes.byteString2hex(paymentWallet.privateKey)}"
        |    address = "${bytes.byteString2hex(paymentWallet.address)}"
        |  }
@@ -90,7 +90,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
       configPath <- EitherT[F, String, String](io.concatPath(dataDir, "node.conf").map(Right.apply))
       randomBytes <- EitherT[F, String, ByteString](random.secureBytes64().map(Right.apply))
       (pub, sec) = crypto.ed25519KeyPair(randomBytes)
-      paymentWallet = PaymentWallet(PrivateKey @@ sec, Address @@ pub)
+      paymentWallet = Validator(PrivateKey @@ sec, Address @@ pub)
       initialDistribution <- initDistrConf
         .map { path =>
           EitherT[F, String, ByteString](readFromFile(path)).flatMap { bs =>

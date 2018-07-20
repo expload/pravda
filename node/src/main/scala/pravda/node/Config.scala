@@ -17,10 +17,10 @@
 
 package pravda.node
 
-import pravda.node.data.TimechainConfig
+import pravda.node.data.PravdaConfig
 
 import pravda.node.data.serialization.config._
 
 object Config {
-  val timeChainConfig = pureconfig.loadConfigOrThrow[TimechainConfig]("timechain")
+  val pravdaConfig = pureconfig.loadConfigOrThrow[PravdaConfig]("pravda")
 }

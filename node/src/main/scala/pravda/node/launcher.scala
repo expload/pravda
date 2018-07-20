@@ -35,29 +35,29 @@ object launcher extends App {
 
   import Config._
 
-  sys.env.get("TC_CONFIG_FILE") foreach { path =>
+  sys.env.get("PRAVDA_CONFIG_FILE") foreach { path =>
     sys.props.put("config.file", path)
   }
 
-  private implicit val system: ActorSystem = ActorSystem("timechain-system")
+  private implicit val system: ActorSystem = ActorSystem("pravda-system")
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  val abciClient = new AbciClient(timeChainConfig.tendermint.rpcPort)
+  val abciClient = new AbciClient(pravdaConfig.tendermint.rpcPort)
 
   val applicationStateDb = DB(
-    path = new File(Config.timeChainConfig.dataDirectory, "application-state").getAbsolutePath,
+    path = new File(Config.pravdaConfig.dataDirectory, "application-state").getAbsolutePath,
     initialHash = FileStore.readApplicationStateInfo().map(_.appHash.toByteArray)
   )
-  val abci = new Abci(applicationStateDb, abciClient, timeChainConfig.coinDistribution)
+  val abci = new Abci(applicationStateDb, abciClient, pravdaConfig.coinDistribution)
 
   val server = Server(
     cfg = Server.Config(
-      connectionMethod = if (timeChainConfig.tendermint.useUnixDomainSocket) {
-        val path = new File(timeChainConfig.dataDirectory, "abci.sock").getAbsolutePath
+      connectionMethod = if (pravdaConfig.tendermint.useUnixDomainSocket) {
+        val path = new File(pravdaConfig.dataDirectory, "abci.sock").getAbsolutePath
         ConnectionMethod.UnixSocket(path)
       } else {
-        ConnectionMethod.Tcp(host = "127.0.0.1", port = timeChainConfig.tendermint.proxyAppPort)
+        ConnectionMethod.Tcp(host = "127.0.0.1", port = pravdaConfig.tendermint.proxyAppPort)
       }
     ),
     api = abci
@@ -66,10 +66,10 @@ object launcher extends App {
   val httpServer = {
     val apiRoute = new ApiRoute(abciClient, applicationStateDb)
     val guiRoute = new GuiRoute(abciClient, applicationStateDb)
-    HttpServer.start(timeChainConfig.api, apiRoute.route, guiRoute.route)
+    HttpServer.start(pravdaConfig.http, apiRoute.route, guiRoute.route)
   }
 
-  val tendermintNode = Await.result(tendermint.run(timeChainConfig), 10.seconds)
+  val tendermintNode = Await.result(tendermint.run(pravdaConfig), 10.seconds)
 
   server.start()
 

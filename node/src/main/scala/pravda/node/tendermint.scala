@@ -21,7 +21,7 @@ import java.io.{File, FileOutputStream, PrintWriter}
 
 import com.google.protobuf.ByteString
 import pravda.common.contrib.ripemd160
-import pravda.node.data.TimechainConfig
+import pravda.node.data.PravdaConfig
 import pravda.node.utils.{CpuArchitecture, OperationSystem}
 import pravda.node.data.serialization._
 import json._
@@ -52,7 +52,7 @@ object tendermint {
     }
   }
 
-  def run(config: TimechainConfig)(implicit ec: ExecutionContext): Future[Process] = {
+  def run(config: PravdaConfig)(implicit ec: ExecutionContext): Future[Process] = {
 
     def writeFile(file: File)(s: String): Unit = {
       val pw = new PrintWriter(file)
@@ -132,10 +132,10 @@ object tendermint {
       val privValidatorFile = new File(configDir, "priv_validator.json")
       if (config.isValidator && !privValidatorFile.exists()) {
         writeFile(privValidatorFile) {
-          val pubKey = byteUtils.byteString2hex(config.paymentWallet.address)
-          val privKey = byteUtils.byteString2hex(config.paymentWallet.privateKey)
+          val pubKey = byteUtils.byteString2hex(config.validator.address)
+          val privKey = byteUtils.byteString2hex(config.validator.privateKey)
           val address = {
-            val withType = packAddress(config.paymentWallet.address)
+            val withType = packAddress(config.validator.address)
             val hash = ripemd160.getHash(withType.toByteArray)
             byteUtils.bytes2hex(hash)
           }
