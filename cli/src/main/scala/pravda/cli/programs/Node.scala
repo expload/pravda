@@ -131,7 +131,12 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
             dataDir,
             paymentWallet,
             Seq(s"bob:10:$pkey"),
-            Seq(Address @@ bytes.hex2bytestring(pkey) -> 1000000L),
+            Seq(
+              CoinDistributionMember(
+                Address @@ bytes.hex2byteString(pkey),
+                NativeCoin @@ 1000000L
+              )
+            ),
             Seq("35.234.141.154" -> 30001)
           )
       }
