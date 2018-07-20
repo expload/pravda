@@ -1,0 +1,20 @@
+preconditions:
+  watts-limit: 10000
+  stack:
+    "NewPet"
+  heap:
+  storage:
+    null = null,
+    "ZooCnt" = int32(2),
+    "PetId" = int32(1),
+    x5A6F6F546F4F776E657200000001 = x0000000000000000000000000000000000000000000000000000000000000000
+
+expectations:
+  watts-spent: 1086
+  stack:
+    int32(1)
+  heap:
+  effects:
+
+---
+#dotnet zoo_program.cs

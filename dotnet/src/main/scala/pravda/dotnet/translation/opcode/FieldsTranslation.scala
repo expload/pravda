@@ -54,6 +54,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
     def storeField(name: String, sigIdx: Long): List[asm.Operation] = { // FIXME should process static fields too
       lazy val defaultStore = List(
         pushString(name),
+        asm.Operation(Opcodes.SWAP),
         asm.Operation(Opcodes.SPUT)
       )
 

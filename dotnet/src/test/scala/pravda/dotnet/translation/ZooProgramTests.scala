@@ -67,6 +67,7 @@ object ZooProgramTests extends TestSuite {
             |push int32(1)
             |add
             |push "ZooCnt"
+            |swap
             |sput
             |push "ZooCnt"
             |sget
@@ -202,6 +203,7 @@ object ZooProgramTests extends TestSuite {
             |push int32(1)
             |add
             |push "PetId"
+            |swap
             |sput
             |push int32(2)
             |dupn
@@ -258,6 +260,7 @@ object ZooProgramTests extends TestSuite {
             |push int8(1)
             |cast
             |jump @br48
+            |@br47:
             |push int32(0)
             |@br48:
             |push int32(2)
@@ -363,9 +366,10 @@ object ZooProgramTests extends TestSuite {
             |eq
             |push int8(1)
             |cast
-            |jump @br82
+            |jump @br80
+            |@br79:
             |push int32(0)
-            |@br82:
+            |@br80:
             |push int32(4)
             |swapn
             |pop
@@ -378,7 +382,7 @@ object ZooProgramTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br159
+            |jumpi @br157
             |push int32(6)
             |dupn
             |push int32(6)
@@ -439,13 +443,13 @@ object ZooProgramTests extends TestSuite {
             |push int32(2)
             |swapn
             |pop
-            |jump @br168
-            |@br159:
+            |jump @br166
+            |@br157:
             |push ""
             |push int32(2)
             |swapn
             |pop
-            |@br168:
+            |@br166:
             |push int32(1)
             |dupn
             |swap
@@ -467,9 +471,11 @@ object ZooProgramTests extends TestSuite {
             |sput
             |push int32(1)
             |push "ZooCnt"
+            |swap
             |sput
             |push int32(1)
             |push "PetId"
+            |swap
             |sput
             |ret
             |@func_GenerateSignature:
@@ -545,6 +551,39 @@ object ZooProgramTests extends TestSuite {
             |swap
             |pop
             |swap
+            |pop
+            |swap
+            |pop
+            |swap
+            |pop
+            |ret
+            |@array_to_bytes:
+            |dup
+            |length
+            |push x
+            |push int32(0)
+            |@array_to_bytes_loop:
+            |push int32(4)
+            |dupn
+            |push int32(2)
+            |dupn
+            |array_get
+            |push int8(14)
+            |cast
+            |push int32(3)
+            |dupn
+            |swap
+            |concat
+            |push int32(3)
+            |swapn
+            |pop
+            |push int32(1)
+            |add
+            |dup
+            |push int32(4)
+            |dupn
+            |gt
+            |jumpi @array_to_bytes_loop
             |pop
             |swap
             |pop

@@ -28,7 +28,9 @@ object StackOffsetResolver {
                            labelOffsets: Map[String, Int],
                            stackOffsetO: Option[Int]): Either[TranslationError, (Map[String, Int], Option[Int])] = {
 
-    val unstableStackError = Left(InternalError("Unsupported sequence of instructions: stack is unstable"))
+    val unstableStackError = {
+      Left(InternalError("Unsupported sequence of instructions: stack is unstable"))
+    }
 
     op match {
       case Label(label) =>

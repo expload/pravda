@@ -10,6 +10,7 @@ object DiffUtils {
     } yield {
       s"""
         |${s1.slice(idx - 40, idx + 40)}
+        |
         |${s2.slice(idx - 40, idx + 40)}
       """.stripMargin
     }).getOrElse("<end of file>")
