@@ -238,7 +238,7 @@ object Translator {
                     }
                     .getOrElse(0),
                   "ctor",
-                  BranchTransformer.transformBranches(m.opcodes),
+                  BranchTransformer.transformBranches(m.opcodes, "ctor"),
                   signatures,
                   cilData,
                   false,
@@ -276,7 +276,7 @@ object Translator {
                 }
                 .getOrElse(0),
               name,
-              BranchTransformer.transformBranches(m.opcodes),
+              BranchTransformer.transformBranches(m.opcodes, name),
               signatures,
               cilData,
               isLocal(i),
@@ -310,7 +310,7 @@ object Translator {
                 }
                 .getOrElse(0),
               name,
-              BranchTransformer.transformBranches(m.opcodes),
+              BranchTransformer.transformBranches(m.opcodes, name),
               signatures,
               cilData,
               isLocal(i),

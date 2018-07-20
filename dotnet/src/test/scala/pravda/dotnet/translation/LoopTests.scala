@@ -38,8 +38,8 @@ object LoopTests extends TestSuite {
             |push int32(4)
             |swapn
             |pop
-            |jump @br17
-            |@br7:
+            |jump @loops_br17
+            |@loops_br7:
             |push int32(4)
             |dupn
             |push int32(2)
@@ -54,7 +54,7 @@ object LoopTests extends TestSuite {
             |push int32(4)
             |swapn
             |pop
-            |@br17:
+            |@loops_br17:
             |push int32(3)
             |dupn
             |push int32(10)
@@ -69,9 +69,9 @@ object LoopTests extends TestSuite {
             |dupn
             |push int32(1)
             |eq
-            |jumpi @br7
-            |jump @br34
-            |@br28:
+            |jumpi @loops_br7
+            |jump @loops_br34
+            |@loops_br28:
             |push int32(4)
             |dupn
             |push int32(2)
@@ -79,7 +79,7 @@ object LoopTests extends TestSuite {
             |push int32(5)
             |swapn
             |pop
-            |@br34:
+            |@loops_br34:
             |push int32(4)
             |dupn
             |push int32(10000)
@@ -94,7 +94,7 @@ object LoopTests extends TestSuite {
             |dupn
             |push int32(1)
             |eq
-            |jumpi @br28
+            |jumpi @loops_br28
             |pop
             |pop
             |pop
@@ -144,14 +144,14 @@ object LoopTests extends TestSuite {
             |push int32(7)
             |swapn
             |pop
-            |jump @br58
-            |@br7:
+            |jump @loops_br58
+            |@loops_br7:
             |push int32(0)
             |push int32(6)
             |swapn
             |pop
-            |jump @br42
-            |@br12:
+            |jump @loops_br42
+            |@loops_br12:
             |push int32(7)
             |dupn
             |push int32(2)
@@ -173,7 +173,7 @@ object LoopTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br37
+            |jumpi @loops_br37
             |push int32(7)
             |dupn
             |push int32(7)
@@ -188,7 +188,7 @@ object LoopTests extends TestSuite {
             |push int32(8)
             |swapn
             |pop
-            |@br37:
+            |@loops_br37:
             |push int32(5)
             |dupn
             |push int32(1)
@@ -196,7 +196,7 @@ object LoopTests extends TestSuite {
             |push int32(6)
             |swapn
             |pop
-            |@br42:
+            |@loops_br42:
             |push int32(5)
             |dupn
             |push int32(20)
@@ -211,7 +211,7 @@ object LoopTests extends TestSuite {
             |dupn
             |push int32(1)
             |eq
-            |jumpi @br12
+            |jumpi @loops_br12
             |push int32(6)
             |dupn
             |push int32(1)
@@ -219,7 +219,7 @@ object LoopTests extends TestSuite {
             |push int32(7)
             |swapn
             |pop
-            |@br58:
+            |@loops_br58:
             |push int32(6)
             |dupn
             |push int32(10)
@@ -234,9 +234,9 @@ object LoopTests extends TestSuite {
             |dupn
             |push int32(1)
             |eq
-            |jumpi @br7
-            |jump @br77
-            |@br71:
+            |jumpi @loops_br7
+            |jump @loops_br77
+            |@loops_br71:
             |push int32(7)
             |dupn
             |push int32(2)
@@ -244,7 +244,7 @@ object LoopTests extends TestSuite {
             |push int32(8)
             |swapn
             |pop
-            |@br77:
+            |@loops_br77:
             |push int32(7)
             |dupn
             |push int32(10000)
@@ -259,7 +259,7 @@ object LoopTests extends TestSuite {
             |dupn
             |push int32(1)
             |eq
-            |jumpi @br71
+            |jumpi @loops_br71
             |pop
             |pop
             |pop

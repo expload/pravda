@@ -22,7 +22,7 @@ import pravda.dotnet.parsers.CIL._
 
 object BranchTransformer {
 
-  def transformBranches(cil: List[CIL.Op]): List[CIL.Op] = {
+  def transformBranches(cil: List[CIL.Op], labelPrefix: String): List[CIL.Op] = {
     val offsets = cil
       .foldLeft((0, List.empty[Int])) {
         case ((curOffset, offsets), opcode) =>
@@ -52,7 +52,7 @@ object BranchTransformer {
       }
       ._2
 
-    def mkLabel(i: Int): String = "br" + i.toString
+    def mkLabel(i: Int): String = labelPrefix + "_br" + i.toString
 
     val opcodesWithLabels = cil
       .foldLeft((0, List.empty[CIL.Op])) {

@@ -91,7 +91,7 @@ object StringTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br87
+            |jumpi @distributeSalary_br87
             |push x737472696E6773
             |push "pupa"
             |push ""
@@ -106,7 +106,7 @@ object StringTests extends TestSuite {
             |sput
             |pop
             |pop
-            |@br87:
+            |@distributeSalary_br87:
             |push int32(8)
             |dupn
             |push int32(0)

@@ -131,7 +131,7 @@ object ArraysTests extends TestSuite {
         |cast
         |push int32(1)
         |eq
-        |jumpi @br192
+        |jumpi @WorkWithBytes_br192
         |push x6279746573
         |push int32(9)
         |dupn
@@ -148,7 +148,7 @@ object ArraysTests extends TestSuite {
         |sput
         |pop
         |pop
-        |@br192:
+        |@WorkWithBytes_br192:
         |push int32(9)
         |dupn
         |push int32(0)
