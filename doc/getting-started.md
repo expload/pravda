@@ -13,7 +13,7 @@ Download MSI installer from [releases page](https://github.com/expload/pravda/re
 We've prepared universal installation script. Just run this command in your terminal.
 
 ```
-curl -s https://git.io/pravda-for-unix | bash
+curl -sL https://git.io/pravda-for-unix | bash
 ```
 
 ## Run node

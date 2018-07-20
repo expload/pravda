@@ -5,11 +5,12 @@ resolvers += Resolver.bintrayRepo("expload", "oss")
 
 enablePlugins(GitVersioning)
 
+scalaVersion := "2.12.6"
 skip in publish := true
 headerLicense := Some(HeaderLicense.AGPLv3("2018", "Expload"))
-git.formattedShaVersion := git.gitHeadCommit.value map { sha => sha.take(8) }
+git.useGitDescribe := true
 git.gitTagToVersionNumber := { tag: String =>
-  if (tag.length > 0) Some(tag)
+  if (tag.length > 0) Some(tag.stripPrefix("v"))
   else None
 }
 
@@ -26,7 +27,6 @@ val scalacheckOps = Seq(
 
 val commonSettings = Seq(
   organization := "com.expload",
-
   licenses += ("AGPL-V3", url("http://www.opensource.org/licenses/agpl-v3.html")),
   headerLicense := Some(HeaderLicense.AGPLv3("2018", "Expload.com")),
   excludeFilter.in(headerSources) := HiddenFileFilter || "ed25519.java" || "ripemd160.java",
@@ -34,8 +34,6 @@ val commonSettings = Seq(
   bintrayOrganization := Some("expload"),
   bintrayRepository := "oss",
   bintrayVcsUrl := Some("https://github.com/expload/pravda"),
-
-  crossScalaVersions := Seq("2.12.4"),
   libraryDependencies ++= Seq(
     // Tests
     "org.typelevel" %% "cats-core" % "1.0.1",
@@ -58,7 +56,7 @@ val commonSettings = Seq(
   ),
   resolvers += "jitpack" at "https://jitpack.io",
   resolvers += Resolver.bintrayRepo("expload", "oss")
-) ++ scalafixSettings
+)// ++ scalafixSettings
 
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)
@@ -179,7 +177,7 @@ lazy val node = (project in file("node"))
       "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
       // Other
       "com.expload" %% "scala-abci-server" % "0.9.2",
-      "com.github.pureconfig" %% "pureconfig" % "0.9.0",
+      "com.github.pureconfig" %% "pureconfig" % "0.9.1",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.6.2",
       "org.json4s" %% "json4s-ast" % "3.5.3",
