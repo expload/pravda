@@ -97,7 +97,7 @@ object blockchain {
       ExecutionInfo(
         error = executionResult.error.map(_.error match {
           case SomethingWrong(err) => err.getMessage
-          case err => err.toString
+          case err                 => err.toString
         }),
         spentWatts = executionResult.wattCounter.spent,
         refundWatts = executionResult.wattCounter.refund,

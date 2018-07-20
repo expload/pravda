@@ -26,7 +26,7 @@ object TypeDetectors {
 
     def unapply(sigType: SigType): Boolean = sigType match {
       case SigType.Cls(TypeRefData(_, "Bytes", "Com.Expload")) => true
-      case _                                                     => false
+      case _                                                   => false
     }
   }
 

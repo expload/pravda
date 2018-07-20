@@ -54,13 +54,11 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
                                   dryRun: Boolean,
                                   data: ByteString): Future[Either[String, String]] = {
 
-
     val fromHex = bytes.byteString2hex(address)
-    val request = if(dryRun) {
+    val request = if (dryRun) {
       HttpRequest(
         method = HttpMethods.POST,
-        uri =
-          s"$uriPrefix/dryRun?from=$fromHex",
+        uri = s"$uriPrefix/dryRun?from=$fromHex",
         entity = HttpEntity(data.toByteArray)
       )
     } else {

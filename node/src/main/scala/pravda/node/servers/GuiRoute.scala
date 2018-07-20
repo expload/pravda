@@ -269,18 +269,14 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'placeholder /= "Place your pravda-asm code here"),
               'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
               'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1"),
-              'input ('class          /= "input",
-                      'margin         @= 10,
-                      addressField,
-                      'placeholder /= "Address",
-                      'value       /= ""),//byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
+              'input ('class          /= "input", 'margin @= 10, addressField, 'placeholder /= "Address", 'value /= ""), //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
               'input (
                 'class  /= "input",
                 'margin @= 10,
                 pkField,
                 'placeholder /= "Private key",
                 'type        /= "password",
-                'value       /= ""//byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
+                'value       /= "" //byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
               ),
               'div (
                 'button (

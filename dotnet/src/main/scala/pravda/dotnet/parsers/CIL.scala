@@ -290,15 +290,15 @@ object CIL {
   final case class LdcR8(num: Double) extends Op {
     override val size = 9
   }
-  case object LdcI40 extends Op
-  case object LdcI41 extends Op
-  case object LdcI42 extends Op
-  case object LdcI43 extends Op
-  case object LdcI44 extends Op
-  case object LdcI45 extends Op
-  case object LdcI46 extends Op
-  case object LdcI47 extends Op
-  case object LdcI48 extends Op
+  case object LdcI40  extends Op
+  case object LdcI41  extends Op
+  case object LdcI42  extends Op
+  case object LdcI43  extends Op
+  case object LdcI44  extends Op
+  case object LdcI45  extends Op
+  case object LdcI46  extends Op
+  case object LdcI47  extends Op
+  case object LdcI48  extends Op
   case object LdcI4M1 extends Op
   final case class LdcI4S(num: Byte) extends Op {
     override val size = 2

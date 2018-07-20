@@ -46,10 +46,10 @@ object DotnetCodegen {
 
   private def tpeToDotnetFormat(tpe: Meta.TypeSignature): String => String = {
     def primitiveFormat(p: Meta.TypeSignature.PrimitiveType): String => String = p match {
-      case Meta.TypeSignature.Null  => ???
-      case Meta.TypeSignature.Int8  => identity
-      case Meta.TypeSignature.Int16 => identity
-      case Meta.TypeSignature.Int32 => identity
+      case Meta.TypeSignature.Null   => ???
+      case Meta.TypeSignature.Int8   => identity
+      case Meta.TypeSignature.Int16  => identity
+      case Meta.TypeSignature.Int32  => identity
       case Meta.TypeSignature.BigInt => ???
       case Meta.TypeSignature.Uint8  => identity
       case Meta.TypeSignature.Uint16 => identity

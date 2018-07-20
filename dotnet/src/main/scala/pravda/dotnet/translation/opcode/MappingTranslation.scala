@@ -34,8 +34,7 @@ object MappingInitializationTranslation extends OpcodeTranslatorOnlyAsm {
         } yield {
           if (CallsTransation.detectMapping(parentSig)) {
             Right(
-              (2,
-               List.empty)
+              (2, List.empty)
             )
           } else {
             Left(UnknownOpcode)

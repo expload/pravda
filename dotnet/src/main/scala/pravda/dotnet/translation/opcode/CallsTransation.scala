@@ -108,10 +108,10 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MethodDefData(_, _, name, signatureIdx, params)) =>
         val void = ctx.signatures.get(signatureIdx).exists(isMethodVoid)
         Right(if (void) -params.length else -params.length + 1)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))      => Right(1)
-      case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _)) => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
-      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))          => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))                         => Right(0)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {

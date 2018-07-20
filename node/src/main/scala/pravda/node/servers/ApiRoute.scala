@@ -47,11 +47,9 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success, Try}
 import scala.language.postfixOps
 
-
 class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: ExecutionContext) {
 
   val DryrunTimeout: FiniteDuration = 5 seconds
-
 
   import pravda.node.utils.AkkaHttpSpecials._
 
@@ -88,7 +86,6 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
     Await.result(execResultF, DryrunTimeout) // FIXME: make it in non-blocking way
   }
 
-
   val route: Route =
     pathPrefix("public") {
       post {
@@ -119,46 +116,46 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
           }
         }
       } ~
-      post {
-        withoutRequestTimeout {
-          pathPrefix("broadcast") {
-            path("dryRun") {
-              parameters(
-                'from.as(hexUnmarshaller)
-              ) { from =>
-                extractStrictEntity(1.second) { body =>
-                  val program = bodyToTransactionData(body)
-                  Try(dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))) match {
-                    case Success(result) => {
-                      complete(ExecutionInfo.from(result))
-                    }
-                    case Failure(err: TimeoutException) => {
-                      complete(ExecutionInfo(Some("Timeout"), 0, 0, 0, Nil, Nil))
-                    }
-                    case Failure(err) => {
-                      complete(ExecutionInfo(Some(err.getMessage), 0, 0, 0, Nil, Nil))
+        post {
+          withoutRequestTimeout {
+            pathPrefix("broadcast") {
+              path("dryRun") {
+                parameters(
+                  'from.as(hexUnmarshaller)
+                ) { from =>
+                  extractStrictEntity(1.second) { body =>
+                    val program = bodyToTransactionData(body)
+                    Try(dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))) match {
+                      case Success(result) => {
+                        complete(ExecutionInfo.from(result))
+                      }
+                      case Failure(err: TimeoutException) => {
+                        complete(ExecutionInfo(Some("Timeout"), 0, 0, 0, Nil, Nil))
+                      }
+                      case Failure(err) => {
+                        complete(ExecutionInfo(Some(err.getMessage), 0, 0, 0, Nil, Nil))
+                      }
                     }
                   }
                 }
               }
             }
           }
-        }
-      } ~
-      get {
-        path("balance") {
-          parameters('address.as(hexUnmarshaller)) { (address) =>
-            val f = balances
-              .get(Address @@ address)
-              .map(
-                _.getOrElse(NativeCoin @@ 0L)
-              )
-            onSuccess(f) { res =>
-              complete(res)
+        } ~
+        get {
+          path("balance") {
+            parameters('address.as(hexUnmarshaller)) { (address) =>
+              val f = balances
+                .get(Address @@ address)
+                .map(
+                  _.getOrElse(NativeCoin @@ 0L)
+                )
+              onSuccess(f) { res =>
+                complete(res)
+              }
             }
           }
         }
-      }
     }
 }
 

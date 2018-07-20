@@ -29,12 +29,12 @@ object ConvertTranslation extends OneToManyTranslatorOnlyAsm {
                          ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = op match {
 
     case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToBoolean", _)) => Right(cast(Data.Type.Boolean))
-    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToChar", _)) => Right(cast(Data.Type.Int16))
-    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToDouble", _)) => Right(cast(Data.Type.Number))
-    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToInt16", _)) => Right(cast(Data.Type.Int16))
-    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToInt32", _)) => Right(cast(Data.Type.Int32))
-    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToString", _)) => Right(cast(Data.Type.Utf8))
-    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToByte", _))   => Right(cast(Data.Type.Int8))
-    case _                                                                       => Left(UnknownOpcode)
+    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToChar", _))    => Right(cast(Data.Type.Int16))
+    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToDouble", _))  => Right(cast(Data.Type.Number))
+    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToInt16", _))   => Right(cast(Data.Type.Int16))
+    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToInt32", _))   => Right(cast(Data.Type.Int32))
+    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToString", _))  => Right(cast(Data.Type.Utf8))
+    case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToByte", _))    => Right(cast(Data.Type.Int8))
+    case _                                                                        => Left(UnknownOpcode)
   }
 }
