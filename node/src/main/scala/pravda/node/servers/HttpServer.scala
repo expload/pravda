@@ -26,11 +26,11 @@ import akka.stream.ActorMaterializer
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Success
 
-import pravda.node.data.TimechainConfig
+import pravda.node.data.PravdaConfig
 
 object HttpServer {
 
-  def start(config: TimechainConfig.ApiConfig, apiRoute: Route, guiRoute: Route)(
+  def start(config: PravdaConfig.HttpConfig, apiRoute: Route, guiRoute: Route)(
       implicit system: ActorSystem,
       materializer: ActorMaterializer,
       executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {

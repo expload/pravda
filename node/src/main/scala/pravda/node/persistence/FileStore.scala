@@ -21,7 +21,6 @@ package persistence
 
 import java.io.{File, PrintWriter}
 
-import pravda.node.data.TimechainConfig
 import pravda.node.data.common.ApplicationStateInfo
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
@@ -34,7 +33,7 @@ object FileStore {
 
   import Config._
 
-  private lazy val applicationStateInfoFile = new File(timeChainConfig.dataDirectory, "application-state-info.json")
+  private lazy val applicationStateInfoFile = new File(pravdaConfig.dataDirectory, "application-state-info.json")
 
   def readApplicationStateInfoAsync() = Future(readApplicationStateInfo())
 
@@ -55,11 +54,6 @@ object FileStore {
     } finally {
       pw.close()
     }
-  }
-
-  // From config
-  def readPaymentWalletAsync(): Future[TimechainConfig.PaymentWallet] = {
-    Future.successful(timeChainConfig.paymentWallet)
   }
 
 }

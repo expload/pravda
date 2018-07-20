@@ -23,16 +23,15 @@ import pravda.common.domain.Address
 import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 
-final case class TimechainConfig(genesis: TimechainConfig.Genesis,
-                                 paymentWallet: TimechainConfig.PaymentWallet,
-                                 isValidator: Boolean,
-                                 coinDistribution: Seq[CoinDistributionMember],
-                                 dataDirectory: File,
-                                 seeds: String,
-                                 api: TimechainConfig.ApiConfig,
-                                 tendermint: TimechainConfig.TendermintConfig)
+final case class PravdaConfig(genesis: PravdaConfig.Genesis,
+                              validator: Option[PravdaConfig.Validator],
+                              coinDistribution: Seq[CoinDistributionMember],
+                              dataDirectory: File,
+                              seeds: String,
+                              http: PravdaConfig.HttpConfig,
+                              tendermint: PravdaConfig.TendermintConfig)
 
-object TimechainConfig {
+object PravdaConfig {
   final case class Genesis(
       time: String,
       chainId: String,
@@ -40,7 +39,7 @@ object TimechainConfig {
       validators: Seq[GenesisValidator],
       distribution: Boolean
   )
-  final case class PaymentWallet(
+  final case class Validator(
       privateKey: PrivateKey,
       address: Address
   )
@@ -54,7 +53,7 @@ object TimechainConfig {
       `type`: String,
       data: String
   )
-  final case class ApiConfig(
+  final case class HttpConfig(
       host: String,
       port: Int
   )

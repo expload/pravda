@@ -42,7 +42,7 @@ import pravda.node.data.serialization.bson._
 import pravda.node.db.DB
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
-import pravda.node.{Config, utils}
+import pravda.node.utils
 import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
@@ -273,14 +273,14 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                       'margin         @= 10,
                       addressField,
                       'placeholder /= "Address",
-                      'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.address)),
+                      'value       /= ""),//byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
               'input (
                 'class  /= "input",
                 'margin @= 10,
                 pkField,
                 'placeholder /= "Private key",
                 'type        /= "password",
-                'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.privateKey)
+                'value       /= ""//byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
               ),
               'div (
                 'button (
