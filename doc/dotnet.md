@@ -43,6 +43,7 @@ For the moment it supports the following:
 - Arrays of primitive types (`int`, `byte`, `String`), reading and writing of particular elements;
 - Explicit conversion of primitive types via 
 `System.Convert.ToByte`, `System.Convert.ToChar`,`System.Convert.ToInt16`,`System.Convert.ToInt32`,`System.Convert.ToDouble`,`System.Convert.ToBoolean`,`System.Convert.ToString`
+- Cryptographic functions: Ripemd160 hashing, validation of Ed25519 Signature. See more in [Standard library](ref/vm/stdlib.md) docs.
 
 Things that are *not* supported:
 - User defined classes as values, classes is used only as _programs_ for the moment;

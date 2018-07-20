@@ -914,7 +914,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       extends Exception(s"Unknown type: $typeTag at $offset")
 
   final case class UnexpectedTypeException(`type`: Class[_ <: Data], offset: Int)
-      extends Exception(s"Unexpected type: ${`type`.getSimpleName} at $offset")
+      extends Exception(s"Unexpected type: ${`type`.getName} at $offset")
 
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
       extends Exception(s"Unexpected length: $expected expected but $given given at $offset")

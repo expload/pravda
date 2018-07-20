@@ -17,6 +17,8 @@ object SmartProgramSandbox extends TestSuite {
       assert(true)
     }
   }
+
+
 //  val tests = SandboxUtils.constructTestsFromFolder(
 //    new File(getClass.getResource("/smart_program").getPath), {
 //      case VmSandbox.Macro("dotnet", List(file)) =>

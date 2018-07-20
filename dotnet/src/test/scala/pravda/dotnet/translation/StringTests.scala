@@ -49,6 +49,7 @@ object StringTests extends TestSuite {
             |dupn
             |push int32(7)
             |dupn
+            |swap
             |concat
             |push int32(6)
             |swapn
@@ -76,7 +77,7 @@ object StringTests extends TestSuite {
             |swap
             |concat
             |sexist
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(2)
             |swapn
@@ -86,7 +87,7 @@ object StringTests extends TestSuite {
             |push int8(9)
             |cast
             |not
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(1)
             |eq

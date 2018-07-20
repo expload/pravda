@@ -117,7 +117,7 @@ object ArraysTests extends TestSuite {
         |swap
         |concat
         |sexist
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(2)
         |swapn
@@ -127,7 +127,7 @@ object ArraysTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -155,7 +155,7 @@ object ArraysTests extends TestSuite {
         |push int32(2)
         |swap
         |array_mut
-        |push int32(10)
+        |push int32(9)
         |dupn
         |push int32(1)
         |push int32(1)
@@ -208,38 +208,38 @@ object ArraysTests extends TestSuite {
         |push "rty"
         |swap
         |array_mut
-        |push int32(6)
+        |push int32(3)
         |swapn
         |pop
         |new int32[4, 5, 6]
-        |push int32(5)
+        |push int32(2)
         |swapn
         |pop
-        |push int32(8)
+        |push int32(5)
         |dupn
         |push int32(1)
         |push int32(100)
         |swap
         |array_mut
-        |push int32(8)
+        |push int32(4)
         |dupn
         |push int32(1)
         |push int32(4)
         |swap
         |array_mut
-        |push int32(8)
+        |push int32(3)
         |dupn
         |push int32(1)
         |push number(4.0)
         |swap
         |array_mut
-        |push int32(8)
+        |push int32(2)
         |dupn
         |push int32(1)
         |push "asdf"
         |swap
         |array_mut
-        |push int32(8)
+        |push int32(1)
         |dupn
         |push int32(1)
         |push int32(7)
@@ -272,7 +272,6 @@ object ArraysTests extends TestSuite {
         |cast
         |push int32(3)
         |dupn
-        |swap
         |concat
         |push int32(3)
         |swapn
@@ -284,8 +283,6 @@ object ArraysTests extends TestSuite {
         |dupn
         |gt
         |jumpi @array_to_bytes_loop
-        |pop
-        |swap
         |pop
         |swap
         |pop

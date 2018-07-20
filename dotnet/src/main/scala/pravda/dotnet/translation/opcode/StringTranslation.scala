@@ -33,7 +33,7 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
     case LdStr(s) =>
       Right(List(Operation.Push(Data.Primitive.Utf8(s))))
     case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", _)) =>
-      Right(List(Operation(Opcodes.CONCAT)))
+      Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT)))
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "get_Chars", _)) =>
       Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "Substring", signatureIdx)) => // FIXME more accurate method detection

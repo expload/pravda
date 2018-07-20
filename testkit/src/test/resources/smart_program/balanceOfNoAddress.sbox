@@ -4,17 +4,15 @@ preconditions:
     x0011, "balanceOf"
   heap:
   storage:
-    x62616C616E6365730011 = int32(10)
 
 expectations:
-  watts-spent: 347
+  watts-spent: 305
   stack:
-    int32(10)
+    int32(0)
   heap:
   effects:
    sget null,
    sput null null,
-   sget x62616C616E6365730011 int32(10),
-   sget x62616C616E6365730011 int32(10)
+   sget x62616C616E6365730011
 ---
 #dotnet smart_program.cs

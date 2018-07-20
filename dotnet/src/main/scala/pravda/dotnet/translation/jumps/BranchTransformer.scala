@@ -43,6 +43,8 @@ object BranchTransformer {
             case Bge(t)           => List(curOffset + t + 5)
             case BeqS(t)          => List(curOffset + t + 2)
             case Beq(t)           => List(curOffset + t + 5)
+            case BneUnS(t)        => List(curOffset + t + 2)
+            case BneUn(t)         => List(curOffset + t + 5)
             //case Switch(ts)            => ts.filter(_ != 0).map(_ + curOffset + 1)
             case _ => List.empty
           }
@@ -76,10 +78,11 @@ object BranchTransformer {
             case BneUnS(t)   => List(Ceq, Not, JumpI(mkLabel(curOffset + t + 2)))
             case BneUn(t)    => List(Ceq, Not, JumpI(mkLabel(curOffset + t + 5)))
             //case Switch(ts) => ts.filter(_ != 0).map(t => Label(mkLabel(curOffset + t + 1))) // FIXME switch
-            case opcode if offsets.contains(curOffset) => List(Label(mkLabel(curOffset)), opcode)
-            case opcode                                => List(opcode)
+            case opcode => List(opcode)
           }
-          (curOffset + opcode.size, opcodes ++ newOpcodes)
+          val newOpcodesWithLabel =
+            if (offsets.contains(curOffset)) Label(mkLabel(curOffset)) :: newOpcodes else newOpcodes
+          (curOffset + opcode.size, opcodes ++ newOpcodesWithLabel)
       }
       ._2
 

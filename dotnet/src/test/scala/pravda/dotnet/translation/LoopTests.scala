@@ -58,8 +58,9 @@ object LoopTests extends TestSuite {
             |push int32(3)
             |dupn
             |push int32(10)
+            |swap
             |lt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(3)
             |swapn
@@ -82,8 +83,9 @@ object LoopTests extends TestSuite {
             |push int32(4)
             |dupn
             |push int32(10000)
+            |swap
             |lt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(2)
             |swapn
@@ -153,10 +155,11 @@ object LoopTests extends TestSuite {
             |push int32(7)
             |dupn
             |push int32(2)
+            |swap
             |mod
             |push int32(0)
             |eq
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(5)
             |swapn
@@ -166,7 +169,7 @@ object LoopTests extends TestSuite {
             |push int8(9)
             |cast
             |not
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(1)
             |eq
@@ -179,6 +182,7 @@ object LoopTests extends TestSuite {
             |dupn
             |add
             |push int32(1000000007)
+            |swap
             |mod
             |add
             |push int32(8)
@@ -196,8 +200,9 @@ object LoopTests extends TestSuite {
             |push int32(5)
             |dupn
             |push int32(20)
+            |swap
             |lt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(4)
             |swapn
@@ -218,8 +223,9 @@ object LoopTests extends TestSuite {
             |push int32(6)
             |dupn
             |push int32(10)
+            |swap
             |lt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(3)
             |swapn
@@ -242,8 +248,9 @@ object LoopTests extends TestSuite {
             |push int32(7)
             |dupn
             |push int32(10000)
+            |swap
             |lt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(2)
             |swapn

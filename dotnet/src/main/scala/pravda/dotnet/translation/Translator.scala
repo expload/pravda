@@ -333,7 +333,7 @@ object Translator {
         methodsOps,
         constructor,
         funcOps,
-        distinctFunctions((constructor.map(_.ctor).toList ++ methodsOps).flatMap(_.additionalFunctions)),
+        distinctFunctions((constructor.map(_.ctor).toList ++ funcOps ++ methodsOps).flatMap(_.additionalFunctions)),
         List(asm.Operation.Label("stop"))
       )
   }

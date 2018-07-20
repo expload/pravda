@@ -89,19 +89,4 @@ namespace Com.Expload.Program {
             yield return SendJson(json);
         }
     }
-    class MainRequest: ProgramRequest<object> {
-
-        public MainRequest(byte[] programAddress) : base(programAddress) { }
-
-        protected override object ParseResult(string json)
-        {
-            return null;
-        }
-
-        public IEnumerator Main()
-        {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"Main\", \"args\": [] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" );
-            yield return SendJson(json);
-        }
-    }
 }
