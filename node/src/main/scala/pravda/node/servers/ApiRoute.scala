@@ -42,7 +42,7 @@ import pravda.node.servers.Abci.BlockDependentEnvironment
 import pravda.vm.ExecutionResult
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success, Try}
 import scala.language.postfixOps
@@ -85,7 +85,7 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
     val execResultF: Future[ExecutionResult] = Future {
       vm.spawn(program, env, MemoryImpl.empty, new WattCounterImpl(Long.MaxValue), from)
     }
-    Await.result(execResultF, DryrunTimeout) // TODO: make it in non-blocking way
+    Await.result(execResultF, DryrunTimeout) // FIXME: make it in non-blocking way
   }
 
 
@@ -131,6 +131,9 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
                   Try(dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))) match {
                     case Success(result) => {
                       complete(ExecutionInfo.from(result))
+                    }
+                    case Failure(err: TimeoutException) => {
+                      complete(ExecutionInfo(Some("Timeout"), 0, 0, 0, Nil, Nil))
                     }
                     case Failure(err) => {
                       complete(ExecutionInfo(Some(err.getMessage), 0, 0, 0, Nil, Nil))
