@@ -15,7 +15,7 @@ object ZooProgramTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler
           .parse("""
-              |      push null
+              |push null
               |sexist
               |jumpi @methods
               |call @ctor
@@ -119,7 +119,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br45
+              |jumpi @TransferZoo_br45
               |push x5A6F6F546F4F776E6572
               |push int32(4)
               |dupn
@@ -136,7 +136,7 @@ object ZooProgramTests extends TestSuite {
               |sput
               |pop
               |pop
-              |@br45:
+              |@TransferZoo_br45:
               |pop
               |pop
               |pop
@@ -167,7 +167,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br108
+              |jumpi @NewPet_br108
               |push "pet"
               |push "PetId"
               |sget
@@ -222,13 +222,13 @@ object ZooProgramTests extends TestSuite {
               |push int32(2)
               |swapn
               |pop
-              |jump @br116
-              |@br108:
+              |jump @NewPet_br116
+              |@NewPet_br108:
               |push ""
               |push int32(2)
               |swapn
               |pop
-              |@br116:
+              |@NewPet_br116:
               |push int32(1)
               |dupn
               |swap
@@ -260,7 +260,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br47
+              |jumpi @TransferPet_br47
               |push x5A6F6F546F4F776E6572
               |push int32(5)
               |dupn
@@ -271,10 +271,10 @@ object ZooProgramTests extends TestSuite {
               |eq
               |push int8(3)
               |cast
-              |jump @br48
-              |@br47:
+              |jump @TransferPet_br48
+              |@TransferPet_br47:
               |push int32(0)
-              |@br48:
+              |@TransferPet_br48:
               |push int32(2)
               |swapn
               |pop
@@ -287,7 +287,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br82
+              |jumpi @TransferPet_br82
               |push x506574546F4F776E6572
               |push int32(4)
               |dupn
@@ -320,7 +320,7 @@ object ZooProgramTests extends TestSuite {
               |sput
               |pop
               |pop
-              |@br82:
+              |@TransferPet_br82:
               |pop
               |pop
               |pop
@@ -347,7 +347,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br79
+              |jumpi @BreedPets_br79
               |push x506574546F4F776E6572
               |push int32(6)
               |dupn
@@ -364,7 +364,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br79
+              |jumpi @BreedPets_br79
               |push x506574546F5A6F6F
               |push int32(7)
               |dupn
@@ -378,10 +378,10 @@ object ZooProgramTests extends TestSuite {
               |eq
               |push int8(3)
               |cast
-              |jump @br80
-              |@br79:
+              |jump @BreedPets_br80
+              |@BreedPets_br79:
               |push int32(0)
-              |@br80:
+              |@BreedPets_br80:
               |push int32(4)
               |swapn
               |pop
@@ -394,7 +394,7 @@ object ZooProgramTests extends TestSuite {
               |cast
               |push int32(1)
               |eq
-              |jumpi @br157
+              |jumpi @BreedPets_br157
               |push int32(6)
               |dupn
               |push int32(6)
@@ -456,13 +456,13 @@ object ZooProgramTests extends TestSuite {
               |push int32(2)
               |swapn
               |pop
-              |jump @br166
-              |@br157:
+              |jump @BreedPets_br166
+              |@BreedPets_br157:
               |push ""
               |push int32(2)
               |swapn
               |pop
-              |@br166:
+              |@BreedPets_br166:
               |push int32(1)
               |dupn
               |swap
@@ -506,8 +506,8 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |swapn
               |pop
-              |jump @br43
-              |@br13:
+              |jump @GenerateSignature_br43
+              |@GenerateSignature_br13:
               |push int32(4)
               |dupn
               |push int32(4)
@@ -536,7 +536,7 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |swapn
               |pop
-              |@br43:
+              |@GenerateSignature_br43:
               |push int32(3)
               |dupn
               |push int32(10)
@@ -551,7 +551,7 @@ object ZooProgramTests extends TestSuite {
               |dupn
               |push int32(1)
               |eq
-              |jumpi @br13
+              |jumpi @GenerateSignature_br13
               |push int32(4)
               |dupn
               |call @array_to_bytes

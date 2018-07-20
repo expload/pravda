@@ -71,7 +71,7 @@ object SmartProgramTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br104
+            |jumpi @transfer_br104
             |push x62616C616E636573
             |from
             |push int32(0)
@@ -98,7 +98,7 @@ object SmartProgramTests extends TestSuite {
             |cast
             |push int32(1)
             |eq
-            |jumpi @br103
+            |jumpi @transfer_br103
             |push x62616C616E636573
             |from
             |push x62616C616E636573
@@ -143,8 +143,8 @@ object SmartProgramTests extends TestSuite {
             |sput
             |pop
             |pop
-            |@br103:
-            |@br104:
+            |@transfer_br103:
+            |@transfer_br104:
             |pop
             |pop
             |pop
