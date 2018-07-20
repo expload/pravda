@@ -74,7 +74,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                 |  }
               """.stripMargin
        } else ""}
-       |""".stripMargin
+       |}""".stripMargin
 
   private def mkConfigPath(dataDir: String): F[String] =
     io.concatPath(dataDir, "node.conf")
