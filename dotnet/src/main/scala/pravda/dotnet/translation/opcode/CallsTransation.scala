@@ -105,6 +105,9 @@ case object CallsTransation extends OneToManyTranslator {
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
     op match {
+      case Call(MethodDefData(_, _, name, signatureIdx, params)) =>
+        val void = ctx.signatures.get(signatureIdx).exists(isMethodVoid)
+        Right(if (void) -params.length else -params.length + 1)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) => Right(1)
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))     => Right(0)
 
@@ -134,6 +137,7 @@ case object CallsTransation extends OneToManyTranslator {
                          ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = {
 
     op match {
+      case Call(MethodDefData(_, _, name, _, params))                          => Right(List(Operation.Call(Some(s"func_$name"))))
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) => Right(List.empty)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
         Right(List(Operation.Orphan(Opcodes.FROM)))

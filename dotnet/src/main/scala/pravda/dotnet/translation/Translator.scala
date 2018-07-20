@@ -44,7 +44,8 @@ object Translator {
                               cilData: CilData,
                               local: Boolean,
                               void: Boolean,
-                              ctor: Boolean): Either[TranslationError, MethodTranslation] = {
+                              func: Boolean,
+                              prefix: String): Either[TranslationError, MethodTranslation] = {
 
     val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
 
@@ -74,7 +75,7 @@ object Translator {
 
     val clear =
       if (void) {
-        List.fill(localsCount + argsCount + (if (ctor) 0 else 1))(asm.Operation(Opcodes.POP))
+        List.fill(localsCount + argsCount + (if (func) 0 else 1))(asm.Operation(Opcodes.POP))
       } else {
         List.fill(localsCount + argsCount + 1)(List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.POP))).flatten
       }
@@ -102,14 +103,14 @@ object Translator {
         local,
         void,
         List(
-          OpCodeTranslation(Left("method name"), None, List(asm.Operation.Label("method_" + name))),
+          OpCodeTranslation(Left("method name"), None, List(asm.Operation.Label(prefix + name))),
           OpCodeTranslation(Left("local vars"), None, List.fill(localsCount)(opcode.pushInt(0))) // FIXME Should be replaced by proper value for local var type
         ) ++ opTranslations ++
           List(
             OpCodeTranslation(Left("local vars clearing"), None, clear),
             OpCodeTranslation(Left("end of a method"),
                               None,
-                              if (ctor || local) List(asm.Operation(Opcodes.RET))
+                              if (func || local) List(asm.Operation(Opcodes.RET))
                               else List(asm.Operation.Jump(Some("stop"))))
           ),
         functions
@@ -127,11 +128,19 @@ object Translator {
     val rawMethodNames = rawMethods.indices.map(cilData.tables.methodDefTable(_).name)
 
     def isLocal(methodIdx: Int): Boolean = false
+    def isPrivate(methodIdx: Int): Boolean =
+      (cilData.tables.methodDefTable(methodIdx).flags & 0x0001) != 0
 
-    val methods = rawMethods.zipWithIndex.filterNot {
+    val methods = rawMethods.zipWithIndex.filter {
       case (_, i) =>
         val name = rawMethodNames(i)
-        name == ".ctor" || name == ".cctor" || name == "Main"
+        !isPrivate(i) && name != ".ctor" && name != ".cctor" && name != "Main"
+    }
+
+    val funcs = rawMethods.zipWithIndex.filter {
+      case (_, i) =>
+        val name = rawMethodNames(i)
+        isPrivate(i) && name != ".ctor" && name != ".cctor" && name != "Main"
     }
 
     def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
@@ -144,6 +153,7 @@ object Translator {
       case SigType.U2            => Meta.TypeSignature.Uint16
       case SigType.U4            => Meta.TypeSignature.Uint32
       case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
+      case SigType.String        => Meta.TypeSignature.Utf8
       // TODO add more types
     }
 
@@ -227,13 +237,14 @@ object Translator {
                       case _                  => 0
                     }
                     .getOrElse(0),
-                  name,
+                  "ctor",
                   BranchTransformer.transformBranches(m.opcodes),
                   signatures,
                   cilData,
                   false,
                   true,
-                  true
+                  true,
+                  ""
                 )
               }
           }
@@ -270,7 +281,42 @@ object Translator {
               cilData,
               isLocal(i),
               isVoid,
-              false
+              false,
+              "method_"
+            )
+        }
+    }.sequence
+
+    lazy val funcOpsE: Either[TranslationError, List[MethodTranslation]] = funcs.map {
+      case (m, i) =>
+        val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
+        cilData.tables.methodDefTable(i) match {
+          case MethodDefData(_, _, name, sigIdx, params) =>
+            val isVoid = signatures.get(sigIdx) match {
+              case Some(MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params)) =>
+                tpe match {
+                  case SigType.Void => true
+                  case _            => false
+                }
+              case _ => false
+            }
+
+            translateMethod(
+              params.length,
+              localVarSig
+                .map {
+                  case LocalVarSig(types) => types.length
+                  case _                  => 0
+                }
+                .getOrElse(0),
+              name,
+              BranchTransformer.transformBranches(m.opcodes),
+              signatures,
+              cilData,
+              isLocal(i),
+              isVoid,
+              true,
+              "func_"
             )
         }
     }.sequence
@@ -280,11 +326,13 @@ object Translator {
       else Right(())
       methodsOps <- methodsOpsE
       constructor <- constructorE
+      funcOps <- funcOpsE
     } yield
       Translation(
         metaMethods ++ jumpToMethods :+ asm.Operation.Jump(Some("stop")),
         methodsOps,
         constructor,
+        funcOps,
         distinctFunctions((constructor.map(_.ctor).toList ++ methodsOps).flatMap(_.additionalFunctions)),
         List(asm.Operation.Label("stop"))
       )
@@ -296,6 +344,7 @@ object Translator {
       t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++
       t.constructor.map(_.ctorPrefix).getOrElse(List.empty) ++
       t.constructor.map(_.ctor.opcodes.flatMap(_.asmOps).drop(1)).getOrElse(List.empty) ++
+      t.funcs.flatMap(_.opcodes.flatMap(_.asmOps)) ++
       t.functions.flatMap { case OpcodeTranslator.AdditionalFunction(name, ops) => asm.Operation.Label(name) :: ops } ++
       t.finishOps
 

@@ -40,5 +40,6 @@ final case class ConstructorTranslation(jumpToConstructor: List[asm.Operation],
 final case class Translation(jumpToMethods: List[asm.Operation],
                              methods: List[MethodTranslation],
                              constructor: Option[ConstructorTranslation],
+                             funcs: List[MethodTranslation],
                              functions: List[OpcodeTranslator.AdditionalFunction],
                              finishOps: List[asm.Operation])

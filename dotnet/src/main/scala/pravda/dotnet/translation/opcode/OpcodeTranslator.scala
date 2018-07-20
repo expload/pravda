@@ -51,7 +51,7 @@ object OpcodeTranslatorOnlyAsm {
     case Push(_)        => 1
     case New(_)         => 1
     case Jump(name)     => if (name.isDefined) 0 else -1
-    case JumpI(name)    => if (name.isDefined) -1 else -1
+    case JumpI(name)    => if (name.isDefined) -1 else -2
     case Call(name)     => if (name.isDefined) 0 else -1
     case StructMut(key) => if (key.isDefined) -2 else -3
     case StructGet(key) => if (key.isDefined) 0 else -1
@@ -71,8 +71,8 @@ object OpcodeTranslatorOnlyAsm {
 
         case Opcodes.ARRAY_GET         => -1
         case Opcodes.STRUCT_GET_STATIC => 0
-        case Opcodes.ARRAY_MUT         => -2
-        case Opcodes.STRUCT_MUT_STATIC => -1
+        case Opcodes.ARRAY_MUT         => -3
+        case Opcodes.STRUCT_MUT_STATIC => -2
         case Opcodes.PRIMITIVE_PUT     => 0
         case Opcodes.PRIMITIVE_GET     => 0
         case Opcodes.NEW_ARRAY         => -1
@@ -172,6 +172,7 @@ object OpcodeTranslator {
     List(
       ArrayInitializationTranslation,
       MappingInitializationTranslation,
+      ConvertTranslation,
       SimpleTranslations,
       ArgsLocalsTranslations,
       FieldsTranslation,
