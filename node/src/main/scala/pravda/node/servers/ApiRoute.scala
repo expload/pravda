@@ -20,9 +20,7 @@ package pravda.node
 package servers
 
 import java.util.Base64
-import java.util.concurrent.TimeoutException
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -44,14 +42,13 @@ import pravda.node.servers.Abci.BlockDependentEnvironment
 import pravda.vm.ExecutionResult
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
-import scala.util.{Failure, Random, Success}
-import akka.pattern.after
+import scala.util.{Failure, Random, Success, Try}
+import scala.language.postfixOps
 
 
-
-class ApiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, executionContext: ExecutionContext) {
+class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: ExecutionContext) {
 
   val DryrunTimeout: FiniteDuration = 5 seconds
 
@@ -81,15 +78,14 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, exe
     }
   }
 
-  def dryrun(from: Address, program: ByteString, currentBlockEnv: BlockDependentEnvironment): Future[ExecutionResult] = {
+  def dryrun(from: Address, program: ByteString, currentBlockEnv: BlockDependentEnvironment): ExecutionResult = {
     val tid = TransactionId @@ ByteString.EMPTY
     val env = currentBlockEnv.transactionEnvironment(from, tid)
     val vm = new VmImpl()
     val execResultF: Future[ExecutionResult] = Future {
       vm.spawn(program, env, MemoryImpl.empty, new WattCounterImpl(Long.MaxValue), from)
     }
-    lazy val t = after(duration = DryrunTimeout, using = system.scheduler)(Future.failed(new TimeoutException("DryRunTimeout")))
-    Future.firstCompletedOf(Seq(execResultF, t)) // TODO: does it method stops the future ?
+    Await.result(execResultF, DryrunTimeout) // TODO: make it in non-blocking way
   }
 
 
@@ -125,19 +121,20 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, exe
       } ~
       post {
         withoutRequestTimeout {
-          path("dryrun") {
-            parameters(
-              'from.as(hexUnmarshaller)
-            ) { from =>
-              extractStrictEntity(1.second) { body =>
-                val program = bodyToTransactionData(body)
-                val resultFuture = dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))
-                onComplete(resultFuture) {
-                  case Success(result) => {
-                    complete(ExecutionInfo.from(result))
-                  }
-                  case Failure(err) => {
-                    complete(ExecutionInfo(Some(err.getMessage), 0, 0, 0, Nil, Nil))
+          pathPrefix("broadcast") {
+            path("dryRun") {
+              parameters(
+                'from.as(hexUnmarshaller)
+              ) { from =>
+                extractStrictEntity(1.second) { body =>
+                  val program = bodyToTransactionData(body)
+                  Try(dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))) match {
+                    case Success(result) => {
+                      complete(ExecutionInfo.from(result))
+                    }
+                    case Failure(err) => {
+                      complete(ExecutionInfo(Some(err.getMessage), 0, 0, 0, Nil, Nil))
+                    }
                   }
                 }
               }

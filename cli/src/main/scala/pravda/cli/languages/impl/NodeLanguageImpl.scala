@@ -51,27 +51,37 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
                                   privateKey: ByteString,
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
+                                  dryRun: Boolean,
                                   data: ByteString): Future[Either[String, String]] = {
 
-    val tx = UnsignedTransaction(
-      from = Address @@ address,
-      program = TransactionData @@ data,
-      wattLimit = wattLimit,
-      wattPrice = wattPrice,
-      nonce = Random.nextInt()
-    )
 
-    val stx = cryptography.signTransaction(PrivateKey @@ privateKey, tx)
     val fromHex = bytes.byteString2hex(address)
-    val signatureHex = bytes.byteString2hex(stx.signature)
+    val request = if(dryRun) {
+      HttpRequest(
+        method = HttpMethods.POST,
+        uri =
+          s"$uriPrefix/dryRun?from=$fromHex",
+        entity = HttpEntity(data.toByteArray)
+      )
+    } else {
+      val tx = UnsignedTransaction(
+        from = Address @@ address,
+        program = TransactionData @@ data,
+        wattLimit = wattLimit,
+        wattPrice = wattPrice,
+        nonce = Random.nextInt()
+      )
 
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      uri =
-        s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&wattLimit=${tx.wattLimit}&wattPrice=${tx.wattPrice}",
-      entity = HttpEntity(data.toByteArray)
-    )
+      val stx = cryptography.signTransaction(PrivateKey @@ privateKey, tx)
+      val signatureHex = bytes.byteString2hex(stx.signature)
 
+      HttpRequest(
+        method = HttpMethods.POST,
+        uri =
+          s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&wattLimit=${tx.wattLimit}&wattPrice=${tx.wattPrice}",
+        entity = HttpEntity(data.toByteArray)
+      )
+    }
     Http()
       .singleRequest(request)
       .flatMap { response =>

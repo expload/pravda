@@ -82,6 +82,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
             privateKey = wallet.privateKey,
             wattPrice = config.wattPrice,
             wattLimit = config.wattLimit,
+            dryRun = config.dryRun,
             data = program
           )
         }

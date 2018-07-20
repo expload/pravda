@@ -168,14 +168,14 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 opt[String]('t', "to")
                   .action {
                     case (hex,
-                          config @ PravdaConfig.Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _)) =>
+                          config @ PravdaConfig.Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(to = Some(hex)))
                     case (_, otherwise) => otherwise
                   },
                 opt[Long]('a', "amount")
                   .action {
                     case (amount,
-                          config @ PravdaConfig.Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _)) =>
+                          config @ PravdaConfig.Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(amount = Some(amount)))
                     case (_, otherwise) => otherwise
                   }
@@ -197,6 +197,12 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                     case (_, otherwise) => otherwise
                   }
               ),
+            opt[Unit]("dry-run")
+              .text("Broadcast action without applying effects.")
+              .action {
+                case (_, config: PravdaConfig.Broadcast) => config.copy(dryRun = true)
+                case (_, otherwise) => otherwise
+              },
             opt[File]('w', "wallet")
               .text("File with user wallet. You can obtain it using 'pravda gen address' command. Format: {\"address\": <public key>, \"privateKey\": <private key>}")
               .action {

@@ -42,6 +42,7 @@ object PravdaConfig {
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
                              input: Option[String] = None,
+                             dryRun: Boolean = false,
                              wattLimit: Long = 300,
                              wattPrice: NativeCoin = NativeCoin.amount(1),
                              endpoint: String = "http://localhost:8080/api/public/broadcast")
