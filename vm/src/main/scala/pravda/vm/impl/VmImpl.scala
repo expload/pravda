@@ -164,7 +164,7 @@ class VmImpl extends Vm {
       case cause: Throwable =>
         val err =
           VmErrorException(SomethingWrong(cause)).addToTrace(Point(callStack, lastOpcodePosition, maybeProgramAddress))
-        ExecutionResult(memory, Some(VmErrorException(SomethingWrong(err))), counter)
+        ExecutionResult(memory, Some(err), counter)
     }
   }
 }
