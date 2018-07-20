@@ -67,14 +67,15 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    app-hash = ""
        |    distribution = true
        |  }
-       |${if (isValidator) {
-         s"""  validator {
-              |    private-key = "${bytes.byteString2hex(paymentWallet.privateKey)}"
-              |    address = "${bytes.byteString2hex(paymentWallet.address)}"
-              |  }
-            """.stripMargin
-       }} else ""
-       |}
+       |${
+        if (isValidator) {
+           s"""  validator {
+                |    private-key = "${bytes.byteString2hex(paymentWallet.privateKey)}"
+                |    address = "${bytes.byteString2hex(paymentWallet.address)}"
+                |  }
+              """.stripMargin
+         } else ""
+       }
        |""".stripMargin
 
   private def mkConfigPath(dataDir: String): F[String] =
