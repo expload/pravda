@@ -55,7 +55,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    proxy-app-port = 46658
        |    use-unix-domain-socket = false
        |  }
-       |  data-directory = "$dataDir"
+       |  data-directory = "${dataDir.replace("\\", "\\\\")}"
        |  coin-distribution = "${coinDistribution
          .map(d => s"${bytes.byteString2hex(d.address)}:${d.amount}")
          .mkString(",")}"

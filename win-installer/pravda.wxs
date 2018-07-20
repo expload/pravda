@@ -20,7 +20,7 @@
 
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFiles64Folder">
-				<Directory Id="INSTALLDIR" Name="mytc">
+				<Directory Id="INSTALLDIR" Name="expload">
 					<Directory Id="PravdaCLI" Name="pravda">
 					</Directory>
 				</Directory>
