@@ -4,6 +4,7 @@ set -e
 set -v
 
 export WINEPREFIX=/root/.wine
+export NORMALIZED_PRAVDA_VERSION=$(echo $PRAVDA_VERSION | sed 's/[a-z-]//g')
 
 wine /wix/heat.exe dir stage -t set-platform.xslt -gg -cg PravdaCLIComponent -ke -srd -dr PravdaCLI -sfrag -o PravdaCLI.wxs
 wine /wix/candle.exe PravdaCLI.wxs
