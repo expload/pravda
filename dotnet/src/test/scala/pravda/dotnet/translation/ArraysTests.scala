@@ -117,7 +117,7 @@ object ArraysTests extends TestSuite {
         |swap
         |concat
         |sexist
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(2)
         |swapn
@@ -127,7 +127,7 @@ object ArraysTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -272,7 +272,6 @@ object ArraysTests extends TestSuite {
         |cast
         |push int32(3)
         |dupn
-        |swap
         |concat
         |push int32(3)
         |swapn
@@ -284,8 +283,6 @@ object ArraysTests extends TestSuite {
         |dupn
         |gt
         |jumpi @array_to_bytes_loop
-        |pop
-        |swap
         |pop
         |swap
         |pop

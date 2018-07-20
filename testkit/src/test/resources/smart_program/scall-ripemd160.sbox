@@ -1,0 +1,16 @@
+preconditions:
+  watts-limit: 1000
+  stack:
+    "hello world",
+    "Ripemd160"
+expectations:
+  watts-spent: 361
+  stack:
+    x98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f
+  heap:
+  effects:
+    sget null,
+    sput null null
+---------------------------------------
+#dotnet stdlib.cs
+

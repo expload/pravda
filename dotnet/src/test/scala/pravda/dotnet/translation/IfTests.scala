@@ -42,8 +42,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(1)
+        |swap
         |lt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(8)
         |swapn
@@ -53,7 +54,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -68,8 +69,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(5)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(7)
         |swapn
@@ -79,7 +81,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -88,8 +90,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(6)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(6)
         |swapn
@@ -99,7 +102,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -116,8 +119,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(0)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(5)
         |swapn
@@ -127,7 +131,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -150,13 +154,14 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(2)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -164,8 +169,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(4)
+        |swap
         |lt
-        |push int8(1)
+        |push int8(3)
         |cast
         |jump @br69
         |@br68:
@@ -179,7 +185,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -202,8 +208,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(7)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -211,8 +218,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(10)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |jump @br97
         |@br96:
@@ -226,7 +234,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -249,13 +257,14 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(1)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -263,8 +272,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(3)
+        |swap
         |lt
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq
@@ -273,8 +283,9 @@ object IfTests extends TestSuite {
         |push int32(8)
         |dupn
         |push int32(20)
+        |swap
         |gt
-        |push int8(1)
+        |push int8(3)
         |cast
         |jump @br129
         |@br128:
@@ -288,7 +299,7 @@ object IfTests extends TestSuite {
         |push int8(9)
         |cast
         |not
-        |push int8(1)
+        |push int8(3)
         |cast
         |push int32(1)
         |eq

@@ -55,8 +55,9 @@ object SmartProgramTests extends TestSuite {
             |push int32(4)
             |dupn
             |push int32(0)
+            |swap
             |gt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(3)
             |swapn
@@ -66,7 +67,7 @@ object SmartProgramTests extends TestSuite {
             |push int8(9)
             |cast
             |not
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(1)
             |eq
@@ -77,12 +78,13 @@ object SmartProgramTests extends TestSuite {
             |call @storage_get_default
             |push int32(5)
             |dupn
+            |swap
             |lt
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(0)
             |eq
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(2)
             |swapn
@@ -92,7 +94,7 @@ object SmartProgramTests extends TestSuite {
             |push int8(9)
             |cast
             |not
-            |push int8(1)
+            |push int8(3)
             |cast
             |push int32(1)
             |eq

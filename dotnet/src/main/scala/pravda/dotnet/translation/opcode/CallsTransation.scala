@@ -164,7 +164,7 @@ case object CallsTransation extends OneToManyTranslator {
                 Right(
                   cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),
                                                 Operation(Opcodes.CONCAT),
-                                                Operation(Opcodes.SEXIST)) ++ cast(Data.Type.Int8))
+                                                Operation(Opcodes.SEXIST)) ++ cast(Data.Type.Int32))
               case "put" =>
                 Right(
                   dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
