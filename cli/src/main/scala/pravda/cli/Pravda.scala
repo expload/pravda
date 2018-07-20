@@ -80,7 +80,7 @@ object Pravda extends App {
   // FIXME handle exceptions
   val exitCode = Await.result(
     awaitable = for (exitCode <- eventuallyExitCode; _ <- system.terminate()) yield exitCode,
-    atMost = 5.minutes
+    atMost = 5.days // FIXME: node run is long operation, so we should not stop it
   )
 
   sys.exit(exitCode)
