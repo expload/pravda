@@ -249,8 +249,8 @@ lazy val codegen = (project in file("codegen"))
   .dependsOn(common % "test->test")
 
 lazy val cli = (project in file("cli"))
+  .enablePlugins(ClasspathJarPlugin)
   .enablePlugins(BuildInfoPlugin)
-  .enablePlugins(JavaAppPackaging)
   .settings(commonSettings: _*)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](version),
