@@ -159,9 +159,15 @@ lazy val `node-db` = (project in file("node-db"))
   )
 
 lazy val node = (project in file("node"))
-  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(UniversalPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .enablePlugins(DockerPlugin)
   .settings(commonSettings: _*)
   .settings(
+    packageName in Docker := "pravda",
+    dockerExposedPorts := Seq(8080, 46656),
+    dockerUsername := Some("expload"),
+    dockerUpdateLatest := true,
     name := "pravda-node",
     normalizedName := "pravda-node",
     description := "Pravda network node"
@@ -186,6 +192,7 @@ lazy val node = (project in file("node"))
       "name.pellet.jp" %% "bsonpickle" % "0.4.4.2",
       "com.chuusai" %% "shapeless" % "2.3.3"
     ),
+    dependencyOverrides += "org.scala-lan" %% "scala-compiler" % "2.12.6",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     // Download tendermint
     resourceGenerators in Compile += Def.task {

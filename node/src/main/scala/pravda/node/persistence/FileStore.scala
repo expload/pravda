@@ -21,7 +21,6 @@ package persistence
 
 import java.io.{File, PrintWriter}
 
-import pravda.node.data.PravdaConfig
 import pravda.node.data.common.ApplicationStateInfo
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
@@ -55,11 +54,6 @@ object FileStore {
     } finally {
       pw.close()
     }
-  }
-
-  // From config
-  def readPaymentWalletAsync(): Future[PravdaConfig.Validator] = {
-    Future.successful(pravdaConfig.validator)
   }
 
 }

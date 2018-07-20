@@ -25,7 +25,6 @@ import pravda.node.data.cryptography.PrivateKey
 
 final case class PravdaConfig(genesis: PravdaConfig.Genesis,
                               validator: Option[PravdaConfig.Validator],
-                              isValidator: Boolean,
                               coinDistribution: Seq[CoinDistributionMember],
                               dataDirectory: File,
                               seeds: String,

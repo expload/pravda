@@ -130,12 +130,14 @@ object tendermint {
       }
       // Make priv_validator
       val privValidatorFile = new File(configDir, "priv_validator.json")
-      if (config.isValidator && !privValidatorFile.exists()) {
+      if (privValidatorFile.exists())
+        privValidatorFile.delete()
+      config.validator foreach { validator =>
         writeFile(privValidatorFile) {
-          val pubKey = byteUtils.byteString2hex(config.validator.address)
-          val privKey = byteUtils.byteString2hex(config.validator.privateKey)
+          val pubKey = byteUtils.byteString2hex(validator.address)
+          val privKey = byteUtils.byteString2hex(validator.privateKey)
           val address = {
-            val withType = packAddress(config.validator.address)
+            val withType = packAddress(validator.address)
             val hash = ripemd160.getHash(withType.toByteArray)
             byteUtils.bytes2hex(hash)
           }

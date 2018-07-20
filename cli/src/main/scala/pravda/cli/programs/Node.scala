@@ -55,7 +55,6 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    proxy-app-port = 46658
        |    use-unix-domain-socket = false
        |  }
-       |  is-validator = $isValidator
        |  data-directory = "$dataDir"
        |  coin-distribution = "${coinDistribution
          .map(d => s"${bytes.byteString2hex(d.address)}:${d.amount}")
@@ -68,10 +67,15 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    app-hash = ""
        |    distribution = true
        |  }
-       |  validator {
-       |    private-key = "${bytes.byteString2hex(paymentWallet.privateKey)}"
-       |    address = "${bytes.byteString2hex(paymentWallet.address)}"
-       |  }
+       |${
+         if (isValidator) {
+           s"""  validator {
+              |    private-key = "${bytes.byteString2hex(paymentWallet.privateKey)}"
+              |    address = "${bytes.byteString2hex(paymentWallet.address)}"
+              |  }
+            """.stripMargin
+          }
+       } else ""
        |}
        |""".stripMargin
 
