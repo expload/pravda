@@ -34,7 +34,11 @@ object HttpServer {
       implicit system: ActorSystem,
       materializer: ActorMaterializer,
       executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
-    val route = pathPrefix("api")(apiRoute) ~ pathPrefix("ui")(guiRoute)
+    val route = pathPrefix("healthz") {
+        complete("pravda node: I'm OK :)")
+      } ~
+      pathPrefix("api")(apiRoute) ~
+      pathPrefix("ui")(guiRoute)
     Http().bindAndHandle(route, config.host, config.port) andThen {
       case Success(_) => println(s"API server started at ${config.host}:${config.port}")
     }
