@@ -35,8 +35,8 @@ object HttpServer {
       materializer: ActorMaterializer,
       executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
     val route = pathPrefix("healthz") {
-        complete("pravda node: I'm OK :)")
-      } ~
+      complete("pravda node: I'm OK :)")
+    } ~
       pathPrefix("api")(apiRoute) ~
       pathPrefix("ui")(guiRoute)
     Http().bindAndHandle(route, config.host, config.port) andThen {
