@@ -48,18 +48,18 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
       case Add => List(asm.Operation(Opcodes.ADD))
       case Mul => List(asm.Operation(Opcodes.MUL))
-      case Div => List(asm.Operation(Opcodes.DIV))
-      case Rem => List(asm.Operation(Opcodes.MOD))
+      case Div => List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.DIV))
+      case Rem => List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.MOD))
       case Sub => List(pushInt(-1), asm.Operation(Opcodes.MUL), asm.Operation(Opcodes.ADD))
 
       case Clt =>
-        asm.Operation(Opcodes.LT) :: cast(Data.Type.Int8)
+        asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.LT) :: cast(Data.Type.Int32)
       case Cgt =>
-        asm.Operation(Opcodes.GT) :: cast(Data.Type.Int8)
+        asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.GT) :: cast(Data.Type.Int32)
       case Ceq =>
-        asm.Operation(Opcodes.EQ) :: cast(Data.Type.Int8)
+        asm.Operation(Opcodes.EQ) :: cast(Data.Type.Int32)
       case Not =>
-        cast(Data.Type.Boolean) ++ (asm.Operation(Opcodes.NOT) :: cast(Data.Type.Int8))
+        cast(Data.Type.Boolean) ++ (asm.Operation(Opcodes.NOT) :: cast(Data.Type.Int32))
 
       case Dup => List(asm.Operation.Orphan(Opcodes.DUP))
 
