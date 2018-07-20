@@ -31,5 +31,6 @@ trait NodeLanguage[F[_]] {
                                   privateKey: ByteString,
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
+                                  dryRun: Boolean,
                                   data: ByteString): F[Either[String, String]]
 }

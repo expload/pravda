@@ -110,7 +110,6 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: BlockDependentEnvironment)(
       result: (Int, String) => R): Future[R] = {
-
     val `try` = for {
       tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       authTx <- cryptography
