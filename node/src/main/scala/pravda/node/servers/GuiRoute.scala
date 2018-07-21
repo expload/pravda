@@ -55,13 +55,15 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   import symbolDsl._
 
   private def effectsTable(table: List[Map[String, Node]]): Node = {
-    'table ('class /= "table is-striped is-hoverable is-fullwidth is-narrow",
-            'thead ('tr (table.head.keys.map(k => 'td (k)))),
-            'tbody (
-              table.map { el =>
-                'tr (el.values.map(k => 'td (k)))
-              }
-            ))
+    'table (
+      'class /= "table is-striped is-hoverable is-fullwidth is-narrow",
+      'thead ('tr (table.head.keys.map(k => 'td (k)))),
+      'tbody (
+        table.map { el =>
+          'tr (el.values.map(k => 'td (k)))
+        }
+      )
+    )
   }
 
   private def showEffectName(effect: EnvironmentEffect) = effect match {
@@ -181,9 +183,9 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           mainLayout(
             state,
             'section (
-              'class  /= "section",
+              'class /= "section",
               'div (
-                'class  /= "columns",
+                'class /= "columns",
                 // Block number
                 'div (
                   'class /= "column is-narrow has-text-centered",
@@ -215,9 +217,11 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         if (state.currentTransactionId.contains(transaction.id)) {
                           'div (
                             'class /= "card-content",
-                            'div ('class /= "columns",
-                                  'div ('class /= "column is-2", 'div ('class /= "title is-5", "From")),
-                                  'div ('class /= "column", 'style /= "overflow-x:auto;", mono(transaction.from))),
+                            'div (
+                              'class /= "columns",
+                              'div ('class /= "column is-2", 'div ('class /= "title is-5", "From")),
+                              'div ('class /= "column", 'style /= "overflow-x:auto;", mono(transaction.from))
+                            ),
                             'div (
                               'class /= "columns",
                               'div ('class /= "column is-2", 'div ('class /= "title is-5", "Disassembled code")),
@@ -266,12 +270,12 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           mainLayout(
             state,
             'form (
-              'class  /= "section",
+              'class /= "section",
               'div (
-                'class  /= "field",
-                'label ('class  /= "label", "Pravda-asm code"),
+                'class /= "field",
+                'label ('class /= "label", "Pravda-asm code"),
                 'div (
-                  'class  /= "control",
+                  'class /= "control",
                   'textarea ('class  /= "textarea",
                              'height @= 400,
                              codeArea,
@@ -279,50 +283,50 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                 )
               ),
               'div (
-                'class  /= "field",
-                'label ('class  /= "label", "Watt limit"),
+                'class /= "field",
+                'label ('class /= "label", "Watt limit"),
                 'div (
-                  'class  /= "control",
+                  'class /= "control",
                   'input (
-                    'class          /= "input",
+                    'class /= "input",
                     wattLimitField,
                     'placeholder /= "Watt limit",
-                    'type /= "number",
-                    'min /= "0",
-                    'value /= "300"
+                    'type        /= "number",
+                    'min         /= "0",
+                    'value       /= "300"
                   )
                 )
               ),
               'div (
-                'class  /= "field",
-                'label ('class  /= "label", "Watt price"),
+                'class /= "field",
+                'label ('class /= "label", "Watt price"),
                 'div (
-                  'class  /= "control",
+                  'class /= "control",
                   'input (
-                    'class          /= "input",
+                    'class /= "input",
                     wattPriceField,
                     'placeholder /= "Watt price",
-                    'type /= "number",
-                    'min /= "0",
-                    'value /= "1"
+                    'type        /= "number",
+                    'min         /= "0",
+                    'value       /= "1"
                   )
                 )
               ),
               'div (
-                'class  /= "field",
-                'label ('class  /= "label", "Address"),
+                'class /= "field",
+                'label ('class /= "label", "Address"),
                 'div (
-                  'class  /= "control",
-                  'input ('class          /= "input", addressField, 'placeholder /= "Address", 'value /= "") //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
+                  'class /= "control",
+                  'input ('class /= "input", addressField, 'placeholder /= "Address", 'value /= "") //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
                 )
               ),
               'div (
-                'class  /= "field",
-                'label ('class  /= "label", "Private key"),
+                'class /= "field",
+                'label ('class /= "label", "Private key"),
                 'div (
-                  'class  /= "control",
+                  'class /= "control",
                   'input (
-                    'class  /= "input",
+                    'class /= "input",
                     pkField,
                     'placeholder /= "Private key",
                     'type        /= "password",
@@ -333,7 +337,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
               'div (
                 'class /= "field buttons",
                 'button (
-                  'class  /= "button is-link",
+                  'class /= "button is-link",
                   "Send transaction",
                   if (inProgress) 'disabled /= "" else void,
                   event('click) {
@@ -382,7 +386,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                   }
                 ),
                 'button (
-                  'class  /= "button is-link is-danger",
+                  'class /= "button is-link is-danger",
                   "Create program",
                   if (inProgress) 'disabled /= "" else void,
                   event('click) {
