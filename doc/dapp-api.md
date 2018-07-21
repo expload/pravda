@@ -13,6 +13,8 @@ You can get the _current user_ addres. The _current user_ is the user who signs 
 
 If there is no current user an API implemenation should return `NoKeys` error.
 
+To run the API, use `bin/expload-desktop` from http://download.expload.com/expload-desktop/. API will be located at `http://localhost:8087`
+
 
 ### Request
 
