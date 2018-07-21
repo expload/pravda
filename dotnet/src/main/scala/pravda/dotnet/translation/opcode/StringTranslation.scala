@@ -19,7 +19,8 @@ package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData.{MemberRefData, TypeRefData}
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.translation.data.{MethodTranslationCtx, TranslationError, UnknownOpcode}
+import pravda.dotnet.parsers.Signatures.MethodRefDefSig
+import pravda.dotnet.translation.data.{InternalError, MethodTranslationCtx, TranslationError, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
@@ -32,8 +33,18 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
       Right(List(Operation.Orphan(Opcodes.LENGTH)))
     case LdStr(s) =>
       Right(List(Operation.Push(Data.Primitive.Utf8(s))))
-    case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", _)) =>
-      Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT)))
+    case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", signatureIdx)) =>
+      val strsCntE = (for {
+        sign <- ctx.signatures.get(signatureIdx)
+      } yield
+        sign match {
+          case MethodRefDefSig(_, _, _, _, _, _, params) => Right(params.length)
+          case _                                         => Left(UnknownOpcode)
+        }).getOrElse(Left(InternalError("Invalid signatures")))
+
+      for {
+        strsCnt <- strsCntE
+      } yield List.fill(strsCnt - 1)(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT))).flatten
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "get_Chars", _)) =>
       Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "Substring", signatureIdx)) => // FIXME more accurate method detection

@@ -145,6 +145,7 @@ class VmImpl extends Vm {
           // System operations
           case STOP    => continue = false
           case FROM    => systemOperations.from()
+          case OWNER   => systemOperations.owner()
           case LCALL   => systemOperations.lcall()
           case SCALL   => systemOperations.scall()
           case PCREATE => systemOperations.pcreate()

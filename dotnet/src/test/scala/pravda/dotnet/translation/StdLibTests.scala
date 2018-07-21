@@ -10,8 +10,6 @@ object StdLibTests extends TestSuite {
     'stdLibTranslation - {
       val Right((_, cilData, methods, signatures)) = parseFile("stdlib.exe")
 
-      println(PravdaAssembler.render(Translator.translateAsm(methods, cilData, signatures).right.get))
-
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""

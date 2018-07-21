@@ -18,12 +18,23 @@ namespace Com.Expload {
     public class Info {
         // Get address of the sender user
         public static Bytes Sender() { return null; }
+
+        // Get address of program owner
+        public static Bytes Owner(Bytes programAddress) { return null; }
+
+        // Get balance of given address
+        public static long Balance(Bytes address) { return 0L; }
+
+        // Get program address
+        public static Bytes ProgramAddress() { return null; }
     }
 
     // Immutable array of bytes
     public class Bytes {
        // Get the empty byte array
        public static Bytes EMPTY = null;
+       // Get the void address (32 zero bytes)
+       public static Bytes VOID_ADDRESS = null;
 
        public Bytes(params byte[] bytes) {}
 

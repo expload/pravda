@@ -109,6 +109,9 @@ case object CallsTransation extends OneToManyTranslator {
         val void = ctx.signatures.get(signatureIdx).exists(isMethodVoid)
         Right(if (void) -params.length else -params.length + 1)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _))                      => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _))                    => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "ProgramAddress", _))             => Right(1)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))                         => Right(0)
@@ -143,6 +146,12 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) => Right(List.empty)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
         Right(List(Operation.Orphan(Opcodes.FROM)))
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _)) =>
+        Right(List(Operation.Orphan(Opcodes.OWNER)))
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _)) =>
+        Right(List(Operation.Orphan(Opcodes.BALANCE)))
+      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "ProgramAddress", _)) =>
+        Right(List(Operation.Orphan(Opcodes.PADDR)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation.Orphan(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) =>
