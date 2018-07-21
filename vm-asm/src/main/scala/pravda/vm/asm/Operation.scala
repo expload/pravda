@@ -82,6 +82,7 @@ object Operation {
     Orphan(PUPDATE),
     Orphan(TRANSFER),
     Orphan(PTRANSFER),
+    Orphan(BALANCE),
     Orphan(NEW_ARRAY),
     Orphan(LENGTH)
   )
@@ -132,6 +133,7 @@ object Operation {
     PUPDATE -> "pupdate",
     TRANSFER -> "transfer",
     PTRANSFER -> "ptransfer",
+    BALANCE -> "balance",
     META -> "meta",
     NEW_ARRAY -> "new_array",
     LENGTH -> "length"

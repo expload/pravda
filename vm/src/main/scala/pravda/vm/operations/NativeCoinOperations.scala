@@ -29,6 +29,17 @@ final class NativeCoinOperations(memory: Memory,
                                  maybeProgramAddress: Option[domain.Address]) {
 
   @OpcodeImplementation(
+    opcode = BALANCE,
+    description = "Takes address from stack, pushes native coin balance to the stack"
+  )
+  def balance(): Unit = {
+    val addr = address(memory.pop())
+    val balance = coins(environment.balance(addr))
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(balance)
+  }
+
+  @OpcodeImplementation(
     opcode = PTRANSFER,
     description = "Gets two parameters `a` and `n` from " +
       "the stack and transfers `n` native coins from " +
