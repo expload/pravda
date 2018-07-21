@@ -46,18 +46,26 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case LdcR8(d)   => List(pushFloat(d))
       case LdStr(s)   => List(asm.Operation.Push(Data.Primitive.Utf8(s)))
 
+      case ConvI1 => cast(Data.Type.Int8)
+      case ConvU1 => cast(Data.Type.Int8)
+      case ConvI2 => cast(Data.Type.Int16)
+      case ConvU2 => cast(Data.Type.Int16)
+      case ConvI4 => cast(Data.Type.Int32)
+      case ConvU4 => cast(Data.Type.Int32)
+      case ConvI8 => cast(Data.Type.BigInt)
+      case ConvU8 => cast(Data.Type.BigInt)
+
       case Add => List(asm.Operation(Opcodes.ADD))
       case Mul => List(asm.Operation(Opcodes.MUL))
       case Div => List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.DIV))
       case Rem => List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.MOD))
       case Sub => List(pushInt(-1), asm.Operation(Opcodes.MUL), asm.Operation(Opcodes.ADD))
 
-      case Clt =>
-        asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.LT) :: cast(Data.Type.Int32)
-      case Cgt =>
-        asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.GT) :: cast(Data.Type.Int32)
-      case Ceq =>
-        asm.Operation(Opcodes.EQ) :: cast(Data.Type.Int32)
+      case Clt => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.LT) :: cast(Data.Type.Int32)
+      case CltUn => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.LT) :: cast(Data.Type.Int32)
+      case Cgt => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.GT) :: cast(Data.Type.Int32)
+      case CgtUn => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.GT) :: cast(Data.Type.Int32)
+      case Ceq => asm.Operation(Opcodes.EQ) :: cast(Data.Type.Int32)
       case Not =>
         cast(Data.Type.Boolean) ++ (asm.Operation(Opcodes.NOT) :: cast(Data.Type.Int32))
 
