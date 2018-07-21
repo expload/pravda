@@ -77,7 +77,7 @@ object VmSandbox {
 
     val preconditions = {
       val watts = P("watts-limit:" ~/ space ~ uint)
-      val balances = P("balances: " ~/ space ~ (address ~ `=` ~ bigint).rep)
+      val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
       P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.?).map {
         case (b, w, m, s) =>
@@ -155,7 +155,7 @@ object VmSandbox {
       case StorageDelete(key)                     => s"sdel ${printData(key)}"
       case ProgramCreate(owner, address, program) => ???
       case ProgramUpdate(address, program)        => ???
-      case BalanceGet(address, coins)             => ???
+      case BalanceGet(address, coins)             => s"balance x${pravda.common.bytes.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
       case BalanceTransfer(from, to, coins)       => ???

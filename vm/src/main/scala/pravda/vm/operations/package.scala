@@ -74,7 +74,7 @@ package object operations {
     case _                                                            => throw VmErrorException(WrongType)
   }
 
-  def coins(a: NativeCoin): Data =
+  def coins(a: NativeCoin): Data.Primitive =
     BigInt(scala.BigInt(a))
 
   def address(a: Data): Address = {
