@@ -27,7 +27,7 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
 
     def loadArg(num: Int): Int =
-      if (!ctx.local && num == 0) 0 else 1
+      if (num == 0) 0 else 1
 
     val offsetF: PartialFunction[CIL.Op, Int] = {
       case LdArg0      => loadArg(0)
@@ -91,16 +91,16 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
     def loadArg(num: Int): Either[InternalError, List[asm.Operation]] =
       stackOffsetO
         .map { s =>
-          if (ctx.local) {
-            Right(
-              List(
-                pushInt(computeArgOffset(num, s)),
-                asm.Operation(Opcodes.DUPN)
-              )
-            )
+          if (num == 0) {
+            Right(List.empty) // skip this reference
           } else {
-            if (num == 0) {
-              Right(List.empty) // skip this reference
+            if (ctx.local) {
+              Right(
+                List(
+                  pushInt(computeArgOffset(num, s)),
+                  asm.Operation(Opcodes.DUPN)
+                )
+              )
             } else {
               Right(
                 List(

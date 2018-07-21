@@ -71,6 +71,9 @@ object TranslationVisualizer {
         |[methods]
         |${translation.methods.map(visualizeMethod).mkString("\n")}
         |
+        |[funcs]
+        |${translation.funcs.map(visualizeMethod).mkString("\n")}
+        |
         |[functions]
         |${translation.functions.map(visualizeFunction).mkString("\n")}
         |
