@@ -1,9 +1,6 @@
 package pravda.dotnet
 package translation
 
-//import pravda.vm.asm.PravdaAssembler
-import java.io.{File, PrintWriter}
-
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -14,10 +11,6 @@ object CompareTests extends TestSuite {
     'CompareTranslation - {
       val Right((_, cilData, methods, signatures)) = parseFile("compare.exe")
 
-      val pw = new PrintWriter(new File("tmp.asm"))
-
-      pw.write(PravdaAssembler.render(Translator.translateAsm(methods, cilData, signatures).right.get))
-      pw.close
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse(

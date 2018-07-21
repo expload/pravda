@@ -18,6 +18,7 @@
 package pravda.vm.operations
 
 import pravda.common.domain
+import pravda.common.domain.Address
 import pravda.vm.Opcodes._
 import pravda.vm.VmError.OperationDenied
 import pravda.vm.WattCounter._
@@ -152,6 +153,17 @@ final class SystemOperations(memory: Memory,
   )
   def from(): Unit = {
     val datum = address(environment.executor)
+    wattCounter.memoryUsage(datum.volume.toLong)
+    memory.push(datum)
+  }
+
+  @OpcodeImplementation(
+    opcode = OWNER,
+    description = "Gives program owner's address."
+  )
+  def owner(): Unit = {
+    val programAddress = address(memory.pop())
+    val datum = address(environment.getProgramOwner(programAddress).getOrElse(Address.Void))
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
   }
