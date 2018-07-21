@@ -8,16 +8,16 @@ GREEN='\033[1;32m'
 DARK_GRAY='\033[1;30m'
 NC='\033[0m' # No Color
 
-VERSION=$(curl --silent "https://api.github.com/repos/expload/pravda/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+VERSION=$(curl --silent "https://api.github.com/repos/expload/pravda/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
 OUT=pravda-$VERSION
-PACKAGE=PravdaSDK-$VERSION.tgz
+PACKAGE=PravdaSDK-v$VERSION.tgz
 
 mkdir -p /tmp/pravda-install
 cd /tmp/pravda-install
 
 echo "Installing to $HOME/.pravda..."
 echo " * Downloading $PACKAGE"
-curl -L -# --fail https://github.com/expload/pravda/releases/download/$VERSION/$PACKAGE -o $PACKAGE
+curl -L -# --fail https://github.com/expload/pravda/releases/download/v$VERSION/$PACKAGE -o $PACKAGE
 echo -en "\033[2A\033[K\r" # Erase cURL progress bar
 echo " * Extracting $PACKAGE"
 tar -xvzf $PACKAGE 2>&1 |
