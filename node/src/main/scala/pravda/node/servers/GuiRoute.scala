@@ -55,7 +55,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   import symbolDsl._
 
   private def effectsTable(table: List[Map[String, Node]]): Node = {
-    'table ('class /= "table is-striped is-hoverable is-fullwidth",
+    'table ('class /= "table is-striped is-hoverable is-fullwidth is-narrow",
             'thead ('tr (table.head.keys.map(k => 'td (k)))),
             'tbody (
               table.map { el =>
@@ -180,77 +180,83 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           val block = state.currentBlock
           mainLayout(
             state,
-            'div (
-              'class  /= "columns",
-              'margin @= "0",
-              // Block number
+            'section (
+              'class  /= "section",
               'div (
-                'class /= "column is-narrow has-text-centered",
-                'div ('class /= "is-size-3", block.height.toString)
-              ),
-              // Block content
-              'div (
-                'class /= "column",
-                block.transactions.map {
-                  transaction =>
-                    val groupedEffects = groupEffects(transaction.effects)
-                    'div (
-                      'class /= "card",
-                      'header (
-                        'class /= "card-header",
-                        'p (
-                          'class /= "card-header-title",
-                          'span ('class /= "icon has-text-black", 'i ('class /= "fas fa-stream")),
-                          mono(transaction.id),
-                          event('click) { access =>
-                            access.maybeTransition {
-                              case s: BlockExplorer =>
-                                s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
-                            }
-                          }
-                        )
-                      ),
-                      if (state.currentTransactionId.contains(transaction.id)) {
-                        'div (
-                          'class /= "card-content",
-                          'div ('class /= "columns",
-                                'div ('class /= "column is-2", 'div ('class /= "title is-5", "From")),
-                                'div ('class /= "column", mono(transaction.from))),
-                          'div (
-                            'class /= "columns",
-                            'div ('class /= "column is-2", 'div ('class /= "title is-5", "Disassembled code")),
-                            'div ('class /= "column", 'pre ('class      /= "code", transaction.disassembledProgram))
-                          ),
-                          if (groupedEffects.nonEmpty) 'div ('class /= "title is-5", "World state effects") else void,
-                          'ul (
-                            'class /= "columns is-multiline",
-                            groupedEffects.zipWithIndex map {
-                              case ((name, effects), i) =>
-                                'li (
-                                  'class /= "column is-12",
-                                  'div (
-                                    'class /= "title is-6",
-                                    s"${i + 1}. $name",
-                                    'span ('marginLeft @= 5, 'class /= "tag is-blue", effects.length.toString),
-                                    event('click) { access =>
-                                      access.maybeTransition {
-                                        case s: BlockExplorer =>
-                                          s.copy(currentEffectsGroup = Some(i))
-                                      }
-                                    }
-                                  ),
-                                  if (state.currentEffectsGroup.contains(i)) {
-                                    effectsTable(effects.map(effectToTableElement))
-                                  } else void
-                                )
+                'class  /= "columns",
+                // Block number
+                'div (
+                  'class /= "column is-narrow has-text-centered",
+                  'div ('class /= "is-size-3", block.height.toString)
+                ),
+                // Block content
+                'div (
+                  'class /= "column",
+                  block.transactions.map {
+                    transaction =>
+                      val groupedEffects = groupEffects(transaction.effects)
+                      'div (
+                        'class /= "card",
+                        'header (
+                          'class /= "card-header",
+                          'p (
+                            'class /= "card-header-title",
+                            'style /= "overflow-x:auto;",
+                            'span ('class /= "icon has-text-black", 'i ('class /= "fas fa-stream")),
+                            mono(transaction.id),
+                            event('click) { access =>
+                              access.maybeTransition {
+                                case s: BlockExplorer =>
+                                  s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
+                              }
                             }
                           )
-                        )
-                      } else {
-                        void
-                      }
-                    )
-                }
+                        ),
+                        if (state.currentTransactionId.contains(transaction.id)) {
+                          'div (
+                            'class /= "card-content",
+                            'div ('class /= "columns",
+                                  'div ('class /= "column is-2", 'div ('class /= "title is-5", "From")),
+                                  'div ('class /= "column", 'style /= "overflow-x:auto;", mono(transaction.from))),
+                            'div (
+                              'class /= "columns",
+                              'div ('class /= "column is-2", 'div ('class /= "title is-5", "Disassembled code")),
+                              'div ('class /= "column", 'pre ('class      /= "code", transaction.disassembledProgram))
+                            ),
+                            if (groupedEffects.nonEmpty) 'div ('class /= "title is-5", "World state effects") else void,
+                            'ul (
+                              'class /= "columns is-multiline",
+                              groupedEffects.zipWithIndex map {
+                                case ((name, effects), i) =>
+                                  'li (
+                                    'class /= "column is-12",
+                                    'div (
+                                      'class /= "title is-6",
+                                      s"${i + 1}. $name",
+                                      'span ('marginLeft @= 5, 'class /= "tag is-blue", effects.length.toString),
+                                      event('click) { access =>
+                                        access.maybeTransition {
+                                          case s: BlockExplorer =>
+                                            s.copy(currentEffectsGroup = Some(i))
+                                        }
+                                      }
+                                    ),
+                                    'div (
+                                      'style /= "overflow-x:auto;",
+                                      if (state.currentEffectsGroup.contains(i)) {
+                                        effectsTable(effects.map(effectToTableElement))
+                                      } else void
+                                    )
+                                  )
+                              }
+                            )
+                          )
+                        } else {
+                          void
+                        }
+                      )
+                  }
+                )
               )
             )
           )
@@ -260,29 +266,74 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           mainLayout(
             state,
             'form (
-              'display       @= "flex",
-              'flexDirection @= "column",
-              'textarea ('class  /= "textarea",
-                         'margin @= 10,
-                         'height @= 400,
-                         codeArea,
-                         'placeholder /= "Place your pravda-asm code here"),
-              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
-              'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1"),
-              'input ('class          /= "input", 'margin @= 10, addressField, 'placeholder /= "Address", 'value /= ""), //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
-              'input (
-                'class  /= "input",
-                'margin @= 10,
-                pkField,
-                'placeholder /= "Private key",
-                'type        /= "password",
-                'value       /= "" //byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
+              'class  /= "section",
+              'div (
+                'class  /= "field",
+                'label ('class  /= "label", "Pravda-asm code"),
+                'div (
+                  'class  /= "control",
+                  'textarea ('class  /= "textarea",
+                             'height @= 400,
+                             codeArea,
+                             'placeholder /= "Place your pravda-asm code here")
+                )
               ),
               'div (
+                'class  /= "field",
+                'label ('class  /= "label", "Watt limit"),
+                'div (
+                  'class  /= "control",
+                  'input (
+                    'class          /= "input",
+                    wattLimitField,
+                    'placeholder /= "Watt limit",
+                    'type /= "number",
+                    'min /= "0",
+                    'value /= "300"
+                  )
+                )
+              ),
+              'div (
+                'class  /= "field",
+                'label ('class  /= "label", "Watt price"),
+                'div (
+                  'class  /= "control",
+                  'input (
+                    'class          /= "input",
+                    wattPriceField,
+                    'placeholder /= "Watt price",
+                    'type /= "number",
+                    'min /= "0",
+                    'value /= "1"
+                  )
+                )
+              ),
+              'div (
+                'class  /= "field",
+                'label ('class  /= "label", "Address"),
+                'div (
+                  'class  /= "control",
+                  'input ('class          /= "input", addressField, 'placeholder /= "Address", 'value /= "") //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
+                )
+              ),
+              'div (
+                'class  /= "field",
+                'label ('class  /= "label", "Private key"),
+                'div (
+                  'class  /= "control",
+                  'input (
+                    'class  /= "input",
+                    pkField,
+                    'placeholder /= "Private key",
+                    'type        /= "password",
+                    'value       /= "" //byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
+                  )
+                )
+              ),
+              'div (
+                'class /= "field buttons",
                 'button (
                   'class  /= "button is-link",
-                  'margin @= 10,
-                  'width  @= 200,
                   "Send transaction",
                   if (inProgress) 'disabled /= "" else void,
                   event('click) {
@@ -332,8 +383,6 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                 ),
                 'button (
                   'class  /= "button is-link is-danger",
-                  'margin @= 10,
-                  'width  @= 200,
                   "Create program",
                   if (inProgress) 'disabled /= "" else void,
                   event('click) {
@@ -414,9 +463,9 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   private def mainLayout(state: GuiState, content: Node*) = {
     'body (
       'div (
-        'class /= "column",
+        'class /= "container is-fullhd",
         'div (
-          'class /= "tabs",
+          'class /= "tabs is-medium",
           'ul (
             'li (
               if (state.isInstanceOf[BlockExplorer]) 'class /= "is-active" else void,
