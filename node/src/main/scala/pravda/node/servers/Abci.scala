@@ -20,7 +20,7 @@ package pravda.node
 package servers
 
 import java.nio.ByteBuffer
-import java.security.SecureRandom
+import java.security.MessageDigest
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
@@ -277,9 +277,8 @@ object Abci {
       }
 
       def createProgram(owner: Address, code: ByteString): Address = {
-        val random = new SecureRandom(transactionId.concat(code).toByteArray)
-        val addressBytes = new Array[Byte](32)
-        random.nextBytes(addressBytes)
+        val sha256 = MessageDigest.getInstance("SHA-256")
+        val addressBytes = sha256.digest(transactionId.concat(code).toByteArray)
         val address = Address @@ ByteString.copyFrom(addressBytes)
         val sp = StoredProgram(code, owner)
 
