@@ -10,8 +10,6 @@ object SystemTests extends TestSuite {
     'systemTranslation - {
       val Right((_, cilData, methods, signatures)) = parseFile("system.exe")
 
-      println(PravdaAssembler.render(Translator.translateAsm(methods, cilData, signatures).right.get))
-
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse(
@@ -32,15 +30,27 @@ object SystemTests extends TestSuite {
             |@method_system:
             |push int32(0)
             |push int32(0)
+            |push int32(0)
+            |push int32(0)
             |push x
             |owner
-            |push int32(3)
+            |push int32(5)
             |swapn
             |pop
             |push x
             |balance
+            |push int32(4)
+            |swapn
+            |pop
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |push int32(3)
+            |swapn
+            |pop
+            |paddr
             |push int32(2)
             |swapn
+            |pop
+            |pop
             |pop
             |pop
             |pop

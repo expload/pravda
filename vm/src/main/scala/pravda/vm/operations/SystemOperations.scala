@@ -159,7 +159,8 @@ final class SystemOperations(memory: Memory,
 
   @OpcodeImplementation(
     opcode = OWNER,
-    description = "Gives program owner's address."
+    description = "Gives program owner's address. " +
+      "If there's no owner of the given address then the void address (32 zero bytes) is returned. "
   )
   def owner(): Unit = {
     val programAddress = address(memory.pop())

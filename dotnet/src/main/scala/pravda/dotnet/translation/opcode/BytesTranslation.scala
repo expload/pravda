@@ -71,6 +71,7 @@ object BytesTranslation extends OneToManyTranslator {
 
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = op match {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "EMPTY", _))            => Right(1)
+    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "VOID_ADDRESS", _))     => Right(1)
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) => Right(0)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _))       => Right(-1)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Slice", _))          => Right(-2)
@@ -83,6 +84,8 @@ object BytesTranslation extends OneToManyTranslator {
                 ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = op match {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "EMPTY", _)) =>
       Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY))))
+    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "VOID_ADDRESS", _)) =>
+      Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.copyFrom(Array.fill[Byte](32)(0))))))
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) =>
       Right(List(Operation.Call(Some("array_to_bytes"))))
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _)) =>

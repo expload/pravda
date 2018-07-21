@@ -24,12 +24,17 @@ namespace Com.Expload {
 
         // Get balance of given address
         public static long Balance(Bytes address) { return 0L; }
+
+        // Get program address
+        public static Bytes ProgramAddress() { return null; }
     }
 
     // Immutable array of bytes
     public class Bytes {
        // Get the empty byte array
        public static Bytes EMPTY = null;
+       // Get the void address (32 zero bytes)
+       public static Bytes VOID_ADDRESS = null;
 
        public Bytes(params byte[] bytes) {}
 
