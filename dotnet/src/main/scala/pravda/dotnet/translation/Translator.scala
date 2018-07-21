@@ -77,7 +77,10 @@ object Translator {
       if (void) {
         List.fill(localsCount + argsCount + (if (func) 0 else 1))(asm.Operation(Opcodes.POP))
       } else {
-        List.fill(localsCount + argsCount + 1)(List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.POP))).flatten
+        List
+          .fill(localsCount + argsCount + (if (func) 0 else 1))(
+            List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.POP)))
+          .flatten
       }
 
     val functions = {
@@ -241,7 +244,7 @@ object Translator {
                   BranchTransformer.transformBranches(m.opcodes, "ctor"),
                   signatures,
                   cilData,
-                  false,
+                  true,
                   true,
                   true,
                   ""
@@ -279,7 +282,7 @@ object Translator {
               BranchTransformer.transformBranches(m.opcodes, name),
               signatures,
               cilData,
-              isLocal(i),
+              false,
               isVoid,
               false,
               "method_"
@@ -313,7 +316,7 @@ object Translator {
               BranchTransformer.transformBranches(m.opcodes, name),
               signatures,
               cilData,
-              isLocal(i),
+              true,
               isVoid,
               true,
               "func_"

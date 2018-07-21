@@ -512,11 +512,11 @@ object ZooProgramTests extends TestSuite {
               |dupn
               |push int32(4)
               |dupn
-              |push int32(8)
+              |push int32(7)
               |dupn
               |push int32(6)
               |dupn
-              |push int32(10)
+              |push int32(9)
               |dupn
               |length
               |swap
@@ -560,8 +560,6 @@ object ZooProgramTests extends TestSuite {
               |pop
               |push int32(1)
               |dupn
-              |swap
-              |pop
               |swap
               |pop
               |swap
