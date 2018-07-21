@@ -12,6 +12,11 @@ Translator just looks at calls of these methods and generates necessary Pravda b
  
 You can download it [here](../dotnet/src/test/resources/expload.dll). 
 Source of this dll can be found [here](../dotnet/src/test/resources/expload.cs). 
+To build it from source, run:
+```bash
+csc expload.cs -target:Library
+```
+This outputs `expload.dll` file.
 
 To compile your C# program with `expload.dll`:
 ```bash
