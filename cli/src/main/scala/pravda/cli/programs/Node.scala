@@ -133,7 +133,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
             Seq(
               CoinDistributionMember(
                 Address @@ bytes.hex2byteString(pkey),
-                NativeCoin @@ 1000000L
+                NativeCoin @@ 1000000000L
               )
             ),
             Seq("35.234.141.154" -> 30001)
