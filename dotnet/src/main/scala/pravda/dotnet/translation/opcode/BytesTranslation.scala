@@ -63,6 +63,8 @@ object BytesTranslation extends OneToManyTranslator {
               Operation.Orphan(Opcodes.POP),
               Operation.Orphan(Opcodes.SWAP),
               Operation.Orphan(Opcodes.POP),
+              Operation.Orphan(Opcodes.SWAP),
+              Operation.Orphan(Opcodes.POP),
               Operation.Orphan(Opcodes.RET)
             )
           )))

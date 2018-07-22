@@ -600,6 +600,8 @@ object ZooProgramTests extends TestSuite {
               |pop
               |swap
               |pop
+              |swap
+              |pop
               |ret
               |@storage_get_default:
               |push int32(2)
