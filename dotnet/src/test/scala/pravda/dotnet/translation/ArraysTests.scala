@@ -286,6 +286,8 @@ object ArraysTests extends TestSuite {
         |pop
         |swap
         |pop
+        |swap
+        |pop
         |ret
         |@stop:
       """.stripMargin).right.get
