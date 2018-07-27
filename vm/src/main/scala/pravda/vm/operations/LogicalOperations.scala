@@ -47,6 +47,13 @@ import scala.annotation.strictfp
     val r = x match {
       case Bool.True  => Bool.False
       case Bool.False => Bool.True
+      case Int8(data) => Int8((~data).toByte)
+      case Int16(data) => Int16((~data).toShort)
+      case Int32(data) => Int32((~data).toInt)
+      case Uint8(data) => Uint8((~data) & 0xff)
+      case Uint16(data) => Uint16((~data) & 0xffff)
+      case Uint32(data) => Uint32((~data) & 0xffffffff)
+      case BigInt(data) => BigInt(~data)
       case _          => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(r.volume.toLong)
@@ -59,18 +66,7 @@ import scala.annotation.strictfp
   )
   def and(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
-    binaryOperation(memory, wattCounter) { (a, b) =>
-      a match {
-        case Bool.False => Bool.False
-        case Bool.True =>
-          b match {
-            case Bool.True  => Bool.True
-            case Bool.False => Bool.False
-            case _          => throw VmErrorException(WrongType)
-          }
-        case _ => throw VmErrorException(WrongType)
-      }
-    }
+    binaryOperation(memory, wattCounter)(andImpl)
   }
 
   @OpcodeImplementation(
@@ -79,18 +75,7 @@ import scala.annotation.strictfp
   )
   def or(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
-    binaryOperation(memory, wattCounter) { (a, b) =>
-      a match {
-        case Bool.True => Bool.True
-        case Bool.False =>
-          b match {
-            case Bool.True  => Bool.True
-            case Bool.False => Bool.False
-            case _          => throw VmErrorException(WrongType)
-          }
-        case _ => throw VmErrorException(WrongType)
-      }
-    }
+    binaryOperation(memory, wattCounter)(orImpl)
   }
 
   @OpcodeImplementation(
@@ -99,88 +84,7 @@ import scala.annotation.strictfp
   )
   def xor(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
-    binaryOperation(memory, wattCounter) { (a, b) =>
-      a match {
-        case Int32(lhs) =>
-          b match {
-            case Int8(rhs)   => Int32(lhs ^ rhs)
-            case Int16(rhs)  => Int32(lhs ^ rhs)
-            case Int32(rhs)  => Int32(lhs ^ rhs)
-            case Uint8(rhs)  => Int32(lhs ^ rhs)
-            case Uint16(rhs) => Int32(lhs ^ rhs)
-            case Uint32(rhs) => Int32((lhs ^ rhs).toInt)
-            case BigInt(rhs) => Int32((lhs ^ rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case Int16(lhs) =>
-          b match {
-            case Int8(rhs)   => Int16((lhs ^ rhs).toShort)
-            case Int16(rhs)  => Int16((lhs ^ rhs).toShort)
-            case Int32(rhs)  => Int16((lhs ^ rhs).toShort)
-            case Uint8(rhs)  => Int16((lhs ^ rhs).toShort)
-            case Uint16(rhs) => Int16((lhs ^ rhs).toShort)
-            case Uint32(rhs) => Int16((lhs ^ rhs).toShort)
-            case BigInt(rhs) => Int16((lhs.toInt ^ rhs).toShort)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case Int8(lhs) =>
-          b match {
-            case Int8(rhs)   => Int32(lhs ^ rhs)
-            case Int16(rhs)  => Int32(lhs ^ rhs)
-            case Int32(rhs)  => Int32(lhs ^ rhs)
-            case Uint8(rhs)  => Int32(lhs ^ rhs)
-            case Uint16(rhs) => Int32(lhs ^ rhs)
-            case Uint32(rhs) => BigInt(lhs ^ rhs)
-            case BigInt(rhs) => BigInt(lhs.toInt ^ rhs)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case Uint8(lhs) =>
-          b match {
-            case Int8(rhs)   => Uint8(lhs ^ rhs)
-            case Int16(rhs)  => Uint8(lhs ^ rhs)
-            case Int32(rhs)  => Uint8(lhs ^ rhs)
-            case Uint8(rhs)  => Uint8(lhs ^ rhs)
-            case Uint16(rhs) => Uint8(lhs ^ rhs)
-            case Uint32(rhs) => Uint8((lhs ^ rhs).toInt)
-            case BigInt(rhs) => Uint8((lhs ^ rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case Uint16(lhs) =>
-          b match {
-            case Int8(rhs)   => Uint16(lhs ^ rhs)
-            case Int16(rhs)  => Uint16(lhs ^ rhs)
-            case Int32(rhs)  => Uint16(lhs ^ rhs)
-            case Uint8(rhs)  => Uint16(lhs ^ rhs)
-            case Uint16(rhs) => Uint16(lhs ^ rhs)
-            case Uint32(rhs) => Uint16((lhs ^ rhs).toInt)
-            case BigInt(rhs) => Uint16((lhs ^ rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case Uint32(lhs) =>
-          b match {
-            case Int8(rhs)   => Uint32(lhs ^ rhs)
-            case Int16(rhs)  => Uint32(lhs ^ rhs)
-            case Int32(rhs)  => Uint32(lhs ^ rhs)
-            case Uint8(rhs)  => Uint32(lhs ^ rhs)
-            case Uint16(rhs) => Uint32(lhs ^ rhs)
-            case Uint32(rhs) => Uint32(lhs ^ rhs)
-            case BigInt(rhs) => Uint32((lhs ^ rhs).toLong)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case BigInt(lhs) =>
-          b match {
-            case Int8(rhs)   => BigInt(lhs ^ scala.BigInt(rhs.toInt))
-            case Int16(rhs)  => BigInt(lhs ^ scala.BigInt(rhs.toInt))
-            case Int32(rhs)  => BigInt(lhs ^ rhs)
-            case Uint8(rhs)  => BigInt(lhs ^ rhs)
-            case Uint16(rhs) => BigInt(lhs ^ rhs)
-            case Uint32(rhs) => BigInt(lhs ^ rhs)
-            case BigInt(rhs) => BigInt(lhs ^ rhs)
-            case _           => throw VmErrorException(WrongType)
-          }
-        case _ => throw VmErrorException(WrongType)
-      }
-    }
+    binaryOperation(memory, wattCounter)(xorImpl)
   }
 
   @OpcodeImplementation(
@@ -189,7 +93,7 @@ import scala.annotation.strictfp
   )
   def eq(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
-    binaryOperation(memory, wattCounter)((a, b) => Bool(a == b))
+    binaryOperation(memory, wattCounter)(eqImpl)
   }
 
   @OpcodeImplementation(
@@ -213,6 +117,372 @@ import scala.annotation.strictfp
   //---------------------------------------------------------------------
   // Implementations
   //---------------------------------------------------------------------
+  private val andImpl: (Data, Data) => Data.Primitive = { (a, b) =>
+    a match {
+      case Int32(lhs) =>
+        b match {
+          case Int8(rhs)   => Int32(lhs & rhs)
+          case Int16(rhs)  => Int32(lhs & rhs)
+          case Int32(rhs)  => Int32(lhs & rhs)
+          case Uint8(rhs)  => Int32(lhs & rhs)
+          case Uint16(rhs) => Int32(lhs & rhs)
+          case Uint32(rhs) => Int32((lhs & rhs).toInt)
+          case BigInt(rhs) => Int32((lhs & rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Int16(lhs) =>
+        b match {
+          case Int8(rhs)   => Int16((lhs & rhs).toShort)
+          case Int16(rhs)  => Int16((lhs & rhs).toShort)
+          case Int32(rhs)  => Int16((lhs & rhs).toShort)
+          case Uint8(rhs)  => Int16((lhs & rhs).toShort)
+          case Uint16(rhs) => Int16((lhs & rhs).toShort)
+          case Uint32(rhs) => Int16((lhs & rhs).toShort)
+          case BigInt(rhs) => Int16((lhs.toInt & rhs).toShort)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Int8(lhs) =>
+        b match {
+          case Int8(rhs)   => Int32(lhs & rhs)
+          case Int16(rhs)  => Int32(lhs & rhs)
+          case Int32(rhs)  => Int32(lhs & rhs)
+          case Uint8(rhs)  => Int32(lhs & rhs)
+          case Uint16(rhs) => Int32(lhs & rhs)
+          case Uint32(rhs) => BigInt(lhs & rhs)
+          case BigInt(rhs) => BigInt(lhs.toInt & rhs)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint8(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint8(lhs & rhs)
+          case Int16(rhs)  => Uint8(lhs & rhs)
+          case Int32(rhs)  => Uint8(lhs & rhs)
+          case Uint8(rhs)  => Uint8(lhs & rhs)
+          case Uint16(rhs) => Uint8(lhs & rhs)
+          case Uint32(rhs) => Uint8((lhs & rhs).toInt)
+          case BigInt(rhs) => Uint8((lhs & rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint16(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint16(lhs & rhs)
+          case Int16(rhs)  => Uint16(lhs & rhs)
+          case Int32(rhs)  => Uint16(lhs & rhs)
+          case Uint8(rhs)  => Uint16(lhs & rhs)
+          case Uint16(rhs) => Uint16(lhs & rhs)
+          case Uint32(rhs) => Uint16((lhs & rhs).toInt)
+          case BigInt(rhs) => Uint16((lhs & rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint32(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint32(lhs & rhs)
+          case Int16(rhs)  => Uint32(lhs & rhs)
+          case Int32(rhs)  => Uint32(lhs & rhs)
+          case Uint8(rhs)  => Uint32(lhs & rhs)
+          case Uint16(rhs) => Uint32(lhs & rhs)
+          case Uint32(rhs) => Uint32(lhs & rhs)
+          case BigInt(rhs) => Uint32((lhs & rhs).toLong)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case BigInt(lhs) =>
+        b match {
+          case Int8(rhs)   => BigInt(lhs & scala.BigInt(rhs.toInt))
+          case Int16(rhs)  => BigInt(lhs & scala.BigInt(rhs.toInt))
+          case Int32(rhs)  => BigInt(lhs & rhs)
+          case Uint8(rhs)  => BigInt(lhs & rhs)
+          case Uint16(rhs) => BigInt(lhs & rhs)
+          case Uint32(rhs) => BigInt(lhs & rhs)
+          case BigInt(rhs) => BigInt(lhs & rhs)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Bool(lhs) =>
+        b match {
+          case Bool(rhs) => Bool(lhs && rhs)
+          case _         => throw VmErrorException(WrongType)
+        }
+      case _ => throw VmErrorException(WrongType)
+    }
+  }
+
+  private val orImpl: (Data, Data) => Data.Primitive = { (a, b) =>
+    a match {
+      case Int32(lhs) =>
+        b match {
+          case Int8(rhs)   => Int32(lhs | rhs)
+          case Int16(rhs)  => Int32(lhs | rhs)
+          case Int32(rhs)  => Int32(lhs | rhs)
+          case Uint8(rhs)  => Int32(lhs | rhs)
+          case Uint16(rhs) => Int32(lhs | rhs)
+          case Uint32(rhs) => Int32((lhs | rhs).toInt)
+          case BigInt(rhs) => Int32((lhs | rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Int16(lhs) =>
+        b match {
+          case Int8(rhs)   => Int16((lhs | rhs).toShort)
+          case Int16(rhs)  => Int16((lhs | rhs).toShort)
+          case Int32(rhs)  => Int16((lhs | rhs).toShort)
+          case Uint8(rhs)  => Int16((lhs | rhs).toShort)
+          case Uint16(rhs) => Int16((lhs | rhs).toShort)
+          case Uint32(rhs) => Int16((lhs | rhs).toShort)
+          case BigInt(rhs) => Int16((lhs.toInt | rhs).toShort)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Int8(lhs) =>
+        b match {
+          case Int8(rhs)   => Int32(lhs | rhs)
+          case Int16(rhs)  => Int32(lhs | rhs)
+          case Int32(rhs)  => Int32(lhs | rhs)
+          case Uint8(rhs)  => Int32(lhs | rhs)
+          case Uint16(rhs) => Int32(lhs | rhs)
+          case Uint32(rhs) => BigInt(lhs | rhs)
+          case BigInt(rhs) => BigInt(lhs.toInt | rhs)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint8(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint8(lhs | rhs)
+          case Int16(rhs)  => Uint8(lhs | rhs)
+          case Int32(rhs)  => Uint8(lhs | rhs)
+          case Uint8(rhs)  => Uint8(lhs | rhs)
+          case Uint16(rhs) => Uint8(lhs | rhs)
+          case Uint32(rhs) => Uint8((lhs | rhs).toInt)
+          case BigInt(rhs) => Uint8((lhs | rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint16(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint16(lhs | rhs)
+          case Int16(rhs)  => Uint16(lhs | rhs)
+          case Int32(rhs)  => Uint16(lhs | rhs)
+          case Uint8(rhs)  => Uint16(lhs | rhs)
+          case Uint16(rhs) => Uint16(lhs | rhs)
+          case Uint32(rhs) => Uint16((lhs | rhs).toInt)
+          case BigInt(rhs) => Uint16((lhs | rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint32(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint32(lhs | rhs)
+          case Int16(rhs)  => Uint32(lhs | rhs)
+          case Int32(rhs)  => Uint32(lhs | rhs)
+          case Uint8(rhs)  => Uint32(lhs | rhs)
+          case Uint16(rhs) => Uint32(lhs | rhs)
+          case Uint32(rhs) => Uint32(lhs | rhs)
+          case BigInt(rhs) => Uint32((lhs | rhs).toLong)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case BigInt(lhs) =>
+        b match {
+          case Int8(rhs)   => BigInt(lhs | scala.BigInt(rhs.toInt))
+          case Int16(rhs)  => BigInt(lhs | scala.BigInt(rhs.toInt))
+          case Int32(rhs)  => BigInt(lhs | rhs)
+          case Uint8(rhs)  => BigInt(lhs | rhs)
+          case Uint16(rhs) => BigInt(lhs | rhs)
+          case Uint32(rhs) => BigInt(lhs | rhs)
+          case BigInt(rhs) => BigInt(lhs | rhs)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Bool(lhs) =>
+        b match {
+          case Bool(rhs) => Bool(lhs || rhs)
+          case _         => throw VmErrorException(WrongType)
+        }
+      case _ => throw VmErrorException(WrongType)
+    }
+  }
+
+  private val xorImpl: (Data, Data) => Data.Primitive = { (a, b) =>
+    a match {
+      case Int32(lhs) =>
+        b match {
+          case Int8(rhs)   => Int32(lhs ^ rhs)
+          case Int16(rhs)  => Int32(lhs ^ rhs)
+          case Int32(rhs)  => Int32(lhs ^ rhs)
+          case Uint8(rhs)  => Int32(lhs ^ rhs)
+          case Uint16(rhs) => Int32(lhs ^ rhs)
+          case Uint32(rhs) => Int32((lhs ^ rhs).toInt)
+          case BigInt(rhs) => Int32((lhs ^ rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Int16(lhs) =>
+        b match {
+          case Int8(rhs)   => Int16((lhs ^ rhs).toShort)
+          case Int16(rhs)  => Int16((lhs ^ rhs).toShort)
+          case Int32(rhs)  => Int16((lhs ^ rhs).toShort)
+          case Uint8(rhs)  => Int16((lhs ^ rhs).toShort)
+          case Uint16(rhs) => Int16((lhs ^ rhs).toShort)
+          case Uint32(rhs) => Int16((lhs ^ rhs).toShort)
+          case BigInt(rhs) => Int16((lhs.toInt ^ rhs).toShort)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Int8(lhs) =>
+        b match {
+          case Int8(rhs)   => Int32(lhs ^ rhs)
+          case Int16(rhs)  => Int32(lhs ^ rhs)
+          case Int32(rhs)  => Int32(lhs ^ rhs)
+          case Uint8(rhs)  => Int32(lhs ^ rhs)
+          case Uint16(rhs) => Int32(lhs ^ rhs)
+          case Uint32(rhs) => BigInt(lhs ^ rhs)
+          case BigInt(rhs) => BigInt(lhs.toInt ^ rhs)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint8(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint8(lhs ^ rhs)
+          case Int16(rhs)  => Uint8(lhs ^ rhs)
+          case Int32(rhs)  => Uint8(lhs ^ rhs)
+          case Uint8(rhs)  => Uint8(lhs ^ rhs)
+          case Uint16(rhs) => Uint8(lhs ^ rhs)
+          case Uint32(rhs) => Uint8((lhs ^ rhs).toInt)
+          case BigInt(rhs) => Uint8((lhs ^ rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint16(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint16(lhs ^ rhs)
+          case Int16(rhs)  => Uint16(lhs ^ rhs)
+          case Int32(rhs)  => Uint16(lhs ^ rhs)
+          case Uint8(rhs)  => Uint16(lhs ^ rhs)
+          case Uint16(rhs) => Uint16(lhs ^ rhs)
+          case Uint32(rhs) => Uint16((lhs ^ rhs).toInt)
+          case BigInt(rhs) => Uint16((lhs ^ rhs).toInt)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Uint32(lhs) =>
+        b match {
+          case Int8(rhs)   => Uint32(lhs ^ rhs)
+          case Int16(rhs)  => Uint32(lhs ^ rhs)
+          case Int32(rhs)  => Uint32(lhs ^ rhs)
+          case Uint8(rhs)  => Uint32(lhs ^ rhs)
+          case Uint16(rhs) => Uint32(lhs ^ rhs)
+          case Uint32(rhs) => Uint32(lhs ^ rhs)
+          case BigInt(rhs) => Uint32((lhs ^ rhs).toLong)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case BigInt(lhs) =>
+        b match {
+          case Int8(rhs)   => BigInt(lhs ^ scala.BigInt(rhs.toInt))
+          case Int16(rhs)  => BigInt(lhs ^ scala.BigInt(rhs.toInt))
+          case Int32(rhs)  => BigInt(lhs ^ rhs)
+          case Uint8(rhs)  => BigInt(lhs ^ rhs)
+          case Uint16(rhs) => BigInt(lhs ^ rhs)
+          case Uint32(rhs) => BigInt(lhs ^ rhs)
+          case BigInt(rhs) => BigInt(lhs ^ rhs)
+          case _           => throw VmErrorException(WrongType)
+        }
+      case Bool(lhs) =>
+        b match {
+          case Bool(rhs) => Bool(lhs ^ rhs)
+          case _         => throw VmErrorException(WrongType)
+        }
+      case _ => throw VmErrorException(WrongType)
+    }
+  }
+
+  private val eqImpl: (Data, Data) => Bool = { (a, b) =>
+    val result = a match {
+      case Int32(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case Int16(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case Int8(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case Uint8(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case Uint16(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case Uint32(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case Number(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == BigDecimal(rhs)
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
+      case BigInt(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Uint8(rhs)  => lhs == rhs
+          case Uint16(rhs) => lhs == rhs
+          case Uint32(rhs) => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => BigDecimal(lhs) == rhs
+          case _           => false
+        }
+      case _ => a == b
+    }
+    Bool(result)
+  }
 
   private val gtImpl: (Data, Data) => Bool = { (a, b) =>
     val result = a match {

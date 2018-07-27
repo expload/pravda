@@ -8,23 +8,34 @@ import scala.io.Source
 
 object SandboxUtils {
 
-  def constructTestsFromFolder(folder: java.io.File,
-                               macroHandler: MacroHandler = PartialFunction.empty): utest.Tests = {
-    if (folder.isDirectory) {
-      val files = folder.listFiles.filter(f => f.isFile && f.getName.endsWith(".sbox"))
-      val names = files.map(f => Tree(f.getName.stripSuffix(".sbox")))
-      val calls = files.map(f =>
-        new TestCallTree(Left {
-          val caseE = VmSandbox.parseCase(Source.fromFile(f).mkString)
-          caseE match {
-            case Left(err) => Predef.assert(false, err)
-            case Right(c)  => VmSandbox.assertCase(c, macroHandler)
-          }
-        }))
+  def constructTestsFromDir(dir: java.io.File, macroHandler: MacroHandler = PartialFunction.empty): utest.Tests = {
 
-      new Tests(Tree("", names: _*), new TestCallTree(Right(calls)))
-    } else {
-      new Tests(Tree(""), new TestCallTree(Left(())))
-    }
+    def walkDir(prefix: String, dir: java.io.File): Option[(Tree[String], TestCallTree)] =
+      if (dir.isDirectory) {
+        val files = dir.listFiles.filter(f => f.isFile && f.getName.endsWith(".sbox"))
+        val fileNames = files.map(f => Tree(f.getName.stripSuffix(".sbox")))
+        val fileCalls = files.map(f =>
+          new TestCallTree(Left {
+            val caseE = VmSandbox.parseCase(Source.fromFile(f).mkString)
+            caseE match {
+              case Left(err) => Predef.assert(false, err)
+              case Right(c)  => VmSandbox.assertCase(c, macroHandler)
+            }
+          }))
+
+        val dirs = dir.listFiles.filter(_.isDirectory)
+        val (dirTrees, dirCallTrees) = dirs.flatMap(d => walkDir(d.getName, d)).unzip
+
+        if (files.nonEmpty || dirTrees.nonEmpty) {
+          Some((Tree(prefix, fileNames ++ dirTrees: _*), new TestCallTree(Right(fileCalls ++ dirCallTrees))))
+        } else {
+          None
+        }
+      } else {
+        None
+      }
+
+    val (tree, callTree) = walkDir("", dir).getOrElse((Tree(""), new TestCallTree(Right(IndexedSeq.empty))))
+    Tests(tree, callTree)
   }
 }

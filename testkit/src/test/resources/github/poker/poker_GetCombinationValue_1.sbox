@@ -1,0 +1,20 @@
+preconditions:
+  watts-limit: 100000
+  stack:
+    int32(0), int32(1), int32(2), int32(3), int32(4), "GetCombinationValue"
+  heap:
+  storage:
+
+expectations:
+  watts-spent: 3737
+  stack:
+    int32(1000000)
+  heap:
+    #0x0 = int8[31, 47, 79, 55, 87, 103, 59, 91, 107, 115, 61, 93, 109, 117, 121, 62, 94, 110, 118, 122, 124]
+  effects:
+    sget null,
+    sput null null,
+    sput "cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+
+---
+#dotnet url(https://raw.githubusercontent.com/DucaturFw/ExploadHackathonContract/master/poker.cs)
