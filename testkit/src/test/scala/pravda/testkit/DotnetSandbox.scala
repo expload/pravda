@@ -12,7 +12,7 @@ import utest._
 import scala.io.Source
 import scala.sys.process._
 
-object SmartProgramSandbox extends TestSuite {
+object DotnetSandbox extends TestSuite {
 
   sealed trait FileLocation
 

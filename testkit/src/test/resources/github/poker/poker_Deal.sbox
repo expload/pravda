@@ -27,4 +27,4 @@ expectations:
     sput x506C6179657273FFFFFFFF x08
 
 ---
-#dotnet url(https://raw.githubusercontent.com/DucaturFw/ExploadHackathonContract/master/poker.cs)
+#dotnet poker.cs
