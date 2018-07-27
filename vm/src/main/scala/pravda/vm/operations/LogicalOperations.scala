@@ -45,16 +45,16 @@ import scala.annotation.strictfp
     wattCounter.cpuUsage(CpuSimpleArithmetic)
     val x = memory.pop()
     val r = x match {
-      case Bool.True  => Bool.False
-      case Bool.False => Bool.True
-      case Int8(data) => Int8((~data).toByte)
-      case Int16(data) => Int16((~data).toShort)
-      case Int32(data) => Int32((~data).toInt)
-      case Uint8(data) => Uint8((~data) & 0xff)
+      case Bool.True    => Bool.False
+      case Bool.False   => Bool.True
+      case Int8(data)   => Int8((~data).toByte)
+      case Int16(data)  => Int16((~data).toShort)
+      case Int32(data)  => Int32((~data).toInt)
+      case Uint8(data)  => Uint8((~data) & 0xff)
       case Uint16(data) => Uint16((~data) & 0xffff)
       case Uint32(data) => Uint32((~data) & 0xffffffff)
       case BigInt(data) => BigInt(~data)
-      case _          => throw VmErrorException(WrongType)
+      case _            => throw VmErrorException(WrongType)
     }
     wattCounter.memoryUsage(r.volume.toLong)
     memory.push(r)
