@@ -225,7 +225,7 @@ object VmSandbox {
       def updateProgram(address: Address, code: ByteString): Unit =
         effects += EnvironmentEffect.ProgramUpdate(address, code)
 
-      def createProgram(owner: Address, code: ByteString): Address = {
+      def createProgram(owner: Address, code: ByteString, `sealed`: Boolean): Address = {
         val address = Address @@ ByteString.EMPTY // TODO generate
         effects += EnvironmentEffect.ProgramCreate(owner, address, code)
         address

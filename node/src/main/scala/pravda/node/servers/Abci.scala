@@ -205,12 +205,12 @@ object Abci {
     final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
     final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
         extends EnvironmentEffect
-    final case class StorageRead(key: String, value: Option[Array[Byte]])  extends EnvironmentEffect
+    final case class StorageRead(key: String, value: Option[Array[Byte]])                     extends EnvironmentEffect
     final case class ProgramCreate(address: Address, program: Array[Byte], `sealed`: Boolean) extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: Array[Byte]) extends EnvironmentEffect
-    final case class Withdraw(from: Address, amount: NativeCoin)           extends EnvironmentEffect
-    final case class Accrue(to: Address, amount: NativeCoin)               extends EnvironmentEffect
-    final case class ShowBalance(address: Address, amount: NativeCoin)     extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Array[Byte])                    extends EnvironmentEffect
+    final case class Withdraw(from: Address, amount: NativeCoin)                              extends EnvironmentEffect
+    final case class Accrue(to: Address, amount: NativeCoin)                                  extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin)                        extends EnvironmentEffect
   }
 
   final class BlockDependentEnvironment(db: DB) {
