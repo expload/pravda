@@ -206,7 +206,7 @@ object Abci {
     final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
         extends EnvironmentEffect
     final case class StorageRead(key: String, value: Option[Array[Byte]])  extends EnvironmentEffect
-    final case class ProgramCreate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Array[Byte], `sealed`: Boolean) extends EnvironmentEffect
     final case class ProgramUpdate(address: Address, program: Array[Byte]) extends EnvironmentEffect
     final case class Withdraw(from: Address, amount: NativeCoin)           extends EnvironmentEffect
     final case class Accrue(to: Address, amount: NativeCoin)               extends EnvironmentEffect
@@ -284,7 +284,7 @@ object Abci {
         val sp = StoredProgram(code, owner, `sealed`)
 
         transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
-        transactionEffects += ProgramCreate(address, code.toByteArray)
+        transactionEffects += ProgramCreate(address, code.toByteArray, `sealed`)
         address
       }
 
