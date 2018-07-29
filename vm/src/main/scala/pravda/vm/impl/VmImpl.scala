@@ -149,6 +149,7 @@ class VmImpl extends Vm {
           case LCALL   => systemOperations.lcall()
           case SCALL   => systemOperations.scall()
           case PCREATE => systemOperations.pcreate()
+          case SPCREATE => systemOperations.spcreate()
           case PUPDATE => systemOperations.pupdate()
           case PADDR   => systemOperations.paddr()
           case META    => Meta.readFromByteBuffer(program)

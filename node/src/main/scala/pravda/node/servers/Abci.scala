@@ -187,6 +187,7 @@ object Abci {
 
   final case class TransactionUnauthorizedException()   extends Exception("Transaction signature is invalid")
   final case class ProgramNotFoundException()           extends Exception("Program not found")
+  final case class ProgramIsSealedException()           extends Exception("Program is sealed")
   final case class NotEnoughMoneyException()            extends Exception("Not enough money")
   final case class WrongWattPriceException()            extends Exception("Bad transaction parameter: wattPrice")
   final case class WrongWattLimitException()            extends Exception("Bad transaction parameter: wattLimit")
@@ -196,7 +197,7 @@ object Abci {
   final val TxStatusUnauthorized = 1
   final val TxStatusError = 2
 
-  final case class StoredProgram(code: ByteString, owner: Address)
+  final case class StoredProgram(code: ByteString, owner: Address, `sealed`: Boolean)
 
   sealed trait EnvironmentEffect
 
@@ -276,11 +277,11 @@ object Abci {
         }
       }
 
-      def createProgram(owner: Address, code: ByteString): Address = {
+      def createProgram(owner: Address, code: ByteString, `sealed`: Boolean): Address = {
         val sha256 = MessageDigest.getInstance("SHA-256")
         val addressBytes = sha256.digest(transactionId.concat(code).toByteArray)
         val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, owner)
+        val sp = StoredProgram(code, owner, `sealed`)
 
         transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
         transactionEffects += ProgramCreate(address, code.toByteArray)
@@ -289,6 +290,7 @@ object Abci {
 
       def updateProgram(address: Address, code: ByteString): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
+        if(oldSb.`sealed`) throw ProgramIsSealedException()
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, code.toByteArray)

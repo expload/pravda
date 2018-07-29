@@ -127,7 +127,22 @@ final class SystemOperations(memory: Memory,
   )
   def pcreate(): Unit = {
     val code = bytes(memory.pop())
-    val programAddress = environment.createProgram(environment.executor, code)
+    val programAddress = environment.createProgram(environment.executor, code, `sealed` = false)
+    val data = address(programAddress)
+    wattCounter.cpuUsage(CpuStorageUse)
+    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
+    wattCounter.memoryUsage(data.volume.toLong)
+    memory.push(address(programAddress))
+  }
+
+  @OpcodeImplementation(
+    opcode = SPCREATE,
+    description = "Takes bytecode of a new sealed program, put's it to " +
+      "state and returns sealed program address."
+  )
+  def spcreate(): Unit = {
+    val code = bytes(memory.pop())
+    val programAddress = environment.createProgram(environment.executor, code, `sealed` = true)
     val data = address(programAddress)
     wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.storageUsage(occupiedBytes = code.size().toLong)
