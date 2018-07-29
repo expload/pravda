@@ -143,16 +143,16 @@ class VmImpl extends Vm {
           case CONCAT => dataOperations.concat()
           case SLICE  => dataOperations.slice()
           // System operations
-          case STOP    => continue = false
-          case FROM    => systemOperations.from()
-          case OWNER   => systemOperations.owner()
-          case LCALL   => systemOperations.lcall()
-          case SCALL   => systemOperations.scall()
-          case PCREATE => systemOperations.pcreate()
+          case STOP     => continue = false
+          case FROM     => systemOperations.from()
+          case OWNER    => systemOperations.owner()
+          case LCALL    => systemOperations.lcall()
+          case SCALL    => systemOperations.scall()
+          case PCREATE  => systemOperations.pcreate()
           case SPCREATE => systemOperations.spcreate()
-          case PUPDATE => systemOperations.pupdate()
-          case PADDR   => systemOperations.paddr()
-          case META    => Meta.readFromByteBuffer(program)
+          case PUPDATE  => systemOperations.pupdate()
+          case PADDR    => systemOperations.paddr()
+          case META     => Meta.readFromByteBuffer(program)
           case PCALL =>
             if (pcallAllowed) {
               systemOperations.pcall()
