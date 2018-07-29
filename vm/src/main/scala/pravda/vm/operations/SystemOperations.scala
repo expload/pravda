@@ -111,7 +111,7 @@ final class SystemOperations(memory: Memory,
     val programAddress = address(memory.pop())
     val code = bytes(memory.pop())
     wattCounter.cpuUsage(CpuStorageUse)
-    if (environment.getProgramOwner(programAddress) == environment.executor) {
+    if (environment.getProgramOwner(programAddress).contains(environment.executor)) {
       val oldProgram = environment.getProgram(programAddress)
       val oldProgramSize = oldProgram.fold(0L)(_.code.remaining.toLong)
       wattCounter.cpuUsage(CpuStorageUse)
