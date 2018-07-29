@@ -58,6 +58,7 @@ final class SystemOperations(memory: Memory,
       case Some(ProgramContext(storage, code)) =>
         memory.limit(argumentsCount.toInt)
         vm.spawn(code, environment, memory, wattCounter, Some(storage), Some(programAddress), pcallAllowed = true)
+          .error.foreach(throw _)
         memory.dropLimit()
     }
   }
@@ -80,6 +81,7 @@ final class SystemOperations(memory: Memory,
         wattCounter.cpuUsage(CpuStorageUse)
         memory.limit(argumentsCount.toInt)
         vm.spawn(code, environment, memory, wattCounter, currentStorage, maybeProgramAddress, pcallAllowed = false)
+          .error.foreach(throw _)
         memory.dropLimit()
     }
   }
