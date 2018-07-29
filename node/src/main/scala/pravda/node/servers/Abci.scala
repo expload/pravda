@@ -290,7 +290,7 @@ object Abci {
 
       def updateProgram(address: Address, code: ByteString): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
-        if(oldSb.`sealed`) throw ProgramIsSealedException()
+        if (oldSb.`sealed`) throw ProgramIsSealedException()
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, code.toByteArray)
