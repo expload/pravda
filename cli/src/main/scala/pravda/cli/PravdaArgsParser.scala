@@ -191,7 +191,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
               .children(
                 broadcastInput,
-                opt[String]('p', "program")
+                opt[String]('a', "address")
                   .text("Address of the program to seal")
                   .action {
                     case (hex, config: PravdaConfig.Broadcast) =>
@@ -204,7 +204,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
               .children(
                 broadcastInput,
-                opt[String]('p', "program")
+                opt[String]('a', "address")
                   .text("Address of the program to update")
                   .action {
                     case (hex, config: PravdaConfig.Broadcast) =>
