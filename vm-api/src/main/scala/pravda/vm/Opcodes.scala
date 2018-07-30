@@ -80,10 +80,10 @@ object Opcodes {
   final val FROM = 0xa0
   final val META = 0xa1
   final val PADDR = 0xa2
-  final val SPCREATE = 0xa4
   final val PCREATE = 0xa5
   final val PUPDATE = 0xa6
   final val OWNER = 0xa7
+  final val SEAL = 0xa8
 
   // Native coins
   final val TRANSFER = 0xc0

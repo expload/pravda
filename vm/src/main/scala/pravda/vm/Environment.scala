@@ -28,8 +28,9 @@ trait Environment {
   def executor: Address
 
   // Programs
+  def sealProgram(address: Address): Unit
   def updateProgram(address: Address, code: ByteString): Unit
-  def createProgram(owner: Address, code: ByteString, `sealed`: Boolean): Address
+  def createProgram(owner: Address, code: ByteString): Address
   def getProgram(address: Address): Option[ProgramContext]
   def getProgramOwner(address: Address): Option[Address]
 

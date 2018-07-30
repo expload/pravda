@@ -205,12 +205,13 @@ object Abci {
     final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
     final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
         extends EnvironmentEffect
-    final case class StorageRead(key: String, value: Option[Array[Byte]])                     extends EnvironmentEffect
-    final case class ProgramCreate(address: Address, program: Array[Byte], `sealed`: Boolean) extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: Array[Byte])                    extends EnvironmentEffect
-    final case class Withdraw(from: Address, amount: NativeCoin)                              extends EnvironmentEffect
-    final case class Accrue(to: Address, amount: NativeCoin)                                  extends EnvironmentEffect
-    final case class ShowBalance(address: Address, amount: NativeCoin)                        extends EnvironmentEffect
+    final case class StorageRead(key: String, value: Option[Array[Byte]])  extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class ProgramSeal(address: Address)                         extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Array[Byte]) extends EnvironmentEffect
+    final case class Withdraw(from: Address, amount: NativeCoin)           extends EnvironmentEffect
+    final case class Accrue(to: Address, amount: NativeCoin)               extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin)     extends EnvironmentEffect
   }
 
   final class BlockDependentEnvironment(db: DB) {
@@ -277,15 +278,22 @@ object Abci {
         }
       }
 
-      def createProgram(owner: Address, code: ByteString, `sealed`: Boolean): Address = {
+      def createProgram(owner: Address, code: ByteString): Address = {
         val sha256 = MessageDigest.getInstance("SHA-256")
         val addressBytes = sha256.digest(transactionId.concat(code).toByteArray)
         val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, owner, `sealed`)
+        val sp = StoredProgram(code, owner, `sealed` = false)
 
         transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
-        transactionEffects += ProgramCreate(address, code.toByteArray, `sealed`)
+        transactionEffects += ProgramCreate(address, code.toByteArray)
         address
+      }
+
+      def sealProgram(address: Address): Unit = {
+        val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
+        val sp = oldSb.copy(`sealed` = true)
+        transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
+        transactionEffects += ProgramSeal(address)
       }
 
       def updateProgram(address: Address, code: ByteString): Unit = {

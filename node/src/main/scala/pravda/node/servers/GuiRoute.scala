@@ -65,15 +65,15 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   }
 
   private def showEffectName(effect: EnvironmentEffect) = effect match {
-    case EnvironmentEffect.ProgramCreate(_, _, false) => "Create program"
-    case EnvironmentEffect.ProgramCreate(_, _, true)  => "Create sealed program"
-    case _: EnvironmentEffect.StorageRemove           => "Remove from storage"
-    case _: EnvironmentEffect.ProgramUpdate           => "Update program"
-    case _: EnvironmentEffect.StorageRead             => "Read from storage"
-    case _: EnvironmentEffect.StorageWrite            => "Write to storage"
-    case _: EnvironmentEffect.Withdraw                => "Withdraw NC"
-    case _: EnvironmentEffect.Accrue                  => "Put NC"
-    case _: EnvironmentEffect.ShowBalance             => "Read NC balance"
+    case _: EnvironmentEffect.ProgramCreate => "Create program"
+    case _: EnvironmentEffect.ProgramSeal   => "Make program sealed"
+    case _: EnvironmentEffect.StorageRemove => "Remove from storage"
+    case _: EnvironmentEffect.ProgramUpdate => "Update program"
+    case _: EnvironmentEffect.StorageRead   => "Read from storage"
+    case _: EnvironmentEffect.StorageWrite  => "Write to storage"
+    case _: EnvironmentEffect.Withdraw      => "Withdraw NC"
+    case _: EnvironmentEffect.Accrue        => "Put NC"
+    case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
   }
 
   private def mono(s: ByteString): Node =
@@ -89,10 +89,14 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       case Some(s) => mono(s)
     }
     effect match {
-      case EnvironmentEffect.ProgramCreate(address, program, _) =>
+      case EnvironmentEffect.ProgramCreate(address, program) =>
         Map(
           "Generated address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
+        )
+      case EnvironmentEffect.ProgramSeal(address) =>
+        Map(
+          "Program address" -> mono(address)
         )
       case EnvironmentEffect.ProgramUpdate(address, program) =>
         Map(
