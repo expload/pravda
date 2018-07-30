@@ -57,6 +57,7 @@ object PravdaConfig {
       case object Deploy                                                  extends Mode
       case object Run                                                     extends Mode
       final case class Update(program: Option[String])                    extends Mode
+      final case class Seal(program: Option[String])                      extends Mode
       final case class Transfer(to: Option[String], amount: Option[Long]) extends Mode
     }
   }

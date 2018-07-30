@@ -52,6 +52,12 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
         program <- config.mode match {
           case Mode.Run =>
             useOption(config.input)(io.readFromStdin(), readFromFile)
+          case Mode.Seal(Some(address)) if bytes.isHex(address) =>
+            EitherT(compilers.asm(s"push x$address seal"))
+          case Mode.Seal(Some(_)) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Invalid program address")))
+          case Mode.Seal(None) =>
+            EitherT[F, String, ByteString](Monad[F].pure(Left("Program address should be defined")))
           case Mode.Transfer(Some(address), Some(amount)) if bytes.isHex(address) =>
             EitherT(compilers.asm(s"push x$address push bigint($amount) transfer"))
           case Mode.Transfer(Some(_), _) =>

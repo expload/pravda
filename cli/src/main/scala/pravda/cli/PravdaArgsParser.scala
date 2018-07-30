@@ -186,6 +186,19 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .text("Deploy Pravda program to the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Deploy))
               .children(broadcastInput),
+            cmd("seal")
+              .text("Seal existing Pravda program in the blockchain.")
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
+              .children(
+                broadcastInput,
+                opt[String]('p', "program")
+                  .text("Address of the program to seal")
+                  .action {
+                    case (hex, config: PravdaConfig.Broadcast) =>
+                      config.copy(mode = PravdaConfig.Broadcast.Mode.Seal(Some(hex)))
+                    case (_, otherwise) => otherwise
+                  }
+              ),
             cmd("update")
               .text("Update existing Pravda program in the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
