@@ -5,7 +5,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 ```pravda [gen|run|compile|broadcast|node]```
 
 ## Description
-Pravda Command Line Interface to Pravda SDK
+Pravda 0.5.5-13-g7f9fddf Command Line Interface
 
 No options available
 ## Commands
@@ -21,6 +21,7 @@ No options available
 |[`broadcast run`](pravda-broadcast-run.md)|Send a transaction with Pravda Program address to the blockchain to run it|
 |[`broadcast transfer`](pravda-broadcast-transfer.md)|Transfer native coins to a given wallet.|
 |[`broadcast deploy`](pravda-broadcast-deploy.md)|Deploy Pravda program to the blockchain.|
+|[`broadcast seal`](pravda-broadcast-seal.md)|Seal existing Pravda program in the blockchain.|
 |[`broadcast update`](pravda-broadcast-update.md)|Update existing Pravda program in the blockchain.|
 |[`node init`](pravda-node-init.md)|Create data directory and configuration for a new node.|
 |[`node run`](pravda-node-run.md)|Run initialized node.|

@@ -2,7 +2,7 @@
 THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 -->
 
-```pravda broadcast update --wallet <file> --limit <long> --price <long> --endpoint <string> --input <file> --program <string>```
+```pravda broadcast update --dry-run --wallet <file> --limit <long> --price <long> --endpoint <string> --input <file> --program <string>```
 
 ## Description
 Update existing Pravda program in the blockchain.
@@ -10,6 +10,7 @@ Update existing Pravda program in the blockchain.
 
 |Option|Description|
 |----|----|
+|`--dry-run`|Broadcast action without applying effects.
 |`-w`, `--wallet`|File with user wallet. You can obtain it using 'pravda gen address' command. Format: {"address": <public key>, "privateKey": <private key>}
 |`-l`, `--limit`|Watt limit (300 by default).
 |`-p`, `--price`|Watt price (1 by default).
