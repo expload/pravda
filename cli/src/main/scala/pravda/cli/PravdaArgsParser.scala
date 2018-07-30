@@ -37,7 +37,9 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
 
   val model: CommandLine.Head[PravdaConfig] =
     head("pravda")
-      .text(s"Pravda ${pravda.cli.BuildInfo.version} Command Line Interface")
+      .text(s"Pravda ${pravda.cli.BuildInfo.version} Command Line Interface\n\n" +
+        "To get info about options for particular command you can use flag --help or -h after command." + 
+        " For example, to get help about \"gen address\" command, type \"pravda gen address -h\"")
       .children(
         cmd("gen")
           .text("Generate auxiliary data for Pravda.")
