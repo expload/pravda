@@ -2,7 +2,7 @@
 THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 -->
 
-```pravda broadcast seal --dry-run --wallet <file> --limit <long> --price <long> --endpoint <string> --input <file> --program <string>```
+```pravda broadcast seal --dry-run --wallet <file> --limit <long> --price <long> --endpoint <string> --input <file> --address <string>```
 
 ## Description
 Seal existing Pravda program in the blockchain.
@@ -16,4 +16,4 @@ Seal existing Pravda program in the blockchain.
 |`-p`, `--price`|Watt price (1 by default).
 |`-e`, `--endpoint`|Node endpoint (http://localhost:8080/api/public/broadcast by default).
 |`-i`, `--input`|Input file.
-|`-p`, `--program`|Address of the program to seal
+|`-a`, `--address`|Address of the program to seal
