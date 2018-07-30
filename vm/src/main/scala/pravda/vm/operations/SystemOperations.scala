@@ -58,6 +58,8 @@ final class SystemOperations(memory: Memory,
       case Some(ProgramContext(storage, code)) =>
         memory.limit(argumentsCount.toInt)
         vm.spawn(code, environment, memory, wattCounter, Some(storage), Some(programAddress), pcallAllowed = true)
+          .error
+          .foreach(throw _)
         memory.dropLimit()
     }
   }
@@ -80,6 +82,8 @@ final class SystemOperations(memory: Memory,
         wattCounter.cpuUsage(CpuStorageUse)
         memory.limit(argumentsCount.toInt)
         vm.spawn(code, environment, memory, wattCounter, currentStorage, maybeProgramAddress, pcallAllowed = false)
+          .error
+          .foreach(throw _)
         memory.dropLimit()
     }
   }
@@ -107,7 +111,7 @@ final class SystemOperations(memory: Memory,
     val programAddress = address(memory.pop())
     val code = bytes(memory.pop())
     wattCounter.cpuUsage(CpuStorageUse)
-    if (environment.getProgramOwner(programAddress) == environment.executor) {
+    if (environment.getProgramOwner(programAddress).contains(environment.executor)) {
       val oldProgram = environment.getProgram(programAddress)
       val oldProgramSize = oldProgram.fold(0L)(_.code.remaining.toLong)
       wattCounter.cpuUsage(CpuStorageUse)
@@ -131,6 +135,20 @@ final class SystemOperations(memory: Memory,
     wattCounter.storageUsage(occupiedBytes = code.size().toLong)
     wattCounter.memoryUsage(data.volume.toLong)
     memory.push(address(programAddress))
+  }
+
+  @OpcodeImplementation(
+    opcode = SEAL,
+    description = "Takes the address of an existing program, makes the program sealed"
+  )
+  def seal(): Unit = {
+    val programAddress = address(memory.pop())
+    if (environment.getProgramOwner(programAddress).contains(environment.executor)) {
+      wattCounter.cpuUsage(CpuStorageUse)
+      environment.sealProgram(programAddress)
+    } else {
+      throw VmErrorException(OperationDenied)
+    }
   }
 
   @OpcodeImplementation(

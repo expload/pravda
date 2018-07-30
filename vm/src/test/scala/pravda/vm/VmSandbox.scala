@@ -40,6 +40,7 @@ object VmSandbox {
     final case class StorageDelete(key: Data)                                             extends EnvironmentEffect
     final case class ProgramCreate(owner: Address, address: Address, program: ByteString) extends EnvironmentEffect
     final case class ProgramUpdate(address: Address, program: ByteString)                 extends EnvironmentEffect
+    final case class ProgramSeal(address: Address)                 extends EnvironmentEffect
     final case class BalanceGet(address: Address, coins: NativeCoin)                      extends EnvironmentEffect
     final case class BalanceAccrue(address: Address, coins: NativeCoin)                   extends EnvironmentEffect
     final case class BalanceWithdraw(address: Address, coins: NativeCoin)                 extends EnvironmentEffect
@@ -155,6 +156,7 @@ object VmSandbox {
       case StorageDelete(key)                     => s"sdel ${printData(key)}"
       case ProgramCreate(owner, address, program) => ???
       case ProgramUpdate(address, program)        => ???
+      case ProgramSeal(address)        => ???
       case BalanceGet(address, coins)             => s"balance x${pravda.common.bytes.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
@@ -221,6 +223,9 @@ object VmSandbox {
 
       def executor: Address =
         Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0x00))
+
+      def sealProgram(address: Address): Unit =
+        effects += EnvironmentEffect.ProgramSeal(address)
 
       def updateProgram(address: Address, code: ByteString): Unit =
         effects += EnvironmentEffect.ProgramUpdate(address, code)

@@ -66,6 +66,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private def showEffectName(effect: EnvironmentEffect) = effect match {
     case _: EnvironmentEffect.ProgramCreate => "Create program"
+    case _: EnvironmentEffect.ProgramSeal   => "Make program sealed"
     case _: EnvironmentEffect.StorageRemove => "Remove from storage"
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
     case _: EnvironmentEffect.StorageRead   => "Read from storage"
@@ -92,6 +93,10 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
         Map(
           "Generated address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
+        )
+      case EnvironmentEffect.ProgramSeal(address) =>
+        Map(
+          "Program address" -> mono(address)
         )
       case EnvironmentEffect.ProgramUpdate(address, program) =>
         Map(
