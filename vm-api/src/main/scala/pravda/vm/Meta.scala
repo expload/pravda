@@ -31,11 +31,13 @@ sealed trait Meta {
   import Meta._
 
   def mkString: String = this match {
-    case LabelDef(name)     => s"""label_def ${Utf8(name).mkString()}"""
-    case LabelUse(name)     => s"""label_use ${Utf8(name).mkString()}"""
-    case m: MethodSignature => s"method ${m.toStruct.mkString()}"
-    case ProgramName(name)  => s"""program_name ${Utf8(name).mkString()}"""
-    case Custom(name)       => s"""custom ${Utf8(name).mkString()}"""
+    case LabelDef(name)       => s"label_def ${Utf8(name).mkString()}"
+    case LabelUse(name)       => s"label_use ${Utf8(name).mkString()}"
+    case m: MethodSignature   => s"method ${m.toStruct.mkString()}"
+    case ProgramName(name)    => s"program_name ${Utf8(name).mkString()}"
+    case s: SourceMark        => s"source_mark ${s.toStruct.mkString()}"
+    case TranslatorMark(mark) => s"translator_mark ${Utf8(mark).mkString()}"
+    case Custom(name)         => s"custom ${Utf8(name).mkString()}"
   }
 
   def writeToByteBuffer(buffer: ByteBuffer): Unit = this match {
@@ -51,6 +53,12 @@ sealed trait Meta {
     case ProgramName(name) =>
       buffer.put(TypeProgramName.toByte)
       Utf8(name).writeToByteBuffer(buffer)
+    case s: SourceMark =>
+      buffer.put(TypeSourceMark.toByte)
+      s.toStruct.writeToByteBuffer(buffer)
+    case TranslatorMark(mark) =>
+      buffer.put(TypeTranslatorMark.toByte)
+      Utf8(mark).writeToByteBuffer(buffer)
     case Custom(name) =>
       buffer.put(TypeCustom.toByte)
       Utf8(name).writeToByteBuffer(buffer)
@@ -143,10 +151,8 @@ object Meta {
 
   object MethodSignature {
 
-    final val NameKey = Data.Primitive.Int8(0xff.toByte)
-    final val ReturnTpeKey = Data.Primitive.Int8(0xfe.toByte)
-
-    final val MaxArgs = 0x7e // 0xfd / 2
+    final val NameKey = Data.Primitive.Utf8("name")
+    final val ReturnTpeKey = Data.Primitive.Utf8("returnTpe")
 
     def fromStruct(struct: Data.Struct): MethodSignature = {
       assert(struct.data.contains(NameKey))
@@ -162,55 +168,68 @@ object Meta {
         case _                 => throw Data.InvalidData(struct)
       }
 
-      val args = for {
-        i <- 0 to MaxArgs
-        pi = Data.Primitive.Int8((2 * i).toByte)
-        pNameI = Data.Primitive.Int8((2 * i + 1).toByte)
-        if struct.data.contains(pi)
-      } yield {
-        struct.data(pi) match {
-          case p: Data.Primitive =>
-            val argName = struct.data.get(pNameI).flatMap {
-              case Data.Primitive.Utf8(s) => Some(s)
-              case _                      => None
-            }
-            val argType = TypeSignature.fromPrimivite(p)
-            (argName, argType)
-          case _ => throw Data.InvalidData(struct)
+      val args = struct.data.toList
+        .collect {
+          case (Data.Primitive.Int32(i), tpe) => (i, tpe)
         }
-      }
+        .sortBy(_._1)
+        .map { case (_, tpe) => TypeSignature.fromPrimivite(tpe) }
 
-      MethodSignature(name, returnTpe, args.toList)
+      MethodSignature(name, returnTpe, args)
+    }
+  }
+
+  object SourceMark {
+
+    def fromStruct(struct: Data.Struct): SourceMark = {
+      def getIntOrThrow(field: String): Int =
+        struct.data
+          .get(Data.Primitive.Utf8(field))
+          .collect { case Data.Primitive.Int32(i) => i }
+          .getOrElse(throw Data.InvalidData(struct))
+
+      SourceMark(
+        struct.data
+          .get(Data.Primitive.Utf8("src"))
+          .collect { case Data.Primitive.Utf8(s) => s }
+          .getOrElse(throw Data.InvalidData(struct)),
+        getIntOrThrow("sl"),
+        getIntOrThrow("sc"),
+        getIntOrThrow("el"),
+        getIntOrThrow("ec")
+      )
     }
   }
 
   final case class LabelDef(name: String) extends Meta
   final case class LabelUse(name: String) extends Meta
-  final case class MethodSignature(name: String, returnTpe: TypeSignature, args: List[(Option[String], TypeSignature)])
-      extends Meta {
-
-    lazy val argNames: List[String] = args.zipWithIndex.map { case ((n, _), i) => n.getOrElse(s"arg$i") }
-    lazy val argTpes: List[TypeSignature] = args.map(_._2)
+  final case class MethodSignature(name: String, returnTpe: TypeSignature, args: List[TypeSignature]) extends Meta {
 
     def toStruct: Data.Struct = {
-      assert(args.length <= MethodSignature.MaxArgs, "Too many args in method.")
-
       Data.Struct(
         mutable.Map[Data.Primitive, Data.Primitive](
           MethodSignature.NameKey -> Data.Primitive.Utf8(name),
           MethodSignature.ReturnTpeKey -> returnTpe.toPrimitive
-        ) ++ args.zipWithIndex.flatMap {
-          case ((argName, arg), i) =>
-            (Data.Primitive.Int8((2 * i).toByte) -> arg.toPrimitive) ::
-              argName
-              .map(n => Data.Primitive.Int8((2 * i + 1).toByte) -> Data.Primitive.Utf8(n))
-              .toList
-        }
+        ) ++ args.zipWithIndex.map { case (arg, i) => Data.Primitive.Int32(i) -> arg.toPrimitive }
       )
     }
   }
   final case class ProgramName(name: String) extends Meta
-  final case class Custom(name: String)      extends Meta
+  final case class SourceMark(source: String, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int)
+      extends Meta {
+
+    def toStruct: Data.Struct =
+      Data.Struct(
+        mutable.Map(
+          Data.Primitive.Utf8("src") -> Data.Primitive.Utf8(source),
+          Data.Primitive.Utf8("sl") -> Data.Primitive.Int32(startLine),
+          Data.Primitive.Utf8("sc") -> Data.Primitive.Int32(startColumn),
+          Data.Primitive.Utf8("el") -> Data.Primitive.Int32(endLine),
+          Data.Primitive.Utf8("ec") -> Data.Primitive.Int32(endColumn)
+        ))
+  }
+  final case class TranslatorMark(mark: String) extends Meta
+  final case class Custom(name: String)         extends Meta
 
   def readFromByteBuffer(buffer: ByteBuffer): Meta = {
 
@@ -228,11 +247,36 @@ object Meta {
     }
 
     (buffer.get & 0xFF: @switch) match {
-      case TypeLabelDef    => LabelDef(readString())
-      case TypeLabelUse    => LabelUse(readString())
-      case TypeCustom      => Custom(readString())
-      case TypeMethod      => MethodSignature.fromStruct(readStruct())
-      case TypeProgramName => ProgramName(readString())
+      case TypeLabelDef       => LabelDef(readString())
+      case TypeLabelUse       => LabelUse(readString())
+      case TypeCustom         => Custom(readString())
+      case TypeMethod         => MethodSignature.fromStruct(readStruct())
+      case TypeSourceMark     => SourceMark.fromStruct(readStruct())
+      case TypeTranslatorMark => TranslatorMark(readString())
+      case TypeProgramName    => ProgramName(readString())
+    }
+  }
+
+  def externalReadFromByteBuffer(buffer: ByteBuffer): Map[Long, List[Meta]] = {
+    val res = mutable.Map.empty[Long, List[Meta]]
+    while (buffer.hasRemaining) {
+      val offset = buffer.getLong
+      val meta = Meta.readFromByteBuffer(buffer)
+      if (res.contains(offset)) {
+        res.put(offset, meta :: res(offset))
+      } else {
+        res.put(offset, List(meta))
+      }
+    }
+
+    res.toMap
+  }
+
+  def externalWriteToByteBuffer(buffer: ByteBuffer, metas: List[(Long, Meta)]): Unit = {
+    metas.foreach {
+      case (offset, meta) =>
+        buffer.putLong(offset)
+        meta.writeToByteBuffer(buffer)
     }
   }
 
@@ -243,7 +287,9 @@ object Meta {
         ("label_use " ~ Data.parser.utf8.map(s => LabelUse(s.data))) |
         ("program_name " ~ Data.parser.utf8.map(s => ProgramName(s.data))) |
         ("custom " ~ Data.parser.utf8.map(s => Custom(s.data))) |
-        ("method " ~ Data.parser.struct.map(MethodSignature.fromStruct))
+        ("method " ~ Data.parser.struct.map(MethodSignature.fromStruct)) |
+        ("source_mark " ~ Data.parser.struct.map(SourceMark.fromStruct)) |
+        ("translator_mark " ~ Data.parser.utf8.map(s => TranslatorMark(s.data)))
     )
   }
 
@@ -251,5 +297,7 @@ object Meta {
   final val TypeLabelUse = 0x01
   final val TypeMethod = 0x02
   final val TypeProgramName = 0x03
+  final val TypeSourceMark = 0x04
+  final val TypeTranslatorMark = 0x05
   final val TypeCustom = 0xFF
 }

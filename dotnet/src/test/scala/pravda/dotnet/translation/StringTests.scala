@@ -8,31 +8,32 @@ object StringTests extends TestSuite {
 
   val tests = Tests {
     'stringTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("strings.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("strings.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
-            |push null
-            |sexist
-            |jumpi @methods
-            |call @ctor
-            |@methods:
-            |meta method { int8(-1): "distributeSalary", int8(-2): int8(0) }
+            |meta translator_mark "jump to methods"
+            |meta method {
+            |"name":"distributeSalary","returnTpe":int8(0)
+            |}
             |dup
             |push "distributeSalary"
             |eq
             |jumpi @method_distributeSalary
             |jump @stop
+            |meta translator_mark "distributeSalary method"
             |@method_distributeSalary:
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
+            |meta translator_mark "distributeSalary local vars definition"
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |meta translator_mark "distributeSalary method body"
             |push "zapupu"
             |push int32(9)
             |swapn
@@ -133,6 +134,7 @@ object StringTests extends TestSuite {
             |push int32(3)
             |swapn
             |pop
+            |meta translator_mark "distributeSalary local vars clearing"
             |pop
             |pop
             |pop
@@ -142,12 +144,16 @@ object StringTests extends TestSuite {
             |pop
             |pop
             |pop
+            |meta translator_mark "end of distributeSalary method"
             |jump @stop
-            |@ctor:
-            |push null
-            |dup
-            |sput
+            |meta translator_mark "ctor method"
+            |@method_ctor:
+            |meta translator_mark "ctor local vars definition"
+            |meta translator_mark "ctor method body"
+            |meta translator_mark "ctor local vars clearing"
+            |meta translator_mark "end of ctor method"
             |ret
+            |meta translator_mark "helper functions"
             |@stop:
           """.stripMargin).right.get
       )

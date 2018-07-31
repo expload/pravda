@@ -31,7 +31,6 @@ object Operation {
   final case class Comment(value: String) extends Operation
   final case class Label(name: String)    extends Operation
 
-  // TODO add meta to parser
   final case class Meta(meta: pravda.vm.Meta)        extends Operation
   final case class Push(d: Data)                     extends Operation // why Data, not Data.Primitive?
   final case class New(d: Data)                      extends Operation

@@ -31,7 +31,7 @@ import scala.annotation.tailrec
 trait OpcodeTranslator {
 
   def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx)
-    : Either[TranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.AdditionalFunction])] =
+    : Either[TranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
     Left(UnknownOpcode)
 
   def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, Int)]
@@ -126,7 +126,7 @@ trait OneToManyTranslator extends OpcodeTranslator {
 
   def additionalFunctionsOne(
       op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.AdditionalFunction]] =
+      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.HelperFunction]] =
     Left(UnknownOpcode)
 
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int]
@@ -136,7 +136,7 @@ trait OneToManyTranslator extends OpcodeTranslator {
                 ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]]
 
   override def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx)
-    : Either[TranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.AdditionalFunction])] =
+    : Either[TranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
     ops match {
       case head :: _ => additionalFunctionsOne(head, ctx).map((1, _))
       case _         => Right((0, List.empty))
@@ -168,7 +168,7 @@ object OpcodeTranslator {
 
   type Taken = Int
 
-  final case class AdditionalFunction(name: String, ops: List[asm.Operation])
+  final case class HelperFunction(name: String, ops: List[asm.Operation])
 
   val translators: List[OpcodeTranslator] =
     List(
@@ -202,7 +202,7 @@ object OpcodeTranslator {
     case _ => None
   }
 
-  def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx): (Taken, List[AdditionalFunction]) =
+  def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx): (Taken, List[HelperFunction]) =
     findAndReturn(translators, (t: OpcodeTranslator) => t.additionalFunctions(ops, ctx), notUnknownOpcode)
       .flatMap(_.toOption)
       .getOrElse((0, List.empty))

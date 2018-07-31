@@ -80,7 +80,7 @@ case object CallsTransation extends OneToManyTranslator {
 
   override def additionalFunctionsOne(
       op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.AdditionalFunction]] = op match {
+      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
     case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
       val res = for {
         parentSig <- ctx.signatures.get(parentSigIdx)
@@ -90,7 +90,7 @@ case object CallsTransation extends OneToManyTranslator {
             case "getDefault" =>
               Right(
                 List(
-                  OpcodeTranslator.AdditionalFunction("storage_get_default", getDefaultFunction)
+                  OpcodeTranslator.HelperFunction("storage_get_default", getDefaultFunction)
                 ))
             case _ => Left(UnknownOpcode)
           }

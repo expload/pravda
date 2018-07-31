@@ -14,9 +14,7 @@ object BasicTests extends TestSuite {
         DotnetCodegen.generateMethods(
           "ERC20",
           List(
-            Meta.MethodSignature("balanceOf",
-                                 Meta.TypeSignature.Uint32,
-                                 List((Some("tokenOwner"), Meta.TypeSignature.Bytes)))
+            Meta.MethodSignature("balanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes))
           )
         ),
         Source.fromResource("OneMethod.generated.cs").mkString
@@ -28,27 +26,20 @@ object BasicTests extends TestSuite {
         DotnetCodegen.generateMethods(
           "ERC20",
           List(
-            Meta.MethodSignature("balanceOf",
-                                 Meta.TypeSignature.Uint32,
-                                 List((Some("tokenOwner"), Meta.TypeSignature.Bytes))),
+            Meta.MethodSignature("balanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes)),
             Meta.MethodSignature("allowance",
                                  Meta.TypeSignature.Uint32,
-                                 List((Some("tokenOwner"), Meta.TypeSignature.Bytes),
-                                      (Some("spender"), Meta.TypeSignature.Bytes))),
+                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes)),
             Meta.MethodSignature("transfer",
                                  Meta.TypeSignature.Null,
-                                 List((Some("to"), Meta.TypeSignature.Bytes),
-                                      (Some("tokens"), Meta.TypeSignature.Uint32))),
+                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)),
             Meta.MethodSignature("approve",
                                  Meta.TypeSignature.Null,
-                                 List((Some("spender"), Meta.TypeSignature.Bytes),
-                                      (Some("tokens"), Meta.TypeSignature.Uint32))),
+                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)),
             Meta.MethodSignature(
               "transferFrom",
               Meta.TypeSignature.Null,
-              List((Some("from"), Meta.TypeSignature.Bytes),
-                   (Some("to"), Meta.TypeSignature.Bytes),
-                   (Some("tokens"), Meta.TypeSignature.Uint32))
+              List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)
             )
           )
         ),

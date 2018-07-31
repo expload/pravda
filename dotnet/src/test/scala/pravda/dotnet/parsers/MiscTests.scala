@@ -1,6 +1,8 @@
 package pravda.dotnet
+
 package parsers
 
+import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
@@ -14,7 +16,7 @@ object MiscTests extends TestSuite {
 
   val tests = Tests {
     'hello_world_exe - {
-      val Right((_, cilData, methods, signatures)) = parseFile("hello_world.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("hello_world.exe")
       methods ==> List(
         Method(List(Nop,
                     LdStr("Hello World!"),
@@ -39,6 +41,15 @@ object MiscTests extends TestSuite {
                          List(Tpe(ValueTpe(TypeRefData(15, "DebuggingModes", "")), false)))),
         (16, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
         (30, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+      )
+    }
+
+    'hello_world_pdb - {
+      val Right((pdb, tables)) = parsePdbFile("hello_world.pdb")
+      tables.methodDebugInformationTable ==> Vector(
+        MethodDebugInformationData(
+          List(SequencePoint(0, 6, 5, 6, 6), SequencePoint(1, 7, 9, 7, 43), SequencePoint(12, 8, 5, 8, 6))),
+        MethodDebugInformationData(List())
       )
     }
   }

@@ -8,18 +8,18 @@ object ArraysTests extends TestSuite {
 
   val tests = Tests {
     'arrayTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("arrays.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("arrays.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
-        |push null
-        |sexist
-        |jumpi @methods
-        |call @ctor
-        |@methods:
-        |meta method { int8(-1): "WorkWithBytes", int8(-2): int8(0) }
-        |meta method { int8(-1): "WorkWithArrays", int8(-2): int8(0) }
+        |meta translator_mark "jump to methods"
+        |meta method {
+        |"name":"WorkWithBytes","returnTpe":int8(0)
+        |}
+        |meta method {
+        |"name":"WorkWithArrays","returnTpe":int8(0)
+        |}
         |dup
         |push "WorkWithBytes"
         |eq
@@ -29,16 +29,19 @@ object ArraysTests extends TestSuite {
         |eq
         |jumpi @method_WorkWithArrays
         |jump @stop
+        |meta translator_mark "WorkWithBytes method"
         |@method_WorkWithBytes:
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
+        |meta translator_mark "WorkWithBytes local vars definition"
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |meta translator_mark "WorkWithBytes method body"
         |new int8[1, 2, 3]
         |push int32(10)
         |swapn
@@ -161,6 +164,7 @@ object ArraysTests extends TestSuite {
         |push int32(1)
         |swap
         |array_mut
+        |meta translator_mark "WorkWithBytes local vars clearing"
         |pop
         |pop
         |pop
@@ -171,13 +175,17 @@ object ArraysTests extends TestSuite {
         |pop
         |pop
         |pop
+        |meta translator_mark "end of WorkWithBytes method"
         |jump @stop
+        |meta translator_mark "WorkWithArrays method"
         |@method_WorkWithArrays:
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
+        |meta translator_mark "WorkWithArrays local vars definition"
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |meta translator_mark "WorkWithArrays method body"
         |new int16[97, 98, 99]
         |push int32(6)
         |swapn
@@ -245,18 +253,23 @@ object ArraysTests extends TestSuite {
         |push int32(7)
         |swap
         |array_mut
+        |meta translator_mark "WorkWithArrays local vars clearing"
         |pop
         |pop
         |pop
         |pop
         |pop
         |pop
+        |meta translator_mark "end of WorkWithArrays method"
         |jump @stop
-        |@ctor:
-        |push null
-        |dup
-        |sput
+        |meta translator_mark "ctor method"
+        |@method_ctor:
+        |meta translator_mark "ctor local vars definition"
+        |meta translator_mark "ctor method body"
+        |meta translator_mark "ctor local vars clearing"
+        |meta translator_mark "end of ctor method"
         |ret
+        |meta translator_mark "helper functions"
         |@array_to_bytes:
         |dup
         |length
@@ -292,7 +305,6 @@ object ArraysTests extends TestSuite {
         |@stop:
       """.stripMargin).right.get
       )
-
     }
   }
 }

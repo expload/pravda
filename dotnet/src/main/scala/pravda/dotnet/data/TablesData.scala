@@ -24,6 +24,8 @@ import cats.instances.vector._
 import cats.instances.either._
 import cats.syntax.traverse._
 
+import pravda.dotnet.utils._
+
 final case class TablesData(
     fieldTable: Vector[TablesData.FieldData],
     fieldRVATable: Vector[TablesData.FieldRVAData],
@@ -33,7 +35,8 @@ final case class TablesData(
     typeDefTable: Vector[TablesData.TypeDefData],
     typeRefTable: Vector[TablesData.TypeRefData],
     typeSpecTable: Vector[TablesData.TypeSpecData],
-    standAloneSigTable: Vector[TablesData.StandAloneSigData]
+    standAloneSigTable: Vector[TablesData.StandAloneSigData],
+    methodDebugInformationTable: Vector[TablesData.MethodDebugInformationData]
 ) {
 
   def tableByNum(num: Int): Option[Vector[TablesData.TableRowData]] = num match {
@@ -74,7 +77,11 @@ object TablesData {
   final case class TypeSpecData(signatureIdx: Long)                                       extends TableRowData
 
   final case class StandAloneSigData(signatureIdx: Long) extends TableRowData
-  case object Ignored                                    extends TableRowData
+
+  final case class MethodDebugInformationData( /* documentIdx is ignored */ points: List[Heaps.SequencePoint])
+      extends TableRowData
+
+  case object Ignored extends TableRowData
 
   def fromInfo(peData: PeData): Either[String, TablesData] = {
 
@@ -174,6 +181,24 @@ object TablesData {
           } yield MemberRefData(cls, name, signatureIdx)
       }.sequence
 
+    val methodDebugInformationListV =
+      peData.tables.methodDebugInformationTable.map {
+        case MethodDebugInformationRow(documentIdx, seqPoints) =>
+          // if documentIdx is 0 than we skip one compressedUInt in header
+          // it's not implemented yet
+          // possibly it's very rare and won't be a problem
+          if (seqPoints != 0) {
+            for {
+              blob <- Heaps.blob(peData.blobHeap, seqPoints)
+              seqPoints <- Heaps.sequencePoints.parse(blob).toEither
+            } yield {
+              MethodDebugInformationData(seqPoints)
+            }
+          } else {
+            Right(MethodDebugInformationData(List.empty))
+          }
+      }.sequence
+
     for {
       paramList <- paramListV
       fieldList <- fieldListV
@@ -182,6 +207,7 @@ object TablesData {
       typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
       memberRefList <- memberRefListV(typeDefList, typeRefList)
+      methodDebugInformationList <- methodDebugInformationListV
     } yield
       TablesData(fieldList,
                  fieldRVAList,
@@ -191,6 +217,7 @@ object TablesData {
                  typeDefList,
                  typeRefList,
                  typeSpecList,
-                 standAlongSigList)
+                 standAlongSigList,
+                 methodDebugInformationList)
   }
 }

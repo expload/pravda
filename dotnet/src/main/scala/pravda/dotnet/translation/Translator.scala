@@ -20,7 +20,7 @@ package pravda.dotnet.translation
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
-import pravda.dotnet.data.Method
+import pravda.dotnet.data.{Heaps, Method, TablesData}
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.{CIL, Signatures}
@@ -29,30 +29,42 @@ import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
 import pravda.vm.{Data, Meta, Opcodes, asm}
 import pravda.dotnet.translation.opcode.{CallsTransation, OpcodeTranslator, TypeDetectors}
+import pravda.vm.Meta.TranslatorMark
 
 object Translator {
-  private def distinctFunctions(funcs: List[OpcodeTranslator.AdditionalFunction]) = {
+  private def distinctFunctions(funcs: List[OpcodeTranslator.HelperFunction]) = {
     val distinctNames = funcs.map(_.name).distinct
     distinctNames.flatMap(name => funcs.find(_.name == name))
   }
 
-  private def translateMethod(argsCount: Int,
-                              localsCount: Int,
-                              name: String,
-                              cil: List[CIL.Op],
-                              signatures: Map[Long, Signatures.Signature],
-                              cilData: CilData,
-                              local: Boolean,
-                              void: Boolean,
-                              func: Boolean,
-                              prefix: String): Either[TranslationError, MethodTranslation] = {
+  private def translateMethod(
+      argsCount: Int,
+      localsCount: Int,
+      name: String,
+      cil: List[CIL.Op],
+      signatures: Map[Long, Signatures.Signature],
+      cilData: CilData,
+      local: Boolean,
+      void: Boolean,
+      func: Boolean,
+      kind: String,
+      debugInfo: Option[MethodDebugInformationData]): Either[TranslationError, MethodTranslation] = {
 
     val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
 
     val opTranslationsE = {
+
+      def searchForSourceMarks(cilOffsetStart: Int, cilOffsetEnd: Int): List[Meta.SourceMark] =
+        debugInfo
+          .map(_.points.filter(p => p.ilOffset >= cilOffsetStart && p.ilOffset < cilOffsetEnd).map {
+            case Heaps.SequencePoint(_, sl, sc, el, ec) => Meta.SourceMark("", sl, sc, el, ec)
+          })
+          .getOrElse(List.empty)
+
       def doTranslation(cil: List[CIL.Op],
                         offsets: Map[String, Int],
-                        stackOffsetO: Option[Int]): Either[TranslationError, List[OpCodeTranslation]] = {
+                        stackOffsetO: Option[Int],
+                        cilOffset: Int): Either[TranslationError, List[OpCodeTranslation]] = {
         cil match {
           case op :: _ =>
             for {
@@ -60,9 +72,19 @@ object Translator {
               (_, newStackOffsetO) = so
               asmRes <- OpcodeTranslator.asmOps(cil, newStackOffsetO, ctx)
               (taken, opcodes) = asmRes
+              (takenCil, restCil) = cil.splitAt(taken)
+              restOffset = takenCil.map(_.size).sum
               deltaOffset <- OpcodeTranslator.deltaOffset(cil, ctx).map(_._2)
-              restTranslations <- doTranslation(cil.drop(taken), offsets, newStackOffsetO.map(_ + deltaOffset))
-            } yield OpCodeTranslation(Right(cil.take(taken)), stackOffsetO, opcodes) :: restTranslations
+              restTranslations <- doTranslation(restCil,
+                                                offsets,
+                                                newStackOffsetO.map(_ + deltaOffset),
+                                                cilOffset + restOffset)
+            } yield
+              OpCodeTranslation(Right(restCil),
+                                searchForSourceMarks(cilOffset, cilOffset + restOffset),
+                                Some(cilOffset),
+                                stackOffsetO,
+                                opcodes) :: restTranslations
 
           case _ => Right(List.empty)
         }
@@ -70,7 +92,7 @@ object Translator {
 
       (for {
         convergedOffsets <- StackOffsetResolver.convergeLabelOffsets(cil, ctx)
-      } yield doTranslation(cil, convergedOffsets, Some(0))).joinRight
+      } yield doTranslation(cil, convergedOffsets, Some(0), 0)).joinRight
     }
 
     val clear =
@@ -84,7 +106,7 @@ object Translator {
       }
 
     val functions = {
-      def searchFunctions(ops: List[CIL.Op]): List[OpcodeTranslator.AdditionalFunction] = {
+      def searchFunctions(ops: List[CIL.Op]): List[OpcodeTranslator.HelperFunction] = {
         if (ops.nonEmpty) {
           val (taken, funcs) = OpcodeTranslator.additionalFunctions(ops, ctx)
           funcs ++ searchFunctions(ops.drop(if (taken > 0) taken else 1))
@@ -106,12 +128,20 @@ object Translator {
         local,
         void,
         List(
-          OpCodeTranslation(Left("method name"), None, List(asm.Operation.Label(prefix + name))),
-          OpCodeTranslation(Left("local vars"), None, List.fill(localsCount)(opcode.pushInt(0))) // FIXME Should be replaced by proper value for local var type
-        ) ++ opTranslations ++
+          OpCodeTranslation(Left(s"$name $kind"), List.empty, None, None, List(asm.Operation.Label(s"${kind}_$name"))),
+          OpCodeTranslation(Left(s"$name local vars definition"),
+                            List.empty,
+                            None,
+                            None,
+                            List.fill(localsCount)(asm.Operation.Push(Data.Primitive.Null))),
+          OpCodeTranslation(Left(s"$name $kind body"), List.empty, None, None, List.empty)
+        )
+          ++ opTranslations ++
           List(
-            OpCodeTranslation(Left("local vars clearing"), None, clear),
-            OpCodeTranslation(Left("end of a method"),
+            OpCodeTranslation(Left(s"$name local vars clearing"), List.empty, None, None, clear),
+            OpCodeTranslation(Left(s"end of $name $kind"),
+                              List.empty,
+                              None,
                               None,
                               if (func || local) List(asm.Operation(Opcodes.RET))
                               else List(asm.Operation.Jump(Some("stop"))))
@@ -122,7 +152,8 @@ object Translator {
 
   def translateVerbose(rawMethods: List[Method],
                        cilData: CilData,
-                       signatures: Map[Long, Signatures.Signature]): Either[TranslationError, Translation] = {
+                       signatures: Map[Long, Signatures.Signature],
+                       pdbTables: Option[TablesData] = None): Either[TranslationError, Translation] = {
 
 //    val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
 //      case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
@@ -173,7 +204,7 @@ object Translator {
               Meta.MethodSignature(
                 name,
                 dotnetToVmTpe(methodTpe),
-                argTpes.map(tpe => (None, dotnetToVmTpe(tpe.tpe)))
+                argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
               )
             )
         } else {
@@ -196,22 +227,7 @@ object Translator {
         }
     }
 
-    lazy val jumpToConstructor = List(
-      asm.Operation.Push(Data.Primitive.Null),
-      asm.Operation.Orphan(Opcodes.SEXIST),
-      asm.Operation.JumpI(Some("methods")),
-      asm.Operation.Call(Some("ctor")),
-      asm.Operation.Label("methods")
-    )
-
-    lazy val constructorPrefix = List(
-      asm.Operation.Label("ctor"),
-      asm.Operation.Push(Data.Primitive.Null),
-      asm.Operation.Orphan(Opcodes.DUP),
-      asm.Operation.Orphan(Opcodes.SPUT)
-    )
-
-    lazy val constructorE: Either[TranslationError, Option[ConstructorTranslation]] = {
+    lazy val constructorE: Either[TranslationError, Option[MethodTranslation]] = {
       val ctorMethod = rawMethods.zipWithIndex.find { case (m, i) => rawMethodNames(i) == ".ctor" }
       ctorMethod match {
         case Some((m, i)) =>
@@ -247,11 +263,12 @@ object Translator {
                   true,
                   true,
                   true,
-                  ""
+                  "method",
+                  pdbTables.map(_.methodDebugInformationTable(i))
                 )
               }
           }
-          ops.map(o => Some(ConstructorTranslation(jumpToConstructor, constructorPrefix, o)))
+          ops.map(Some(_))
         case None => Right(None)
       }
     }
@@ -285,7 +302,8 @@ object Translator {
               false,
               isVoid,
               false,
-              "method_"
+              "method",
+              pdbTables.map(_.methodDebugInformationTable(i))
             )
         }
     }.sequence
@@ -319,7 +337,8 @@ object Translator {
               true,
               isVoid,
               true,
-              "func_"
+              "func",
+              pdbTables.map(_.methodDebugInformationTable(i))
             )
         }
     }.sequence
@@ -333,26 +352,37 @@ object Translator {
     } yield
       Translation(
         metaMethods ++ jumpToMethods :+ asm.Operation.Jump(Some("stop")),
-        methodsOps,
-        constructor,
+        methodsOps ++ constructor.toList,
         funcOps,
-        distinctFunctions((constructor.map(_.ctor).toList ++ funcOps ++ methodsOps).flatMap(_.additionalFunctions)),
+        distinctFunctions((funcOps ++ methodsOps).flatMap(_.additionalFunctions)),
         List(asm.Operation.Label("stop"))
       )
   }
 
-  def translationToAsm(t: Translation): List[asm.Operation] =
-    t.constructor.map(_.jumpToConstructor).getOrElse(List.empty) ++
+  def translationToAsm(t: Translation): List[asm.Operation] = {
+    def translatorMark(s: String): List[asm.Operation] =
+      List(asm.Operation.Meta(TranslatorMark(s)))
+
+    def opcodeToAsm(opCodeTranslation: OpCodeTranslation): List[asm.Operation] = {
+      val translatorMarkL =
+        opCodeTranslation.source.swap.map(s => translatorMark(s)).getOrElse(List.empty)
+      val sourceMarks = opCodeTranslation.sourceMarks.map(asm.Operation.Meta(_))
+
+      translatorMarkL ++ sourceMarks ++ opCodeTranslation.asmOps
+    }
+
+    translatorMark("jump to methods") ++
       t.jumpToMethods ++
-      t.methods.flatMap(_.opcodes.flatMap(_.asmOps)) ++
-      t.constructor.map(_.ctorPrefix).getOrElse(List.empty) ++
-      t.constructor.map(_.ctor.opcodes.flatMap(_.asmOps).drop(1)).getOrElse(List.empty) ++
-      t.funcs.flatMap(_.opcodes.flatMap(_.asmOps)) ++
-      t.functions.flatMap { case OpcodeTranslator.AdditionalFunction(name, ops) => asm.Operation.Label(name) :: ops } ++
+      t.methods.flatMap(_.opcodes.flatMap(opcodeToAsm)) ++
+      t.funcs.flatMap(_.opcodes.flatMap(opcodeToAsm)) ++
+      translatorMark("helper functions") ++
+      t.helperFunctions.flatMap { case OpcodeTranslator.HelperFunction(name, ops) => asm.Operation.Label(name) :: ops } ++
       t.finishOps
+  }
 
   def translateAsm(rawMethods: List[Method],
                    cilData: CilData,
-                   signatures: Map[Long, Signatures.Signature]): Either[TranslationError, List[asm.Operation]] =
-    translateVerbose(rawMethods, cilData, signatures).map(translationToAsm)
+                   signatures: Map[Long, Signatures.Signature],
+                   pdbTables: Option[TablesData] = None): Either[TranslationError, List[asm.Operation]] =
+    translateVerbose(rawMethods, cilData, signatures, pdbTables).map(translationToAsm)
 }

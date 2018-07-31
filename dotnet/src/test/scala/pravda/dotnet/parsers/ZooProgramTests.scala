@@ -12,7 +12,7 @@ object ZooProgramTests extends TestSuite {
 
   val tests = Tests {
     'zooProgramParse - {
-      val Right((_, cilData, methods, signatures)) = parseFile("zoo_program.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("zoo_program.exe")
 
       DiffUtils.assertEqual(
         methods,

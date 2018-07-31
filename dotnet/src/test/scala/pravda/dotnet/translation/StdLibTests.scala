@@ -8,21 +8,17 @@ object StdLibTests extends TestSuite {
 
   val tests = Tests {
     'stdLibTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("stdlib.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("stdlib.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
-            |push null
-            |sexist
-            |jumpi @methods
-            |call @ctor
-            |@methods:
+            |meta translator_mark "jump to methods"
             |meta method {
-            |int8(-1):"Ripemd160",int8(-2):int8(14),int8(0):int8(14)
+            |"name":"Ripemd160",int32(0):int8(14),"returnTpe":int8(14)
             |}
             |meta method {
-            |int8(4):int8(14),int8(-1):"ValidateEd25519Signature",int8(-2):int8(9),int8(0):int8(14),int8(2):int8(14)
+            |"name":"ValidateEd25519Signature",int32(1):int8(14),int32(2):int8(14),int32(0):int8(14),"returnTpe":int8(9)
             |}
             |dup
             |push "Ripemd160"
@@ -33,8 +29,11 @@ object StdLibTests extends TestSuite {
             |eq
             |jumpi @method_ValidateEd25519Signature
             |jump @stop
+            |meta translator_mark "Ripemd160 method"
             |@method_Ripemd160:
-            |push int32(0)
+            |meta translator_mark "Ripemd160 local vars definition"
+            |push null
+            |meta translator_mark "Ripemd160 method body"
             |push int32(3)
             |dupn
             |push int32(2)
@@ -44,15 +43,20 @@ object StdLibTests extends TestSuite {
             |pop
             |push int32(1)
             |dupn
+            |meta translator_mark "Ripemd160 local vars clearing"
             |swap
             |pop
             |swap
             |pop
             |swap
             |pop
+            |meta translator_mark "end of Ripemd160 method"
             |jump @stop
+            |meta translator_mark "ValidateEd25519Signature method"
             |@method_ValidateEd25519Signature:
-            |push int32(0)
+            |meta translator_mark "ValidateEd25519Signature local vars definition"
+            |push null
+            |meta translator_mark "ValidateEd25519Signature method body"
             |push int32(5)
             |dupn
             |push int32(5)
@@ -66,6 +70,7 @@ object StdLibTests extends TestSuite {
             |pop
             |push int32(1)
             |dupn
+            |meta translator_mark "ValidateEd25519Signature local vars clearing"
             |swap
             |pop
             |swap
@@ -76,12 +81,16 @@ object StdLibTests extends TestSuite {
             |pop
             |swap
             |pop
+            |meta translator_mark "end of ValidateEd25519Signature method"
             |jump @stop
-            |@ctor:
-            |push null
-            |dup
-            |sput
+            |meta translator_mark "ctor method"
+            |@method_ctor:
+            |meta translator_mark "ctor local vars definition"
+            |meta translator_mark "ctor method body"
+            |meta translator_mark "ctor local vars clearing"
+            |meta translator_mark "end of ctor method"
             |ret
+            |meta translator_mark "helper functions"
             |@stop:
           """.stripMargin).right.get
       )

@@ -68,9 +68,9 @@ namespace Com.Expload.ERC20 {
             return UintResult.FromJson(json).value;
         }
 
-        public IEnumerator BalanceOf(byte[] tokenOwner)
+        public IEnumerator BalanceOf(byte[] arg0)
         {
-            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(tokenOwner).Replace("-","") + "\"" );
+            String json = String.Format("{{ \"address\": {0}, \"method\": \"balanceOf\", \"args\": [{{ \"value\": {1}, \"tpe\": \"bytes\" }}] }}",  "\"" + BitConverter.ToString(ProgramAddress).Replace("-","") + "\"" ,  "\"" + BitConverter.ToString(arg0).Replace("-","") + "\"" );
             yield return SendJson(json);
         }
     }

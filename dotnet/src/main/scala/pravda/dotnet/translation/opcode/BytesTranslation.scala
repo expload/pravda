@@ -28,11 +28,11 @@ object BytesTranslation extends OneToManyTranslator {
 
   override def additionalFunctionsOne(
       op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.AdditionalFunction]] = op match {
+      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) =>
       Right(
         List(
-          OpcodeTranslator.AdditionalFunction(
+          OpcodeTranslator.HelperFunction(
             "array_to_bytes",
             List(
               Operation.Orphan(Opcodes.DUP),

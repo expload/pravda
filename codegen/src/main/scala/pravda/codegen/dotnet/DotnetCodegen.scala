@@ -101,16 +101,19 @@ object DotnetCodegen {
     }
   }
 
+  private def argsNames(method: Meta.MethodSignature): List[String] =
+    method.args.indices.map(i => s"arg$i").toList
+
   private def jsonArgsFormat(method: Meta.MethodSignature): (String, String) = {
-    val argsFormat = method.argTpes.zipWithIndex
+    val argsFormat = method.args.zipWithIndex
       .map {
         case (tpe, i) =>
           s"""{{ \\"value\\": {${i + 1}}, \\"tpe\\": \\"${tpe.mnemonic}\\" }}"""
       }
       .mkString(", ")
 
-    val args = "ProgramAddress" +: method.argNames
-    val tpes = Meta.TypeSignature.Bytes +: method.argTpes
+    val args = "ProgramAddress" +: argsNames(method)
+    val tpes = Meta.TypeSignature.Bytes +: method.args
 
     (
       s"""{{ \\"address\\": {0}, \\"method\\": \\"${method.name}\\", \\"args\\": [$argsFormat] }}""",
@@ -121,8 +124,8 @@ object DotnetCodegen {
   private def consturctTemplate(programName: String, methods: List[Meta.MethodSignature]): DotnetTemplate = {
 
     def constructArgs(method: Meta.MethodSignature): (String, String) = {
-      (method.argTpes.zip(method.argNames).map { case (tpe, name) => s"${tpeToDotnetTpe(tpe)} $name" }.mkString(", "),
-       method.argNames.mkString(", "))
+      (method.args.zip(argsNames(method)).map { case (tpe, name) => s"${tpeToDotnetTpe(tpe)} $name" }.mkString(", "),
+        argsNames(method).mkString(", "))
     }
 
     DotnetTemplate(

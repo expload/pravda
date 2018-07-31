@@ -8,33 +8,33 @@ object IfTests extends TestSuite {
 
   val tests = Tests {
     'ifTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("if.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("if.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse(
           """
-        |push null
-        |sexist
-        |jumpi @methods
-        |call @ctor
-        |@methods:
-        |meta method { int8(-1): "ifs", int8(-2): int8(0) }
+        |meta translator_mark "jump to methods"
+        |meta method {
+        |"name":"ifs","returnTpe":int8(0)
+        |}
         |dup
         |push "ifs"
         |eq
         |jumpi @method_ifs
         |jump @stop
+        |meta translator_mark "ifs method"
         |@method_ifs:
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |
+        |meta translator_mark "ifs local vars definition"
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |meta translator_mark "ifs method body"
         |push int32(10)
         |push int32(9)
         |swapn
@@ -59,12 +59,10 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br16
-        |
         |push int32(4)
         |push int32(9)
         |swapn
         |pop
-        |
         |@ifs_br16:
         |push int32(8)
         |dupn
@@ -86,7 +84,6 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br38
-        |
         |push int32(8)
         |dupn
         |push int32(6)
@@ -107,14 +104,11 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br37
-        |
         |push int32(7)
         |push int32(9)
         |swapn
         |pop
-        |
         |@ifs_br37:
-        |
         |@ifs_br38:
         |push int32(8)
         |dupn
@@ -136,20 +130,16 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br54
-        |
         |push int32(4)
         |push int32(9)
         |swapn
         |pop
-        |
         |jump @ifs_br58
         |@ifs_br54:
-        |
         |push int32(5)
         |push int32(9)
         |swapn
         |pop
-        |
         |@ifs_br58:
         |push int32(8)
         |dupn
@@ -190,20 +180,16 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br81
-        |
         |push int32(6)
         |push int32(9)
         |swapn
         |pop
-        |
         |jump @ifs_br85
         |@ifs_br81:
-        |
         |push int32(8)
         |push int32(9)
         |swapn
         |pop
-        |
         |@ifs_br85:
         |push int32(8)
         |dupn
@@ -239,20 +225,16 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br109
-        |
         |push int32(1)
         |push int32(9)
         |swapn
         |pop
-        |
         |jump @ifs_br113
         |@ifs_br109:
-        |
         |push int32(0)
         |push int32(9)
         |swapn
         |pop
-        |
         |@ifs_br113:
         |push int32(8)
         |dupn
@@ -304,21 +286,18 @@ object IfTests extends TestSuite {
         |push int32(1)
         |eq
         |jumpi @ifs_br141
-        |
         |push int32(2)
         |push int32(9)
         |swapn
         |pop
-        |
         |jump @ifs_br145
         |@ifs_br141:
-        |
         |push int32(3)
         |push int32(9)
         |swapn
         |pop
-        |
         |@ifs_br145:
+        |meta translator_mark "ifs local vars clearing"
         |pop
         |pop
         |pop
@@ -328,12 +307,16 @@ object IfTests extends TestSuite {
         |pop
         |pop
         |pop
+        |meta translator_mark "end of ifs method"
         |jump @stop
-        |@ctor:
-        |push null
-        |dup
-        |sput
+        |meta translator_mark "ctor method"
+        |@method_ctor:
+        |meta translator_mark "ctor local vars definition"
+        |meta translator_mark "ctor method body"
+        |meta translator_mark "ctor local vars clearing"
+        |meta translator_mark "end of ctor method"
         |ret
+        |meta translator_mark "helper functions"
         |@stop:
       """.stripMargin
         ).right.get

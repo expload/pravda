@@ -12,7 +12,7 @@ object CompareTests extends TestSuite {
 
   val tests = Tests {
     'compareParse - {
-      val Right((_, cilData, methods, signatures)) = parseFile("compare.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("compare.exe")
 
       DiffUtils.assertEqual(
         methods,
