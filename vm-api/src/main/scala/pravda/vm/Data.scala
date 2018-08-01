@@ -564,8 +564,13 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       def apply(value: Boolean): Bool =
         if (value) True else False
 
-      final case object True  extends Bool
-      final case object False extends Bool
+      def unapply(arg: Bool): Option[Boolean] = arg match {
+        case True  => Some(true)
+        case False => Some(false)
+      }
+
+      case object True  extends Bool
+      case object False extends Bool
     }
   }
 

@@ -8,6 +8,7 @@ workspace:
 pipeline:
   tests:
     image: gcr.io/time-coin/sbt:latest
+    pull: true
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
       - /var/lib/coursier-cache:/workdir/coursier
