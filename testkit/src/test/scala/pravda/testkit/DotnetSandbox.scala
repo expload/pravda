@@ -3,7 +3,6 @@ package pravda.testkit
 import java.io.{File, PrintWriter}
 import java.nio.file.Files
 
-import fastparse.all._
 import pravda.dotnet.parsers.FileParser
 import pravda.dotnet.translation.Translator
 import pravda.vm.{SandboxUtils, VmSandbox, asm}
@@ -13,25 +12,6 @@ import scala.io.Source
 import scala.sys.process._
 
 object DotnetSandbox extends TestSuite {
-
-  sealed trait FileLocation
-
-  object FileLocation {
-    final case class Resource(filename: String) extends FileLocation
-    final case class Url(url: String)           extends FileLocation
-  }
-
-  object FileLocationExtractor {
-    private def fileLocationParser(prefix: String) = P(prefix ~ "(" ~ CharsWhile(_ != ')').! ~ ")")
-    private val resourceParser = fileLocationParser("resource")
-    private val urlParser = fileLocationParser("url")
-
-    def unapply(arg: String): Option[FileLocation] = arg match {
-      case resourceParser(r) => Some(FileLocation.Resource(r))
-      case urlParser(u)      => Some(FileLocation.Url(u))
-      case other             => Some(FileLocation.Resource(other))
-    }
-  }
 
   def dotnetToAsm(content: String): List[asm.Operation] = {
     val exploadDll = new File(getClass.getResource("/expload.dll").getPath)
@@ -47,15 +27,11 @@ object DotnetSandbox extends TestSuite {
     asm
   }
 
-  def fileContent(location: FileLocation): String = location match {
-    case FileLocation.Resource(r) =>
-      Source.fromFile(new File(getClass.getResource(s"/$r").getPath)).mkString
-    case FileLocation.Url(u) => Source.fromURL(u).mkString
-  }
-
   val tests = SandboxUtils.constructTestsFromDir(
     new File(getClass.getResource("/").getPath), {
-      case VmSandbox.Macro("dotnet", List(FileLocationExtractor(loc))) => dotnetToAsm(fileContent(loc))
+      case VmSandbox.Macro("dotnet", List(filename)) =>
+        val content = Source.fromFile(new File(getClass.getResource(s"/$filename").getPath)).mkString
+        dotnetToAsm(content)
     }
   )
 }
