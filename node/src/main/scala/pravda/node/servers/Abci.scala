@@ -135,7 +135,10 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     Future.successful {
       `try` match {
         case Success(executionResult) =>
-          result(TxStatusOk, transcode(ExecutionInfo.from(executionResult)).to[Json])
+          val code =
+            if (executionResult.isSuccess) TxStatusOk
+            else TxStatusError
+          result(code, transcode(ExecutionInfo.from(executionResult)).to[Json])
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorizedException]) TxStatusUnauthorized
