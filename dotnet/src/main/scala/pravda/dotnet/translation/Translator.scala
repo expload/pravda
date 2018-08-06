@@ -31,6 +31,8 @@ import pravda.vm.{Data, Meta, Opcodes, asm}
 import pravda.dotnet.translation.opcode.{CallsTransation, OpcodeTranslator, TypeDetectors}
 import pravda.vm.Meta.TranslatorMark
 
+import scala.collection.mutable.ListBuffer
+
 object Translator {
   private def distinctFunctions(funcs: List[OpcodeTranslator.HelperFunction]) = {
     val distinctNames = funcs.map(_.name).distinct
@@ -62,37 +64,45 @@ object Translator {
           .getOrElse(List.empty)
 
       def doTranslation(cil: List[CIL.Op],
-                        offsets: Map[String, Int],
-                        stackOffsetO: Option[Int],
-                        cilOffset: Int): Either[TranslationError, List[OpCodeTranslation]] = {
-        cil match {
-          case op :: _ =>
-            for {
-              so <- StackOffsetResolver.transformStackOffset(op, offsets, stackOffsetO)
-              (_, newStackOffsetO) = so
-              asmRes <- OpcodeTranslator.asmOps(cil, newStackOffsetO, ctx)
-              (taken, opcodes) = asmRes
-              (takenCil, restCil) = cil.splitAt(taken)
-              restOffset = takenCil.map(_.size).sum
-              deltaOffset <- OpcodeTranslator.deltaOffset(cil, ctx).map(_._2)
-              restTranslations <- doTranslation(restCil,
-                                                offsets,
-                                                newStackOffsetO.map(_ + deltaOffset),
-                                                cilOffset + restOffset)
-            } yield
-              OpCodeTranslation(Right(restCil),
-                                searchForSourceMarks(cilOffset, cilOffset + restOffset),
-                                Some(cilOffset),
-                                stackOffsetO,
-                                opcodes) :: restTranslations
+                        offsets: Map[String, Int]): Either[TranslationError, List[OpCodeTranslation]] = {
 
-          case _ => Right(List.empty)
+        var curCil = cil
+        var stackOffsetO: Option[Int] = Some(0)
+        var cilOffset = 0
+        val res = ListBuffer[OpCodeTranslation]()
+        var errorE: Either[TranslationError, Unit] = Right(())
+
+        while (curCil.nonEmpty && errorE.isRight) {
+          errorE = for {
+            so <- StackOffsetResolver.transformStackOffset(curCil.head, offsets, stackOffsetO)
+            (_, newStackOffsetO) = so
+            asmRes <- OpcodeTranslator.asmOps(curCil, newStackOffsetO, ctx)
+            (taken, opcodes) = asmRes
+            (takenCil, restCil) = curCil.splitAt(taken)
+            restOffset = takenCil.map(_.size).sum
+            deltaOffset <- OpcodeTranslator.deltaOffset(curCil, ctx).map(_._2)
+          } yield {
+            res += OpCodeTranslation(Right(restCil),
+                                     searchForSourceMarks(cilOffset, cilOffset + restOffset),
+                                     Some(cilOffset),
+                                     stackOffsetO,
+                                     opcodes)
+
+            curCil = restCil
+            stackOffsetO = newStackOffsetO.map(_ + deltaOffset)
+            cilOffset += restOffset
+          }
+        }
+
+        errorE match {
+          case Left(err) => Left(err)
+          case Right(()) => Right(res.toList)
         }
       }
 
       (for {
         convergedOffsets <- StackOffsetResolver.convergeLabelOffsets(cil, ctx)
-      } yield doTranslation(cil, convergedOffsets, Some(0), 0)).joinRight
+      } yield doTranslation(cil, convergedOffsets)).joinRight
     }
 
     val clear =

@@ -6,13 +6,11 @@ preconditions:
   storage:
 
 expectations:
-  watts-spent: 305
+  watts-spent: 226
   stack:
     int32(0)
   heap:
   effects:
-   sget null,
-   sput null null,
    sget x62616C616E6365730011
 ---
 #dotnet smart_program.cs
