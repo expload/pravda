@@ -9,7 +9,7 @@ preconditions:
 
 
 expectations:
-  watts-spent: 760
+  watts-spent: 767
   stack:
   heap:
   effects:

@@ -22,7 +22,6 @@ import com.google.protobuf.ByteString
 import pravda.common.domain._
 import pravda.vm.Data
 import pravda.vm.ExecutionResult
-import pravda.vm.VmError.SomethingWrong
 import supertagged.TaggedType
 
 object blockchain {
@@ -95,10 +94,7 @@ object blockchain {
 
     def from(executionResult: ExecutionResult): ExecutionInfo = {
       ExecutionInfo(
-        error = executionResult.error.map(_.error match {
-          case SomethingWrong(err) => err.getMessage
-          case err                 => err.toString
-        }),
+        error = executionResult.error.map(_.mkString),
         spentWatts = executionResult.wattCounter.spent,
         refundWatts = executionResult.wattCounter.refund,
         totalWatts = executionResult.wattCounter.total,

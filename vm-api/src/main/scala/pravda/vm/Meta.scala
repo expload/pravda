@@ -78,7 +78,7 @@ object Meta {
         arr(0) = Data.Type.Array
         arr(1) = p.typeByte
         Data.Primitive.Bytes(ByteString.copyFrom(arr))
-      case _ => throw Data.UnknownTypeException(Data.Type.Struct, 0)
+      case _ => throw Data.UnknownTypeException(Data.Type.Struct)
     }
 
     def mnemonic: String = this match {
@@ -96,7 +96,7 @@ object Meta {
       case Utf8     => "utf8"
       case Bytes    => "bytes"
       case Array(p) => s"array ${p.mnemonic}"
-      case _        => throw Data.UnknownTypeException(Data.Type.Struct, 0)
+      case _        => throw Data.UnknownTypeException(Data.Type.Struct)
     }
   }
 
@@ -201,8 +201,17 @@ object Meta {
     }
   }
 
-  final case class LabelDef(name: String) extends Meta
-  final case class LabelUse(name: String) extends Meta
+  /** Marks only one straight following non-meta opcode */
+  sealed trait SingleMeta extends Meta
+
+  /** Marks the whole segment of opcodes before next meta of this kind */
+  sealed trait SegmentMeta extends Meta
+
+  /** Global meta, marks the whole sequence of opcodes */
+  sealed trait GlobalMeta extends Meta
+
+  final case class LabelDef(name: String) extends SingleMeta
+  final case class LabelUse(name: String) extends SingleMeta
   final case class MethodSignature(name: String, returnTpe: TypeSignature, args: List[TypeSignature]) extends Meta {
 
     def toStruct: Data.Struct = {
@@ -216,7 +225,7 @@ object Meta {
   }
   final case class ProgramName(name: String) extends Meta
   final case class SourceMark(source: String, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int)
-      extends Meta {
+      extends SegmentMeta {
 
     def toStruct: Data.Struct =
       Data.Struct(
@@ -228,14 +237,14 @@ object Meta {
           Data.Primitive.Utf8("ec") -> Data.Primitive.Int32(endColumn)
         ))
   }
-  final case class TranslatorMark(mark: String) extends Meta
+  final case class TranslatorMark(mark: String) extends SegmentMeta
   final case class Custom(name: String)         extends Meta
 
   def readFromByteBuffer(buffer: ByteBuffer): Meta = {
 
     def readData[T](toData: PartialFunction[Data, T]) = {
       val value = Data.readFromByteBuffer(buffer)
-      toData.applyOrElse(value, (_: Data) => throw Data.UnexpectedTypeException(value.getClass, buffer.position))
+      toData.applyOrElse(value, (_: Data) => throw Data.UnexpectedTypeException(value, Some(buffer.position)))
     }
 
     def readString() = readData[String] {

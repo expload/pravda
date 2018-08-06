@@ -1,6 +1,8 @@
 package pravda.dotnet
 package translation
 
+import java.io.File
+
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -202,11 +204,12 @@ object SmartProgramTests extends TestSuite {
     'smartProgramTranslationWithPdb - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("smart_program.exe")
       val Right((_, pdbTables)) = parsePdbFile("smart_program.pdb")
+      val src = new File("dotnet/src/test/resources/smart_program.cs").getAbsolutePath
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).right.get,
         PravdaAssembler.parse(
-          """
+          s"""
              |meta translator_mark "jump to methods"
              |meta method {
              |"name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
@@ -229,10 +232,10 @@ object SmartProgramTests extends TestSuite {
              |push null
              |meta translator_mark "balanceOf method body"
              |meta source_mark {
-             |"sl":int32(8),"sc":int32(44),"el":int32(8),"src":"","ec":int32(45)
+             |"sl":int32(8),"sc":int32(44),"el":int32(8),"src":"$src","ec":int32(45)
              |}
              |meta source_mark {
-             |"sl":int32(9),"sc":int32(9),"el":int32(9),"src":"","ec":int32(51)
+             |"sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$src","ec":int32(51)
              |}
              |push x62616C616E636573
              |push int32(4)
@@ -245,7 +248,7 @@ object SmartProgramTests extends TestSuite {
              |push int32(1)
              |dupn
              |meta source_mark {
-             |"sl":int32(10),"sc":int32(5),"el":int32(10),"src":"","ec":int32(6)
+             |"sl":int32(10),"sc":int32(5),"el":int32(10),"src":"$src","ec":int32(6)
              |}
              |meta translator_mark "balanceOf local vars clearing"
              |swap
@@ -263,10 +266,10 @@ object SmartProgramTests extends TestSuite {
              |push null
              |meta translator_mark "transfer method body"
              |meta source_mark {
-             |"sl":int32(12),"sc":int32(48),"el":int32(12),"src":"","ec":int32(49)
+             |"sl":int32(12),"sc":int32(48),"el":int32(12),"src":"$src","ec":int32(49)
              |}
              |meta source_mark {
-             |"sl":int32(13),"sc":int32(9),"el":int32(13),"src":"","ec":int32(24)
+             |"sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$src","ec":int32(24)
              |}
              |push int32(4)
              |dupn
@@ -289,10 +292,10 @@ object SmartProgramTests extends TestSuite {
              |eq
              |jumpi @transfer_br104
              |meta source_mark {
-             |"sl":int32(13),"sc":int32(25),"el":int32(13),"src":"","ec":int32(26)
+             |"sl":int32(13),"sc":int32(25),"el":int32(13),"src":"$src","ec":int32(26)
              |}
              |meta source_mark {
-             |"sl":int32(14),"sc":int32(13),"el":int32(14),"src":"","ec":int32(65)
+             |"sl":int32(14),"sc":int32(13),"el":int32(14),"src":"$src","ec":int32(65)
              |}
              |push x62616C616E636573
              |from
@@ -322,10 +325,10 @@ object SmartProgramTests extends TestSuite {
              |eq
              |jumpi @transfer_br103
              |meta source_mark {
-             |"sl":int32(14),"sc":int32(66),"el":int32(14),"src":"","ec":int32(67)
+             |"sl":int32(14),"sc":int32(66),"el":int32(14),"src":"$src","ec":int32(67)
              |}
              |meta source_mark {
-             |"sl":int32(15),"sc":int32(17),"el":int32(15),"src":"","ec":int32(93)
+             |"sl":int32(15),"sc":int32(17),"el":int32(15),"src":"$src","ec":int32(93)
              |}
              |push x62616C616E636573
              |from
@@ -350,7 +353,7 @@ object SmartProgramTests extends TestSuite {
              |pop
              |pop
              |meta source_mark {
-             |"sl":int32(16),"sc":int32(17),"el":int32(16),"src":"","ec":int32(71)
+             |"sl":int32(16),"sc":int32(17),"el":int32(16),"src":"$src","ec":int32(71)
              |}
              |push x62616C616E636573
              |push int32(6)
@@ -377,7 +380,7 @@ object SmartProgramTests extends TestSuite {
              |@transfer_br103:
              |@transfer_br104:
              |meta source_mark {
-             |"sl":int32(17),"sc":int32(13),"el":int32(17),"src":"","ec":int32(14)
+             |"sl":int32(17),"sc":int32(13),"el":int32(17),"src":"$src","ec":int32(14)
              |}
              |meta translator_mark "transfer local vars clearing"
              |pop
@@ -392,7 +395,7 @@ object SmartProgramTests extends TestSuite {
              |meta translator_mark "ctor local vars definition"
              |meta translator_mark "ctor method body"
              |meta source_mark {
-             |"sl":int32(6),"sc":int32(5),"el":int32(6),"src":"","ec":int32(62)
+             |"sl":int32(6),"sc":int32(5),"el":int32(6),"src":"$src","ec":int32(62)
              |}
              |meta translator_mark "ctor local vars clearing"
              |meta translator_mark "end of ctor method"

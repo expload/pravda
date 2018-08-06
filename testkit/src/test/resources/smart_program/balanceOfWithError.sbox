@@ -1,0 +1,21 @@
+preconditions:
+  watts-limit: 10000
+  stack:
+    null, "balanceOf"
+  heap:
+  storage:
+    x62616C616E6365730011 = int32(10)
+
+expectations:
+  watts-spent: 145
+  stack:
+    null, "balanceOf", null, x62616C616E636573, null, int32(0)
+  heap:
+  effects:
+  error:
+    |Unexpected type: Null
+    |  balanceOf method body (smart_program.cs:9,9-9,51)
+    |  balanceOf method body (smart_program.cs:9,9-9,51)
+
+---
+#dotnet smart_program.cs

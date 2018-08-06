@@ -22,12 +22,14 @@ import java.nio.ByteBuffer
 import pravda.vm.VmError.{CallStackOverflow, CallStackUnderflow}
 import pravda.vm.WattCounter.{CpuProgControl, CpuSimpleArithmetic}
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Memory, Opcodes, VmErrorException, WattCounter}
+import pravda.vm._
 
 import scala.collection.mutable
 
 final class ControlOperations(program: ByteBuffer,
                               callStack: mutable.Buffer[Int],
+                              metas: mutable.Buffer[Meta],
+                              callMetaStack: mutable.Buffer[List[Meta]],
                               memory: Memory,
                               wattCounter: WattCounter) {
 
@@ -65,7 +67,8 @@ final class ControlOperations(program: ByteBuffer,
     val currentOffset = program.position()
     val callOffset = ref(memory.pop())
     callStack += currentOffset
-    if (callStack.size > 1024) {
+    callMetaStack += metas.toList
+    if (callStack.size > 1024 || callMetaStack.size > 1024) {
       throw VmErrorException(CallStackOverflow)
     }
     program.position(callOffset.data)
@@ -77,10 +80,11 @@ final class ControlOperations(program: ByteBuffer,
       "value of the first item of the call stack (see CALL opcode)."
   )
   def ret(): Unit = {
-    if (callStack.isEmpty) {
+    if (callStack.isEmpty || callMetaStack.isEmpty) {
       throw VmErrorException(CallStackUnderflow)
     }
     val offset = callStack.remove(callStack.length - 1)
+    callMetaStack.remove(callMetaStack.length - 1)
     program.position(offset)
   }
 }

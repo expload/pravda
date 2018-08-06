@@ -22,8 +22,8 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import pravda.common.domain
 import pravda.common.domain.Address
-import pravda.vm.StackTrace.Point
-import pravda.vm.VmError.{NoSuchProgram, SomethingWrong}
+import pravda.vm.Meta.{GlobalMeta, SegmentMeta}
+import pravda.vm.VmError.{NoSuchProgram, UnexpectedError}
 import pravda.vm.WattCounter.{CpuBasic, CpuStorageUse}
 import pravda.vm._
 import pravda.vm.operations._
@@ -57,7 +57,7 @@ class VmImpl extends Vm {
             pcallAllowed: Boolean): ExecutionResult = {
     wattCounter.cpuUsage(CpuStorageUse)
     environment.getProgram(programAddress) match {
-      case None => ExecutionResult(memory, Some(VmErrorException(NoSuchProgram)), wattCounter)
+      case None => ExecutionResult(memory, Some(VmErrorResult(NoSuchProgram, Seq.empty, Seq.empty, None)), wattCounter)
       case Some(program) =>
         program.code.rewind()
         spawn(program.code, environment, memory, wattCounter, Some(program.storage), Some(programAddress), pcallAllowed)
@@ -73,12 +73,21 @@ class VmImpl extends Vm {
             pcallAllowed: Boolean): ExecutionResult = {
 
     val callStack = new ArrayBuffer[Int](1024)
+    val callMetaStack = new ArrayBuffer[List[Meta]](1024)
+    val curMetas = new ArrayBuffer[Meta](1024)
+
+    def filterMetas(pred: Meta => Boolean) = {
+      val newMetas = curMetas.filter(pred)
+      curMetas.clear()
+      curMetas ++= newMetas
+    }
+
     val logicalOperations = new LogicalOperations(memory, counter)
     val arithmeticOperations = new ArithmeticOperations(memory, counter)
     val storageOperations = new StorageOperations(memory, maybeStorage, counter)
     val heapOperations = new HeapOperations(memory, program, counter)
     val stackOperations = new StackOperations(memory, program, counter)
-    val controlOperations = new ControlOperations(program, callStack, memory, counter)
+    val controlOperations = new ControlOperations(program, callStack, curMetas, callMetaStack, memory, counter)
     val nativeCoinOperations = new NativeCoinOperations(memory, environment, counter, maybeProgramAddress)
     val systemOperations =
       new SystemOperations(memory, maybeStorage, counter, environment, maybeProgramAddress, StandardLibrary.Index, this)
@@ -91,7 +100,8 @@ class VmImpl extends Vm {
       while (continue && program.hasRemaining) {
         lastOpcodePosition = program.position()
         counter.cpuUsage(CpuBasic)
-        (program.get() & 0xff: @switch) match {
+        val op = program.get() & 0xff
+        (op: @switch) match {
           // Control operations
           case CALL  => controlOperations.call()
           case RET   => controlOperations.ret()
@@ -152,22 +162,44 @@ class VmImpl extends Vm {
           case SEAL    => systemOperations.seal()
           case PUPDATE => systemOperations.pupdate()
           case PADDR   => systemOperations.paddr()
-          case META    => Meta.readFromByteBuffer(program)
           case PCALL =>
             if (pcallAllowed) {
               systemOperations.pcall()
             }
+          case _ =>
+        }
+
+        op match {
+          case META =>
+            val newMeta = Meta.readFromByteBuffer(program)
+            if (newMeta.isInstanceOf[Meta.SegmentMeta]) {
+              filterMetas(_.getClass != newMeta.getClass)
+            }
+            curMetas += newMeta
+          case _    =>
+            filterMetas(m => m.isInstanceOf[GlobalMeta] || m.isInstanceOf[SegmentMeta])
         }
       }
       ExecutionResult(memory, None, counter)
     } catch {
-      case err: VmErrorException =>
-        err.addToTrace(Point(callStack, lastOpcodePosition, maybeProgramAddress))
-        ExecutionResult(memory, Some(err), counter)
-      case cause: Throwable =>
-        val err =
-          VmErrorException(SomethingWrong(cause)).addToTrace(Point(callStack, lastOpcodePosition, maybeProgramAddress))
-        ExecutionResult(memory, Some(err), counter)
+      case err: Throwable =>
+        callStack += lastOpcodePosition
+        callMetaStack += curMetas.toList
+
+        err match {
+          case VmErrorException(e) =>
+            ExecutionResult(
+              memory,
+              Some(VmErrorResult(e, callStack :+ lastOpcodePosition, callMetaStack, maybeProgramAddress)),
+              counter
+            )
+          case cause: Throwable =>
+            ExecutionResult(
+              memory,
+              Some(VmErrorResult(UnexpectedError(cause), callStack, callMetaStack, maybeProgramAddress)),
+              counter
+            )
+        }
     }
   }
 }

@@ -122,6 +122,14 @@ object Heaps {
     header ~ go(true, true, 0, 0, 0)
   }
 
+  val documentName: P[(String, List[Int])] = {
+    val sep = P(AnyBytes(1).!).map(bs => if (bs(0) == 0) "" else new String(bs.toArray, "UTF-8"))
+    val parts = P(compressedUInt.rep).map(_.toList)
+    sep ~ parts
+  }
+
+  val blobUtf8: P[String] = P(AnyByte.rep.!).map(bs => new String(bs.toArray, "UTF-8"))
+
   def blob(blobHeap: Bytes, idx: Long): Either[String, Bytes] = {
     blobBytes.parse(blobHeap, idx.toInt).toEither
   }

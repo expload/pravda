@@ -2,6 +2,8 @@ package pravda.dotnet
 
 package parsers
 
+import java.io.File
+
 import pravda.common.DiffUtils
 import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.Method
@@ -171,12 +173,17 @@ object SmartProgramTests extends TestSuite {
       )
     }
 
-    'smart_program_pdb - {
+    'smartProgramPdb - {
       val Right((pdb, tables)) = parsePdbFile("smart_program.pdb")
+      val src = new File("dotnet/src/test/resources/smart_program.cs").getAbsolutePath
+
       tables.methodDebugInformationTable ==> Vector(
+        MethodDebugInformationData(Some(src),
+                                   List(SequencePoint(0, 8, 44, 8, 45),
+                                        SequencePoint(1, 9, 9, 9, 51),
+                                        SequencePoint(17, 10, 5, 10, 6))),
         MethodDebugInformationData(
-          List(SequencePoint(0, 8, 44, 8, 45), SequencePoint(1, 9, 9, 9, 51), SequencePoint(17, 10, 5, 10, 6))),
-        MethodDebugInformationData(
+          Some(src),
           List(
             SequencePoint(0, 12, 48, 12, 49),
             SequencePoint(1, 13, 9, 13, 24),
@@ -188,10 +195,11 @@ object SmartProgramTests extends TestSuite {
             SequencePoint(102, 17, 13, 17, 14),
             SequencePoint(103, 18, 9, 18, 10),
             SequencePoint(104, 19, 5, 19, 6)
-          )),
-        MethodDebugInformationData(List(SequencePoint(0, 6, 5, 6, 62))),
-        MethodDebugInformationData(List(SequencePoint(0, 23, 31, 23, 32), SequencePoint(1, 23, 32, 23, 33))),
-        MethodDebugInformationData(List())
+          )
+        ),
+        MethodDebugInformationData(Some(src), List(SequencePoint(0, 6, 5, 6, 62))),
+        MethodDebugInformationData(Some(src), List(SequencePoint(0, 23, 31, 23, 32), SequencePoint(1, 23, 32, 23, 33))),
+        MethodDebugInformationData(None, List())
       )
 
     }

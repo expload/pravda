@@ -13,7 +13,7 @@ preconditions:
     x5065745369676E617475726570657432 = x5678
 
 expectations:
-  watts-spent: 1760
+  watts-spent: 1767
   stack:
     "pet1pet2"
   heap:

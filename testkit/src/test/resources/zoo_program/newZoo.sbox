@@ -8,7 +8,7 @@ preconditions:
     "PetId" = int32(1)
 
 expectations:
-  watts-spent: 807
+  watts-spent: 812
   stack:
     int32(1)
   heap:

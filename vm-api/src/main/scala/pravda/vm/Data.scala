@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes.{byteString2hex, hex2byteString}
+import pravda.vm.Data.Primitive.Bool.{False, True}
 import supertagged.TaggedType
 
 import scala.annotation.{strictfp, switch, tailrec}
@@ -40,6 +41,39 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     writeToByteBuffer(buffer)
     buffer.flip()
     buffer.remaining()
+  }
+
+  // We can't use x.getClass.getSimpleName because of open issue https://github.com/scala/bug/issues/2034
+  def typeString: String = {
+    this match {
+      case Int8(_)        => "Int8"
+      case Int16(_)       => "Int16"
+      case Int32(_)       => "Int32"
+      case Uint8(_)       => "Uint8"
+      case Uint16(_)      => "Uint16"
+      case Uint32(_)      => "Uint32"
+      case BigInt(_)      => "BigInt"
+      case Number(_)      => "Number"
+      case Utf8(_)        => "Utf8"
+      case Bytes(_)       => "Bytes"
+      case Ref(_)         => "Ref"
+      case Int8Array(_)   => "Int8Array"
+      case Int16Array(_)  => "Int16Array"
+      case Int32Array(_)  => "Int32Array"
+      case Uint8Array(_)  => "Uint8Array"
+      case Uint16Array(_) => "Uint16Array"
+      case Uint32Array(_) => "Uint32Array"
+      case BigIntArray(_) => "BigIntArray"
+      case NumberArray(_) => "NumberArray"
+      case RefArray(_)    => "RefArray"
+      case BoolArray(_)   => "BoolArray"
+      case Utf8Array(_)   => "Utf8Array"
+      case BytesArray(_)  => "BytesArray"
+      case Struct(_)      => "Struct"
+      case Null           => "Null"
+      case True           => "True"
+      case False          => "False"
+    }
   }
 
   def mkString(untypedNumerics: Boolean = false, escapeUnicode: Boolean = false, pretty: Boolean = false): String = {
@@ -529,7 +563,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
             Bytes(ByteString.copyFrom(array))
         }
       case _ =>
-        throw UnexpectedTypeException(this.getClass, -1)
+        throw UnexpectedTypeException(this)
     }
   }
 
@@ -857,7 +891,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val offset = buffer.position()
       readFromByteBuffer(buffer) match {
         case x: Primitive => x
-        case x            => throw UnexpectedTypeException(x.getClass, offset)
+        case x            => throw UnexpectedTypeException(x, Some(offset))
       }
     }
 
@@ -915,11 +949,11 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     }
   }
 
-  final case class UnknownTypeException(typeTag: Type, offset: Int)
-      extends Exception(s"Unknown type: $typeTag at $offset")
+  final case class UnknownTypeException(typeTag: Type, offset: Option[Int] = None)
+      extends Exception(s"Unknown type: $typeTag${offset.map(o => s" at $o").getOrElse("")}")
 
-  final case class UnexpectedTypeException(`type`: Class[_ <: Data], offset: Int)
-      extends Exception(s"Unexpected type: ${`type`.getName} at $offset")
+  final case class UnexpectedTypeException(data: Data, offset: Option[Int] = None)
+      extends Exception(s"Unexpected type: ${data.typeString}${offset.map(o => s" at $o").getOrElse("")}")
 
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
       extends Exception(s"Unexpected length: $expected expected but $given given at $offset")

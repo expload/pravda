@@ -21,6 +21,7 @@ import pravda.dotnet.parsers.PE.Info._
 import pravda.dotnet.parsers.TablesInfo._
 
 import cats.instances.vector._
+import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 
@@ -36,6 +37,7 @@ final case class TablesData(
     typeRefTable: Vector[TablesData.TypeRefData],
     typeSpecTable: Vector[TablesData.TypeSpecData],
     standAloneSigTable: Vector[TablesData.StandAloneSigData],
+    documentTable: Vector[TablesData.DocumentData],
     methodDebugInformationTable: Vector[TablesData.MethodDebugInformationData]
 ) {
 
@@ -78,7 +80,8 @@ object TablesData {
 
   final case class StandAloneSigData(signatureIdx: Long) extends TableRowData
 
-  final case class MethodDebugInformationData( /* documentIdx is ignored */ points: List[Heaps.SequencePoint])
+  final case class DocumentData(path: String)
+  final case class MethodDebugInformationData(document: Option[String], points: List[Heaps.SequencePoint])
       extends TableRowData
 
   case object Ignored extends TableRowData
@@ -181,21 +184,35 @@ object TablesData {
           } yield MemberRefData(cls, name, signatureIdx)
       }.sequence
 
-    val methodDebugInformationListV =
+    val documentListV: Either[String, Vector[DocumentData]] =
+      peData.tables.documentTable.map {
+        case DocumentRow(nameIdx, _, _, _) =>
+          for {
+            nameBlob <- Heaps.blob(peData.blobHeap, nameIdx)
+            nameRes <- Heaps.documentName.parse(nameBlob).toEither
+            (sep, parts) = nameRes
+            partsBlobs <- parts.map(p => Heaps.blob(peData.blobHeap, p.toLong)).sequence
+            partsStrs <- partsBlobs.map(b => Heaps.blobUtf8.parse(b).toEither).sequence
+          } yield DocumentData(partsStrs.mkString(sep))
+      }.sequence
+
+    def methodDebugInformationListV(documentList: Vector[DocumentData]) =
       peData.tables.methodDebugInformationTable.map {
         case MethodDebugInformationRow(documentIdx, seqPoints) =>
           // if documentIdx is 0 than we skip one compressedUInt in header
           // it's not implemented yet
           // possibly it's very rare and won't be a problem
+          val document = if (documentIdx == 0) None else Some(documentList(documentIdx.toInt - 1).path)
+
           if (seqPoints != 0) {
             for {
               blob <- Heaps.blob(peData.blobHeap, seqPoints)
-              seqPoints <- Heaps.sequencePoints.parse(blob).toEither
+              seqPoints <- if (blob.nonEmpty) Heaps.sequencePoints.parse(blob).toEither else Right(List.empty)
             } yield {
-              MethodDebugInformationData(seqPoints)
+              MethodDebugInformationData(document, seqPoints)
             }
           } else {
-            Right(MethodDebugInformationData(List.empty))
+            Right(MethodDebugInformationData(document, List.empty))
           }
       }.sequence
 
@@ -207,17 +224,21 @@ object TablesData {
       typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
       memberRefList <- memberRefListV(typeDefList, typeRefList)
-      methodDebugInformationList <- methodDebugInformationListV
+      documentList <- documentListV
+      methodDebugInformationList <- methodDebugInformationListV(documentList)
     } yield
-      TablesData(fieldList,
-                 fieldRVAList,
-                 memberRefList,
-                 methodList,
-                 paramList,
-                 typeDefList,
-                 typeRefList,
-                 typeSpecList,
-                 standAlongSigList,
-                 methodDebugInformationList)
+      TablesData(
+        fieldList,
+        fieldRVAList,
+        memberRefList,
+        methodList,
+        paramList,
+        typeDefList,
+        typeRefList,
+        typeSpecList,
+        standAlongSigList,
+        documentList,
+        methodDebugInformationList
+      )
   }
 }

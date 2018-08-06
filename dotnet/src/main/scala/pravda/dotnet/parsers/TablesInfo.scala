@@ -30,6 +30,7 @@ final case class TablesInfo(
     typeRefTable: Vector[TablesInfo.TypeRefRow] = Vector.empty,
     typeSpecTable: Vector[TablesInfo.TypeSpecRow] = Vector.empty,
     standAloneSigTable: Vector[TablesInfo.StandAloneSigRow] = Vector.empty,
+    documentTable: Vector[TablesInfo.DocumentRow] = Vector.empty,
     methodDebugInformationTable: Vector[TablesInfo.MethodDebugInformationRow] = Vector.empty
 )
 
@@ -149,7 +150,8 @@ object TablesInfo {
 
   // PDB tables
 
-  case object DocumentRow extends TableRowInfo
+  final case class DocumentRow(nameIdx: Long, hashAlgorithnIdx: Long, hashIdx: Long, languageIdx: Long)
+      extends TableRowInfo
 
   final case class MethodDebugInformationRow(documentIdx: Long, seqPoints: Long) extends TableRowInfo
 
@@ -289,9 +291,9 @@ object TablesInfo {
 
   // PDB tables
 
-  def documentRow(indexes: TableIndexes): P[DocumentRow.type] =
-    P(AnyBytes(indexes.blobHeap.size + indexes.guidHeap.size + indexes.blobHeap.size + indexes.guidHeap.size))
-      .map(_ => DocumentRow)
+  def documentRow(indexes: TableIndexes): P[DocumentRow] =
+    P(indexes.blobHeap.parser ~ indexes.guidHeap.parser ~ indexes.blobHeap.parser ~ indexes.guidHeap.parser)
+      .map(DocumentRow.tupled)
 
   def methodDebugInformationRow(indexes: TableIndexes): P[MethodDebugInformationRow] =
     P(indexes.document.parser ~ indexes.blobHeap.parser).map(MethodDebugInformationRow.tupled)
@@ -370,7 +372,10 @@ object TablesInfo {
       case 42 => tablesId(genericParamRow)
       case 43 => tablesId(methodSpecRow)
       case 44 => tablesId(genericParamConstraintRow)
-      case 48 => tablesId(documentRow)
+      // 45
+      // 46
+      // 47
+      case 48 => tableRep(documentRow).map(r => Right(_.copy(documentTable = r)))
       case 49 => tableRep(methodDebugInformationRow).map(r => Right(_.copy(methodDebugInformationTable = r)))
       case 50 => tablesId(localScopeRow)
       case 51 => tablesId(localVariableRow)

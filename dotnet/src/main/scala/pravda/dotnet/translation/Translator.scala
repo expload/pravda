@@ -58,8 +58,10 @@ object Translator {
 
       def searchForSourceMarks(cilOffsetStart: Int, cilOffsetEnd: Int): List[Meta.SourceMark] =
         debugInfo
-          .map(_.points.filter(p => p.ilOffset >= cilOffsetStart && p.ilOffset < cilOffsetEnd).map {
-            case Heaps.SequencePoint(_, sl, sc, el, ec) => Meta.SourceMark("", sl, sc, el, ec)
+          .map(info =>
+            info.points.filter(p => p.ilOffset >= cilOffsetStart && p.ilOffset < cilOffsetEnd).map {
+              case Heaps.SequencePoint(_, sl, sc, el, ec) =>
+                Meta.SourceMark(info.document.getOrElse("cs file"), sl, sc, el, ec)
           })
           .getOrElse(List.empty)
 

@@ -6,7 +6,7 @@ preconditions:
   storage:
 
 expectations:
-  watts-spent: 226
+  watts-spent: 229
   stack:
     int32(0)
   heap:
