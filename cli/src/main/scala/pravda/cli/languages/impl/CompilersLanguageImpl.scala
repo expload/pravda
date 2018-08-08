@@ -24,7 +24,6 @@ import pravda.dotnet.parsers.{FileParser => DotnetParser}
 import pravda.dotnet.translation.{Translator => DotnetTranslator, TranslationVisualizer => DotnetVisualizer}
 import pravda.vm.asm.PravdaAssembler
 
-
 import cats.instances.either._
 import cats.instances.option._
 import cats.syntax.traverse._
@@ -54,14 +53,15 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
     } yield PravdaAssembler.assemble(ops, saveLabels = true)
   }
 
-  def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Future[Either[String, (ByteString, String)]] = Future {
-    for {
-      pe <- DotnetParser.parsePe(source.toByteArray)
-      pdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray).map(_._2)).sequence
-      (_, cilData, methods, signatures) = pe
-      translation <- DotnetTranslator.translateVerbose(methods, cilData, signatures, pdb).left.map(_.mkString)
-      asm = DotnetTranslator.translationToAsm(translation)
-      code = PravdaAssembler.assemble(asm, saveLabels = true)
-    } yield (code, DotnetVisualizer.visualize(translation))
-  }
+  def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Future[Either[String, (ByteString, String)]] =
+    Future {
+      for {
+        pe <- DotnetParser.parsePe(source.toByteArray)
+        pdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray).map(_._2)).sequence
+        (_, cilData, methods, signatures) = pe
+        translation <- DotnetTranslator.translateVerbose(methods, cilData, signatures, pdb).left.map(_.mkString)
+        asm = DotnetTranslator.translationToAsm(translation)
+        code = PravdaAssembler.assemble(asm, saveLabels = true)
+      } yield (code, DotnetVisualizer.visualize(translation))
+    }
 }
