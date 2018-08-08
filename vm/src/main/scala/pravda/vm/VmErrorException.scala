@@ -38,9 +38,10 @@ final case class VmErrorResult(error: VmError,
 }
 
 object VmErrorResult {
+
   def constructStackTraceLine(metas: List[Meta], pos: Int): String = {
     val translatorMessage = metas.collectFirst { case TranslatorMark(mark) => mark }
-    val sources = metas.collectFirst { case s: SourceMark => s.markString }
+    val sources = metas.collectFirst { case s: SourceMark                  => s.markString }
     s"${translatorMessage.getOrElse(s"program:$pos")}${sources.map(s => s" ($s)").getOrElse("")}"
   }
 }

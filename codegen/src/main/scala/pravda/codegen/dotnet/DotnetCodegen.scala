@@ -125,7 +125,7 @@ object DotnetCodegen {
 
     def constructArgs(method: Meta.MethodSignature): (String, String) = {
       (method.args.zip(argsNames(method)).map { case (tpe, name) => s"${tpeToDotnetTpe(tpe)} $name" }.mkString(", "),
-        argsNames(method).mkString(", "))
+       argsNames(method).mkString(", "))
     }
 
     DotnetTemplate(

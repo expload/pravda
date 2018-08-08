@@ -56,7 +56,7 @@ object Signatures {
     final case class Cls(typeDefOrRef: TableRowData)                 extends SigType
     final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
-    final case class Var(num: Int)                                  extends SigType
+    final case class Var(num: Int)                                   extends SigType
 
     final case class ArrayShape(rank: Int, sizes: List[Int], loBounds: List[Int])
     final case class Arr(tpe: SigType, shape: ArrayShape) extends SigType

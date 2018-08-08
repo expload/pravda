@@ -34,6 +34,7 @@ final case class InternalError(err: String) extends InnerTranslationError {
 }
 
 final case class TranslationError(inner: InnerTranslationError, pos: Option[Meta.SourceMark]) {
+
   def mkString: String = {
     s"${inner.mkString}${pos.map(p => s"\n  ${p.markString}").getOrElse("")}"
   }

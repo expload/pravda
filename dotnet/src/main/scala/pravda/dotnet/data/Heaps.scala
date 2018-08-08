@@ -45,7 +45,9 @@ object Heaps {
     } else if ((b & 0x40) == 0) {
       P(Int8).map(b2 => ((b & 0x3F) << 8) | (b2 & 0xff))
     } else {
-      P(Int8 ~ Int8 ~ Int8).map { case (b2, b3, b4) => ((b & 0x1F) << 24) | ((b2 & 0xff) << 16) | ((b3 & 0xff) << 8) | (b4 & 0xff) }
+      P(Int8 ~ Int8 ~ Int8).map {
+        case (b2, b3, b4) => ((b & 0x1F) << 24) | ((b2 & 0xff) << 16) | ((b3 & 0xff) << 8) | (b4 & 0xff)
+      }
     }
   })
 
@@ -59,7 +61,7 @@ object Heaps {
       P(Int8 ~ Int8 ~ Int8).map {
         case (b2, b3, b4) =>
           ((b & 0x1F) << 23) | ((b2 & 0xff) << 15) | ((b3 & 0xff) << 7) | ((b4 & 0xFE) >> 1) | ((-(b4 & 1)) & 0xF0000000)
-          // Our spec taught us not to be ashamed of our codded ints, 'specially since they're such good size and all
+        // Our spec taught us not to be ashamed of our codded ints, 'specially since they're such good size and all
       }
     }
   }) // FIXME we really want to have tests here

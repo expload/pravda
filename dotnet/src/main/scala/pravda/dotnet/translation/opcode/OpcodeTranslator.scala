@@ -34,7 +34,8 @@ trait OpcodeTranslator {
     : Either[InnerTranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
     Left(UnknownOpcode)
 
-  def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)]
+  def deltaOffset(ops: List[CIL.Op],
+                  ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)]
 
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],

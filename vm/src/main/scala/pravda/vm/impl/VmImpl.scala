@@ -176,7 +176,7 @@ class VmImpl extends Vm {
               filterMetas(_.getClass != newMeta.getClass)
             }
             curMetas += newMeta
-          case _    =>
+          case _ =>
             filterMetas(m => m.isInstanceOf[GlobalMeta] || m.isInstanceOf[SegmentMeta])
         }
       }
