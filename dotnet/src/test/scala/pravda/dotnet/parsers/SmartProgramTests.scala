@@ -2,8 +2,6 @@ package pravda.dotnet
 
 package parsers
 
-import java.io.File
-
 import pravda.common.DiffUtils
 import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.Method
@@ -175,7 +173,7 @@ object SmartProgramTests extends TestSuite {
 
     'smartProgramPdb - {
       val Right((pdb, tables)) = parsePdbFile("smart_program.pdb")
-      val src = new File("dotnet/src/test/resources/smart_program.cs").getAbsolutePath
+      val src = "/tmp/pravda/smart_program.cs"
 
       tables.methodDebugInformationTable ==> Vector(
         MethodDebugInformationData(Some(src),

@@ -2,8 +2,6 @@ package pravda.dotnet
 
 package parsers
 
-import java.io.File
-
 import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
@@ -48,10 +46,9 @@ object MiscTests extends TestSuite {
 
     'hello_world_pdb - {
       val Right((pdb, tables)) = parsePdbFile("hello_world.pdb")
-      val src = new File("dotnet/src/test/resources/hello_world.cs").getAbsolutePath
 
       tables.methodDebugInformationTable ==> Vector(
-        MethodDebugInformationData(Some(src),
+        MethodDebugInformationData(Some("/tmp/pravda/hello_world.cs"),
                                    List(SequencePoint(0, 6, 5, 6, 6),
                                         SequencePoint(1, 7, 9, 7, 43),
                                         SequencePoint(12, 8, 5, 8, 6))),

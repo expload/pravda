@@ -1,8 +1,6 @@
 package pravda.dotnet
 package translation
 
-import java.io.File
-
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
@@ -204,7 +202,7 @@ object SmartProgramTests extends TestSuite {
     'smartProgramTranslationWithPdb - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("smart_program.exe")
       val Right((_, pdbTables)) = parsePdbFile("smart_program.pdb")
-      val src = new File("dotnet/src/test/resources/smart_program.cs").getAbsolutePath
+      val src = "/tmp/pravda/smart_program.cs"
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).right.get,
