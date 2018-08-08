@@ -17,6 +17,7 @@
 
 package pravda.dotnet.translation.data
 
+import pravda.dotnet.data.TablesData.MethodDebugInformationData
 import pravda.dotnet.parsers.CIL.CilData
 import pravda.dotnet.parsers.Signatures
 
@@ -26,4 +27,5 @@ final case class MethodTranslationCtx(argsCount: Int,
                                       signatures: Map[Long, Signatures.Signature],
                                       cilData: CilData,
                                       local: Boolean,
-                                      void: Boolean)
+                                      void: Boolean,
+                                      debugInfo: Option[MethodDebugInformationData])

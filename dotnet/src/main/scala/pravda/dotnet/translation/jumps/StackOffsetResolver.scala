@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.dotnet.translation.jumps
+package pravda.dotnet.translation
+
+package jumps
 
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
@@ -24,9 +26,10 @@ import pravda.dotnet.translation.opcode.{JumpsTranslation, OpcodeTranslator}
 
 object StackOffsetResolver {
 
-  def transformStackOffset(op: CIL.Op,
-                           labelOffsets: Map[String, Int],
-                           stackOffsetO: Option[Int]): Either[TranslationError, (Map[String, Int], Option[Int])] = {
+  def transformStackOffset(
+      op: CIL.Op,
+      labelOffsets: Map[String, Int],
+      stackOffsetO: Option[Int]): Either[InnerTranslationError, (Map[String, Int], Option[Int])] = {
 
     val unstableStackError = {
       Left(InternalError("Unsupported sequence of instructions: stack is unstable"))
@@ -61,37 +64,37 @@ object StackOffsetResolver {
     }
   }
 
-  private def traverseLabelOffsets(opcodes: List[CIL.Op],
-                                   initLabelOffsets: Map[String, Int],
-                                   ctx: MethodTranslationCtx): Either[TranslationError, Map[String, Int]] = {
+  def convergeLabelOffsets(cil: List[CIL.Op], ctx: MethodTranslationCtx): Either[TranslationError, Map[String, Int]] = {
+    var errorE: Either[InnerTranslationError, Unit] = Right(())
+    var cilOffset = 0
+    var lastOffsets = Map.empty[String, Int]
+    var offsets = Map.empty[String, Int]
 
-    def doTraverse(opcodes: List[CIL.Op],
-                   offsets: Map[String, Int],
-                   stackOffsetO: Option[Int]): Either[TranslationError, Map[String, Int]] =
-      opcodes match {
-        case op :: _ =>
-          for {
-            so <- transformStackOffset(op, offsets, stackOffsetO)
-            (newLabelOffsets, newStackOffsetO) = so
-            offsetRes <- OpcodeTranslator.deltaOffset(opcodes, ctx)
-            (taken, deltaOffset) = offsetRes
-            newOffsets <- doTraverse(opcodes.drop(taken), newLabelOffsets, newStackOffsetO.map(_ + deltaOffset))
-          } yield newOffsets
-        case _ => Right(offsets)
+    do {
+      var curCil = cil
+      var stackOffsetO: Option[Int] = Some(0)
+      cilOffset = 0
+      lastOffsets = offsets
+
+      while (curCil.nonEmpty && errorE.isRight) {
+        errorE = for {
+          so <- transformStackOffset(curCil.head, offsets, stackOffsetO)
+          (newLabelOffsets, newStackOffsetO) = so
+          offsetRes <- OpcodeTranslator.deltaOffset(curCil, ctx)
+          (taken, deltaOffset) = offsetRes
+        } yield {
+          val (takenCil, restCil) = curCil.splitAt(taken)
+          curCil = restCil
+          stackOffsetO = newStackOffsetO.map(_ + deltaOffset)
+          cilOffset += takenCil.map(_.size).sum
+          offsets = newLabelOffsets
+        }
       }
+    } while (errorE.isRight && offsets != lastOffsets)
 
-    doTraverse(opcodes, initLabelOffsets, Some(0))
-  }
-
-  def convergeLabelOffsets(opcodes: List[CIL.Op],
-                           ctx: MethodTranslationCtx): Either[TranslationError, Map[String, Int]] = {
-    def go(labelOffsets: Map[String, Int]): Either[TranslationError, Map[String, Int]] = {
-      for {
-        newOffsets <- traverseLabelOffsets(opcodes, labelOffsets, ctx)
-        nextGo <- if (newOffsets != labelOffsets) go(newOffsets) else Right(newOffsets)
-      } yield nextGo
+    errorE match {
+      case Left(err) => Left(TranslationError(err, ctx.debugInfo.flatMap(DebugInfo.firstSourceMark(_, cilOffset))))
+      case Right(()) => Right(offsets)
     }
-
-    go(Map.empty)
   }
 }

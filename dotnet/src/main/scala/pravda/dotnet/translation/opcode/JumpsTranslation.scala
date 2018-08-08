@@ -29,7 +29,7 @@ case object JumpsTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffset: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] =
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] =
     op match {
       case Jump(label) => Right(List(asm.Operation.Jump(Some(label))))
       case JumpI(label) =>

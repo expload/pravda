@@ -20,7 +20,7 @@ package pravda.dotnet.translation
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
-import pravda.dotnet.data.{Heaps, Method, TablesData}
+import pravda.dotnet.data.{Method, TablesData}
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.{CIL, Signatures}
@@ -34,6 +34,7 @@ import pravda.vm.Meta.TranslatorMark
 import scala.collection.mutable.ListBuffer
 
 object Translator {
+
   private def distinctFunctions(funcs: List[OpcodeTranslator.HelperFunction]) = {
     val distinctNames = funcs.map(_.name).distinct
     distinctNames.flatMap(name => funcs.find(_.name == name))
@@ -52,19 +53,9 @@ object Translator {
       kind: String,
       debugInfo: Option[MethodDebugInformationData]): Either[TranslationError, MethodTranslation] = {
 
-    val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void)
+    val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void, debugInfo)
 
     val opTranslationsE = {
-
-      def searchForSourceMarks(cilOffsetStart: Int, cilOffsetEnd: Int): List[Meta.SourceMark] =
-        debugInfo
-          .map(info =>
-            info.points.filter(p => p.ilOffset >= cilOffsetStart && p.ilOffset < cilOffsetEnd).map {
-              case Heaps.SequencePoint(_, sl, sc, el, ec) =>
-                Meta.SourceMark(info.document.getOrElse("cs file"), sl, sc, el, ec)
-          })
-          .getOrElse(List.empty)
-
       def doTranslation(cil: List[CIL.Op],
                         offsets: Map[String, Int]): Either[TranslationError, List[OpCodeTranslation]] = {
 
@@ -72,32 +63,37 @@ object Translator {
         var stackOffsetO: Option[Int] = Some(0)
         var cilOffset = 0
         val res = ListBuffer[OpCodeTranslation]()
-        var errorE: Either[TranslationError, Unit] = Right(())
+        var errorE: Either[InnerTranslationError, Unit] = Right(())
 
         while (curCil.nonEmpty && errorE.isRight) {
+
           errorE = for {
             so <- StackOffsetResolver.transformStackOffset(curCil.head, offsets, stackOffsetO)
             (_, newStackOffsetO) = so
             asmRes <- OpcodeTranslator.asmOps(curCil, newStackOffsetO, ctx)
             (taken, opcodes) = asmRes
             (takenCil, restCil) = curCil.splitAt(taken)
-            restOffset = takenCil.map(_.size).sum
+            takenOffset = takenCil.map(_.size).sum
             deltaOffset <- OpcodeTranslator.deltaOffset(curCil, ctx).map(_._2)
           } yield {
-            res += OpCodeTranslation(Right(restCil),
-                                     searchForSourceMarks(cilOffset, cilOffset + restOffset),
-                                     Some(cilOffset),
-                                     stackOffsetO,
-                                     opcodes)
+            res += OpCodeTranslation(
+              Right(restCil),
+              debugInfo
+                .map(DebugInfo.searchForSourceMarks(_, cilOffset, cilOffset + takenOffset))
+                .getOrElse(List.empty),
+              Some(cilOffset),
+              stackOffsetO,
+              opcodes
+            )
 
             curCil = restCil
             stackOffsetO = newStackOffsetO.map(_ + deltaOffset)
-            cilOffset += restOffset
+            cilOffset += takenOffset
           }
         }
 
         errorE match {
-          case Left(err) => Left(err)
+          case Left(err) => Left(TranslationError(err, debugInfo.flatMap(DebugInfo.firstSourceMark(_, cilOffset))))
           case Right(()) => Right(res.toList)
         }
       }
@@ -256,9 +252,9 @@ object Translator {
               }
 
               if (!isVoid) {
-                Left(InternalError("Constructor can't return value."))
+                Left(TranslationError(InternalError("Constructor can't return value."), None))
               } else if (params.nonEmpty) {
-                Left(InternalError("Constructor shouldn't take arguments."))
+                Left(TranslationError(InternalError("Constructor shouldn't take arguments."), None))
               } else {
                 translateMethod(
                   0,
@@ -356,8 +352,11 @@ object Translator {
     }.sequence
 
     for {
-      _ <- if (rawMethodNames.contains(".cctor")) Left(InternalError("Static constructor isn't allowed."))
-      else Right(())
+      _ <- if (rawMethodNames.contains(".cctor")) {
+        Left(TranslationError(InternalError("Static constructor isn't allowed."), None))
+      } else {
+        Right(())
+      }
       methodsOps <- methodsOpsE
       constructor <- constructorE
       funcOps <- funcOpsE

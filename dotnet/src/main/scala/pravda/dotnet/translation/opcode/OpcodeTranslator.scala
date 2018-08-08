@@ -31,14 +31,14 @@ import scala.annotation.tailrec
 trait OpcodeTranslator {
 
   def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx)
-    : Either[TranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
+    : Either[InnerTranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
     Left(UnknownOpcode)
 
-  def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, Int)]
+  def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)]
 
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],
-             ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, List[asm.Operation])]
+             ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, List[asm.Operation])]
 }
 
 object OpcodeTranslatorOnlyAsm {
@@ -118,7 +118,7 @@ object OpcodeTranslatorOnlyAsm {
 trait OpcodeTranslatorOnlyAsm extends OpcodeTranslator {
 
   def deltaOffset(ops: List[CIL.Op],
-                  ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, Int)] =
+                  ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)] =
     asmOps(ops, None, ctx).map { case (rest, aOps) => (rest, aOps.map(OpcodeTranslatorOnlyAsm.asmOpOffset).sum) }
 }
 
@@ -126,24 +126,24 @@ trait OneToManyTranslator extends OpcodeTranslator {
 
   def additionalFunctionsOne(
       op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.HelperFunction]] =
+      ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] =
     Left(UnknownOpcode)
 
-  def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int]
+  def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int]
 
   def asmOpsOne(op: CIL.Op,
                 stackOffsetO: Option[Int],
-                ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]]
+                ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]]
 
   override def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx)
-    : Either[TranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
+    : Either[InnerTranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
     ops match {
       case head :: _ => additionalFunctionsOne(head, ctx).map((1, _))
       case _         => Right((0, List.empty))
     }
 
   def deltaOffset(ops: List[CIL.Op],
-                  ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, Int)] =
+                  ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)] =
     ops match {
       case head :: _ => deltaOffsetOne(head, ctx).map((1, _))
       case _         => Right((0, 0))
@@ -151,7 +151,7 @@ trait OneToManyTranslator extends OpcodeTranslator {
 
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],
-             ctx: MethodTranslationCtx): Either[TranslationError, (OpcodeTranslator.Taken, List[asm.Operation])] =
+             ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, List[asm.Operation])] =
     ops match {
       case head :: _ => asmOpsOne(head, stackOffsetO, ctx).map((1, _))
       case _         => Right((1, List.empty))
@@ -160,7 +160,7 @@ trait OneToManyTranslator extends OpcodeTranslator {
 
 trait OneToManyTranslatorOnlyAsm extends OneToManyTranslator {
 
-  def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] =
+  def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] =
     asmOpsOne(op, None, ctx).map(_.map(OpcodeTranslatorOnlyAsm.asmOpOffset).sum)
 }
 
@@ -185,7 +185,7 @@ object OpcodeTranslator {
       CallsTransation
     )
 
-  private def notUnknownOpcode[T](res: Either[TranslationError, T]): Boolean = res match {
+  private def notUnknownOpcode[T](res: Either[InnerTranslationError, T]): Boolean = res match {
     case Left(UnknownOpcode) => false
     case _                   => true
   }
@@ -209,11 +209,11 @@ object OpcodeTranslator {
 
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],
-             ctx: MethodTranslationCtx): Either[TranslationError, (Taken, List[asm.Operation])] =
+             ctx: MethodTranslationCtx): Either[InnerTranslationError, (Taken, List[asm.Operation])] =
     findAndReturn(translators, (t: OpcodeTranslator) => t.asmOps(ops, stackOffsetO, ctx), notUnknownOpcode)
       .getOrElse(Left(NotSupportedOpcode(ops.head)))
 
-  def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[TranslationError, (Taken, Int)] =
+  def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[InnerTranslationError, (Taken, Int)] =
     findAndReturn(translators, (t: OpcodeTranslator) => t.deltaOffset(ops, ctx), notUnknownOpcode)
       .getOrElse(Left(NotSupportedOpcode(ops.head)))
 }

@@ -27,13 +27,13 @@ object Heaps {
       AnyBytes(size).!
     } else if ((b & (1 << 6)) == 0) {
       P(Int8).flatMap(x => {
-        val size = x + ((b & 0x3f) << 8)
+        val size = (x & 0xff) + ((b & 0x3f) << 8)
         AnyBytes(size).!
       })
     } else {
       P(Int8 ~ Int8 ~ Int8).flatMap {
         case (x, y, z) =>
-          val size = z + (y << 8) + (z << 16) + ((b & 0x1f) << 24)
+          val size = (z & 0xff) + ((y & 0xff) << 8) + ((z & 0xff) << 16) + ((b & 0x1f) << 24)
           AnyBytes(size).!
       }
     }
@@ -43,9 +43,9 @@ object Heaps {
     if ((b & 0x80) == 0) {
       PassWith(b.toInt)
     } else if ((b & 0x40) == 0) {
-      P(Int8).map(b2 => ((b & 0x3F) << 8) | b2.toInt)
+      P(Int8).map(b2 => ((b & 0x3F) << 8) | (b2 & 0xff))
     } else {
-      P(Int8 ~ Int8 ~ Int8).map { case (b2, b3, b4) => ((b & 0x1F) << 24) | (b2 << 16) | (b3 << 8) | b4.toInt }
+      P(Int8 ~ Int8 ~ Int8).map { case (b2, b3, b4) => ((b & 0x1F) << 24) | ((b2 & 0xff) << 16) | ((b3 & 0xff) << 8) | (b4 & 0xff) }
     }
   })
 
@@ -58,7 +58,7 @@ object Heaps {
     } else {
       P(Int8 ~ Int8 ~ Int8).map {
         case (b2, b3, b4) =>
-          ((b & 0x1F) << 23) | (b2 << 15) | (b3 << 7) | ((b4 & 0xFE) >> 1) | ((-(b4 & 1)) & 0xF0000000)
+          ((b & 0x1F) << 23) | ((b2 & 0xff) << 15) | ((b3 & 0xff) << 7) | ((b4 & 0xFE) >> 1) | ((-(b4 & 1)) & 0xF0000000)
           // Our spec taught us not to be ashamed of our codded ints, 'specially since they're such good size and all
       }
     }

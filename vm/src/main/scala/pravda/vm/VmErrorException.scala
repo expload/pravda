@@ -17,8 +17,6 @@
 
 package pravda.vm
 
-import java.io.File
-
 import pravda.common.domain.Address
 import pravda.vm.Meta.{SourceMark, TranslatorMark}
 
@@ -40,21 +38,9 @@ final case class VmErrorResult(error: VmError,
 }
 
 object VmErrorResult {
-
   def constructStackTraceLine(metas: List[Meta], pos: Int): String = {
-    def extractFileName(src: String): String = {
-      val idx = src.lastIndexOf(File.separator)
-      if (idx == -1) {
-        src
-      } else {
-        src.substring(idx + 1)
-      }
-    }
-
     val translatorMessage = metas.collectFirst { case TranslatorMark(mark) => mark }
-    val sources = metas.collectFirst {
-      case SourceMark(src, sl, sc, el, ec) => s"${extractFileName(src)}:$sl,$sc-$el,$ec"
-    }
+    val sources = metas.collectFirst { case s: SourceMark => s.markString }
     s"${translatorMessage.getOrElse(s"program:$pos")}${sources.map(s => s" ($s)").getOrElse("")}"
   }
 }

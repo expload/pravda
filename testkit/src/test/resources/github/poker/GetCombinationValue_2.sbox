@@ -7,7 +7,7 @@ preconditions:
     "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
 
 expectations:
-  watts-spent: 4313
+  watts-spent: 4324
   stack:
     int32(50)
   heap:

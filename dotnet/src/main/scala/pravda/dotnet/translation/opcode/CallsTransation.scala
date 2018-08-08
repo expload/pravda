@@ -80,7 +80,7 @@ case object CallsTransation extends OneToManyTranslator {
 
   override def additionalFunctionsOne(
       op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
+      ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
     case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
       val res = for {
         parentSig <- ctx.signatures.get(parentSigIdx)
@@ -103,7 +103,7 @@ case object CallsTransation extends OneToManyTranslator {
     case _ => Left(UnknownOpcode)
   }
 
-  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
+  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
     op match {
       case Call(MethodDefData(_, _, name, signatureIdx, params)) =>
         val void = ctx.signatures.get(signatureIdx).exists(isMethodVoid)
@@ -139,7 +139,7 @@ case object CallsTransation extends OneToManyTranslator {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
 
     op match {
       case Call(MethodDefData(_, _, name, _, params))                          => Right(List(Operation.Call(Some(s"func_$name"))))

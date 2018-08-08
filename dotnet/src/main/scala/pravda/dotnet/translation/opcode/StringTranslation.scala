@@ -20,7 +20,7 @@ import pravda.dotnet.data.TablesData.{MemberRefData, TypeRefData}
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.Signatures.MethodRefDefSig
-import pravda.dotnet.translation.data.{InternalError, MethodTranslationCtx, TranslationError, UnknownOpcode}
+import pravda.dotnet.translation.data.{InternalError, MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
@@ -28,7 +28,7 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = op match {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = op match {
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "get_Length", _)) =>
       Right(List(Operation.Orphan(Opcodes.LENGTH)))
     case LdStr(s) =>

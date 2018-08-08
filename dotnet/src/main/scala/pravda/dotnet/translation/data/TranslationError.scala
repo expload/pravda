@@ -18,8 +18,23 @@
 package pravda.dotnet.translation.data
 
 import pravda.dotnet.parsers.CIL
+import pravda.vm.Meta
 
-sealed trait TranslationError
-case object UnknownOpcode                       extends TranslationError
-final case class NotSupportedOpcode(op: CIL.Op) extends TranslationError
-final case class InternalError(err: String)     extends TranslationError
+sealed trait InnerTranslationError {
+  def mkString: String
+}
+case object UnknownOpcode extends InnerTranslationError {
+  def mkString: String = ???
+}
+final case class NotSupportedOpcode(op: CIL.Op) extends InnerTranslationError {
+  def mkString: String = s"$op is not supported"
+}
+final case class InternalError(err: String) extends InnerTranslationError {
+  def mkString: String = err
+}
+
+final case class TranslationError(inner: InnerTranslationError, pos: Option[Meta.SourceMark]) {
+  def mkString: String = {
+    s"${inner.mkString}${pos.map(p => s"\n  ${p.markString}").getOrElse("")}"
+  }
+}

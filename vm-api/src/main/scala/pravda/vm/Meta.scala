@@ -17,6 +17,7 @@
 
 package pravda.vm
 
+import java.io.File
 import java.nio.ByteBuffer
 
 import Data.Primitive._
@@ -226,6 +227,19 @@ object Meta {
   final case class ProgramName(name: String) extends Meta
   final case class SourceMark(source: String, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int)
       extends SegmentMeta {
+
+    def markString: String = {
+      def extractFileName(src: String): String = {
+        val idx = src.lastIndexOf(File.separator)
+        if (idx == -1) {
+          src
+        } else {
+          src.substring(idx + 1)
+        }
+      }
+
+      s"${extractFileName(source)}:$startLine,$startColumn-$endLine,$endColumn"
+    }
 
     def toStruct: Data.Struct =
       Data.Struct(

@@ -207,7 +207,7 @@ object TablesData {
           if (seqPoints != 0) {
             for {
               blob <- Heaps.blob(peData.blobHeap, seqPoints)
-              seqPoints <- if (blob.nonEmpty) Heaps.sequencePoints.parse(blob).toEither else Right(List.empty)
+              seqPoints <- Heaps.sequencePoints.parse(blob).toEither
             } yield {
               MethodDebugInformationData(document, seqPoints)
             }
