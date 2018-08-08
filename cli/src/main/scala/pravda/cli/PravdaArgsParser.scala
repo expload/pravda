@@ -151,6 +151,11 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 opt[Unit]("visualize").action {
                   case ((), config: PravdaConfig.Compile) =>
                     config.copy(compiler = PravdaConfig.CompileMode.DotNetVisualize)
+                },
+                opt[File]("pdb").action {
+                  case (file, config: PravdaConfig.Compile) =>
+                    config.copy(pdb = Some(file.getAbsolutePath))
+                  case (_, otherwise) => otherwise
                 }
               )
           ),

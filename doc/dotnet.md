@@ -10,25 +10,26 @@ This dll file serves **only as meta info** for translator,
 it __doesn't__ provide any meaningful implementation for these methods.
 Translator just looks at calls of these methods and generates necessary Pravda bytecode.
  
-You can download it [here](../dotnet/src/test/resources/expload.dll). 
+You can download `expload.dll` [here](../dotnet/src/test/resources/expload.dll). 
 Source of this dll can be found [here](../dotnet/src/test/resources/expload.cs). 
-To build it from source, run:
-```bash
-csc expload.cs -target:Library
-```
-This outputs `expload.dll` file.
 
-To compile your C# program with `expload.dll`:
+For full support of all translation features you need also to compile your program with `/debug:portable` option.
+This options will trigger the creation of `your_program.pdb` file that contains various auxiliary information about C# source.
+ 
+_Portable_ pdb files are quite new, so you need up-to-date `csc` compiler to generate them. See more [here](https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md). 
+
+To compile your C# program with [`expload.dll`](../dotnet/src/test/resources/expload.dll):
 ```bash
-csc your_program.cs /reference:expload.dll
+csc your_program.cs /reference:expload.dll /debug:portable
 ```
 
 ## How to run translation
 
-Pravda CLI has specific command to run translation of `.exe` file produced by C# compiler.
+Pravda CLI has special command to run translation of `.exe` file produced by C# compiler.
 ```
-pravda compile dotnet --input input.exe --output output.pravda
+pravda compile dotnet --input input.exe --output output.pravda --pdb input.pdb
 ```
+`pdb` file is optional, but it's strongly recommended to provide it (see [Compile](#how-to-compile-program) section for instructions). 
 
 ## Supported subset of C#
 
@@ -58,7 +59,9 @@ Things that are *not* supported:
 ## Examples
 
 You can look at several examples of test _programs_ to learn current abilities of translation:
-- [Simple _program_](../dotnet/src/test/resources/smart_program.cs) with `balanceOf` and `transfer` methods similar to corresponding methods from [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard)
-- [Zoo _program_](../dotnet/src/test/resources/zoo_program.cs) that allows you to create zoos, pets and breed them. 
 - [String examples](../dotnet/src/test/resources/strings.cs) that show how to operate with `String`s.
 - [Array examples](../dotnet/src/test/resources/arrays.cs) that show how to operate with arrays.
+- [Simple _program_](../dotnet/src/test/resources/smart_program.cs) with `balanceOf` and `transfer` methods similar to corresponding methods from [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard)
+- [Zoo _program_](../dotnet/src/test/resources/zoo_program.cs) that allows you to create zoos, pets and breed them.
+- [Poker _program_](..testkit/src/test/resources/poker.cs) that implements simple poker game on the blockchain. _(poker.cs was provided by [Ducatur team](https://github.com/DucaturFw/ExploadHackathonContract))_ 
+

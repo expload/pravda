@@ -38,6 +38,7 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
           io.readFromStdin(),
           path => io.readFromFile(path).map(_.toRight(s"`$path` is not found."))
         )
+        pdb <- EitherT.right(config.pdb.map(io.readFromFile).getOrElse(Monad[F].pure(None)))
         result <- EitherT[F, String, ByteString] {
           config.compiler match {
             case Asm =>
@@ -46,10 +47,10 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
                 case None           => compilers.asm(input.toStringUtf8)
               }
             case Disasm => compilers.disasm(input).map(s => Right(ByteString.copyFromUtf8(s)))
-            case DotNet => compilers.dotnet(input)
+            case DotNet => compilers.dotnet(input, pdb)
             case DotNetVisualize =>
               for {
-                dv <- compilers.dotnetVisualize(input)
+                dv <- compilers.dotnetVisualize(input, pdb)
                 code <- dv.map {
                   case (code, visualization) => io.writeToStdout(ByteString.copyFromUtf8(visualization)).map(_ => code)
                 }.sequence

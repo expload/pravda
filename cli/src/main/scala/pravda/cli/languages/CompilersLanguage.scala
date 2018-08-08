@@ -25,6 +25,6 @@ trait CompilersLanguage[F[_]] {
   def asm(fileName: String, source: String): F[Either[String, ByteString]]
   def asm(source: String): F[Either[String, ByteString]]
   def disasm(source: ByteString): F[String]
-  def dotnet(source: ByteString): F[Either[String, ByteString]]
-  def dotnetVisualize(source: ByteString): F[Either[String, (ByteString, String)]]
+  def dotnet(source: ByteString, pdb: Option[ByteString]): F[Either[String, ByteString]]
+  def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): F[Either[String, (ByteString, String)]]
 }
