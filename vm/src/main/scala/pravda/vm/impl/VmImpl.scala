@@ -167,7 +167,7 @@ class VmImpl extends Vm {
               systemOperations.pcall()
             }
           case THROW => systemOperations.`throw`()
-          case _ =>
+          case _     =>
         }
 
         op match {
