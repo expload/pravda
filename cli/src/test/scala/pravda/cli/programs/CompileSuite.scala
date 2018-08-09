@@ -30,9 +30,9 @@ object CompileSuite extends TestSuite {
           Left("nope")
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
           Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
       }
       val compile = new Compile[Id](io, compilers)
@@ -49,9 +49,9 @@ object CompileSuite extends TestSuite {
         def disasm(source: ByteString): Id[String] =
           if (source == BinarySource) ExpectedStringOutput
           else UnexpectedStringOutput
-        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
           Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
       }
       val compile = new Compile[Id](io, compilers)
@@ -68,10 +68,10 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
           if (source == BinarySource) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
           Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
       }
       val compile = new Compile[Id](io, compilers)
@@ -88,9 +88,9 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def dotnet(source: ByteString): Id[Either[String, ByteString]] =
+        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
           Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString): Id[Either[String, (ByteString, String)]] =
+        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
           if (source == BinarySource) {
             Right((ExpectedBinaryOutput, ExpectedStringOutput))
           } else {

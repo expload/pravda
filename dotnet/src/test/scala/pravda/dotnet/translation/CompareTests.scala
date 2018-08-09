@@ -9,63 +9,62 @@ object CompareTests extends TestSuite {
 
   val tests = Tests {
     'CompareTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("compare.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("compare.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse(
           """
-        |push null
-        |sexist
-        |jumpi @methods
-        |call @ctor
-        |@methods:
+        |meta translator_mark "jump to methods"
         |meta method {
-        |int8(-1):"compare",int8(-2):int8(0)
+        |"name":"compare","returnTpe":int8(0)
         |}
         |dup
         |push "compare"
         |eq
         |jumpi @method_compare
         |jump @stop
+        |meta translator_mark "compare method"
         |@method_compare:
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
-        |push int32(0)
+        |meta translator_mark "compare local vars definition"
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |meta translator_mark "compare method body"
         |push int32(1)
         |push int32(38)
         |swapn
@@ -1260,6 +1259,7 @@ object CompareTests extends TestSuite {
         |eq
         |jumpi @compare_br722
         |@compare_br722:
+        |meta translator_mark "compare local vars clearing"
         |pop
         |pop
         |pop
@@ -1298,12 +1298,16 @@ object CompareTests extends TestSuite {
         |pop
         |pop
         |pop
+        |meta translator_mark "end of compare method"
         |jump @stop
-        |@ctor:
-        |push null
-        |dup
-        |sput
+        |meta translator_mark "ctor method"
+        |@method_ctor:
+        |meta translator_mark "ctor local vars definition"
+        |meta translator_mark "ctor method body"
+        |meta translator_mark "ctor local vars clearing"
+        |meta translator_mark "end of ctor method"
         |ret
+        |meta translator_mark "helper functions"
         |@stop:
       """.stripMargin
         ).right.get

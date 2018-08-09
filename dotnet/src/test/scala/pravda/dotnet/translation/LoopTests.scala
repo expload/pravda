@@ -9,27 +9,28 @@ object LoopTests extends TestSuite {
 
   val tests = Tests {
     'loopTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("loop.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("loop.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
-            |push null
-            |sexist
-            |jumpi @methods
-            |call @ctor
-            |@methods:
-            |meta method { int8(-1): "loops", int8(-2): int8(0) }
+            |meta translator_mark "jump to methods"
+            |meta method {
+            |"name":"loops","returnTpe":int8(0)
+            |}
             |dup
             |push "loops"
             |eq
             |jumpi @method_loops
             |jump @stop
+            |meta translator_mark "loops method"
             |@method_loops:
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
+            |meta translator_mark "loops local vars definition"
+            |push null
+            |push null
+            |push null
+            |push null
+            |meta translator_mark "loops method body"
             |push int32(0)
             |push int32(5)
             |swapn
@@ -95,47 +96,53 @@ object LoopTests extends TestSuite {
             |push int32(1)
             |eq
             |jumpi @loops_br28
+            |meta translator_mark "loops local vars clearing"
             |pop
             |pop
             |pop
             |pop
             |pop
+            |meta translator_mark "end of loops method"
             |jump @stop
-            |@ctor:
-            |push null
-            |dup
-            |sput
+            |meta translator_mark "ctor method"
+            |@method_ctor:
+            |meta translator_mark "ctor local vars definition"
+            |meta translator_mark "ctor method body"
+            |meta translator_mark "ctor local vars clearing"
+            |meta translator_mark "end of ctor method"
             |ret
+            |meta translator_mark "helper functions"
             |@stop:
           """.stripMargin).right.get
       )
     }
 
     'nestedLoopTranslation - {
-      val Right((_, cilData, methods, signatures)) = parseFile("loop_nested.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("loop_nested.exe")
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
-            |push null
-            |sexist
-            |jumpi @methods
-            |call @ctor
-            |@methods:
-            |meta method { int8(-1): "loops", int8(-2): int8(0) }
+            |meta translator_mark "jump to methods"
+            |meta method {
+            |"name":"loops","returnTpe":int8(0)
+            |}
             |dup
             |push "loops"
             |eq
             |jumpi @method_loops
             |jump @stop
+            |meta translator_mark "loops method"
             |@method_loops:
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
-            |push int32(0)
+            |meta translator_mark "loops local vars definition"
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |push null
+            |meta translator_mark "loops method body"
             |push int32(0)
             |push int32(8)
             |swapn
@@ -260,6 +267,7 @@ object LoopTests extends TestSuite {
             |push int32(1)
             |eq
             |jumpi @loops_br71
+            |meta translator_mark "loops local vars clearing"
             |pop
             |pop
             |pop
@@ -268,12 +276,16 @@ object LoopTests extends TestSuite {
             |pop
             |pop
             |pop
+            |meta translator_mark "end of loops method"
             |jump @stop
-            |@ctor:
-            |push null
-            |dup
-            |sput
+            |meta translator_mark "ctor method"
+            |@method_ctor:
+            |meta translator_mark "ctor local vars definition"
+            |meta translator_mark "ctor method body"
+            |meta translator_mark "ctor local vars clearing"
+            |meta translator_mark "end of ctor method"
             |ret
+            |meta translator_mark "helper functions"
             |@stop:
           """.stripMargin).right.get
       )

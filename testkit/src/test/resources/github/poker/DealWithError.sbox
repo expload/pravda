@@ -1,0 +1,21 @@
+preconditions:
+  watts-limit: 100000
+  stack:
+    x01, x02, x03, x04, x05, x06, x07, x08, "Deal"
+  heap:
+  storage:
+    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+
+expectations:
+  watts-spent: 349
+  stack:
+    x01, x02, x03, x04, x05, x06, x07, x08, "Deal", int32(0), null, null, null, null, null, null, null, null
+  heap:
+  effects:
+    sput x5461626C654361726473FFFFFFFF int32(0)
+  error:
+    |WrongStackIndex
+    |  Deal method body (poker.cs:21,9-21,31)
+
+---
+#dotnet poker.cs

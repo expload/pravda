@@ -27,7 +27,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
 
     val translateF: PartialFunction[CIL.Op, List[asm.Operation]] = {
       case LdcI40     => List(pushInt(0))

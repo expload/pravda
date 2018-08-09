@@ -19,14 +19,14 @@ package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.translation.data.{MethodTranslationCtx, TranslationError, UnknownOpcode}
+import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.vm.Data
 import pravda.vm.asm.Operation
 
 object ConvertTranslation extends OneToManyTranslatorOnlyAsm {
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[Operation]] = op match {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = op match {
 
     case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToBoolean", _)) => Right(cast(Data.Type.Boolean))
     case Call(MemberRefData(TypeRefData(_, "Convert", "System"), "ToChar", _))    => Right(cast(Data.Type.Int16))

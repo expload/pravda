@@ -62,7 +62,10 @@ object PravdaConfig {
     }
   }
 
-  final case class Compile(compiler: CompileMode, input: Option[String] = None, output: Option[String] = None)
+  final case class Compile(compiler: CompileMode,
+                           input: Option[String] = None,
+                           output: Option[String] = None,
+                           pdb: Option[String] = None)
       extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,

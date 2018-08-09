@@ -20,7 +20,7 @@ import com.google.protobuf.ByteString
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.translation.data.{MethodTranslationCtx, TranslationError, UnknownOpcode}
+import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}
 
@@ -28,11 +28,11 @@ object BytesTranslation extends OneToManyTranslator {
 
   override def additionalFunctionsOne(
       op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[TranslationError, List[OpcodeTranslator.AdditionalFunction]] = op match {
+      ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) =>
       Right(
         List(
-          OpcodeTranslator.AdditionalFunction(
+          OpcodeTranslator.HelperFunction(
             "array_to_bytes",
             List(
               Operation.Orphan(Opcodes.DUP),
@@ -71,7 +71,7 @@ object BytesTranslation extends OneToManyTranslator {
     case _ => Left(UnknownOpcode)
   }
 
-  def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = op match {
+  def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = op match {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "EMPTY", _))            => Right(1)
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "VOID_ADDRESS", _))     => Right(1)
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) => Right(0)
@@ -83,7 +83,7 @@ object BytesTranslation extends OneToManyTranslator {
 
   def asmOpsOne(op: CIL.Op,
                 stackOffsetO: Option[Int],
-                ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = op match {
+                ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = op match {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "EMPTY", _)) =>
       Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY))))
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "VOID_ADDRESS", _)) =>

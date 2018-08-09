@@ -104,6 +104,7 @@ object PE {
                         metadataRoot: MetadataRoot,
                         peData: PeData,
                         methods: List[MethodHeader])
+    final case class Pdb(metadataRoot: MetadataRoot, pdbData: PeData)
   }
 
   import Info._
@@ -336,5 +337,35 @@ object PE {
          metadata,
          PeData(sections, stringHeap, userStringHeap, blobHeap, tildeStream.tableNumbers, tildeStream.tables),
          methods)
+  }
+
+  def parsePdb(file: Bytes): Either[String, Pdb] = {
+    for {
+      metadata <- metadataRoot.parse(file).toEither
+      streamHeaders = metadata.streamHeaders
+
+      retrieveStream = (name: String) =>
+        streamHeaders
+          .find(_.name == name)
+          .map(h => Right(file.slice(h.offset, h.offset + h.size)))
+          .getOrElse(Left(s"$name heap not found"))
+
+      tildeStreamBytes <- retrieveStream("#~")
+      stringHeap <- retrieveStream("#Strings")
+      blobHeap <- retrieveStream("#Blob")
+
+      tildeStream <- tildeStream.parse(tildeStreamBytes).toEither.joinRight
+    } yield
+      Pdb(
+        metadata,
+        PeData(
+          List.empty,
+          stringHeap,
+          Bytes.empty,
+          blobHeap,
+          tildeStream.tableNumbers,
+          tildeStream.tables
+        )
+      )
   }
 }

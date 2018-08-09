@@ -24,7 +24,7 @@ import pravda.vm.{Opcodes, asm}
 
 case object ArgsLocalsTranslations extends OneToManyTranslator {
 
-  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[TranslationError, Int] = {
+  override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
 
     def loadArg(num: Int): Int =
       if (num == 0) 0 else 1
@@ -55,7 +55,7 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
 
     def computeLocalOffset(num: Int, stackOffset: Int): Int =
       (ctx.localsCount - num - 1) + stackOffset + 1

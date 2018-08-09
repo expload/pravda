@@ -12,7 +12,7 @@ object ObjectsTests extends TestSuite {
 
   val tests = Tests {
     'objectsParse - {
-      val Right((_, cilData, methods, signatures)) = parseFile("objects.exe")
+      val Right((_, cilData, methods, signatures)) = parsePeFile("objects.exe")
       methods ==> List(
         Method(List(LdArg0,
                     Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)),

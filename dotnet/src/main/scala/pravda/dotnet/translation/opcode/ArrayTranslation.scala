@@ -21,7 +21,7 @@ import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.PE
 import pravda.dotnet.parsers.Signatures.FieldSig
 import pravda.dotnet.parsers.Signatures.SigType.ValueTpe
-import pravda.dotnet.translation.data.{MethodTranslationCtx, TranslationError, UnknownOpcode}
+import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm
 import scodec.bits.ByteOrdering
@@ -32,7 +32,7 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[TranslationError, List[asm.Operation]] = {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
     op match {
       case NewArr(TypeRefData(6, typeName, namespaceName)) =>
         val arrTypeF: PartialFunction[(String, String), asm.Operation] = {
@@ -64,7 +64,7 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
 object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
   override def asmOps(ops: List[Op],
                       stackOffsetO: Option[Int],
-                      ctx: MethodTranslationCtx): Either[TranslationError, (Int, List[asm.Operation])] = {
+                      ctx: MethodTranslationCtx): Either[InnerTranslationError, (Int, List[asm.Operation])] = {
     ops.take(5) match {
       case List(
           OpcodeDetectors.IntLoad(arraySize),

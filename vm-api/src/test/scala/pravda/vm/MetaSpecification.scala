@@ -34,7 +34,7 @@ import scala.annotation.strictfp
   val genMethod: Gen[MethodSignature] = for {
     name <- Gen.alphaStr
     returnTpe <- genTypeSignature
-    args <- Gen.listOf(Gen.zip(Gen.option(arbitrary[String]), genTypeSignature))
+    args <- Gen.listOf(genTypeSignature)
   } yield MethodSignature(name, returnTpe, args)
 
   val genMeta: Gen[Meta] = Gen.oneOf(

@@ -30,6 +30,8 @@ import pravda.dotnet.parsers.Signatures.SigType.ArrayShape
 
 object Signatures {
 
+  import Heaps._
+
   sealed trait SigType
 
   object SigType {
@@ -54,9 +56,9 @@ object Signatures {
     final case class Cls(typeDefOrRef: TableRowData)                 extends SigType
     final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
-    final case class Var(num: Long)                                  extends SigType
+    final case class Var(num: Int)                                   extends SigType
 
-    final case class ArrayShape(rank: Long, sizes: List[Long], loBounds: List[Long])
+    final case class ArrayShape(rank: Int, sizes: List[Int], loBounds: List[Int])
     final case class Arr(tpe: SigType, shape: ArrayShape) extends SigType
   }
 
@@ -77,19 +79,9 @@ object Signatures {
       extends Signature
   final case class TypeSig(tpe: Tpe) extends Signature
 
-  private val compressedUInt: P[Long] = P(Int8).flatMap(b => {
-    if ((b & 0x80) == 0) {
-      PassWith(b.toLong)
-    } else if ((b & 0x40) == 0) {
-      P(Int8).map(b2 => (((b & 0x30) << 8) + b2).toLong)
-    } else {
-      P(Int8 ~ Int8 ~ Int8).map { case (b2, b3, b4) => (((b & 0x10) << 24) + (b2 << 16) + (b3 << 8) + b4).toLong }
-    }
-  })
-
   private val arrayShape: P[SigType.ArrayShape] = {
-    val sizes = compressedUInt.flatMap(num => compressedUInt.rep(exactly = num.toInt)).map(_.toList)
-    val loBounds = compressedUInt.flatMap(num => compressedUInt.rep(exactly = num.toInt)).map(_.toList)
+    val sizes = compressedUInt.flatMap(num => compressedUInt.rep(exactly = num)).map(_.toList)
+    val loBounds = compressedUInt.flatMap(num => compressedUInt.rep(exactly = num)).map(_.toList)
 
     P(compressedUInt ~ sizes ~ loBounds).map(ArrayShape.tupled)
   }
@@ -124,7 +116,7 @@ object Signatures {
         for {
           tpeV <- sigType(tablesData)
           cnt <- compressedUInt
-          tpesV <- sigType(tablesData).rep(exactly = cnt.toInt)
+          tpesV <- sigType(tablesData).rep(exactly = cnt)
         } yield
           for {
             tpe <- tpeV
@@ -136,7 +128,7 @@ object Signatures {
       case 0x1d =>
         for {
           tpeV <- sigType(tablesData)
-        } yield tpeV.map(SigType.Arr(_, ArrayShape(1L, List.empty, List.empty)))
+        } yield tpeV.map(SigType.Arr(_, ArrayShape(1, List.empty, List.empty)))
       case c => PassWith(Left(s"Unknown type signature: 0x${c.toInt.toHexString}"))
     }
   }
@@ -194,11 +186,11 @@ object Signatures {
 
     for {
       b <- Int8
-      genericP = if ((b & generic) != 0) compressedUInt else PassWith(0L)
+      genericP = if ((b & generic) != 0) compressedUInt else PassWith(0)
       gCount <- genericP
       paramCount <- compressedUInt
       retTpeV <- tpe(tablesData)
-      paramsV <- tpe(tablesData).rep(exactly = paramCount.toInt)
+      paramsV <- tpe(tablesData).rep(exactly = paramCount)
     } yield
       for {
         retTpe <- retTpeV
@@ -208,7 +200,7 @@ object Signatures {
                         (b & explicity) != 0,
                         (b & default) != 0,
                         (b & vararg) != 0,
-                        gCount.toInt,
+                        gCount,
                         retTpe,
                         params)
   }

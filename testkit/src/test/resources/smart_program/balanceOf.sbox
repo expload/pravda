@@ -7,13 +7,11 @@ preconditions:
     x62616C616E6365730011 = int32(10)
 
 expectations:
-  watts-spent: 347
+  watts-spent: 271
   stack:
     int32(10)
   heap:
   effects:
-   sget null,
-   sput null null,
    sget x62616C616E6365730011 int32(10),
    sget x62616C616E6365730011 int32(10)
 ---

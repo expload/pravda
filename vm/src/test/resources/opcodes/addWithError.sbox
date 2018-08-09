@@ -1,0 +1,18 @@
+preconditions:
+  watts-limit: 1000
+  stack:
+    int32(2), null
+  heap:
+  storage:
+
+expectations:
+  watts-spent: 11
+  stack:
+  heap:
+  effects:
+  error:
+    |WrongType
+    |  program:0
+
+---------------------------------------
+add

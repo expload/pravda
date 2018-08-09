@@ -59,7 +59,7 @@ object TranslationVisualizer {
         |$opcodes""".stripMargin
   }
 
-  private def visualizeFunction(func: OpcodeTranslator.AdditionalFunction): String = {
+  private def visualizeFunction(func: OpcodeTranslator.HelperFunction): String = {
     s"""|[function ${func.name}]
         |${func.ops.map(renderAsmOp).mkString("\n")}""".stripMargin
   }
@@ -75,7 +75,7 @@ object TranslationVisualizer {
         |${translation.funcs.map(visualizeMethod).mkString("\n")}
         |
         |[functions]
-        |${translation.functions.map(visualizeFunction).mkString("\n")}
+        |${translation.helperFunctions.map(visualizeFunction).mkString("\n")}
         |
         |[finish]
         |${translation.finishOps.map(renderAsmOp).mkString("\n")}""".stripMargin

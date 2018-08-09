@@ -4,16 +4,13 @@ preconditions:
     int32(9), "DealPublicCard"
   heap:
   storage:
+    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
 
 expectations:
-  watts-spent: 2519
+  watts-spent: 667
   stack:
   heap:
-    #0x0 = int8[31, 47, 79, 55, 87, 103, 59, 91, 107, 115, 61, 93, 109, 117, 121, 62, 94, 110, 118, 122, 124]
   effects:
-    sget null,
-    sput null null,
-    sput "cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
     sget x5461626C654361726473FFFFFFFF,
     sput x5461626C65436172647300000000 int32(9),
     sput x5461626C654361726473FFFFFFFF int32(1)

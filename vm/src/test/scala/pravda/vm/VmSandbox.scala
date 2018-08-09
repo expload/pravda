@@ -40,14 +40,14 @@ object VmSandbox {
     final case class StorageDelete(key: Data)                                             extends EnvironmentEffect
     final case class ProgramCreate(owner: Address, address: Address, program: ByteString) extends EnvironmentEffect
     final case class ProgramUpdate(address: Address, program: ByteString)                 extends EnvironmentEffect
-    final case class ProgramSeal(address: Address)                 extends EnvironmentEffect
+    final case class ProgramSeal(address: Address)                                        extends EnvironmentEffect
     final case class BalanceGet(address: Address, coins: NativeCoin)                      extends EnvironmentEffect
     final case class BalanceAccrue(address: Address, coins: NativeCoin)                   extends EnvironmentEffect
     final case class BalanceWithdraw(address: Address, coins: NativeCoin)                 extends EnvironmentEffect
     final case class BalanceTransfer(from: Address, to: Address, coins: NativeCoin)       extends EnvironmentEffect
   }
 
-  final case class Expectations(watts: Long, memory: Memory, effects: Seq[EnvironmentEffect])
+  final case class Expectations(watts: Long, memory: Memory, effects: Seq[EnvironmentEffect], error: Option[String])
 
   val parser: Parser[Case, Char, String] = {
 
@@ -93,6 +93,8 @@ object VmSandbox {
 
     val expectations = {
 
+      val watts = P("watts-spent:" ~/ space ~ int)
+
       val effects = {
 
         val sput = P("sput" ~/ ws ~ primitive ~ ws ~ all).map {
@@ -124,10 +126,10 @@ object VmSandbox {
         P("effects:" ~/ space ~ (sput | sget | sdel | pcreate | pupdate | transfer | balance).rep(sep = `,`))
       }
 
-      val watts = P("watts-spent:" ~/ space ~ int)
+      val error = P("error:" ~/ space ~ (space ~ "|" ~ CharsWhile(_ != '\n').! ~ "\n").rep).map(_.mkString("\n")).?
 
-      P("expectations:" ~/ space ~ watts ~ space ~ memory ~ space ~ effects.?).map {
-        case (w, mem, eff) => Expectations(w.toLong, mem, eff.getOrElse(Nil))
+      P("expectations:" ~/ space ~ watts ~ space ~ memory ~ space ~ effects.? ~ space ~ error).map {
+        case (w, mem, eff, err) => Expectations(w.toLong, mem, eff.getOrElse(Nil), err)
       }
     }
 
@@ -156,7 +158,7 @@ object VmSandbox {
       case StorageDelete(key)                     => s"sdel ${printData(key)}"
       case ProgramCreate(owner, address, program) => ???
       case ProgramUpdate(address, program)        => ???
-      case ProgramSeal(address)        => ???
+      case ProgramSeal(address)                   => ???
       case BalanceGet(address, coins)             => s"balance x${pravda.common.bytes.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
@@ -167,12 +169,12 @@ object VmSandbox {
     s"""
        |watts-spent: ${e.watts}
        |stack:
-       |  ${e.memory.stack.map(printData).mkString(",  ")}
+       |  ${e.memory.stack.map(printData).mkString(", ")}
        |heap:
        |  ${e.memory.heap.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }.mkString(",\n  ")}
        |effects:
        |  ${e.effects.map(printEffect).mkString(",\n  ")}
-     """.stripMargin
+       |${e.error.fold("")(vmError => s"error: \n${vmError.split('\n').map("||" + _).mkString("\n")}\n")}""".stripMargin
   }
 
   def parseCase(text: String): Either[String, Case] = {
@@ -295,17 +297,17 @@ object VmSandbox {
     val res =
       vm.spawn(ByteBuffer.wrap(program.toByteArray), environment, memory, wattCounter, Some(storage), None, false)
 
-    assert(res.error.isEmpty,
-           s"Error during VM execution: ${res.error.get.error}\n${res.error.get.stackTrace.stackTrace.mkString("\n")}")
-
     DiffUtils.assertEqual(
       printExpectations(
-        Expectations(res.wattCounter.spent,
-                     Memory(
-                       res.memory.stack,
-                       res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
-                     ),
-                     effects)
+        Expectations(
+          res.wattCounter.spent,
+          Memory(
+            res.memory.stack,
+            res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
+          ),
+          effects,
+          res.error.map(_.mkString)
+        )
       ),
       printExpectations(c.expectations)
     )

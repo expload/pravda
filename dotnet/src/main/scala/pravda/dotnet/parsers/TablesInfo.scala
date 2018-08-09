@@ -29,7 +29,9 @@ final case class TablesInfo(
     typeDefTable: Vector[TablesInfo.TypeDefRow] = Vector.empty,
     typeRefTable: Vector[TablesInfo.TypeRefRow] = Vector.empty,
     typeSpecTable: Vector[TablesInfo.TypeSpecRow] = Vector.empty,
-    standAloneSigTable: Vector[TablesInfo.StandAloneSigRow] = Vector.empty
+    standAloneSigTable: Vector[TablesInfo.StandAloneSigRow] = Vector.empty,
+    documentTable: Vector[TablesInfo.DocumentRow] = Vector.empty,
+    methodDebugInformationTable: Vector[TablesInfo.MethodDebugInformationRow] = Vector.empty
 )
 
 object TablesInfo {
@@ -63,6 +65,7 @@ object TablesInfo {
                                 typeOrMethodDef: Index,
                                 methodDefOrRef: Index,
                                 implementation: Index,
+                                importScope: Index,
                                 field: Index,
                                 genericParam: Index,
                                 memberForwarded: Index,
@@ -71,9 +74,16 @@ object TablesInfo {
                                 methodDef: Index,
                                 param: Index,
                                 property: Index,
-                                resolutionScope: Index)
+                                resolutionScope: Index,
+                                document: Index,
+                                localVariable: Index,
+                                localConstant: Index,
+                                hasCustomDebugInformation: Index)
 
   sealed trait TableRowInfo
+
+  // PE tables
+
   case object AssemblyRow             extends TableRowInfo
   case object AssemblyOSRow           extends TableRowInfo
   case object AssemblyProcessorRow    extends TableRowInfo
@@ -137,6 +147,22 @@ object TablesInfo {
   final case class TypeRefRow(resolutionScopeIdx: Long, nameIdx: Long, namespaceIdx: Long) extends TableRowInfo
 
   final case class TypeSpecRow(blobIdx: Long) extends TableRowInfo
+
+  // PDB tables
+
+  final case class DocumentRow(nameIdx: Long, hashAlgorithnIdx: Long, hashIdx: Long, languageIdx: Long)
+      extends TableRowInfo
+
+  final case class MethodDebugInformationRow(documentIdx: Long, seqPoints: Long) extends TableRowInfo
+
+  case object LocalScopeRow             extends TableRowInfo
+  case object LocalVariableRow          extends TableRowInfo
+  case object LocalConstantRow          extends TableRowInfo
+  case object ImportScopeRow            extends TableRowInfo
+  case object StateMachineMethodRow     extends TableRowInfo
+  case object CustomDebugInformationRow extends TableRowInfo
+
+  // PE tables
 
   def assemblyRow(indexes: TableIndexes): P[AssemblyRow.type] =
     P(AnyBytes(4 + 4 * 2 + 4 + indexes.blobHeap.size + indexes.stringHeap.size * 2)).map(_ => AssemblyRow)
@@ -263,6 +289,36 @@ object TablesInfo {
   def typeSpecRow(indexes: TableIndexes): P[TypeSpecRow] =
     P(indexes.blobHeap.parser).map(TypeSpecRow)
 
+  // PDB tables
+
+  def documentRow(indexes: TableIndexes): P[DocumentRow] =
+    P(indexes.blobHeap.parser ~ indexes.guidHeap.parser ~ indexes.blobHeap.parser ~ indexes.guidHeap.parser)
+      .map(DocumentRow.tupled)
+
+  def methodDebugInformationRow(indexes: TableIndexes): P[MethodDebugInformationRow] =
+    P(indexes.document.parser ~ indexes.blobHeap.parser).map(MethodDebugInformationRow.tupled)
+
+  def localScopeRow(indexes: TableIndexes): P[LocalScopeRow.type] =
+    P(AnyBytes(
+      indexes.methodDef.size + indexes.importScope.size + indexes.localVariable.size + indexes.localConstant.size + 4 + 4))
+      .map(_ => LocalScopeRow)
+
+  def localVariableRow(indexes: TableIndexes): P[LocalVariableRow.type] =
+    P(AnyBytes(2 + 2 + indexes.stringHeap.size)).map(_ => LocalVariableRow)
+
+  def localConstantRow(indexes: TableIndexes): P[LocalConstantRow.type] =
+    P(AnyBytes(indexes.stringHeap.size + indexes.blobHeap.size)).map(_ => LocalConstantRow)
+
+  def importScopeRow(indexes: TableIndexes): P[ImportScopeRow.type] =
+    P(AnyBytes(indexes.importScope.size + indexes.blobHeap.size)).map(_ => ImportScopeRow)
+
+  def stateMachineMethoRow(indexes: TableIndexes): P[StateMachineMethodRow.type] =
+    P(AnyBytes(indexes.methodDef.size + indexes.methodDef.size)).map(_ => StateMachineMethodRow)
+
+  def customDebugInformationRow(indexes: TableIndexes): P[CustomDebugInformationRow.type] =
+    P(AnyBytes(indexes.hasCustomDebugInformation.size + indexes.guidHeap.size + indexes.blobHeap.size)).map(_ =>
+      CustomDebugInformationRow)
+
   def tableParser(num: Int, row: Long, indexes: TableIndexes): P[Either[String, TablesInfo => TablesInfo]] = {
     def tableRep[T](p: TableIndexes => P[T]): P[Vector[T]] =
       p(indexes).rep(exactly = row.toInt).map(_.toVector)
@@ -316,6 +372,17 @@ object TablesInfo {
       case 42 => tablesId(genericParamRow)
       case 43 => tablesId(methodSpecRow)
       case 44 => tablesId(genericParamConstraintRow)
+      // 45
+      // 46
+      // 47
+      case 48 => tableRep(documentRow).map(r => Right(_.copy(documentTable = r)))
+      case 49 => tableRep(methodDebugInformationRow).map(r => Right(_.copy(methodDebugInformationTable = r)))
+      case 50 => tablesId(localScopeRow)
+      case 51 => tablesId(localVariableRow)
+      case 52 => tablesId(localConstantRow)
+      case 53 => tablesId(importScopeRow)
+      case 54 => tablesId(stateMachineMethoRow)
+      case 55 => tablesId(customDebugInformationRow)
       case n  => PassWith(Left(s"Non valid table number: $n"))
     }
   }
@@ -325,6 +392,11 @@ object TablesInfo {
 
   private def tableIndexes(heapSizes: Byte, tableNumbers: List[Int], rows: List[Long]): TableIndexes = {
     TableIndexes(
+      ShortIndex,
+      ShortIndex,
+      ShortIndex,
+      ShortIndex,
+      ShortIndex,
       ShortIndex,
       ShortIndex,
       ShortIndex,

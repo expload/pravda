@@ -19,9 +19,11 @@ package pravda.dotnet.translation.data
 
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.translation.opcode.OpcodeTranslator
-import pravda.vm.asm
+import pravda.vm.{Meta, asm}
 
 final case class OpCodeTranslation(source: Either[String, List[CIL.Op]], // some name or actual opcode
+                                   sourceMarks: List[Meta.SourceMark],
+                                   cilOffset: Option[Int],
                                    stackOffset: Option[Int],
                                    asmOps: List[asm.Operation])
 
@@ -31,15 +33,10 @@ final case class MethodTranslation(name: String,
                                    local: Boolean,
                                    void: Boolean,
                                    opcodes: List[OpCodeTranslation],
-                                   additionalFunctions: List[OpcodeTranslator.AdditionalFunction])
-
-final case class ConstructorTranslation(jumpToConstructor: List[asm.Operation],
-                                        ctorPrefix: List[asm.Operation],
-                                        ctor: MethodTranslation)
+                                   additionalFunctions: List[OpcodeTranslator.HelperFunction])
 
 final case class Translation(jumpToMethods: List[asm.Operation],
                              methods: List[MethodTranslation],
-                             constructor: Option[ConstructorTranslation],
                              funcs: List[MethodTranslation],
-                             functions: List[OpcodeTranslator.AdditionalFunction],
+                             helperFunctions: List[OpcodeTranslator.HelperFunction],
                              finishOps: List[asm.Operation])

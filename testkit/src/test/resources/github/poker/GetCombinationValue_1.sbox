@@ -1,0 +1,17 @@
+preconditions:
+  watts-limit: 100000
+  stack:
+    int32(0), int32(1), int32(2), int32(3), int32(4), "GetCombinationValue"
+  heap:
+  storage:
+  "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+
+expectations:
+  watts-spent: 1997
+  stack:
+    int32(1000000)
+  heap:
+  effects:
+
+---
+#dotnet poker.cs

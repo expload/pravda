@@ -17,6 +17,6 @@
 
 package pravda.vm
 
-final case class ExecutionResult(memory: Memory, error: Option[VmErrorException], wattCounter: WattCounter) {
+final case class ExecutionResult(memory: Memory, error: Option[VmErrorResult], wattCounter: WattCounter) {
   def isSuccess: Boolean = error.isEmpty
 }

@@ -155,13 +155,13 @@ object PravdaAssembler {
             val offset = buffer.position()
             Data.readFromByteBuffer(buffer) match {
               case key: Primitive => StructGet(Some(key))
-              case data           => throw UnexpectedTypeException(data.getClass, offset)
+              case data           => throw UnexpectedTypeException(data, Some(offset))
             }
           case Opcodes.STRUCT_MUT_STATIC =>
             val offset = buffer.position()
             Data.readFromByteBuffer(buffer) match {
               case key: Primitive => StructMut(Some(key))
-              case data           => throw UnexpectedTypeException(data.getClass, offset)
+              case data           => throw UnexpectedTypeException(data, Some(offset))
             }
           case Opcodes.PUSHX if label.nonEmpty =>
             Data.readFromByteBuffer(buffer)

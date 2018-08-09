@@ -17,8 +17,31 @@
 
 package pravda.vm
 
-import pravda.vm.StackTrace.Point
+import pravda.common.domain.Address
+import pravda.vm.Meta.{SourceMark, TranslatorMark}
 
-final case class VmErrorException(error: VmError, stackTrace: StackTrace = StackTrace.empty) extends Exception {
-  def addToTrace(p: Point): VmErrorException = copy(stackTrace = stackTrace + p)
+final case class VmErrorException(error: VmError) extends Exception
+
+final case class VmErrorResult(error: VmError,
+                               callStack: Seq[Int],
+                               callMetaStack: Seq[List[Meta]],
+                               address: Option[Address]) {
+
+  def mkString: String = {
+    s"""|$error${address.fold("")(a => s"\nprogram address: $a")}
+        |  ${callMetaStack
+         .zip(callStack)
+         .map { case (pos, meta) => VmErrorResult.constructStackTraceLine(pos, meta) }
+         .mkString("\n  ")}
+        |""".stripMargin
+  }
+}
+
+object VmErrorResult {
+
+  def constructStackTraceLine(metas: List[Meta], pos: Int): String = {
+    val translatorMessage = metas.collectFirst { case TranslatorMark(mark) => mark }
+    val sources = metas.collectFirst { case s: SourceMark                  => s.markString }
+    s"${translatorMessage.getOrElse(s"program:$pos")}${sources.map(s => s" ($s)").getOrElse("")}"
+  }
 }
