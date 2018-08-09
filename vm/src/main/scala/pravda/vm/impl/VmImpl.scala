@@ -166,6 +166,7 @@ class VmImpl extends Vm {
             if (pcallAllowed) {
               systemOperations.pcall()
             }
+          case THROW => systemOperations.`throw`()
           case _ =>
         }
 

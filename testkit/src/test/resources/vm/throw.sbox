@@ -1,0 +1,17 @@
+preconditions:
+  watts-limit: 1000
+  stack:
+    "Throw"
+expectations:
+  watts-spent: 129
+  stack:
+    "Throw"
+  heap:
+  effects:
+  error:
+    |UserError(Oops!)
+    |  Throw method body (vm_ops.cs:8,9-8,30)
+
+---------------------------------------
+#dotnet vm_ops.cs
+

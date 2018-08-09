@@ -29,6 +29,10 @@ namespace Com.Expload {
         public static Bytes ProgramAddress() { return null; }
     }
 
+    public class Error {
+        public static void Throw(String message) { return; }
+    }
+
     // Immutable array of bytes
     public class Bytes {
        // Get the empty byte array

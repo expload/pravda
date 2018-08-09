@@ -66,6 +66,13 @@ package object operations {
     }
   }
 
+  def utf8(a: Data): String = {
+    a match {
+      case Utf8(s) => s
+      case _       => throw VmErrorException(WrongType)
+    }
+  }
+
   def bytes(a: ByteString): Bytes = Bytes(a)
 
   def coins(a: Data): NativeCoin = a match {

@@ -39,7 +39,11 @@ object VmError {
   case object CallStackUnderflow   extends VmError(601)
   case object ExtCallStackOverflow extends VmError(602)
 
+  final case class UserError(message: String) extends VmError(700)
+
   final case class UnexpectedError(ex: Throwable) extends VmError(999) {
     override def toString: String = ex.getMessage
   }
+
+  final case class SomethingWrong(ex: Throwable) extends VmError(999)
 }
