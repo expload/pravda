@@ -22,7 +22,8 @@ object SystemTests extends TestSuite {
             |push "system"
             |eq
             |jumpi @method_system
-            |jump @stop
+            |push "Wrong method name"
+            |throw
             |meta translator_mark "system method"
             |@method_system:
             |meta translator_mark "system local vars definition"

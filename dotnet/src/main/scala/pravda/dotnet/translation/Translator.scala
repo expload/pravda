@@ -47,13 +47,12 @@ object Translator {
       cil: List[CIL.Op],
       signatures: Map[Long, Signatures.Signature],
       cilData: CilData,
-      local: Boolean,
       void: Boolean,
       func: Boolean,
       kind: String,
       debugInfo: Option[MethodDebugInformationData]): Either[TranslationError, MethodTranslation] = {
 
-    val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, local, void, debugInfo)
+    val ctx = MethodTranslationCtx(argsCount, localsCount, name, signatures, cilData, void, func, debugInfo)
 
     val opTranslationsE = {
       def doTranslation(cil: List[CIL.Op],
@@ -133,8 +132,8 @@ object Translator {
         name,
         argsCount,
         localsCount,
-        local,
         void,
+        func,
         List(
           OpCodeTranslation(Left(s"$name $kind"), List.empty, None, None, List(asm.Operation.Label(s"${kind}_$name"))),
           OpCodeTranslation(Left(s"$name local vars definition"),
@@ -151,7 +150,7 @@ object Translator {
                               List.empty,
                               None,
                               None,
-                              if (func || local) List(asm.Operation(Opcodes.RET))
+                              if (func) List(asm.Operation(Opcodes.RET))
                               else List(asm.Operation.Jump(Some("stop"))))
           ),
         functions
@@ -169,7 +168,6 @@ object Translator {
 
     val rawMethodNames = rawMethods.indices.map(cilData.tables.methodDefTable(_).name)
 
-    def isLocal(methodIdx: Int): Boolean = false
     def isPrivate(methodIdx: Int): Boolean =
       (cilData.tables.methodDefTable(methodIdx).flags & 0x0001) != 0
 
@@ -201,38 +199,30 @@ object Translator {
 
     lazy val metaMethods = methods.flatMap {
       case (m, i) =>
-        if (!isLocal(i)) {
-          val name = cilData.tables.methodDefTable(i).name
-          for {
-            methodSign <- signatures.get(cilData.tables.methodDefTable(i).signatureIdx)
-            methodTpe <- CallsTransation.methodType(methodSign)
-            argTpes <- CallsTransation.methodParams(methodSign)
-          } yield
-            asm.Operation.Meta(
-              Meta.MethodSignature(
-                name,
-                dotnetToVmTpe(methodTpe),
-                argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
-              )
+        val name = cilData.tables.methodDefTable(i).name
+        for {
+          methodSign <- signatures.get(cilData.tables.methodDefTable(i).signatureIdx)
+          methodTpe <- CallsTransation.methodType(methodSign)
+          argTpes <- CallsTransation.methodParams(methodSign)
+        } yield
+          asm.Operation.Meta(
+            Meta.MethodSignature(
+              name,
+              dotnetToVmTpe(methodTpe),
+              argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
             )
-        } else {
-          None
-        }
+          )
     }
 
     lazy val jumpToMethods = methods.flatMap {
       case (m, i) =>
-        if (!isLocal(i)) {
-          val name = cilData.tables.methodDefTable(i).name
-          List(
-            asm.Operation(Opcodes.DUP),
-            asm.Operation.Push(Data.Primitive.Utf8(name)),
-            asm.Operation(Opcodes.EQ),
-            asm.Operation.JumpI(Some("method_" + name))
-          )
-        } else {
-          List.empty
-        }
+        val name = cilData.tables.methodDefTable(i).name
+        List(
+          asm.Operation(Opcodes.DUP),
+          asm.Operation.Push(Data.Primitive.Utf8(name)),
+          asm.Operation(Opcodes.EQ),
+          asm.Operation.JumpI(Some("method_" + name))
+        )
     }
 
     lazy val constructorE: Either[TranslationError, Option[MethodTranslation]] = {
@@ -268,7 +258,6 @@ object Translator {
                   BranchTransformer.transformBranches(m.opcodes, "ctor"),
                   signatures,
                   cilData,
-                  true,
                   true,
                   true,
                   "method",
@@ -307,7 +296,6 @@ object Translator {
               BranchTransformer.transformBranches(m.opcodes, name),
               signatures,
               cilData,
-              false,
               isVoid,
               false,
               "method",
@@ -342,7 +330,6 @@ object Translator {
               BranchTransformer.transformBranches(m.opcodes, name),
               signatures,
               cilData,
-              true,
               isVoid,
               true,
               "func",
@@ -362,7 +349,10 @@ object Translator {
       funcOps <- funcOpsE
     } yield
       Translation(
-        metaMethods ++ jumpToMethods :+ asm.Operation.Jump(Some("stop")),
+        metaMethods ++ jumpToMethods ++ List(
+          asm.Operation.Push(Data.Primitive.Utf8("Wrong method name")),
+          asm.Operation(Opcodes.THROW)
+        ),
         methodsOps ++ constructor.toList,
         funcOps,
         distinctFunctions((funcOps ++ methodsOps).flatMap(_.additionalFunctions)),

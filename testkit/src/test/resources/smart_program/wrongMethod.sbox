@@ -1,0 +1,18 @@
+preconditions:
+  watts-limit: 10000
+  stack:
+    "boom"
+  heap:
+  storage:
+
+expectations:
+  watts-spent: 147
+  stack:
+    "boom"
+  heap:
+  effects:
+  error:
+    |UserError(Wrong method name)
+    |  jump to methods
+---
+#dotnet smart_program.cs

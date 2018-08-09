@@ -28,7 +28,8 @@ object ArraysTests extends TestSuite {
         |push "WorkWithArrays"
         |eq
         |jumpi @method_WorkWithArrays
-        |jump @stop
+        |push "Wrong method name"
+        |throw
         |meta translator_mark "WorkWithBytes method"
         |@method_WorkWithBytes:
         |meta translator_mark "WorkWithBytes local vars definition"

@@ -30,8 +30,8 @@ final case class OpCodeTranslation(source: Either[String, List[CIL.Op]], // some
 final case class MethodTranslation(name: String,
                                    argsCount: Int,
                                    localsCount: Int,
-                                   local: Boolean,
                                    void: Boolean,
+                                   func: Boolean,
                                    opcodes: List[OpCodeTranslation],
                                    additionalFunctions: List[OpcodeTranslator.HelperFunction])
 

@@ -23,7 +23,8 @@ object CompareTests extends TestSuite {
         |push "compare"
         |eq
         |jumpi @method_compare
-        |jump @stop
+        |push "Wrong method name"
+        |throw
         |meta translator_mark "compare method"
         |@method_compare:
         |meta translator_mark "compare local vars definition"
