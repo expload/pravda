@@ -28,7 +28,8 @@ object StdLibTests extends TestSuite {
             |push "ValidateEd25519Signature"
             |eq
             |jumpi @method_ValidateEd25519Signature
-            |jump @stop
+            |push "Wrong method name"
+            |throw
             |meta translator_mark "Ripemd160 method"
             |@method_Ripemd160:
             |meta translator_mark "Ripemd160 local vars definition"

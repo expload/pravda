@@ -26,6 +26,6 @@ final case class MethodTranslationCtx(argsCount: Int,
                                       name: String,
                                       signatures: Map[Long, Signatures.Signature],
                                       cilData: CilData,
-                                      local: Boolean,
                                       void: Boolean,
+                                      func: Boolean,
                                       debugInfo: Option[MethodDebugInformationData])

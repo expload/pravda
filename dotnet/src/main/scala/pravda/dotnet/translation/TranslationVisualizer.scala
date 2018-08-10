@@ -55,7 +55,7 @@ object TranslationVisualizer {
       }
       .mkString("\n")
 
-    s"""|[method ${method.name} args=${method.argsCount} locals=${method.localsCount} local=${method.local}]
+    s"""|[method ${method.name} args=${method.argsCount} locals=${method.localsCount} func=${method.func}]
         |$opcodes""".stripMargin
   }
 

@@ -114,6 +114,7 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "ProgramAddress", _))             => Right(1)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
+      case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _))                     => Right(-1)
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))                         => Right(0)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
@@ -156,6 +157,8 @@ case object CallsTransation extends OneToManyTranslator {
         Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation.Orphan(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation.Orphan(Opcodes.SCALL)))
+      case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _)) =>
+        Right(List(Operation.Orphan(Opcodes.THROW)))
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
           parentSig <- ctx.signatures.get(parentSigIdx)

@@ -29,7 +29,8 @@ object SmartProgramTests extends TestSuite {
            |push "transfer"
            |eq
            |jumpi @method_transfer
-           |jump @stop
+           |push "Wrong method name"
+           |throw
            |meta translator_mark "balanceOf method"
            |@method_balanceOf:
            |meta translator_mark "balanceOf local vars definition"
@@ -223,7 +224,8 @@ object SmartProgramTests extends TestSuite {
              |push "transfer"
              |eq
              |jumpi @method_transfer
-             |jump @stop
+             |push "Wrong method name"
+             |throw
              |meta translator_mark "balanceOf method"
              |@method_balanceOf:
              |meta translator_mark "balanceOf local vars definition"

@@ -22,7 +22,8 @@ object IfTests extends TestSuite {
         |push "ifs"
         |eq
         |jumpi @method_ifs
-        |jump @stop
+        |push "Wrong method name"
+        |throw
         |meta translator_mark "ifs method"
         |@method_ifs:
         |meta translator_mark "ifs local vars definition"

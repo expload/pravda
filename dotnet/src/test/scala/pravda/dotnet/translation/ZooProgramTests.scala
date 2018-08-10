@@ -50,7 +50,8 @@ object ZooProgramTests extends TestSuite {
               |push "BreedPets"
               |eq
               |jumpi @method_BreedPets
-              |jump @stop
+              |push "Wrong method name"
+              |throw
               |meta translator_mark "NewZoo method"
               |@method_NewZoo:
               |meta translator_mark "NewZoo local vars definition"

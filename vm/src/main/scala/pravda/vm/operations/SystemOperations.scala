@@ -20,7 +20,7 @@ package pravda.vm.operations
 import pravda.common.domain
 import pravda.common.domain.Address
 import pravda.vm.Opcodes._
-import pravda.vm.VmError.OperationDenied
+import pravda.vm.VmError.{OperationDenied, UserError}
 import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
@@ -185,5 +185,15 @@ final class SystemOperations(memory: Memory,
     val datum = address(environment.getProgramOwner(programAddress).getOrElse(Address.Void))
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
+  }
+
+  @OpcodeImplementation(
+    opcode = THROW,
+    description = "Takes string from stack and throws an error with description " +
+      "as given string that stops the program."
+  )
+  def `throw`(): Unit = {
+    val message = utf8(memory.pop())
+    throw VmErrorException(UserError(message))
   }
 }

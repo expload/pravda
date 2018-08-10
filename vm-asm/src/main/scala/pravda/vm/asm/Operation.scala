@@ -85,7 +85,8 @@ object Operation {
     Orphan(PTRANSFER),
     Orphan(BALANCE),
     Orphan(NEW_ARRAY),
-    Orphan(LENGTH)
+    Orphan(LENGTH),
+    Orphan(THROW)
   )
 
   val mnemonicByOpcode: Map[Int, String] = Map(
@@ -139,7 +140,8 @@ object Operation {
     BALANCE -> "balance",
     META -> "meta",
     NEW_ARRAY -> "new_array",
-    LENGTH -> "length"
+    LENGTH -> "length",
+    THROW -> "throw"
   )
 
   /**

@@ -21,7 +21,8 @@ object StringTests extends TestSuite {
             |push "distributeSalary"
             |eq
             |jumpi @method_distributeSalary
-            |jump @stop
+            |push "Wrong method name"
+            |throw
             |meta translator_mark "distributeSalary method"
             |@method_distributeSalary:
             |meta translator_mark "distributeSalary local vars definition"

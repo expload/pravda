@@ -94,7 +94,7 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
           if (num == 0) {
             Right(List.empty) // skip this reference
           } else {
-            if (ctx.local) {
+            if (ctx.func) {
               Right(
                 List(
                   pushInt(computeArgOffset(num, s)),

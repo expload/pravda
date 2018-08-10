@@ -22,7 +22,8 @@ object LoopTests extends TestSuite {
             |push "loops"
             |eq
             |jumpi @method_loops
-            |jump @stop
+            |push "Wrong method name"
+            |throw
             |meta translator_mark "loops method"
             |@method_loops:
             |meta translator_mark "loops local vars definition"
@@ -131,7 +132,8 @@ object LoopTests extends TestSuite {
             |push "loops"
             |eq
             |jumpi @method_loops
-            |jump @stop
+            |push "Wrong method name"
+            |throw
             |meta translator_mark "loops method"
             |@method_loops:
             |meta translator_mark "loops local vars definition"
