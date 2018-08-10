@@ -28,12 +28,26 @@ import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
 import pravda.vm.{Data, Meta, Opcodes, asm}
-import pravda.dotnet.translation.opcode.{CallsTransation, OpcodeTranslator, TypeDetectors}
+import pravda.dotnet.translation.opcode.{CallsTransation, OpcodeTranslator}
 import pravda.vm.Meta.TranslatorMark
 
 import scala.collection.mutable.ListBuffer
 
 object Translator {
+
+  def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
+    case SigType.Void          => Meta.TypeSignature.Null
+    case SigType.Boolean       => Meta.TypeSignature.Boolean
+    case SigType.I1            => Meta.TypeSignature.Int8
+    case SigType.I2            => Meta.TypeSignature.Int16
+    case SigType.I4            => Meta.TypeSignature.Int32
+    case SigType.U1            => Meta.TypeSignature.Uint8
+    case SigType.U2            => Meta.TypeSignature.Uint16
+    case SigType.U4            => Meta.TypeSignature.Uint32
+    case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
+    case SigType.String        => Meta.TypeSignature.Utf8
+    // TODO add more types
+  }
 
   private def distinctFunctions(funcs: List[OpcodeTranslator.HelperFunction]) = {
     val distinctNames = funcs.map(_.name).distinct
@@ -157,118 +171,154 @@ object Translator {
       )
   }
 
-  def translateVerbose(rawMethods: List[Method],
+  def translateVerbose(methods: List[Method],
                        cilData: CilData,
                        signatures: Map[Long, Signatures.Signature],
                        pdbTables: Option[TablesData] = None): Either[TranslationError, Translation] = {
 
-//    val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
-//      case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
-//    }.toMap
+    val programClassE = {
+      val classesWithProgramAttribute = cilData.tables.customAttributeTable.collect {
+        case CustomAttributeData(cls, MemberRefData(TypeRefData(_, "Program", "Com.Expload"), ".ctor", _)) => cls
+      }
 
-    val rawMethodNames = rawMethods.indices.map(cilData.tables.methodDefTable(_).name)
-
-    def isPrivate(methodIdx: Int): Boolean =
-      (cilData.tables.methodDefTable(methodIdx).flags & 0x0001) != 0
-
-    val methods = rawMethods.zipWithIndex.filter {
-      case (_, i) =>
-        val name = rawMethodNames(i)
-        !isPrivate(i) && name != ".ctor" && name != ".cctor" && name != "Main"
-    }
-
-    val funcs = rawMethods.zipWithIndex.filter {
-      case (_, i) =>
-        val name = rawMethodNames(i)
-        isPrivate(i) && name != ".ctor" && name != ".cctor" && name != "Main"
-    }
-
-    def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
-      case SigType.Void          => Meta.TypeSignature.Null
-      case SigType.Boolean       => Meta.TypeSignature.Boolean
-      case SigType.I1            => Meta.TypeSignature.Int8
-      case SigType.I2            => Meta.TypeSignature.Int16
-      case SigType.I4            => Meta.TypeSignature.Int32
-      case SigType.U1            => Meta.TypeSignature.Uint8
-      case SigType.U2            => Meta.TypeSignature.Uint16
-      case SigType.U4            => Meta.TypeSignature.Uint32
-      case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
-      case SigType.String        => Meta.TypeSignature.Utf8
-      // TODO add more types
-    }
-
-    lazy val metaMethods = methods.flatMap {
-      case (m, i) =>
-        val name = cilData.tables.methodDefTable(i).name
-        for {
-          methodSign <- signatures.get(cilData.tables.methodDefTable(i).signatureIdx)
-          methodTpe <- CallsTransation.methodType(methodSign)
-          argTpes <- CallsTransation.methodParams(methodSign)
-        } yield
-          asm.Operation.Meta(
-            Meta.MethodSignature(
-              name,
-              dotnetToVmTpe(methodTpe),
-              argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
-            )
-          )
-    }
-
-    lazy val jumpToMethods = methods.flatMap {
-      case (m, i) =>
-        val name = cilData.tables.methodDefTable(i).name
-        List(
-          asm.Operation(Opcodes.DUP),
-          asm.Operation.Push(Data.Primitive.Utf8(name)),
-          asm.Operation(Opcodes.EQ),
-          asm.Operation.JumpI(Some("method_" + name))
-        )
-    }
-
-    lazy val constructorE: Either[TranslationError, Option[MethodTranslation]] = {
-      val ctorMethod = rawMethods.zipWithIndex.find { case (m, i) => rawMethodNames(i) == ".ctor" }
-      ctorMethod match {
-        case Some((m, i)) =>
-          val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
-          val ops = cilData.tables.methodDefTable(i) match {
-            case MethodDefData(_, _, name, sigIdx, params) =>
-              val isVoid = signatures.get(sigIdx) match {
-                case Some(MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params)) =>
-                  tpe match {
-                    case SigType.Void => true
-                    case _            => false
-                  }
-                case _ => false
-              }
-
-              if (!isVoid) {
-                Left(TranslationError(InternalError("Constructor can't return value."), None))
-              } else if (params.nonEmpty) {
-                Left(TranslationError(InternalError("Constructor shouldn't take arguments."), None))
-              } else {
-                translateMethod(
-                  0,
-                  localVarSig
-                    .map {
-                      case LocalVarSig(types) => types.length
-                      case _                  => 0
-                    }
-                    .getOrElse(0),
-                  "ctor",
-                  BranchTransformer.transformBranches(m.opcodes, "ctor"),
-                  signatures,
-                  cilData,
-                  true,
-                  true,
-                  "method",
-                  pdbTables.map(_.methodDebugInformationTable(i))
-                )
-              }
-          }
-          ops.map(Some(_))
-        case None => Right(None)
+      if (classesWithProgramAttribute.length != 1) {
+        Left(TranslationError(InternalError("You must define exactly one class with [Program] attribute"), None))
+      } else {
+        Right(classesWithProgramAttribute(0))
       }
     }
+
+    val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
+      case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ eq m)).map(i -> _)
+    }.toMap
+
+    def isCtor(methodIdx: Int): Boolean = {
+      val methodRow = cilData.tables.methodDefTable(methodIdx)
+      methodRow.name == ".ctor" && (methodRow.flags & 0x1800) != 0 // maybe the mask should be different (see 252-nd page in spec)
+    }
+
+    def isCctor(methodIdx: Int): Boolean = {
+      val methodRow = cilData.tables.methodDefTable(methodIdx)
+      methodRow.name == ".cctor" && (methodRow.flags & 0x1810) != 0 // maybe the mask should be different (see 252-nd page in spec)
+    }
+
+    def isMain(methodIdx: Int): Boolean = {
+      val methodRow = cilData.tables.methodDefTable(methodIdx)
+      methodRow.name == "Main" && (methodRow.flags & 0x10) != 0
+    }
+
+    def isPrivate(methodIdx: Int): Boolean =
+      (cilData.tables.methodDefTable(methodIdx).flags & 0x7) == 0x1
+
+    def isStatic(methodIdx: Int): Boolean =
+      (cilData.tables.methodDefTable(methodIdx).flags & 0x10) != 0
+
+    val programMethodsE = (for {
+      programClass <- programClassE
+    } yield {
+      methods.zipWithIndex.filter {
+        case (_, i) =>
+          (methodsToTypes(i) eq programClass) && !isPrivate(i) && !isCtor(i) && !isCctor(i) && !isMain(i)
+      }
+    }).filterOrElse(_.forall { case (m, i) => !isStatic(i) }, Left(TranslationError(InternalError("Static program methods are forbidden"), None)))
+
+    val programFuncsE = for {
+      programClass <- programClassE
+    } yield {
+      methods.zipWithIndex.filter {
+        case (_, i) =>
+          (methodsToTypes(i) eq programClass) && isPrivate(i) && !isCtor(i) && !isCctor(i) && !isMain(i)
+      }
+    }
+
+    val programConstructorE = for {
+      programClass <- programClassE
+      ctor <- {
+        val ctors = methods.zipWithIndex.filter {
+          case (_, i) =>
+            (methodsToTypes(i) eq programClass) && isCtor(i)
+        }
+
+        if (ctors.length > 1) {
+          Left(TranslationError(InternalError("You must define exactly one constructor for the program"), None))
+        } else if (ctors.length == 1) {
+          val ctor = ctors.head
+          val ctorRow = cilData.tables.methodDefTable(ctor._2)
+          if (ctorRow.params.nonEmpty) {
+            Left(TranslationError(InternalError("Program constructor must not take arguments"), None))
+          } else {
+            Right(Some(ctor))
+          }
+        } else {
+          Right(None)
+        }
+      }
+    } yield ctor
+
+    val structFuncsE = for {
+      programClass <- programClassE
+    } yield {
+      methods.zipWithIndex.filter {
+        case (_, i) =>
+          !(methodsToTypes(i) eq programClass) && !isCtor(i) && !isCctor(i) && !isMain(i)
+      }
+    }
+
+
+//    lazy val metaMethods = methods.flatMap {
+//      case (m, i) =>
+//        val name = cilData.tables.methodDefTable(i).name
+//        for {
+//          methodSign <- signatures.get(cilData.tables.methodDefTable(i).signatureIdx)
+//          methodTpe <- CallsTransation.methodType(methodSign)
+//          argTpes <- CallsTransation.methodParams(methodSign)
+//        } yield
+//          asm.Operation.Meta(
+//            Meta.MethodSignature(
+//              name,
+//              dotnetToVmTpe(methodTpe),
+//              argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
+//            )
+//          )
+//    }
+
+    lazy val jumpToMethods = for {
+      programMethods <- programMethodsE
+    } yield {
+      programMethods.flatMap {
+        case (m, i) =>
+          val name = cilData.tables.methodDefTable(i).name
+          asm(
+            s"""
+              |dup
+              |push "$name"
+              |eq
+              |jumpi "method_$name"
+            """.stripMargin)
+      }
+    }
+
+    lazy val constructorE: Either[TranslationError, Option[MethodTranslation]] = for {
+      ctor <- programConstructorE
+    } yield {
+      ctor match {
+        case Some((m, i)) =>
+          val ctorRow = cilData.tables.methodDefTable(i)
+          Some(translateMethod(
+            0,
+            MethodExtractors.localVariables(m, signatures).fold(0)(_.length),
+            "ctor",
+            BranchTransformer.transformBranches(m.opcodes, "ctor"),
+            signatures,
+            cilData,
+            void = true,
+            func = true,
+            "method",
+            pdbTables.map(_.methodDebugInformationTable(i))
+          )
+          )
+        case None => Right(None)
+      }
 
     lazy val methodsOpsE: Either[TranslationError, List[MethodTranslation]] = methods.map {
       case (m, i) =>
@@ -339,7 +389,7 @@ object Translator {
     }.sequence
 
     for {
-      _ <- if (rawMethodNames.contains(".cctor")) {
+      _ <- if (false /*rawMethodNames.contains(".cctor")*/ ) {
         Left(TranslationError(InternalError("Static constructor isn't allowed."), None))
       } else {
         Right(())

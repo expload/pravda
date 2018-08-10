@@ -23,6 +23,7 @@ import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.translation.TypeDetectors
 import pravda.dotnet.translation.data._
 import pravda.vm.{Opcodes, asm}
 

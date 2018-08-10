@@ -22,16 +22,41 @@ import pravda.dotnet.data.TablesData._
 object CodedIndexes {
 
   def memberRefParent(idx: Long,
-                      typeDefTable: Vector[TablesData.TypeDefData],
-                      typeRefTable: Vector[TablesData.TypeRefData],
-                      typeSpecTable: Vector[TablesData.TypeSpecData]): Either[String, TableRowData] = {
+                      typeDefTable: Vector[TypeDefData],
+                      typeRefTable: Vector[TypeRefData],
+                      typeSpecTable: Vector[TypeSpecData]): Either[String, TableRowData] = {
     val tableIdx = idx & 0x7
     val rowIdx = (idx >> 3).toInt - 1
     tableIdx match {
-      case 0 => Right(typeDefTable(rowIdx))
-      case 1 => Right(typeRefTable(rowIdx))
-      case 4 => Right(typeSpecTable(rowIdx))
-      case n => Left(s"Unknown MemberRefParent table index: $n")
+      case 0     => Right(typeDefTable(rowIdx))
+      case 1     => Right(typeRefTable(rowIdx))
+      case 4     => Right(typeSpecTable(rowIdx))
+      case 2 | 3 => Right(Ignored)
+      case n     => Left(s"Unknown MemberRefParent table index: $n")
+    }
+  }
+
+  def hasCustomAttribute(idx: Long, typeDefTable: Vector[TypeDefData]): Either[String, TableRowData] = {
+    val tableIdx = idx & 0x1f
+    val rowIdx = (idx >> 5).toInt - 1
+    tableIdx match {
+      case 3                      => Right(typeDefTable(rowIdx))
+      case n if n >= 0 && n <= 21 => Right(Ignored)
+      case n                      => Left(s"Unknown HasCustomAttribute table index: $n")
+      // we need information only about [Program] attribute on classes
+    }
+  }
+
+  def customAttributeType(idx: Long,
+                          methodDefTable: Vector[MethodDefData],
+                          memberRefTable: Vector[MemberRefData]): Either[String, TableRowData] = {
+    val tableIdx = idx & 0x7
+    val rowIdx = (idx >> 3).toInt - 1
+    tableIdx match {
+      case 2         => Right(methodDefTable(rowIdx))
+      case 3         => Right(memberRefTable(rowIdx))
+      case 0 | 1 | 4 => Right(Ignored)
+      case n         => Left(s"Unknown CustomAttributeType table index: $n")
     }
   }
 }

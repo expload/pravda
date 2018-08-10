@@ -169,6 +169,43 @@ object SmartProgramTests extends TestSuite {
           (86, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )
+
+      DiffUtils.assertEqual(
+        cilData.tables.customAttributeTable,
+        Vector(
+          CustomAttributeData(Ignored,
+                              MemberRefData(TypeRefData(6,
+                                                        "CompilationRelaxationsAttribute",
+                                                        "System.Runtime.CompilerServices"),
+                                            ".ctor",
+                                            1)),
+          CustomAttributeData(Ignored,
+                              MemberRefData(TypeRefData(6,
+                                                        "RuntimeCompatibilityAttribute",
+                                                        "System.Runtime.CompilerServices"),
+                                            ".ctor",
+                                            6)),
+          CustomAttributeData(Ignored,
+                              MemberRefData(TypeRefData(6, "DebuggableAttribute", "System.Diagnostics"), ".ctor", 10)),
+          CustomAttributeData(
+            TypeDefData(
+              1048576,
+              "MyProgram",
+              "",
+              Ignored,
+              Vector(FieldData(1, "balances", 64)),
+              Vector(
+                MethodDefData(0, 134, "balanceOf", 73, Vector(ParamData(0, 1, "tokenOwner"))),
+                MethodDefData(0, 134, "transfer", 79, Vector(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+                MethodDefData(0, 6278, ".ctor", 6, Vector())
+              )
+            ),
+            MemberRefData(TypeRefData(10, "Program", "Com.Expload"), ".ctor", 6)
+          )
+        )
+      )
+
+      println(cilData.tables.typeDefTable)
     }
 
     'smartProgramPdb - {

@@ -28,6 +28,7 @@ import cats.syntax.traverse._
 import pravda.dotnet.utils._
 
 final case class TablesData(
+    customAttributeTable: Vector[TablesData.CustomAttributeData],
     fieldTable: Vector[TablesData.FieldData],
     fieldRVATable: Vector[TablesData.FieldRVAData],
     memberRefTable: Vector[TablesData.MemberRefData],
@@ -58,6 +59,8 @@ final case class TablesData(
 object TablesData {
 
   sealed trait TableRowData
+  final case class CustomAttributeData(parent: TableRowData, tpe: TableRowData /* value is ignored */ )
+      extends TableRowData
   final case class MethodDefData(implFlags: Short,
                                  flags: Short,
                                  name: String,
@@ -184,6 +187,17 @@ object TablesData {
           } yield MemberRefData(cls, name, signatureIdx)
       }.sequence
 
+    def customAttributeListV(typeDefTable: Vector[TypeDefData],
+                             methodDefTable: Vector[MethodDefData],
+                             memberRefTable: Vector[MemberRefData]): Either[String, Vector[CustomAttributeData]] =
+      peData.tables.customAttributeTable.map {
+        case CustomAttributeRow(parentIdx, typeIdx, _) =>
+          for {
+            parent <- CodedIndexes.hasCustomAttribute(parentIdx, typeDefTable)
+            tpe <- CodedIndexes.customAttributeType(typeIdx, methodDefTable, memberRefTable)
+          } yield CustomAttributeData(parent, tpe)
+      }.sequence
+
     val documentListV: Either[String, Vector[DocumentData]] =
       peData.tables.documentTable.map {
         case DocumentRow(nameIdx, _, _, _) =>
@@ -224,10 +238,12 @@ object TablesData {
       typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
       memberRefList <- memberRefListV(typeDefList, typeRefList)
+      customAttributeList <- customAttributeListV(typeDefList, methodList, memberRefList)
       documentList <- documentListV
       methodDebugInformationList <- methodDebugInformationListV(documentList)
     } yield
       TablesData(
+        customAttributeList,
         fieldList,
         fieldRVAList,
         memberRefList,
