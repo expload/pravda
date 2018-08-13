@@ -37,6 +37,7 @@ object Operation {
   final case class Jump(name: Option[String])        extends Operation
   final case class JumpI(name: Option[String])       extends Operation
   final case class Call(name: Option[String])        extends Operation
+  final case class PushRef(name: String)             extends Operation
   final case class StructMut(key: Option[Primitive]) extends Operation
   final case class StructGet(key: Option[Primitive]) extends Operation
 

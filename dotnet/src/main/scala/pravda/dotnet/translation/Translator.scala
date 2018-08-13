@@ -63,6 +63,8 @@ object Translator {
       cilData: CilData,
       void: Boolean,
       func: Boolean,
+      static: Boolean,
+      struct: Boolean,
       kind: String,
       debugInfo: Option[MethodDebugInformationData]): Either[TranslationError, MethodTranslation] = {
 
@@ -210,60 +212,63 @@ object Translator {
     def isPrivate(methodIdx: Int): Boolean =
       (cilData.tables.methodDefTable(methodIdx).flags & 0x7) == 0x1
 
+    def isPublic(methodIdx: Int): Boolean =
+      (cilData.tables.methodDefTable(methodIdx).flags & 0x7) == 0x6
+
     def isStatic(methodIdx: Int): Boolean =
       (cilData.tables.methodDefTable(methodIdx).flags & 0x10) != 0
 
-    val programMethodsE = (for {
-      programClass <- programClassE
-    } yield {
-      methods.zipWithIndex.filter {
-        case (_, i) =>
-          (methodsToTypes(i) eq programClass) && !isPrivate(i) && !isCtor(i) && !isCctor(i) && !isMain(i)
-      }
-    }).filterOrElse(_.forall { case (m, i) => !isStatic(i) }, Left(TranslationError(InternalError("Static program methods are forbidden"), None)))
-
-    val programFuncsE = for {
-      programClass <- programClassE
-    } yield {
-      methods.zipWithIndex.filter {
-        case (_, i) =>
-          (methodsToTypes(i) eq programClass) && isPrivate(i) && !isCtor(i) && !isCctor(i) && !isMain(i)
+    def filterMethods(pred: Int => Boolean,
+                      validate: Int => Boolean,
+                      onFail: => InnerTranslationError): Either[TranslationError, List[Int]] = {
+      val ms = methods.indices.filter(pred).toList
+      if (ms.forall(validate)) {
+        Right(ms)
+      } else {
+        Left(TranslationError(onFail, None))
       }
     }
+    def filterMethods(pred: Int => Boolean): Either[TranslationError, List[Int]] = filterMethods(pred, _ => true, ???)
 
-    val programConstructorE = for {
+    val programMethodsFuncsE = for {
       programClass <- programClassE
-      ctor <- {
-        val ctors = methods.zipWithIndex.filter {
-          case (_, i) =>
-            (methodsToTypes(i) eq programClass) && isCtor(i)
-        }
+      methods <- filterMethods(
+        i => (methodsToTypes(i) eq programClass) && !isCtor(i) && !isCctor(i) && !isMain(i),
+        i => !isStatic(i) && (isPrivate(i) || isPublic(i)),
+        InternalError("Only public or private non-static methods are allowed.")
+      )
+    } yield methods
 
+    val programMethodsE = programMethodsFuncsE.map(_.filter(isPublic))
+    val programFuncsE = programMethodsFuncsE.map(_.filter(isPrivate))
+
+    val programCtorE = for {
+      programClass <- programClassE
+      ctors <- filterMethods(
+        i => (methodsToTypes(i) eq programClass) && isCtor(i) && isCctor(i),
+        i => !isCctor(i) && cilData.tables.methodDefTable(i).params.isEmpty,
+        InternalError("Constructor mustn't take any arguments. Static constructors are forbidden.")
+      )
+      ctor <- {
         if (ctors.length > 1) {
-          Left(TranslationError(InternalError("You must define exactly one constructor for the program"), None))
+          Left(TranslationError(InternalError("It's forbidden to have more than one program's constructor."), None))
         } else if (ctors.length == 1) {
-          val ctor = ctors.head
-          val ctorRow = cilData.tables.methodDefTable(ctor._2)
-          if (ctorRow.params.nonEmpty) {
-            Left(TranslationError(InternalError("Program constructor must not take arguments"), None))
-          } else {
-            Right(Some(ctor))
-          }
+          Right(Some(ctors.head))
         } else {
           Right(None)
         }
       }
     } yield ctor
 
-    val structFuncsE = for {
+    val structEntitiesE = for {
       programClass <- programClassE
-    } yield {
-      methods.zipWithIndex.filter {
-        case (_, i) =>
-          !(methodsToTypes(i) eq programClass) && !isCtor(i) && !isCctor(i) && !isMain(i)
-      }
-    }
+      methods <- filterMethods(i => !(methodsToTypes(i) eq programClass) && !isMain(i))
+    } yield methods
 
+    val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
+    val structStaticFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && isStatic(i)))
+    val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
+    val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
 
 //    lazy val metaMethods = methods.flatMap {
 //      case (m, i) =>
@@ -282,121 +287,143 @@ object Translator {
 //          )
 //    }
 
-    lazy val jumpToMethods = for {
+    val jumpToMethods = for {
       programMethods <- programMethodsE
     } yield {
-      programMethods.flatMap {
-        case (m, i) =>
-          val name = cilData.tables.methodDefTable(i).name
-          asm(
-            s"""
-              |dup
-              |push "$name"
-              |eq
-              |jumpi "method_$name"
+      programMethods.flatMap(i => {
+        val name = cilData.tables.methodDefTable(i).name
+        asm(s"""
+             |dup
+             |push "$name"
+             |eq
+             |jumpi "method_$name"
             """.stripMargin)
-      }
+      })
     }
 
-    lazy val constructorE: Either[TranslationError, Option[MethodTranslation]] = for {
-      ctor <- programConstructorE
-    } yield {
-      ctor match {
-        case Some((m, i)) =>
-          val ctorRow = cilData.tables.methodDefTable(i)
-          Some(translateMethod(
+    val ctorOpsE = for {
+      ctor <- programCtorE
+      ops <- ctor match {
+        case Some(i) =>
+          val method = methods(i)
+          translateMethod(
             0,
-            MethodExtractors.localVariables(m, signatures).fold(0)(_.length),
+            MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
             "ctor",
-            BranchTransformer.transformBranches(m.opcodes, "ctor"),
+            BranchTransformer.transformBranches(method.opcodes, "ctor"),
             signatures,
             cilData,
             void = true,
             func = true,
+            static = false,
+            struct = false,
             "method",
             pdbTables.map(_.methodDebugInformationTable(i))
-          )
-          )
+          ).map(Some(_))
         case None => Right(None)
       }
+    } yield ops
 
-    lazy val methodsOpsE: Either[TranslationError, List[MethodTranslation]] = methods.map {
-      case (m, i) =>
-        val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
-        cilData.tables.methodDefTable(i) match {
-          case MethodDefData(_, _, name, sigIdx, params) =>
-            val isVoid = signatures.get(sigIdx) match {
-              case Some(MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params)) =>
-                tpe match {
-                  case SigType.Void => true
-                  case _            => false
-                }
-              case _ => false
-            }
+    lazy val programMethodsOpsE = for {
+      programMethods <- programMethodsE
+      opss <- programMethods.map(i => {
+        val method = methods(i)
+        val methodRow = cilData.tables.methodDefTable(i)
 
-            translateMethod(
-              params.length, // FIXME should properly handle static methods
-              localVarSig
-                .map {
-                  case LocalVarSig(types) => types.length
-                  case _                  => 0
-                }
-                .getOrElse(0),
-              name,
-              BranchTransformer.transformBranches(m.opcodes, name),
-              signatures,
-              cilData,
-              isVoid,
-              false,
-              "method",
-              pdbTables.map(_.methodDebugInformationTable(i))
-            )
-        }
-    }.sequence
+        translateMethod(
+          methodRow.params.length,
+          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+          methodRow.name,
+          BranchTransformer.transformBranches(method.opcodes, methodRow.name),
+          signatures,
+          cilData,
+          void = MethodExtractors.isVoid(methodRow, signatures),
+          func = false,
+          static = false,
+          struct = false,
+          "method",
+          pdbTables.map(_.methodDebugInformationTable(i))
+        )
+      }).sequence
+    } yield opss
 
-    lazy val funcOpsE: Either[TranslationError, List[MethodTranslation]] = funcs.map {
-      case (m, i) =>
-        val localVarSig = m.localVarSigIdx.flatMap(signatures.get)
-        cilData.tables.methodDefTable(i) match {
-          case MethodDefData(_, _, name, sigIdx, params) =>
-            val isVoid = signatures.get(sigIdx) match {
-              case Some(MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), params)) =>
-                tpe match {
-                  case SigType.Void => true
-                  case _            => false
-                }
-              case _ => false
-            }
+    lazy val programFuncsOpsE = for {
+      programFuncs <- programFuncsE
+      opss <- programFuncs.map(i => {
+        val method = methods(i)
+        val methodRow = cilData.tables.methodDefTable(i)
 
-            translateMethod(
-              params.length,
-              localVarSig
-                .map {
-                  case LocalVarSig(types) => types.length
-                  case _                  => 0
-                }
-                .getOrElse(0),
-              name,
-              BranchTransformer.transformBranches(m.opcodes, name),
-              signatures,
-              cilData,
-              isVoid,
-              true,
-              "func",
-              pdbTables.map(_.methodDebugInformationTable(i))
-            )
-        }
-    }.sequence
+        translateMethod(
+          methodRow.params.length,
+          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+          methodRow.name,
+          BranchTransformer.transformBranches(method.opcodes, methodRow.name),
+          signatures,
+          cilData,
+          void = MethodExtractors.isVoid(methodRow, signatures),
+          func = true,
+          static = false,
+          struct = false,
+          "func",
+          pdbTables.map(_.methodDebugInformationTable(i))
+        )
+      }).sequence
+    } yield opss
+
+    lazy val structFuncsOpsE = for {
+      structFuncs <- structFuncsE
+      opss <- structFuncs.map(i => {
+        val method = methods(i)
+        val methodRow = cilData.tables.methodDefTable(i)
+        val tpe = methodsToTypes(i)
+        val name = s"${tpe.namespace}.${tpe.name}.${methodRow.name}"
+
+        translateMethod(
+          methodRow.params.length,
+          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+          name,
+          BranchTransformer.transformBranches(method.opcodes, name),
+          signatures,
+          cilData,
+          void = MethodExtractors.isVoid(methodRow, signatures),
+          func = true,
+          static = false,
+          struct = true,
+          "func",
+          pdbTables.map(_.methodDebugInformationTable(i))
+        )
+      }).sequence
+    } yield opss
+
+    lazy val structStaticFuncOpsE = for {
+      structStaticFuncs <- structStaticFuncsE
+      opss <- structStaticFuncs.map(i => {
+        val method = methods(i)
+        val methodRow = cilData.tables.methodDefTable(i)
+        val tpe = methodsToTypes(i)
+        val name = s"${tpe.namespace}.${tpe.name}.${methodRow.name}"
+
+        translateMethod(
+          methodRow.params.length,
+          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+          name,
+          BranchTransformer.transformBranches(method.opcodes, name),
+          signatures,
+          cilData,
+          void = MethodExtractors.isVoid(methodRow, signatures),
+          func = true,
+          static = true,
+          struct = true,
+          "func",
+          pdbTables.map(_.methodDebugInformationTable(i))
+        )
+      }).sequence
+    } yield opss
 
     for {
-      _ <- if (false /*rawMethodNames.contains(".cctor")*/ ) {
-        Left(TranslationError(InternalError("Static constructor isn't allowed."), None))
-      } else {
-        Right(())
-      }
-      methodsOps <- methodsOpsE
-      constructor <- constructorE
-      funcOps <- funcOpsE
+      methodsOps <- programMethodsOpsE
+      constructor <- programCtorOpsE
+      funcOps <- programFuncsOpsE
     } yield
       Translation(
         metaMethods ++ jumpToMethods ++ List(

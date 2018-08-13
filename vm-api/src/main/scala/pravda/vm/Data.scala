@@ -958,6 +958,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
       extends Exception(s"Unexpected length: $expected expected but $given given at $offset")
 
+  final case class UnknownMeta(meta: Meta, offset: Option[Int] = None)
+    extends Exception(s"Unexpected meta: ${meta.mkString}${offset.map(o => s" at $o").getOrElse("")}")
+
   final case class InvalidData(data: Data) extends Exception(s"Invalid data: ${data.mkString()}")
 
   object Type extends TaggedType[Byte] {

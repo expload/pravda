@@ -63,8 +63,8 @@ object PravdaAssembler {
     def putOp(opcode: Int): Unit =
       bytecode.put(opcode.toByte)
 
-    // Go to `name` using `opcode`
-    def goto(name: String, opcode: Int): Unit = {
+    // put placeholder for the label reference
+    def pushRef(name: String): Unit = {
       if (saveLabels) {
         putOp(Opcodes.META)
         Metadata.LabelUse(name).writeToByteBuffer(bytecode)
@@ -74,6 +74,11 @@ object PravdaAssembler {
       gotos.put(bytecode.position, name)
       // Just a placeholer. Ref is constant sized
       Primitive.Ref.Void.writeToByteBuffer(bytecode)
+    }
+
+    // Go to `name` using `opcode`
+    def goto(name: String, opcode: Int): Unit = {
+      pushRef(name)
       putOp(opcode)
     }
 
@@ -110,6 +115,7 @@ object PravdaAssembler {
       case Jump(None)        => putOp(Opcodes.JUMP)
       case JumpI(None)       => putOp(Opcodes.JUMPI)
       case Call(None)        => putOp(Opcodes.CALL)
+      case PushRef(name)     => pushRef(name)
       case Orphan(opcode)    => putOp(opcode)
       // Simple operations
       case Nop        => ()
@@ -138,55 +144,53 @@ object PravdaAssembler {
     val buffer = bytecode.asReadOnlyByteBuffer()
     val operations = mutable.Buffer.empty[Operation]
     var label = Option.empty[String]
+
     while (buffer.hasRemaining) {
       val opcode = buffer.get & 0xff
-      operations += Operation.operationByOpcode.getOrElse(
-        key = opcode,
-        default = (opcode: @switch) match {
-          case Opcodes.META =>
-            Metadata.readFromByteBuffer(buffer) match {
-              case Metadata.LabelDef(name) => Operation.Label(name)
-              case Metadata.LabelUse(name) =>
-                label = Some(name)
-                Operation.Nop
-              case metadata => Operation.Meta(metadata)
-            }
-          case Opcodes.STRUCT_GET_STATIC =>
-            val offset = buffer.position()
-            Data.readFromByteBuffer(buffer) match {
-              case key: Primitive => StructGet(Some(key))
-              case data           => throw UnexpectedTypeException(data, Some(offset))
-            }
-          case Opcodes.STRUCT_MUT_STATIC =>
-            val offset = buffer.position()
-            Data.readFromByteBuffer(buffer) match {
-              case key: Primitive => StructMut(Some(key))
-              case data           => throw UnexpectedTypeException(data, Some(offset))
-            }
-          case Opcodes.PUSHX if label.nonEmpty =>
-            Data.readFromByteBuffer(buffer)
-            Operation.Nop
-          case Opcodes.JUMP if label.nonEmpty =>
-            val op = Operation.Jump(label)
-            label = None
-            op
-          case Opcodes.JUMPI if label.nonEmpty =>
-            val op = Operation.JumpI(label)
-            label = None
-            op
-          case Opcodes.CALL if label.nonEmpty =>
-            val op = Operation.Call(label)
-            label = None
-            op
-          case Opcodes.NEW        => Operation.New(Data.readFromByteBuffer(buffer))
-          case Opcodes.PUSHX      => Operation.Push(Data.readFromByteBuffer(buffer))
-          case Opcodes.JUMP       => Operation.Jump(None)
-          case Opcodes.JUMPI      => Operation.JumpI(None)
-          case Opcodes.CALL       => Operation.Call(None)
-          case Opcodes.STRUCT_GET => Operation.StructGet(None)
-          case Opcodes.STRUCT_MUT => Operation.StructMut(None)
-        }
-      )
+
+      (opcode: @switch) match {
+        case Opcodes.META =>
+          Metadata.readFromByteBuffer(buffer) match {
+            case Metadata.LabelDef(name) =>
+              operations += Operation.Label(name)
+            case Metadata.LabelUse(name) =>
+              label = Some(name)
+            case metadata =>
+              operations += Operation.Meta(metadata)
+          }
+        case Opcodes.STRUCT_GET_STATIC =>
+          val offset = buffer.position()
+          Data.readFromByteBuffer(buffer) match {
+            case key: Primitive => operations += StructGet(Some(key))
+            case data           => throw UnexpectedTypeException(data, Some(offset))
+          }
+        case Opcodes.STRUCT_MUT_STATIC =>
+          val offset = buffer.position()
+          Data.readFromByteBuffer(buffer) match {
+            case key: Primitive => operations += StructMut(Some(key))
+            case data           => throw UnexpectedTypeException(data, Some(offset))
+          }
+        case Opcodes.PUSHX if label.nonEmpty =>
+          Data.readFromByteBuffer(buffer)
+          operations += Operation.PushRef(label.get)
+          label = None
+        case Opcodes.PUSHX =>
+          operations += Operation.Push(Data.readFromByteBuffer(buffer))
+        case Opcodes.JUMP =>
+          operations += Operation.Jump(label)
+          label = None
+        case Opcodes.JUMPI =>
+          operations += Operation.JumpI(label)
+          label = None
+        case Opcodes.CALL =>
+          operations += Operation.Call(label)
+          label = None
+
+        case Opcodes.NEW => operations += Operation.New(Data.readFromByteBuffer(buffer))
+        case Opcodes.STRUCT_GET                             => operations += Operation.StructGet(None)
+        case Opcodes.STRUCT_MUT                             => operations += Operation.StructMut(None)
+        case op if Operation.operationByOpcode.contains(op) => operations += Operation.operationByOpcode(op)
+      }
     }
 
     operations.filter(_ != Nop)
