@@ -38,13 +38,14 @@ object PravdaConfig {
   case object Nope extends PravdaConfig
 
   object DefaultValues {
+
     object Broadcast {
       val WATT_LIMIT = 300L
       val WATT_PRICE = NativeCoin.amount(1)
       val ENDPOINT = "http://localhost:8080/api/public/broadcast"
     }
   }
-  
+
   final case class GenAddress(output: Option[String] = None) extends PravdaConfig
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,

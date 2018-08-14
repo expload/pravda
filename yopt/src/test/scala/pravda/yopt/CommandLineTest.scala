@@ -28,19 +28,19 @@ object CommandLineTest extends TestSuite {
       primTypesParser[Int](1, "--integer", "0x1")(_.intValue)
       primTypesParser[Int](255, "--integer", "0xFF")(_.intValue)
     }
-    
+
     "int parser should fail" - {
       primTypesParserFail("--integer", "FF")
       primTypesParserFail("--integer")
       primTypesParserFail("--integer", "bar")
       primTypesParserFail("--integer", "-90")
     }
-    
+
     "long parser should parse" - {
       primTypesParser[Long](999L, "--long", "999")(_.longValue)
       primTypesParser[Long](15L, "--long", "0xF")(_.longValue)
     }
-    
+
     "bool parser should parse" - {
       primTypesParser[Boolean](true, "--boolean", "true")(_.boolValue)
       primTypesParser[Boolean](false, "--boolean", "false")(_.boolValue)
@@ -49,7 +49,7 @@ object CommandLineTest extends TestSuite {
       primTypesParser[Boolean](false, "--boolean", "n")(_.boolValue)
       primTypesParser[Boolean](true, "--boolean", "y")(_.boolValue)
     }
-    
+
     "bigdecimal parser should parse" - {
       primTypesParser[BigDecimal](1.0, "--bigdecimal", "1.0")(_.bigDecimalValue)
       primTypesParser[BigDecimal](200L, "--bigdecimal", "200")(_.bigDecimalValue)
@@ -61,20 +61,21 @@ object CommandLineTest extends TestSuite {
       primTypesParser[Double](200L, "--double", "200")(_.doubleValue)
       primTypesParser[Double](100, "--double", "100")(_.doubleValue)
     }
-    
+
     "uri parser should parse" - {
       otherTypesParser[URI](new URI("http://localhost"), "--uri", "http://localhost")(_.uriValue)
       otherTypesParser[URI](new URI("https://localhost"), "--uri", "https://localhost")(_.uriValue)
-      otherTypesParser[URI](new URI("http://localhost:8080/api/public/broadcast"), "--uri",
-        "http://localhost:8080/api/public/broadcast")(_.uriValue)
+      otherTypesParser[URI](new URI("http://localhost:8080/api/public/broadcast"),
+                            "--uri",
+                            "http://localhost:8080/api/public/broadcast")(_.uriValue)
     }
-  
+
     // FIXME The standard URI class checks almost nothing. It even does not catch a simple typos
     // We should develop own URI parser if it is needed.
     //    "uri parser should fail" - {
     //      uriParserFail("--uri", "http:/localhost")
     //    }
-    
+
     "duration parser should parse" - {
       otherTypesParser[Duration](Duration(30, duration.SECONDS), "--duration", "30s")(_.durationValue)
       otherTypesParser[Duration](Duration(2, duration.DAYS), "--duration", "2 day")(_.durationValue)
@@ -82,22 +83,24 @@ object CommandLineTest extends TestSuite {
 
     "sequence parser should parse" - {
       otherTypesParser[Seq[Int]](Seq(1), "--seq", "1")(_.seqInts)
-      otherTypesParser[Seq[Int]](Seq(1,2,3), "--seq", "1,2,3")(_.seqInts)
+      otherTypesParser[Seq[Int]](Seq(1, 2, 3), "--seq", "1,2,3")(_.seqInts)
     }
-    
+
     "tuple parser should parse" - {
       otherTypesParser[(String, Int)]("a" -> 1, "--tuple2", "a->1")(_.tupleOfStringInt)
       otherTypesParser[(String, Int)]("abc" -> 999, "--tuple2", "abc->999")(_.tupleOfStringInt)
     }
-    
+
     "map parser should parse" - {
       otherTypesParser[Map[String, Boolean]](Map("a" -> true), "--map", "a->true")(_.mapStringToBool)
-      otherTypesParser[Map[String, Boolean]](Map("a" -> true, "b" -> false), "--map", "a->true,b->false")(_.mapStringToBool)
+      otherTypesParser[Map[String, Boolean]](Map("a" -> true, "b" -> false), "--map", "a->true,b->false")(
+        _.mapStringToBool)
     }
 
     "seq of tuple should parse" - {
       otherTypesParser[Seq[(String, String)]](Seq(("a", "b")), "--seqtuple", "a->b")(_.seqTupleStringString)
-      otherTypesParser[Seq[(String, String)]](Seq( ("a", "b"), ("c", "d") ), "--seqtuple", "a->b,c->d")(_.seqTupleStringString)
+      otherTypesParser[Seq[(String, String)]](Seq(("a", "b"), ("c", "d")), "--seqtuple", "a->b,c->d")(
+        _.seqTupleStringString)
     }
 
     "char parser should parse" - {
@@ -146,8 +149,9 @@ object CommandLineTest extends TestSuite {
     val result = groupParser1.parse(args.toList, Config())
     assert(result == Ok(Config(flag = true)))
   }
-  
+
   val primitiveTypesParser = new CommandLine[Config] {
+
     def model = head("primitive_types").children(
       opt[Int]("integer").action { (x, c) =>
         c.copy(intValue = x)
@@ -169,7 +173,7 @@ object CommandLineTest extends TestSuite {
       },
     )
   }
-  
+
   val otherTypesParser = new CommandLine[Config] {
     override def model = head("other_types").children(
       opt[URI]("uri").action { (x, c) =>
@@ -192,20 +196,18 @@ object CommandLineTest extends TestSuite {
       }
     )
   }
-  
-  def primTypesParser[T](expectedValue: T, args: String*)
-                        (slice: Config => T): Unit = {
+
+  def primTypesParser[T](expectedValue: T, args: String*)(slice: Config => T): Unit = {
     primitiveTypesParser.parse(args.toList, Config()) match {
       case Ok(r) => slice(r) ==> expectedValue
-      case _ => assert(false)
+      case _     => assert(false)
     }
   }
 
-  def otherTypesParser[T](expectedValue: T, args: String*)
-                        (slice: Config => T): Unit = {
+  def otherTypesParser[T](expectedValue: T, args: String*)(slice: Config => T): Unit = {
     otherTypesParser.parse(args.toList, Config()) match {
       case Ok(r) => slice(r) ==> expectedValue
-      case _ => assert(false)
+      case _     => assert(false)
     }
   }
 
@@ -218,7 +220,7 @@ object CommandLineTest extends TestSuite {
     val result = otherTypesParser.parse(args.toList, Config())
     assert(result.isInstanceOf[ParseError])
   }
-  
+
   final case class Config(
       flag: Boolean = false,
       intValue: Int = 0,

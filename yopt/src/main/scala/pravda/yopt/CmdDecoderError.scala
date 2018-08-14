@@ -17,7 +17,7 @@
 
 package pravda.yopt
 
-sealed trait CmdDecoderError { 
+sealed trait CmdDecoderError {
   val message: String
   override def toString = message
 }

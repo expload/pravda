@@ -30,7 +30,7 @@ trait CmdDecoder[T] {
 
 object CmdDecoder {
   private val noValueError = Left("Option must have value. No value provided")
-  
+
   implicit val intDecoder: CmdDecoder[Int] = new CmdDecoder[Int] {
     override def decode(line: Line): Either[String, (Int, Line)] =
       line.headOption
@@ -40,12 +40,13 @@ object CmdDecoder {
             case hex if hex.startsWith("0x") =>
               Try(Integer.parseInt(hex.drop(2), 16)).fold(
                 _ => Left(IntegerDecodeError(hex).toString),
-                number => Right( (number, line.tail) )
+                number => Right((number, line.tail))
               )
-            case moreLikelyDec => Try(moreLikelyDec.toInt).fold(
-              _ => Left(IntegerDecodeError(moreLikelyDec).toString),
-              number => Right( (number, line.tail) )
-            )
+            case moreLikelyDec =>
+              Try(moreLikelyDec.toInt).fold(
+                _ => Left(IntegerDecodeError(moreLikelyDec).toString),
+                number => Right((number, line.tail))
+              )
           }
         }
         .getOrElse(noValueError)
@@ -62,12 +63,13 @@ object CmdDecoder {
             case hex if hex.startsWith("0x") =>
               Try(java.lang.Long.parseLong(hex.drop(2), 16)).fold(
                 _ => Left(LongDecodeError(hex).toString),
-                number => Right( (number, line.tail) )
+                number => Right((number, line.tail))
               )
-            case moreLikelyDec => Try(moreLikelyDec.toLong).fold(
-              _ => Left(LongDecodeError(moreLikelyDec).toString),
-              number => Right( (number, line.tail) )
-            )
+            case moreLikelyDec =>
+              Try(moreLikelyDec.toLong).fold(
+                _ => Left(LongDecodeError(moreLikelyDec).toString),
+                number => Right((number, line.tail))
+              )
           }
         }
         .getOrElse(noValueError)
@@ -80,28 +82,29 @@ object CmdDecoder {
       line.headOption
         .map { item =>
           item.toLowerCase match {
-            case "true"  => Right( (true, line.tail) )
-            case "false" => Right( (false, line.tail) )
-            case "yes"   => Right( (true, line.tail) )
-            case "no"    => Right( (false, line.tail) )
-            case "y"     => Right( (true, line.tail) )
-            case "n"     => Right( (false, line.tail) )
+            case "true"  => Right((true, line.tail))
+            case "false" => Right((false, line.tail))
+            case "yes"   => Right((true, line.tail))
+            case "no"    => Right((false, line.tail))
+            case "y"     => Right((true, line.tail))
+            case "n"     => Right((false, line.tail))
             case _       => Left(BooleanDecodeError(item).toString)
           }
-        }.getOrElse(noValueError)
-    
+        }
+        .getOrElse(noValueError)
+
     override def optInfo: Option[String] = Some("<boolean>")
   }
 
   implicit val bigDecimalReader: CmdDecoder[BigDecimal] = new CmdDecoder[BigDecimal] {
     override def decode(line: Line): Either[String, (BigDecimal, Line)] =
       line.headOption
-        .map(item => 
-          Try(BigDecimal(item)).fold(
-            _ => Left(BigDecimalDecodeError(item).toString),
-            v => Right( (v, line.tail) )
-          )
-        )
+        .map(
+          item =>
+            Try(BigDecimal(item)).fold(
+              _ => Left(BigDecimalDecodeError(item).toString),
+              v => Right((v, line.tail))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<bigdecimal>")
   }
@@ -109,12 +112,12 @@ object CmdDecoder {
   implicit val doubleReader: CmdDecoder[Double] = new CmdDecoder[Double] {
     override def decode(line: Line): Either[String, (Double, Line)] =
       line.headOption
-        .map(item =>
-          Try(item.toDouble).fold(
-            _ => Left(DoubleDecodeError(item).toString),
-            v => Right( (v, line.tail) )
-          )
-        )
+        .map(
+          item =>
+            Try(item.toDouble).fold(
+              _ => Left(DoubleDecodeError(item).toString),
+              v => Right((v, line.tail))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<double>")
   }
@@ -122,12 +125,12 @@ object CmdDecoder {
   implicit val uriReader: CmdDecoder[URI] = new CmdDecoder[URI] {
     override def decode(line: Line): Either[String, (URI, Line)] =
       line.headOption
-        .map(item =>
-          Try(new URI(item)).fold(
-            _ => Left(UriDecodeError(item).toString),
-            v => Right( (v, line.tail) )
-          )
-        )
+        .map(
+          item =>
+            Try(new URI(item)).fold(
+              _ => Left(UriDecodeError(item).toString),
+              v => Right((v, line.tail))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<uri>")
   }
@@ -135,12 +138,12 @@ object CmdDecoder {
   implicit val durationReader: CmdDecoder[Duration] = new CmdDecoder[Duration] {
     override def decode(line: Line): Either[String, (Duration, Line)] =
       line.headOption
-        .map(item =>
-          Try(Duration(item)).fold(
-            _ => Left(DurationDecodeError(item).toString),
-            v => Right( (v, line.tail) )
-          )
-        )
+        .map(
+          item =>
+            Try(Duration(item)).fold(
+              _ => Left(DurationDecodeError(item).toString),
+              v => Right((v, line.tail))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<duration>")
   }
@@ -159,64 +162,63 @@ object CmdDecoder {
       line.headOption
         .map {
           case item if item.length != 1 => Left(CharDecodeError(item).toString)
-          case item => Right( (item.head, line.tail) )
+          case item                     => Right((item.head, line.tail))
         }
         .getOrElse(noValueError)
 
     override val optInfo: Option[String] = Some("<char>")
   }
 
-  // Sample values: 1 OR 1,2,3 
-  implicit def seqReader[A](implicit decoder: CmdDecoder[A]): CmdDecoder[Seq[A]]
-  = new CmdDecoder[Seq[A]] {
+  // Sample values: 1 OR 1,2,3
+  implicit def seqReader[A](implicit decoder: CmdDecoder[A]): CmdDecoder[Seq[A]] = new CmdDecoder[Seq[A]] {
     override def decode(line: Line): Either[String, (Seq[A], Line)] =
       line.headOption
         .map { item =>
-            sequence(item.split(',').map(a => decoder.decode(List(a)).map(_._1)))
-              .map(x => (x.toSeq, line.tail))
-          
-        }.getOrElse(noValueError)
+          sequence(item.split(',').map(a => decoder.decode(List(a)).map(_._1)))
+            .map(x => (x.toSeq, line.tail))
+
+        }
+        .getOrElse(noValueError)
 
     override val optInfo: Option[String] = Some("<sequence>")
   }
 
   // Sample values: "a" -> 1 OR 2 -> "b" OR true -> false
-  implicit def tuple2Reader[A, B](implicit aDecoder: CmdDecoder[A],
-                                  bDecoder: CmdDecoder[B]): CmdDecoder[(A,B)]
-  = new CmdDecoder[(A,B)] {
-    override def decode(line: Line): Either[String, ((A,B), Line)] =
-      line.headOption
-        .map {
-          case item if !item.contains("->") => Left(Tuple2DecodeError(item).toString)
-          case item =>
-            val parts = item.split("->")
-            if (parts.length != 2) Left(Tuple2DecodeError(item).toString)
-            else {
-              sequenceForTuple2(
-                (aDecoder.decode(List(parts(0))).map(_._1),
-                bDecoder.decode(List(parts(1))).map(_._1))
-              ).map(x => (x, line.tail))
-            }
+  implicit def tuple2Reader[A, B](implicit aDecoder: CmdDecoder[A], bDecoder: CmdDecoder[B]): CmdDecoder[(A, B)] =
+    new CmdDecoder[(A, B)] {
+      override def decode(line: Line): Either[String, ((A, B), Line)] =
+        line.headOption
+          .map {
+            case item if !item.contains("->") => Left(Tuple2DecodeError(item).toString)
+            case item =>
+              val parts = item.split("->")
+              if (parts.length != 2) Left(Tuple2DecodeError(item).toString)
+              else {
+                sequenceForTuple2(
+                  (aDecoder.decode(List(parts(0))).map(_._1), bDecoder.decode(List(parts(1))).map(_._1))
+                ).map(x => (x, line.tail))
+              }
 
-        }
-        .getOrElse(noValueError)
+          }
+          .getOrElse(noValueError)
 
-    override val optInfo: Option[String] = Some("<tuple2>")
-  }
-  
+      override val optInfo: Option[String] = Some("<tuple2>")
+    }
+
   // Sample values: a->true OR a->true,b->false
-  implicit def mapReader[K,V](implicit kvDecoder: CmdDecoder[(K,V)]) = new CmdDecoder[Map[K,V]] {
-    override def decode(line: Line): Either[String, (Map[K,V], Line)] = {
+  implicit def mapReader[K, V](implicit kvDecoder: CmdDecoder[(K, V)]) = new CmdDecoder[Map[K, V]] {
+    override def decode(line: Line): Either[String, (Map[K, V], Line)] = {
       line.headOption
         .map { item =>
           sequence(item.split(',').map(x => kvDecoder.decode(List(x)).map(_._1)).toSeq)
             .map(x => (x.toMap, line.tail))
-        }.getOrElse(noValueError)
+        }
+        .getOrElse(noValueError)
     }
 
     override def optInfo = Some("<map>")
   }
-  
+
   implicit val fileReader: CmdDecoder[File] = new CmdDecoder[File] {
     override def decode(line: Line): Either[String, (File, Line)] =
       line.headOption
@@ -232,25 +234,26 @@ object CmdDecoder {
 
     override val optInfo: Option[String] = None
   }
-  
+
   private def sequence[A, E](list: Traversable[Either[E, A]]): Either[E, Traversable[A]] = {
     def loop(xs: Traversable[Either[E, A]], acc: List[A]): Either[E, Traversable[A]] = {
       xs.headOption match {
         case None => Right(acc)
-        case Some(x) => x match {
-          case Left(e) => Left(e)
-          case Right(v) => loop(xs.tail, acc :+ v)
-        }
+        case Some(x) =>
+          x match {
+            case Left(e)  => Left(e)
+            case Right(v) => loop(xs.tail, acc :+ v)
+          }
       }
     }
     loop(list, List.empty)
   }
-  
-  private def sequenceForTuple2[E, A, B](t: (Either[E, A], Either[E, B])): Either[E, (A,B)] = {
+
+  private def sequenceForTuple2[E, A, B](t: (Either[E, A], Either[E, B])): Either[E, (A, B)] = {
     t match {
-      case ( Right(a), Right(b) ) => Right( (a,b) )
-      case ( Left(e), _ )         => Left(e)
-      case ( _, Left(e))          => Left(e)
+      case (Right(a), Right(b)) => Right((a, b))
+      case (Left(e), _)         => Left(e)
+      case (_, Left(e))         => Left(e)
     }
   }
 }
