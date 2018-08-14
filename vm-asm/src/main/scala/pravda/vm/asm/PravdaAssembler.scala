@@ -177,16 +177,31 @@ object PravdaAssembler {
         case Opcodes.PUSHX =>
           operations += Operation.Push(Data.readFromByteBuffer(buffer))
         case Opcodes.JUMP =>
-          operations += Operation.Jump(label)
-          label = None
+          operations.last match {
+            case Operation.PushRef(l) =>
+              operations.remove(operations.length - 1)
+              operations += Operation.Jump(Some(l))
+            case _ =>
+              operations += Operation.Jump(None)
+          }
         case Opcodes.JUMPI =>
-          operations += Operation.JumpI(label)
-          label = None
+          operations.last match {
+            case Operation.PushRef(l) =>
+              operations.remove(operations.length - 1)
+              operations += Operation.JumpI(Some(l))
+            case _ =>
+              operations += Operation.JumpI(None)
+          }
         case Opcodes.CALL =>
-          operations += Operation.Call(label)
-          label = None
+          operations.last match {
+            case Operation.PushRef(l) =>
+              operations.remove(operations.length - 1)
+              operations += Operation.Call(Some(l))
+            case _ =>
+              operations += Operation.Call(None)
+          }
 
-        case Opcodes.NEW => operations += Operation.New(Data.readFromByteBuffer(buffer))
+        case Opcodes.NEW                                    => operations += Operation.New(Data.readFromByteBuffer(buffer))
         case Opcodes.STRUCT_GET                             => operations += Operation.StructGet(None)
         case Opcodes.STRUCT_MUT                             => operations += Operation.StructMut(None)
         case op if Operation.operationByOpcode.contains(op) => operations += Operation.operationByOpcode(op)
@@ -205,6 +220,7 @@ object PravdaAssembler {
     case Jump(Some(label))  => s"${mnemonic(Opcodes.JUMP)} @$label"
     case JumpI(Some(label)) => s"${mnemonic(Opcodes.JUMPI)} @$label"
     case Call(Some(label))  => s"${mnemonic(Opcodes.CALL)} @$label"
+    case PushRef(label)     => s"${mnemonic(Opcodes.PUSHX)} @$label"
     case Jump(None)         => mnemonic(Opcodes.JUMP)
     case JumpI(None)        => mnemonic(Opcodes.JUMPI)
     case Call(None)         => mnemonic(Opcodes.CALL)
@@ -256,6 +272,7 @@ object PravdaAssembler {
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 
     val label = P(ident ~ ":").map(n => Operation.Label(n))
+    val pushRef = P(IgnoreCase("push") ~ delim ~ ident).map(Operation.PushRef)
     val push = P(IgnoreCase("push") ~ delim ~ dataPrimitive).map(Operation.Push)
     val `new` = P(IgnoreCase("new") ~ delim ~ dataAll).map(Operation.New)
     val jump = P(IgnoreCase("jump") ~ (delim ~ ident).?).map(Operation.Jump)
@@ -269,7 +286,7 @@ object PravdaAssembler {
 
     val operation = Operation.Orphans
       .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))
-      .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment, meta))
+      .++(Seq(jumpi, jump, call, pushRef, push, `new`, struct_get, struct_mut, label, comment, meta))
       .reduce(_ | _)
 
     P(whitespace ~ operation.rep(sep = delim) ~ whitespace)

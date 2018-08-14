@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package parsers
 
 import pravda.dotnet.data.Method
@@ -20,11 +21,11 @@ object ObjectsTests extends TestSuite {
                     Nop,
                     LdArg0,
                     LdArg1,
-                    StFld(FieldData(1, "a", 37)),
+                    StFld(FieldData(1, "AVal", 37)),
                     Ret),
                0,
                None),
-        Method(List(Nop, LdArg0, LdFld(FieldData(1, "a", 37)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
+        Method(List(Nop, LdArg0, LdFld(FieldData(1, "AVal", 37)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
                2,
                Some(16)),
         Method(List(LdArg0,
@@ -33,26 +34,26 @@ object ObjectsTests extends TestSuite {
                     Nop,
                     LdArg0,
                     LdArg1,
-                    StFld(FieldData(1, "b", 37)),
+                    StFld(FieldData(1, "BVal", 37)),
                     Ret),
                0,
                None),
-        Method(List(Nop, LdArg0, LdFld(FieldData(1, "b", 37)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
+        Method(List(Nop, LdArg0, LdFld(FieldData(1, "BVal", 37)), LdcI4S(43), Add, StLoc0, BrS(0), LdLoc0, Ret),
                2,
                Some(16)),
         Method(
           List(
             Nop,
-            LdcI4S(-42),
-            NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_a")))),
+            LdcI4S(100),
+            NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal")))),
             StLoc0,
-            LdcI40,
-            NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_b")))),
+            LdcI4(200),
+            NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal")))),
             StLoc1,
             LdLoc0,
-            CallVirt(MethodDefData(0, 134, "answerA", 40, Vector())),
+            CallVirt(MethodDefData(0, 134, "AnswerA", 40, Vector())),
             LdLoc1,
-            CallVirt(MethodDefData(0, 134, "answerB", 40, Vector())),
+            CallVirt(MethodDefData(0, 134, "AnswerB", 40, Vector())),
             Add,
             StLoc2,
             Ret
@@ -60,6 +61,7 @@ object ObjectsTests extends TestSuite {
           2,
           Some(20)
         ),
+        Method(List(Nop, Ret), 0, None),
         Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
       )
 
@@ -84,9 +86,9 @@ object ObjectsTests extends TestSuite {
                  "A",
                  "",
                  Ignored,
-                 Vector(FieldData(1, "a", 37)),
-                 Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_a"))),
-                        MethodDefData(0, 134, "answerA", 40, Vector()))
+                 Vector(FieldData(1, "AVal", 37)),
+                 Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+                        MethodDefData(0, 134, "AnswerA", 40, Vector()))
                )),
                false
              ),
@@ -96,9 +98,9 @@ object ObjectsTests extends TestSuite {
                  "B",
                  "",
                  Ignored,
-                 Vector(FieldData(1, "b", 37)),
-                 Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "_b"))),
-                        MethodDefData(0, 134, "answerB", 40, Vector()))
+                 Vector(FieldData(1, "BVal", 37)),
+                 Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+                        MethodDefData(0, 134, "AnswerB", 40, Vector()))
                )),
                false
              ),
@@ -109,6 +111,37 @@ object ObjectsTests extends TestSuite {
         (44, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
       )
 
+      cilData.tables.typeDefTable ==> Vector(
+        TypeDefData(0, "<Module>", "", Ignored, Vector(), Vector()),
+        TypeDefData(
+          1048577,
+          "A",
+          "",
+          Ignored,
+          Vector(FieldData(1, "AVal", 37)),
+          Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+                 MethodDefData(0, 134, "AnswerA", 40, Vector()))
+        ),
+        TypeDefData(
+          1048577,
+          "B",
+          "",
+          Ignored,
+          Vector(FieldData(1, "BVal", 37)),
+          Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+                 MethodDefData(0, 134, "AnswerB", 40, Vector()))
+        ),
+        TypeDefData(1048577, "MyProgram", "", Ignored, Vector(), Vector())
+      )
+      cilData.tables.methodDefTable ==> Vector(
+        MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+        MethodDefData(0, 134, "AnswerA", 40, Vector()),
+        MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+        MethodDefData(0, 134, "AnswerB", 40, Vector()),
+        MethodDefData(0, 129, "Func", 6, Vector()),
+        MethodDefData(0, 150, "Main", 44, Vector()),
+        MethodDefData(0, 6278, ".ctor", 6, Vector())
+      )
     }
   }
 }

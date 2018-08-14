@@ -4,8 +4,6 @@ import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData.{MethodDefData, TypeRefData}
 import pravda.dotnet.parsers.Signatures
 import pravda.dotnet.parsers.Signatures.{LocalVarSig, MethodRefDefSig, SigType, Tpe}
-import pravda.vm.asm
-import pravda.vm.asm.PravdaAssembler
 
 package object translation {
 
@@ -51,7 +49,4 @@ package object translation {
     def isVoid(m: MethodDefData, signatures: Map[Long, Signatures.Signature]): Boolean =
       returnTpe(m, signatures).contains(SigType.Void)
   }
-
-  def asm(str: String): List[asm.Operation] =
-    PravdaAssembler.parse(str).right.get.toList
 }

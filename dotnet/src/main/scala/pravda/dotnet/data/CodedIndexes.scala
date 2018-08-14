@@ -36,6 +36,24 @@ object CodedIndexes {
     }
   }
 
+  def typeDefOrRef(idx: Long,
+                   typeDefTable: Vector[TypeDefData],
+                   typeRefTable: Vector[TypeRefData],
+                   typeSpecTable: Vector[TypeSpecData]): Either[String, TableRowData] = {
+    val tableIdx = idx & 0x3
+    val rowIdx = (idx >> 2).toInt - 1
+    if (rowIdx == -1) {
+      Right(Ignored)
+    } else {
+      tableIdx match {
+        case 0 => Right(typeDefTable(rowIdx))
+        case 1 => Right(typeRefTable(rowIdx))
+        case 2 => Right(typeSpecTable(rowIdx))
+        case n => Left(s"Unknown TypeDefOrRef table index: $n")
+      }
+    }
+  }
+
   def hasCustomAttribute(idx: Long, typeDefTable: Vector[TypeDefData]): Either[String, TableRowData] = {
     val tableIdx = idx & 0x1f
     val rowIdx = (idx >> 5).toInt - 1

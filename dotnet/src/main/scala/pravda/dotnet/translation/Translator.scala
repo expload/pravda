@@ -28,7 +28,7 @@ import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
 import pravda.vm.{Data, Meta, Opcodes, asm}
-import pravda.dotnet.translation.opcode.{CallsTransation, OpcodeTranslator}
+import pravda.dotnet.translation.opcode.OpcodeTranslator
 import pravda.vm.Meta.TranslatorMark
 
 import scala.collection.mutable.ListBuffer
@@ -61,6 +61,7 @@ object Translator {
       cil: List[CIL.Op],
       signatures: Map[Long, Signatures.Signature],
       cilData: CilData,
+      asmPrefix: List[asm.Operation],
       void: Boolean,
       func: Boolean,
       static: Boolean,
@@ -228,7 +229,7 @@ object Translator {
         Left(TranslationError(onFail, None))
       }
     }
-    def filterMethods(pred: Int => Boolean): Either[TranslationError, List[Int]] = filterMethods(pred, _ => true, ???)
+    //def filterMethods(pred: Int => Boolean): Either[TranslationError, List[Int]] = filterMethods(pred, _ => true, ???)
 
     val programMethodsFuncsE = for {
       programClass <- programClassE
@@ -260,15 +261,15 @@ object Translator {
       }
     } yield ctor
 
-    val structEntitiesE = for {
-      programClass <- programClassE
-      methods <- filterMethods(i => !(methodsToTypes(i) eq programClass) && !isMain(i))
-    } yield methods
-
-    val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
-    val structStaticFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && isStatic(i)))
-    val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
-    val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
+//    val structEntitiesE = for {
+//      programClass <- programClassE
+//      methods <- filterMethods(i => !(methodsToTypes(i) eq programClass) && !isMain(i))
+//    } yield methods
+//
+//    val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
+//    val structStaticFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && isStatic(i)))
+//    val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
+//    val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
 
 //    lazy val metaMethods = methods.flatMap {
 //      case (m, i) =>
@@ -287,17 +288,17 @@ object Translator {
 //          )
 //    }
 
-    val jumpToMethods = for {
+    val jumpToMethodsE = for {
       programMethods <- programMethodsE
     } yield {
       programMethods.flatMap(i => {
         val name = cilData.tables.methodDefTable(i).name
-        asm(s"""
-             |dup
-             |push "$name"
-             |eq
-             |jumpi "method_$name"
-            """.stripMargin)
+        List(
+          asm.Operation(Opcodes.DUP),
+          asm.Operation.Push(Data.Primitive.Utf8(name)),
+          asm.Operation(Opcodes.EQ),
+          asm.Operation.JumpI(Some(s"method_$name"))
+        )
       })
     }
 
@@ -313,6 +314,7 @@ object Translator {
             BranchTransformer.transformBranches(method.opcodes, "ctor"),
             signatures,
             cilData,
+            List.empty,
             void = true,
             func = true,
             static = false,
@@ -326,111 +328,124 @@ object Translator {
 
     lazy val programMethodsOpsE = for {
       programMethods <- programMethodsE
-      opss <- programMethods.map(i => {
-        val method = methods(i)
-        val methodRow = cilData.tables.methodDefTable(i)
+      opss <- programMethods
+        .map(i => {
+          val method = methods(i)
+          val methodRow = cilData.tables.methodDefTable(i)
 
-        translateMethod(
-          methodRow.params.length,
-          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
-          methodRow.name,
-          BranchTransformer.transformBranches(method.opcodes, methodRow.name),
-          signatures,
-          cilData,
-          void = MethodExtractors.isVoid(methodRow, signatures),
-          func = false,
-          static = false,
-          struct = false,
-          "method",
-          pdbTables.map(_.methodDebugInformationTable(i))
-        )
-      }).sequence
+          translateMethod(
+            methodRow.params.length,
+            MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+            methodRow.name,
+            BranchTransformer.transformBranches(method.opcodes, methodRow.name),
+            signatures,
+            cilData,
+            List.empty,
+            void = MethodExtractors.isVoid(methodRow, signatures),
+            func = false,
+            static = false,
+            struct = false,
+            "method",
+            pdbTables.map(_.methodDebugInformationTable(i))
+          )
+        })
+        .sequence
     } yield opss
 
     lazy val programFuncsOpsE = for {
       programFuncs <- programFuncsE
-      opss <- programFuncs.map(i => {
-        val method = methods(i)
-        val methodRow = cilData.tables.methodDefTable(i)
+      opss <- programFuncs
+        .map(i => {
+          val method = methods(i)
+          val methodRow = cilData.tables.methodDefTable(i)
 
-        translateMethod(
-          methodRow.params.length,
-          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
-          methodRow.name,
-          BranchTransformer.transformBranches(method.opcodes, methodRow.name),
-          signatures,
-          cilData,
-          void = MethodExtractors.isVoid(methodRow, signatures),
-          func = true,
-          static = false,
-          struct = false,
-          "func",
-          pdbTables.map(_.methodDebugInformationTable(i))
-        )
-      }).sequence
+          translateMethod(
+            methodRow.params.length,
+            MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+            methodRow.name,
+            BranchTransformer.transformBranches(method.opcodes, methodRow.name),
+            signatures,
+            cilData,
+            List.empty,
+            void = MethodExtractors.isVoid(methodRow, signatures),
+            func = true,
+            static = false,
+            struct = false,
+            "func",
+            pdbTables.map(_.methodDebugInformationTable(i))
+          )
+        })
+        .sequence
     } yield opss
 
-    lazy val structFuncsOpsE = for {
-      structFuncs <- structFuncsE
-      opss <- structFuncs.map(i => {
-        val method = methods(i)
-        val methodRow = cilData.tables.methodDefTable(i)
-        val tpe = methodsToTypes(i)
-        val name = s"${tpe.namespace}.${tpe.name}.${methodRow.name}"
-
-        translateMethod(
-          methodRow.params.length,
-          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
-          name,
-          BranchTransformer.transformBranches(method.opcodes, name),
-          signatures,
-          cilData,
-          void = MethodExtractors.isVoid(methodRow, signatures),
-          func = true,
-          static = false,
-          struct = true,
-          "func",
-          pdbTables.map(_.methodDebugInformationTable(i))
-        )
-      }).sequence
-    } yield opss
-
-    lazy val structStaticFuncOpsE = for {
-      structStaticFuncs <- structStaticFuncsE
-      opss <- structStaticFuncs.map(i => {
-        val method = methods(i)
-        val methodRow = cilData.tables.methodDefTable(i)
-        val tpe = methodsToTypes(i)
-        val name = s"${tpe.namespace}.${tpe.name}.${methodRow.name}"
-
-        translateMethod(
-          methodRow.params.length,
-          MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
-          name,
-          BranchTransformer.transformBranches(method.opcodes, name),
-          signatures,
-          cilData,
-          void = MethodExtractors.isVoid(methodRow, signatures),
-          func = true,
-          static = true,
-          struct = true,
-          "func",
-          pdbTables.map(_.methodDebugInformationTable(i))
-        )
-      }).sequence
-    } yield opss
+//    lazy val structFuncsOpsE = for {
+//      structFuncs <- structFuncsE
+//      opss <- structFuncs
+//        .map(i => {
+//          val method = methods(i)
+//          val methodRow = cilData.tables.methodDefTable(i)
+//          val tpe = methodsToTypes(i)
+//          val name = s"${tpe.namespace}.${tpe.name}.${methodRow.name}"
+//
+//          translateMethod(
+//            methodRow.params.length,
+//            MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+//            name,
+//            BranchTransformer.transformBranches(method.opcodes, name),
+//            signatures,
+//            cilData,
+//            List.empty,
+//            void = MethodExtractors.isVoid(methodRow, signatures),
+//            func = true,
+//            static = false,
+//            struct = true,
+//            "func",
+//            pdbTables.map(_.methodDebugInformationTable(i))
+//          )
+//        })
+//        .sequence
+//    } yield opss
+//
+//    lazy val structStaticFuncOpsE = for {
+//      structStaticFuncs <- structStaticFuncsE
+//      opss <- structStaticFuncs
+//        .map(i => {
+//          val method = methods(i)
+//          val methodRow = cilData.tables.methodDefTable(i)
+//          val tpe = methodsToTypes(i)
+//          val name = s"${tpe.namespace}.${tpe.name}.${methodRow.name}"
+//
+//          translateMethod(
+//            methodRow.params.length,
+//            MethodExtractors.localVariables(method, signatures).fold(0)(_.length),
+//            name,
+//            BranchTransformer.transformBranches(method.opcodes, name),
+//            signatures,
+//            cilData,
+//            List.empty,
+//            void = MethodExtractors.isVoid(methodRow, signatures),
+//            func = true,
+//            static = true,
+//            struct = true,
+//            "func",
+//            pdbTables.map(_.methodDebugInformationTable(i))
+//          )
+//        })
+//        .sequence
+//    } yield opss
 
     for {
       methodsOps <- programMethodsOpsE
-      constructor <- programCtorOpsE
+      ctorOps <- ctorOpsE
       funcOps <- programFuncsOpsE
+      jumpToMethods <- jumpToMethodsE
     } yield
       Translation(
-        metaMethods ++ jumpToMethods ++ List(
+        /*metaMethods ++*/ jumpToMethods ++ List(
           asm.Operation.Push(Data.Primitive.Utf8("Wrong method name")),
           asm.Operation(Opcodes.THROW)
         ),
-        methodsOps ++ constructor.toList,
+        methodsOps ++ ctorOps.toList,
         funcOps,
         distinctFunctions((funcOps ++ methodsOps).flatMap(_.additionalFunctions)),
         List(asm.Operation.Label("stop"))

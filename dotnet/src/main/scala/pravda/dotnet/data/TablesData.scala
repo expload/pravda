@@ -74,7 +74,7 @@ object TablesData {
   final case class TypeDefData(flags: Int,
                                name: String,
                                namespace: String,
-                               parent: TableRowData,
+                               var parent: TableRowData,
                                fields: Vector[FieldData],
                                methods: Vector[MethodDefData])
       extends TableRowData
@@ -156,11 +156,12 @@ object TablesData {
     }.sequence
 
     def typeDefListV(fieldList: Vector[FieldData],
-                     methodList: Vector[MethodDefData]): Either[String, Vector[TypeDefData]] = {
+                     methodList: Vector[MethodDefData],
+                     typeRefList: Vector[TypeRefData]): Either[String, Vector[TypeDefData]] = {
       val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
       val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
 
-      peData.tables.typeDefTable.zipWithIndex.map {
+      val typeDefRawE: Either[String, Vector[TypeDefData]] = peData.tables.typeDefTable.zipWithIndex.map {
         case (TypeDefRow(flags, nameIdx, namespaceIdx, parent, fieldListIdx, methodListIdx), i) =>
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
@@ -175,6 +176,21 @@ object TablesData {
               methodList.slice(methodListIdx.toInt - 1, methodListIdx.toInt + methodListSizes(i).toInt - 1)
             )
       }.sequence
+
+      for {
+        typeDefList <- typeDefRawE
+      } yield {
+        peData.tables.typeDefTable.zipWithIndex.foreach {
+          case (row, i) =>
+            for {
+              parent <- CodedIndexes.typeDefOrRef(row.parent, typeDefList, typeRefList, typeSpecList)
+            } yield {
+              typeDefList(i).parent = parent // FIXME we could implement more sophisticated algorithm
+            }
+        }
+      }
+
+      typeDefRawE
     }
 
     def memberRefListV(typeDefTable: Vector[TypeDefData],
@@ -235,8 +251,8 @@ object TablesData {
       fieldList <- fieldListV
       fieldRVAList <- fieldRVAListV
       methodList <- methodListV(paramList)
-      typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
+      typeDefList <- typeDefListV(fieldList, methodList, typeRefList)
       memberRefList <- memberRefListV(typeDefList, typeRefList)
       customAttributeList <- customAttributeListV(typeDefList, methodList, memberRefList)
       documentList <- documentListV

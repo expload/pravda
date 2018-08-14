@@ -1,32 +1,45 @@
+using System;
+using Com.Expload;
 
-public class A {
-   private int a;
+public class A
+{
+   private int AVal;
 
-   public A(int _a) {
-       this.a = _a;
+   public A(int aVal)
+   {
+       this.AVal = aVal;
    }
 
-   public int answerA() {
-       return a + 42;
+   public int AnswerA()
+   {
+       return AVal + 42;
    }
 }
 
-public class B {
-    private int b;
+public class B
+{
+    private int BVal;
 
-    public B(int _b) {
-        this.b = _b;
+    public B(int bVal)
+    {
+        this.BVal = bVal;
     }
 
-    public int answerB() {
-        return b + 42;
+    public int AnswerB()
+    {
+        return BVal + 43;
     }
 }
 
-public class Program {
-   public static void Main() {
-       A a = new A(-42);
-       B b = new B(0);
-       int c = a.answerA() + b.answerB();
-   }
+[Program]
+public class MyProgram
+{
+    void Func()
+    {
+        var a = new A(100);
+        var b = new B(200);
+        int c = a.AnswerA() + b.AnswerB();
+    }
+
+   public static void Main() {}
 }
