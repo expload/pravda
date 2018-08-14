@@ -46,8 +46,6 @@ object CommandLineTest extends TestSuite {
       primTypesParser[Boolean](false, "--boolean", "false")(_.boolValue)
       primTypesParser[Boolean](true, "--boolean", "yes")(_.boolValue)
       primTypesParser[Boolean](false, "--boolean", "no")(_.boolValue)
-      primTypesParser[Boolean](false, "--boolean", "n")(_.boolValue)
-      primTypesParser[Boolean](true, "--boolean", "y")(_.boolValue)
     }
 
     "bigdecimal parser should parse" - {
@@ -58,7 +56,7 @@ object CommandLineTest extends TestSuite {
 
     "double parser should parse" - {
       primTypesParser[Double](1.0, "--double", "1.0")(_.doubleValue)
-      primTypesParser[Double](200L, "--double", "200")(_.doubleValue)
+      primTypesParser[Double](200f, "--double", "200")(_.doubleValue)
       primTypesParser[Double](100, "--double", "100")(_.doubleValue)
     }
 

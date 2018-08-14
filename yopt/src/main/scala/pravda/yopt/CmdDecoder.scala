@@ -20,6 +20,10 @@ package pravda.yopt
 import java.io.File
 import java.net.URI
 
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
+
 import scala.concurrent.duration.Duration
 import scala.util.Try
 
@@ -86,8 +90,6 @@ object CmdDecoder {
             case "false" => Right((false, line.tail))
             case "yes"   => Right((true, line.tail))
             case "no"    => Right((false, line.tail))
-            case "y"     => Right((true, line.tail))
-            case "n"     => Right((false, line.tail))
             case _       => Left(BooleanDecodeError(item).toString)
           }
         }
@@ -170,13 +172,16 @@ object CmdDecoder {
   }
 
   // Sample values: 1 OR 1,2,3
-  implicit def seqReader[A](implicit decoder: CmdDecoder[A]): CmdDecoder[Seq[A]] = new CmdDecoder[Seq[A]] {
+  implicit def seqReader[A: CmdDecoder]: CmdDecoder[Seq[A]] = new CmdDecoder[Seq[A]] {
     override def decode(line: Line): Either[String, (Seq[A], Line)] =
       line.headOption
         .map { item =>
-          sequence(item.split(',').map(a => decoder.decode(List(a)).map(_._1)))
-            .map(x => (x.toSeq, line.tail))
+          val list: List[Either[String, A]] = item
+            .split(',')
+            .map(a => implicitly[CmdDecoder[A]].decode(List(a)).map(_._1))
+            .toList
 
+          list.sequence.map((_, line.tail))
         }
         .getOrElse(noValueError)
 
@@ -194,9 +199,10 @@ object CmdDecoder {
               val parts = item.split("->")
               if (parts.length != 2) Left(Tuple2DecodeError(item).toString)
               else {
-                sequenceForTuple2(
-                  (aDecoder.decode(List(parts(0))).map(_._1), bDecoder.decode(List(parts(1))).map(_._1))
-                ).map(x => (x, line.tail))
+                for {
+                  a <- aDecoder.decode(List(parts(0))).map(_._1)
+                  b <- bDecoder.decode(List(parts(1))).map(_._1)
+                } yield ((a, b), line.tail)
               }
 
           }
@@ -206,18 +212,18 @@ object CmdDecoder {
     }
 
   // Sample values: a->true OR a->true,b->false
-  implicit def mapReader[K, V](implicit kvDecoder: CmdDecoder[(K, V)]) = new CmdDecoder[Map[K, V]] {
-    override def decode(line: Line): Either[String, (Map[K, V], Line)] = {
-      line.headOption
-        .map { item =>
-          sequence(item.split(',').map(x => kvDecoder.decode(List(x)).map(_._1)).toSeq)
-            .map(x => (x.toMap, line.tail))
-        }
-        .getOrElse(noValueError)
-    }
+  implicit def mapReader[K: CmdDecoder, V: CmdDecoder] =
+    new CmdDecoder[Map[K, V]] {
+      override def decode(line: Line): Either[String, (Map[K, V], Line)] = {
+        line.headOption
+          .map { item =>
+            implicitly[CmdDecoder[Seq[(K, V)]]].decode(List(item)).map(x => (x._1.toMap, line.tail))
+          }
+          .getOrElse(noValueError)
+      }
 
-    override def optInfo = Some("<map>")
-  }
+      override def optInfo = Some("<map>")
+    }
 
   implicit val fileReader: CmdDecoder[File] = new CmdDecoder[File] {
     override def decode(line: Line): Either[String, (File, Line)] =
@@ -233,27 +239,5 @@ object CmdDecoder {
       Right(((), line))
 
     override val optInfo: Option[String] = None
-  }
-
-  private def sequence[A, E](list: Traversable[Either[E, A]]): Either[E, Traversable[A]] = {
-    def loop(xs: Traversable[Either[E, A]], acc: List[A]): Either[E, Traversable[A]] = {
-      xs.headOption match {
-        case None => Right(acc)
-        case Some(x) =>
-          x match {
-            case Left(e)  => Left(e)
-            case Right(v) => loop(xs.tail, acc :+ v)
-          }
-      }
-    }
-    loop(list, List.empty)
-  }
-
-  private def sequenceForTuple2[E, A, B](t: (Either[E, A], Either[E, B])): Either[E, (A, B)] = {
-    t match {
-      case (Right(a), Right(b)) => Right((a, b))
-      case (Left(e), _)         => Left(e)
-      case (_, Left(e))         => Left(e)
-    }
   }
 }
