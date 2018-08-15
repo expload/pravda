@@ -17,7 +17,13 @@
 
 package pravda
 
+import supertagged.TaggedType
+
 package object yopt {
   type Line = List[String]
   val EmptyLine = List.empty[String]
+  object Hex extends TaggedType[Long]
+  type Hex = Hex.Type
+  object YesOrNo extends TaggedType[Boolean]
+  type YesOrNo = YesOrNo.Type
 }

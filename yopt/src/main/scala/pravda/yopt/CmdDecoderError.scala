@@ -28,11 +28,17 @@ final case class IntegerDecodeError(toDecode: String) extends CmdDecoderError {
 final case class LongDecodeError(toDecode: String) extends CmdDecoderError {
   override val message = s"$toDecode cannot be decoded as long value"
 }
+final case class HexDecodeError(toDecode: String) extends CmdDecoderError {
+  override val message = s"$toDecode cannot be decoded as hexadecimal value"
+}
 case object NegativeNumberDecodeError extends CmdDecoderError {
   override val message = "For now, only positive numbers are allowed"
 }
 final case class BooleanDecodeError(toDecode: String) extends CmdDecoderError {
   override val message = s"$toDecode cannot be decoded as boolean value"
+}
+final case class YesOrNoDecodeError(toDecode: String) extends CmdDecoderError {
+  override val message = s"$toDecode cannot be decoded as yes|no value"
 }
 final case class BigDecimalDecodeError(toDecode: String) extends CmdDecoderError {
   override val message = s"$toDecode cannot be decoded as bigdecimal value"

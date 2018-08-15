@@ -39,42 +39,39 @@ object CmdDecoder {
     override def decode(line: Line): Either[String, (Int, Line)] =
       line.headOption
         .map { item =>
-          item.toLowerCase match {
-            case neg if neg.head == '-' => Left(NegativeNumberDecodeError.toString)
-            case hex if hex.startsWith("0x") =>
-              Try(Integer.parseInt(hex.drop(2), 16)).fold(
-                _ => Left(IntegerDecodeError(hex).toString),
-                number => Right((number, line.tail))
-              )
-            case moreLikelyDec =>
-              Try(moreLikelyDec.toInt).fold(
-                _ => Left(IntegerDecodeError(moreLikelyDec).toString),
-                number => Right((number, line.tail))
-              )
-          }
+          Try(item.toInt).fold(
+            _ => Left(IntegerDecodeError(item).toString),
+            number => Right((number, line.tail))
+          )
         }
         .getOrElse(noValueError)
 
     override val optInfo: Option[String] = Some("<int>")
   }
 
+  implicit val hexDecoder: CmdDecoder[Hex] = new CmdDecoder[Hex] {
+    override def decode(line: Line): Either[String, (Hex, Line)] = {
+      line.headOption
+        .map { item =>
+          Try(java.lang.Long.parseLong(item.toLowerCase.replace("0x", ""), 16)).fold(
+            _ => Left(HexDecodeError(item).toString),
+            number => Right((Hex @@ number, line.tail))
+          )
+        }
+        .getOrElse(noValueError)
+    }
+
+    override def optInfo: Option[String] = Some("hex")
+  }
+
   implicit val longReader: CmdDecoder[Long] = new CmdDecoder[Long] {
     override def decode(line: Line): Either[String, (Long, Line)] =
       line.headOption
         .map { item =>
-          item.toLowerCase match {
-            case neg if neg.head == '-' => Left(NegativeNumberDecodeError.toString)
-            case hex if hex.startsWith("0x") =>
-              Try(java.lang.Long.parseLong(hex.drop(2), 16)).fold(
-                _ => Left(LongDecodeError(hex).toString),
-                number => Right((number, line.tail))
-              )
-            case moreLikelyDec =>
-              Try(moreLikelyDec.toLong).fold(
-                _ => Left(LongDecodeError(moreLikelyDec).toString),
-                number => Right((number, line.tail))
-              )
-          }
+          Try(item.toLong).fold(
+            _ => Left(LongDecodeError(item).toString),
+            number => Right((number, line.tail))
+          )
         }
         .getOrElse(noValueError)
 
@@ -88,14 +85,27 @@ object CmdDecoder {
           item.toLowerCase match {
             case "true"  => Right((true, line.tail))
             case "false" => Right((false, line.tail))
-            case "yes"   => Right((true, line.tail))
-            case "no"    => Right((false, line.tail))
             case _       => Left(BooleanDecodeError(item).toString)
           }
         }
         .getOrElse(noValueError)
 
     override def optInfo: Option[String] = Some("<boolean>")
+  }
+
+  implicit val yesOrNoReader: CmdDecoder[YesOrNo] = new CmdDecoder[YesOrNo] {
+    override def decode(line: Line): Either[String, (YesOrNo, Line)] =
+      line.headOption
+        .map { item =>
+          item.toLowerCase match {
+            case "yes" => Right((YesOrNo @@ true, line.tail))
+            case "no"  => Right((YesOrNo @@ false, line.tail))
+            case _     => Left(YesOrNoDecodeError(item).toString)
+          }
+        }
+        .getOrElse(noValueError)
+
+    override def optInfo: Option[String] = Some("<yesOrNo>")
   }
 
   implicit val bigDecimalReader: CmdDecoder[BigDecimal] = new CmdDecoder[BigDecimal] {

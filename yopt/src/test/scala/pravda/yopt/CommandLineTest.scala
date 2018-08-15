@@ -24,9 +24,6 @@ object CommandLineTest extends TestSuite {
 
     "int parser should parse" - {
       primTypesParser[Int](1, "--integer", "1")(_.intValue)
-      primTypesParser[Int](1, "--integer", "0x01")(_.intValue)
-      primTypesParser[Int](1, "--integer", "0x1")(_.intValue)
-      primTypesParser[Int](255, "--integer", "0xFF")(_.intValue)
     }
 
     "int parser should fail" - {
@@ -38,14 +35,22 @@ object CommandLineTest extends TestSuite {
 
     "long parser should parse" - {
       primTypesParser[Long](999L, "--long", "999")(_.longValue)
-      primTypesParser[Long](15L, "--long", "0xF")(_.longValue)
+    }
+
+    "hex parser should parse" - {
+      primTypesParser[Hex](Hex @@ 1L, "--hex", "0x01")(_.hex)
+      primTypesParser[Hex](Hex @@ 1L, "--hex", "0x1")(_.hex)
+      primTypesParser[Hex](Hex @@ 255L, "--hex", "0xFF")(_.hex)
     }
 
     "bool parser should parse" - {
       primTypesParser[Boolean](true, "--boolean", "true")(_.boolValue)
       primTypesParser[Boolean](false, "--boolean", "false")(_.boolValue)
-      primTypesParser[Boolean](true, "--boolean", "yes")(_.boolValue)
-      primTypesParser[Boolean](false, "--boolean", "no")(_.boolValue)
+    }
+
+    "YesOrNo parser should parse" - {
+      primTypesParser[YesOrNo](YesOrNo @@ true, "--yesOrNo", "yes")(_.yesOrNoValue)
+      primTypesParser[YesOrNo](YesOrNo @@ false, "--yesOrNo", "no")(_.yesOrNoValue)
     }
 
     "bigdecimal parser should parse" - {
@@ -67,12 +72,6 @@ object CommandLineTest extends TestSuite {
                             "--uri",
                             "http://localhost:8080/api/public/broadcast")(_.uriValue)
     }
-
-    // FIXME The standard URI class checks almost nothing. It even does not catch a simple typos
-    // We should develop own URI parser if it is needed.
-    //    "uri parser should fail" - {
-    //      uriParserFail("--uri", "http:/localhost")
-    //    }
 
     "duration parser should parse" - {
       otherTypesParser[Duration](Duration(30, duration.SECONDS), "--duration", "30s")(_.durationValue)
@@ -154,11 +153,17 @@ object CommandLineTest extends TestSuite {
       opt[Int]("integer").action { (x, c) =>
         c.copy(intValue = x)
       },
+      opt[Hex]("hex").action { (x, c) =>
+        c.copy(hex = x)
+      },
       opt[Long]("long").action { (x, c) =>
         c.copy(longValue = x)
       },
       opt[Boolean]("boolean").action { (x, c) =>
         c.copy(boolValue = x)
+      },
+      opt[YesOrNo]("yesOrNo").action { (x, c) =>
+        c.copy(yesOrNoValue = x)
       },
       opt[BigDecimal]("bigdecimal").action { (x, c) =>
         c.copy(bigDecimalValue = x)
@@ -222,10 +227,12 @@ object CommandLineTest extends TestSuite {
   final case class Config(
       flag: Boolean = false,
       intValue: Int = 0,
+      hex: Hex = Hex @@ 0L,
       longValue: Long = 0L,
       stringValue: String = "",
       doubleValue: Double = 0.0,
       boolValue: Boolean = false,
+      yesOrNoValue: YesOrNo = YesOrNo @@ false,
       debug: Boolean = false,
       bigDecimalValue: BigDecimal = BigDecimal("0.0"),
       uriValue: URI = new URI("http://localhost"),
