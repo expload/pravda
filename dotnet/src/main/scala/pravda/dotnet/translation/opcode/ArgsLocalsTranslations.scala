@@ -27,7 +27,7 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
 
     def loadArg(num: Int): Int =
-      if (num == 0) 0 else 1
+      if (!ctx.static && ctx.struct.isEmpty && num == 0) 0 else 1
 
     val offsetF: PartialFunction[CIL.Op, Int] = {
       case LdArg0      => loadArg(0)
@@ -61,9 +61,8 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
       (ctx.localsCount - num - 1) + stackOffset + 1
 
     def computeArgOffset(num: Int, stackOffset: Int): Int =
-      (ctx.argsCount - num - 1) + stackOffset + ctx.localsCount + 1 + 1
-    // for local there's additional object arg
-    // for not local there's name of the method
+      (ctx.argsCount - num - 1) + stackOffset + ctx.localsCount + 1 + (if (!ctx.func) 1 else 0)
+    // for method there's name of the method
 
     def storeLocal(num: Int): Either[InternalError, List[asm.Operation]] =
       stackOffsetO
@@ -91,24 +90,15 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
     def loadArg(num: Int): Either[InternalError, List[asm.Operation]] =
       stackOffsetO
         .map { s =>
-          if (num == 0) {
+          if (!ctx.static && ctx.struct.isEmpty && num == 0) {
             Right(List.empty) // skip this reference
           } else {
-            if (ctx.func) {
-              Right(
-                List(
-                  pushInt(computeArgOffset(num, s)),
-                  asm.Operation(Opcodes.DUPN)
-                )
+            Right(
+              List(
+                pushInt(computeArgOffset(num, s)),
+                asm.Operation(Opcodes.DUPN)
               )
-            } else {
-              Right(
-                List(
-                  pushInt(computeArgOffset(num - 1, s)),
-                  asm.Operation(Opcodes.DUPN)
-                )
-              )
-            }
+            )
           }
         }
         .getOrElse(Left(InternalError("Stack offset is required for arguments loading")))

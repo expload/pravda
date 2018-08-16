@@ -34,7 +34,7 @@ public class B
 [Program]
 public class MyProgram
 {
-    void Func()
+    public void Func()
     {
         var a = new A(100);
         var b = new B(200);

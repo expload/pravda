@@ -175,7 +175,11 @@ object PravdaAssembler {
           operations += Operation.PushRef(label.get)
           label = None
         case Opcodes.PUSHX =>
-          operations += Operation.Push(Data.readFromByteBuffer(buffer))
+          val offset = buffer.position()
+          Data.readFromByteBuffer(buffer) match {
+            case p: Primitive => operations += Operation.Push(p)
+            case data         => throw UnexpectedTypeException(data, Some(offset))
+          }
         case Opcodes.JUMP =>
           operations.last match {
             case Operation.PushRef(l) =>

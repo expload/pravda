@@ -30,7 +30,7 @@ object MappingInitializationTranslation extends OpcodeTranslatorOnlyAsm {
     ops.take(2) match {
       case List(NewObj(MemberRefData(TypeSpecData(signIdx), ".ctor", _)), StFld(FieldData(_, name, _))) =>
         val res = for {
-          parentSig <- ctx.signatures.get(signIdx)
+          parentSig <- ctx.tctx.signatures.get(signIdx)
         } yield {
           if (CallsTransation.detectMapping(parentSig)) {
             Right(

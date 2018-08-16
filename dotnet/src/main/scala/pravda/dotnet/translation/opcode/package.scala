@@ -22,8 +22,8 @@ import pravda.vm.{Data, Opcodes, asm}
 
 package object opcode {
 
-  def push[T](value: T, toData: T => Data): asm.Operation =
-    asm.Operation.Push(toData(value))
+  def push[T](value: T, toPrimitive: T => Data.Primitive): asm.Operation =
+    asm.Operation.Push(toPrimitive(value))
 
   def pushInt(i: Int): asm.Operation =
     push(i, Data.Primitive.Int32)

@@ -92,17 +92,17 @@ object InheritanceTests extends TestSuite {
         )
       )
 
-      val parentCls = Cls(
+      val parentCls =
         TypeDefData(
           1048577,
           "Parent",
           "",
-          Ignored,
+          TypeRefData(6, "Object", "System"),
           Vector(),
           Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
                  MethodDefData(0, 454, "AnswerPlus1", 42, Vector()),
                  MethodDefData(0, 454, "Answer", 42, Vector()))
-        ))
+        )
 
       DiffUtils.assertEqual(
         signatures.toList.sortBy(_._1),
@@ -121,8 +121,8 @@ object InheritanceTests extends TestSuite {
           (20,
            LocalVarSig(
              List(
-               LocalVar(parentCls, false),
-               LocalVar(parentCls, false),
+               LocalVar(Cls(parentCls), false),
+               LocalVar(Cls(parentCls), false),
                LocalVar(I4, false),
                LocalVar(I4, false),
                LocalVar(I4, false)
@@ -137,21 +137,12 @@ object InheritanceTests extends TestSuite {
         cilData.tables.typeDefTable,
         Vector(
           TypeDefData(0, "<Module>", "", Ignored, Vector(), Vector()),
-          TypeDefData(
-            1048577,
-            "Parent",
-            "",
-            Ignored,
-            Vector(),
-            Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
-                   MethodDefData(0, 454, "AnswerPlus1", 42, Vector()),
-                   MethodDefData(0, 454, "Answer", 42, Vector()))
-          ),
+          parentCls,
           TypeDefData(
             1048577,
             "A",
             "",
-            Ignored,
+            parentCls,
             Vector(FieldData(1, "AVal", 39)),
             Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
                    MethodDefData(0, 198, "Answer", 42, Vector()))
@@ -160,12 +151,12 @@ object InheritanceTests extends TestSuite {
             1048577,
             "B",
             "",
-            Ignored,
+            parentCls,
             Vector(FieldData(1, "BVal", 39)),
             Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
                    MethodDefData(0, 198, "Answer", 42, Vector()))
           ),
-          TypeDefData(1048577, "MyProgram", "", Ignored, Vector(), Vector())
+          TypeDefData(1048577, "MyProgram", "", TypeRefData(6, "Object", "System"), Vector(), Vector())
         )
       )
 

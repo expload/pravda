@@ -35,7 +35,7 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
       Right(List(Operation.Push(Data.Primitive.Utf8(s))))
     case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", signatureIdx)) =>
       val strsCntE = (for {
-        sign <- ctx.signatures.get(signatureIdx)
+        sign <- ctx.tctx.signatures.get(signatureIdx)
       } yield
         sign match {
           case MethodRefDefSig(_, _, _, _, _, _, params) => Right(params.length)

@@ -32,7 +32,7 @@ object Operation {
   final case class Label(name: String)    extends Operation
 
   final case class Meta(meta: pravda.vm.Meta)        extends Operation
-  final case class Push(d: Data)                     extends Operation // why Data, not Data.Primitive?
+  final case class Push(d: Data.Primitive)           extends Operation
   final case class New(d: Data)                      extends Operation
   final case class Jump(name: Option[String])        extends Operation
   final case class JumpI(name: Option[String])       extends Operation

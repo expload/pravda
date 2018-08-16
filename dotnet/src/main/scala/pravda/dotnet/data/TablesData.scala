@@ -91,15 +91,16 @@ object TablesData {
 
   def fromInfo(peData: PeData): Either[String, TablesData] = {
 
-    def sizesFromIds(ids: Vector[Long]): Vector[Long] =
+    def sizesFromIds(ids: Vector[Long], len: Long): Vector[Long] = {
       ids match {
         case rest :+ last =>
           val sizes = for {
             i <- rest.indices
           } yield ids(i + 1) - ids(i)
-          sizes.toVector :+ (ids.length - last)
+          sizes.toVector :+ (len - last + 1)
         case _ => Vector.empty
       }
+    }
 
     val standAlongSigList = peData.tables.standAloneSigTable.map {
       case StandAloneSigRow(blobIdx) => StandAloneSigData(blobIdx)
@@ -132,7 +133,7 @@ object TablesData {
     }.sequence
 
     def methodListV(paramList: Vector[ParamData]): Either[String, Vector[MethodDefData]] = {
-      val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx))
+      val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx), paramList.length.toLong)
 
       peData.tables.methodDefTable.zipWithIndex.map {
         case (MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx), i) =>
@@ -158,8 +159,8 @@ object TablesData {
     def typeDefListV(fieldList: Vector[FieldData],
                      methodList: Vector[MethodDefData],
                      typeRefList: Vector[TypeRefData]): Either[String, Vector[TypeDefData]] = {
-      val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
-      val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
+      val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx), fieldList.length.toLong)
+      val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx), methodList.length.toLong)
 
       val typeDefRawE: Either[String, Vector[TypeDefData]] = peData.tables.typeDefTable.zipWithIndex.map {
         case (TypeDefRow(flags, nameIdx, namespaceIdx, parent, fieldListIdx, methodListIdx), i) =>

@@ -302,10 +302,42 @@ object ArraysTests extends TestSuite {
              Generic(Cls(TypeRefData(10, "Mapping`2", "Com.Expload")),
                      List(Cls(TypeRefData(10, "Bytes", "Com.Expload")),
                           Cls(TypeRefData(10, "Bytes", "Com.Expload")))))),
-          (113, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=3", "", Ignored, Vector(), Vector())))),
-          (117, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=24", "", Ignored, Vector(), Vector())))),
-          (121, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=12", "", Ignored, Vector(), Vector())))),
-          (125, FieldSig(ValueTpe(TypeDefData(275, "__StaticArrayInitTypeSize=6", "", Ignored, Vector(), Vector())))),
+          (113,
+           FieldSig(
+             ValueTpe(
+               TypeDefData(275,
+                           "__StaticArrayInitTypeSize=3",
+                           "",
+                           TypeRefData(6, "ValueType", "System"),
+                           Vector(),
+                           Vector())))),
+          (117,
+           FieldSig(
+             ValueTpe(
+               TypeDefData(275,
+                           "__StaticArrayInitTypeSize=24",
+                           "",
+                           TypeRefData(6, "ValueType", "System"),
+                           Vector(),
+                           Vector())))),
+          (121,
+           FieldSig(
+             ValueTpe(
+               TypeDefData(275,
+                           "__StaticArrayInitTypeSize=12",
+                           "",
+                           TypeRefData(6, "ValueType", "System"),
+                           Vector(),
+                           Vector())))),
+          (125,
+           FieldSig(
+             ValueTpe(
+               TypeDefData(275,
+                           "__StaticArrayInitTypeSize=6",
+                           "",
+                           TypeRefData(6, "ValueType", "System"),
+                           Vector(),
+                           Vector())))),
           (129, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )

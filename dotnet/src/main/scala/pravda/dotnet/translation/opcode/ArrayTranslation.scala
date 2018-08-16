@@ -75,12 +75,12 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           ) =>
         def bytesRva =
           for {
-            rva <- ctx.cilData.tables.fieldRVATable.find(_.field.name == fieldName)
+            rva <- ctx.tctx.cilData.tables.fieldRVATable.find(_.field.name == fieldName)
           } yield rva.rva
 
         def bytesSize =
           for {
-            token <- ctx.signatures.get(tokenSignIdx)
+            token <- ctx.tctx.signatures.get(tokenSignIdx)
             size <- token match {
               case FieldSig(ValueTpe(TypeDefData(_, fieldType, "", Ignored, Vector(), Vector())))
                   if fieldType.startsWith("__StaticArrayInitTypeSize=") =>
@@ -106,7 +106,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
         (for {
           rva <- bytesRva
           size <- bytesSize
-          bytes = PE.bytesFromRva(ctx.cilData.sections, rva, Some(size))
+          bytes = PE.bytesFromRva(ctx.tctx.cilData.sections, rva, Some(size))
           d <- data(bytes)
         } yield (5, List(asm.Operation.New(d)))).toRight(UnknownOpcode)
       case _ => Left(UnknownOpcode)

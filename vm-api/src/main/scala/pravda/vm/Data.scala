@@ -624,6 +624,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class BytesArray(data: mutable.Buffer[ByteString])    extends Array
   }
 
+  object Struct {
+    def empty: Struct = Struct(mutable.Map.empty)
+  }
+
   final case class Struct(data: mutable.Map[Primitive, Primitive]) extends Data
 
   // scalafix:off DisableSyntax.keywords.null

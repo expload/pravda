@@ -192,7 +192,7 @@ object SmartProgramTests extends TestSuite {
               1048576,
               "MyProgram",
               "",
-              Ignored,
+              TypeRefData(6, "Object", "System"),
               Vector(FieldData(1, "balances", 64)),
               Vector(
                 MethodDefData(0, 134, "balanceOf", 73, Vector(ParamData(0, 1, "tokenOwner"))),
@@ -204,8 +204,6 @@ object SmartProgramTests extends TestSuite {
           )
         )
       )
-
-      println(cilData.tables.typeDefTable)
     }
 
     'smartProgramPdb - {

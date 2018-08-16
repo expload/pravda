@@ -17,15 +17,38 @@
 
 package pravda.dotnet.translation.data
 
-import pravda.dotnet.data.TablesData.MethodDebugInformationData
+import pravda.dotnet.data.TablesData
+import pravda.dotnet.data.TablesData.{MethodDebugInformationData, TypeDefData}
 import pravda.dotnet.parsers.CIL.CilData
 import pravda.dotnet.parsers.Signatures
 
-final case class MethodTranslationCtx(argsCount: Int,
-                                      localsCount: Int,
-                                      name: String,
-                                      signatures: Map[Long, Signatures.Signature],
-                                      cilData: CilData,
-                                      void: Boolean,
-                                      func: Boolean,
-                                      debugInfo: Option[MethodDebugInformationData])
+final case class TranslationCtx(
+    signatures: Map[Long, Signatures.Signature],
+    cilData: CilData,
+    programClass: TypeDefData,
+    methodsToTypes: Map[Int, TypeDefData],
+    pdbTables: Option[TablesData]
+) {
+
+  def isProgramMethod(idx: Int): Boolean =
+    methodsToTypes.get(idx).exists(_ eq programClass)
+
+  def isProgramMethod(m: TablesData.MethodDefData): Boolean = {
+    val idx = cilData.tables.methodDefTable.indexWhere(_ eq m)
+    isProgramMethod(idx)
+  }
+
+  def methodRow(idx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(idx)
+}
+
+final case class MethodTranslationCtx(
+    tctx: TranslationCtx,
+    argsCount: Int,
+    localsCount: Int,
+    name: String,
+    void: Boolean,
+    func: Boolean,
+    static: Boolean,
+    struct: Option[String],
+    debugInfo: Option[MethodDebugInformationData]
+)
