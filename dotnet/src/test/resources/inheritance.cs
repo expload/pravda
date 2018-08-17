@@ -51,7 +51,7 @@ public class B: Parent
 [Program]
 public class MyProgram
 {
-    void Func()
+    public void Func()
     {
         Parent a = new A(100);
         Parent b = new B(200);

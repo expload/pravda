@@ -58,10 +58,18 @@ case object CallsTransation extends OneToManyTranslator {
   }
 
   def fullMethodName(name: String, sig: MethodRefDefSig): String =
-    s"${name}_${sig.params.map(_.tpe.mkString).mkString("_")}"
+    if (sig.params.nonEmpty) {
+      s"${name}_${sig.params.map(_.tpe.mkString).mkString("_")}"
+    } else {
+      name
+    }
 
   def fullTypeDefName(typeDefData: TypeDefData): String =
-    s"${typeDefData.namespace}.${typeDefData.name}"
+    if (typeDefData.namespace.nonEmpty) {
+      s"${typeDefData.namespace}.${typeDefData.name}"
+    } else {
+      typeDefData.name
+    }
 
   private lazy val getDefaultFunction =
     dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
@@ -118,9 +126,11 @@ case object CallsTransation extends OneToManyTranslator {
     }
 
     op match {
-      case Call(m: MethodDefData)                                                                      => Right(callMethodDef(m))
-      case CallVirt(m: MethodDefData)                                                                  => Right(callMethodDef(m))
-      case NewObj(m: MethodDefData)                                                                    => Right(callMethodDef(m))
+      case Call(m: MethodDefData)     => Right(callMethodDef(m))
+      case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
+      case NewObj(m: MethodDefData)   => Right(callMethodDef(m))
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
+        if (ctx.struct.isDefined) Right(-1) else Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _))                      => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _))                    => Right(0)
@@ -128,7 +138,6 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
       case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _))                     => Right(-1)
-      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))                         => Right(0)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
@@ -170,7 +179,7 @@ case object CallsTransation extends OneToManyTranslator {
               Operation.Push(Data.Primitive.Int32(paramsCnt + 1)),
               Operation(Opcodes.DUPN),
               Operation.StructGet(Some(Data.Primitive.Utf8(fullMethodName(m.name, sig)))),
-              Operation(Opcodes.CALL)
+              Operation.Call(None)
             ))
         }
 
@@ -179,10 +188,16 @@ case object CallsTransation extends OneToManyTranslator {
     }
 
     op match {
-      case Call(m: MethodDefData)                                              => callMethodDef(m)
-      case CallVirt(m: MethodDefData)                                          => callMethodDef(m)
+      case Call(m: MethodDefData)     => callMethodDef(m)
+      case CallVirt(m: MethodDefData) => callMethodDef(m)
       case NewObj(m: MethodDefData) =>
-      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) => Right(List.empty)
+        val tpeO = ctx.tctx.tpeByMethodDef(m)
+        tpeO match {
+          case Some(tpe) => Right(List(Operation.Call(Some(s"func_${fullTypeDefName(tpe)}.ctor"))))
+          case None      => Left(UnknownOpcode)
+        }
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
+        if (ctx.struct.isDefined) Right(List(Operation(Opcodes.POP))) else Right(List.empty)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
         Right(List(Operation.Orphan(Opcodes.FROM)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _)) =>

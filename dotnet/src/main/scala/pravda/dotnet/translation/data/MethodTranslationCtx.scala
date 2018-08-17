@@ -29,13 +29,25 @@ final case class TranslationCtx(
     methodsToTypes: Map[Int, TypeDefData],
     pdbTables: Option[TablesData]
 ) {
+  def tpeByMethodDef(m: TablesData.MethodDefData): Option[TypeDefData] = {
+    val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
+    if (idx == -1) {
+      None
+    } else {
+      methodsToTypes.get(idx)
+    }
+  }
 
   def isProgramMethod(idx: Int): Boolean =
     methodsToTypes.get(idx).exists(_ eq programClass)
 
   def isProgramMethod(m: TablesData.MethodDefData): Boolean = {
     val idx = cilData.tables.methodDefTable.indexWhere(_ eq m)
-    isProgramMethod(idx)
+    if (idx == -1) {
+      false
+    } else {
+      isProgramMethod(idx)
+    }
   }
 
   def methodRow(idx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(idx)
@@ -46,9 +58,11 @@ final case class MethodTranslationCtx(
     argsCount: Int,
     localsCount: Int,
     name: String,
+    kind: String,
     void: Boolean,
     func: Boolean,
     static: Boolean,
+    ctor: Boolean,
     struct: Option[String],
     debugInfo: Option[MethodDebugInformationData]
 )

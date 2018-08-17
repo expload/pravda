@@ -270,8 +270,8 @@ object PravdaAssembler {
     import Data.parser.{primitive => dataPrimitive, all => dataAll}
     val digit = P(CharIn('0' to '9'))
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_"))
-    val alphadig = P(alpha | digit)
-    val ident = P("@" ~ (alpha.rep(1) ~ alphadig.rep(1).?).!)
+    val alphadigdot = P(alpha | digit | ".")
+    val ident = P("@" ~ (alpha.rep(1) ~ alphadigdot.rep(1).?).!)
     val whitespace = P(CharIn(" \t\r\n").rep)
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 

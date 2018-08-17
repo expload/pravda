@@ -37,7 +37,7 @@ object Signatures {
 
     def mkString: String = {
       def typeDefOrRefName(typeDefOrRef: TableRowData) = typeDefOrRef match {
-        case TypeDefData(_, name, namespace, _, _, _) => s"$namespace.$name"
+        case TypeDefData(_, _, name, namespace, _, _, _) => s"$namespace.$name"
         case TypeRefData(_, name, namespace) => s"$namespace.$name"
         case _ => ???
       }

@@ -39,7 +39,7 @@ package object translation {
 
     def returnTpe(m: MethodDefData, signatures: Map[Long, Signatures.Signature]): Option[SigType] =
       m match {
-        case MethodDefData(_, _, _, sigIdx, _) =>
+        case MethodDefData(_, _, _, _, sigIdx, _) =>
           signatures.get(sigIdx) match {
             case Some(MethodRefDefSig(_, _, _, _, _, Tpe(tpe, _), _)) => Some(tpe)
             case _                                                    => None

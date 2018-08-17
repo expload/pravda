@@ -23,16 +23,9 @@ import pravda.vm.{Meta, asm}
 
 final case class OpCodeTranslation(source: Either[String, List[CIL.Op]], // some name or actual opcode
                                    sourceMarks: List[Meta.SourceMark],
-                                   cilOffset: Option[Int],
-                                   stackOffset: Option[Int],
                                    asmOps: List[asm.Operation])
 
-final case class MethodTranslation(name: String,
-                                   argsCount: Int,
-                                   localsCount: Int,
-                                   void: Boolean,
-                                   func: Boolean,
-                                   opcodes: List[OpCodeTranslation],
+final case class MethodTranslation(opcodes: List[OpCodeTranslation],
                                    additionalFunctions: List[OpcodeTranslator.HelperFunction])
 
 final case class Translation(jumpToMethods: List[asm.Operation],

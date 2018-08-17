@@ -61,7 +61,8 @@ object TablesData {
   sealed trait TableRowData
   final case class CustomAttributeData(parent: TableRowData, tpe: TableRowData /* value is ignored */ )
       extends TableRowData
-  final case class MethodDefData(implFlags: Short,
+  final case class MethodDefData(id: Int,
+                                 implFlags: Short,
                                  flags: Short,
                                  name: String,
                                  signatureIdx: Long,
@@ -71,7 +72,8 @@ object TablesData {
   final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
   final case class FieldRVAData(field: FieldData, rva: Long)                                   extends TableRowData
   final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData
-  final case class TypeDefData(flags: Int,
+  final case class TypeDefData(id: Int,
+                               flags: Int,
                                name: String,
                                namespace: String,
                                var parent: TableRowData,
@@ -140,7 +142,8 @@ object TablesData {
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
           } yield
-            MethodDefData(implFlags,
+            MethodDefData(i,
+                          implFlags,
                           flags,
                           name,
                           signatureIdx,
@@ -169,6 +172,7 @@ object TablesData {
             namespace <- Heaps.string(peData.stringHeap, namespaceIdx)
           } yield
             TypeDefData(
+              i,
               flags,
               name,
               namespace,
