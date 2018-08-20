@@ -104,6 +104,7 @@ object Translator {
                               asmPrefix: List[asm.Operation],
                               name: String,
                               kind: String,
+                              id: Int,
                               argsCount: Int,
                               localsCount: Int,
                               void: Boolean,
@@ -187,11 +188,32 @@ object Translator {
       distinctFunctions(searchFunctions(cil))
     }
 
+    val metaMethodMark = if (!func) {
+      val name = tctx.methodRow(id).name
+      for {
+        methodSign <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
+        methodTpe <- CallsTransation.methodType(methodSign)
+        argTpes <- CallsTransation.methodParams(methodSign)
+      } yield
+        asm.Operation.Meta(
+          Meta.MethodSignature(
+            name,
+            dotnetToVmTpe(methodTpe),
+            argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
+          )
+        )
+    } else {
+      None
+    }
+
     for {
       opTranslations <- opTranslationsE
     } yield
       MethodTranslation(
-        List(OpCodeTranslation(Left(s"$name $kind"), List.empty, List(asm.Operation.Label(s"${kind}_$name")))) ++
+        List(
+          OpCodeTranslation(Left(s"$name $kind"),
+                            List.empty,
+                            metaMethodMark.toList :+ asm.Operation.Label(s"${kind}_$name"))) ++
           (if (asmPrefix.nonEmpty) List(OpCodeTranslation(Left(s"$name $kind prefix"), List.empty, asmPrefix))
            else List.empty) ++
           List(
@@ -288,7 +310,7 @@ object Translator {
 
     val programCtorE = for {
       ctors <- filterValidateMethods(
-        i => tctx.isProgramMethod(i) && isCtor(i) && isCctor(i),
+        i => tctx.isProgramMethod(i) && (isCtor(i) || isCctor(i)),
         i => !isCctor(i) && tctx.methodRow(i).params.isEmpty,
         InternalError("Constructor mustn't take any arguments. Static constructors are forbidden.")
       )
@@ -311,22 +333,6 @@ object Translator {
     val structStaticFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && isStatic(i)))
     val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
     //val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
-
-//    lazy val metaMethods = methods.indices.flatMap(i => {
-//      val name = tctx.methodRow(i).name
-//      for {
-//        methodSign <- tctx.signatures.get(tctx.methodRow(i).signatureIdx)
-//        methodTpe <- CallsTransation.methodType(methodSign)
-//        argTpes <- CallsTransation.methodParams(methodSign)
-//      } yield
-//        asm.Operation.Meta(
-//          Meta.MethodSignature(
-//            name,
-//            dotnetToVmTpe(methodTpe),
-//            argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
-//          )
-//        )
-//    })
 
     val jumpToMethodsE: Either[TranslationError, List[Operation]] = for {
       programMethods <- programMethodsE
@@ -353,6 +359,7 @@ object Translator {
             List.empty,
             "ctor",
             "method",
+            i,
             0,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = true,
@@ -379,6 +386,7 @@ object Translator {
             List.empty,
             methodRow.name,
             "method",
+            i,
             methodRow.params.length,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
@@ -405,6 +413,7 @@ object Translator {
             List.empty,
             methodRow.name,
             "func",
+            i,
             methodRow.params.length,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
@@ -434,6 +443,7 @@ object Translator {
             List.empty,
             name,
             "func",
+            i,
             methodRow.params.length,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
@@ -463,6 +473,7 @@ object Translator {
             List.empty,
             name,
             "func",
+            i,
             methodRow.params.length,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
@@ -492,6 +503,7 @@ object Translator {
             structCtorPrefix(tpe, tctx, methodRow.params.length),
             name,
             "func",
+            i,
             methodRow.params.length,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = true,

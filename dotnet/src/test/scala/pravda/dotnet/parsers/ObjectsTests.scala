@@ -24,11 +24,11 @@ object ObjectsTests extends TestSuite {
                       Nop,
                       LdArg0,
                       LdArg1,
-                      StFld(FieldData(1, "AVal", 37)),
+                      StFld(FieldData(1, "AVal", 38)),
                       Ret),
                  0,
                  None),
-          Method(List(Nop, LdArg0, LdFld(FieldData(1, "AVal", 37)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
+          Method(List(Nop, LdArg0, LdFld(FieldData(1, "AVal", 38)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
                  2,
                  Some(16)),
           Method(List(LdArg0,
@@ -37,28 +37,32 @@ object ObjectsTests extends TestSuite {
                       Nop,
                       LdArg0,
                       LdArg1,
-                      StFld(FieldData(1, "BVal", 37)),
+                      StFld(FieldData(1, "BVal", 38)),
                       Ret),
                  0,
                  None),
-          Method(List(Nop, LdArg0, LdFld(FieldData(1, "BVal", 37)), LdcI4S(43), Add, StLoc0, BrS(0), LdLoc0, Ret),
+          Method(List(Nop, LdArg0, LdFld(FieldData(1, "BVal", 38)), LdcI4S(43), Add, StLoc0, BrS(0), LdLoc0, Ret),
                  2,
                  Some(16)),
           Method(
             List(
               Nop,
               LdcI4S(100),
-              NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal")))),
+              NewObj(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal")))),
               StLoc0,
               LdcI4(200),
-              NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal")))),
+              NewObj(MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal")))),
               StLoc1,
               LdLoc0,
-              CallVirt(MethodDefData(0, 134, "AnswerA", 40, Vector())),
+              CallVirt(MethodDefData(1, 0, 134, "AnswerA", 41, Vector())),
               LdLoc1,
-              CallVirt(MethodDefData(0, 134, "AnswerB", 40, Vector())),
+              CallVirt(MethodDefData(3, 0, 134, "AnswerB", 41, Vector())),
               Add,
               StLoc2,
+              LdLoc2,
+              StLoc3,
+              BrS(0),
+              LdLoc3,
               Ret
             ),
             2,
@@ -88,72 +92,87 @@ object ObjectsTests extends TestSuite {
              List(
                LocalVar(
                  Cls(TypeDefData(
+                   1,
                    1048577,
                    "A",
                    "",
                    TypeRefData(6, "Object", "System"),
-                   Vector(FieldData(1, "AVal", 37)),
-                   Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-                          MethodDefData(0, 134, "AnswerA", 40, Vector()))
+                   Vector(FieldData(1, "AVal", 38)),
+                   Vector(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+                          MethodDefData(1, 0, 134, "AnswerA", 41, Vector()))
                  )),
                  false
                ),
                LocalVar(
                  Cls(TypeDefData(
+                   2,
                    1048577,
                    "B",
                    "",
                    TypeRefData(6, "Object", "System"),
-                   Vector(FieldData(1, "BVal", 37)),
-                   Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-                          MethodDefData(0, 134, "AnswerB", 40, Vector()))
+                   Vector(FieldData(1, "BVal", 38)),
+                   Vector(MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+                          MethodDefData(3, 0, 134, "AnswerB", 41, Vector()))
                  )),
                  false
                ),
-               LocalVar(I4, false)
+               LocalVar(I4, false),
+               LocalVar(I4, false),
              ))),
-          (37, FieldSig(I4)),
-          (40, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-          (44, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+          (38, FieldSig(I4)),
+          (41, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+          (45, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )
 
       DiffUtils.assertEqual(
         cilData.tables.typeDefTable,
         Vector(
-          TypeDefData(0, "<Module>", "", Ignored, Vector(), Vector()),
+          TypeDefData(0, 0, "<Module>", "", Ignored, Vector(), Vector()),
           TypeDefData(
+            1,
             1048577,
             "A",
             "",
             TypeRefData(6, "Object", "System"),
-            Vector(FieldData(1, "AVal", 37)),
-            Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-                   MethodDefData(0, 134, "AnswerA", 40, Vector()))
+            Vector(FieldData(1, "AVal", 38)),
+            Vector(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+                   MethodDefData(1, 0, 134, "AnswerA", 41, Vector()))
           ),
           TypeDefData(
+            2,
             1048577,
             "B",
             "",
             TypeRefData(6, "Object", "System"),
-            Vector(FieldData(1, "BVal", 37)),
-            Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-                   MethodDefData(0, 134, "AnswerB", 40, Vector()))
+            Vector(FieldData(1, "BVal", 38)),
+            Vector(MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+                   MethodDefData(3, 0, 134, "AnswerB", 41, Vector()))
           ),
-          TypeDefData(1048577, "MyProgram", "", TypeRefData(6, "Object", "System"), Vector(), Vector())
+          TypeDefData(
+            3,
+            1048577,
+            "MyProgram",
+            "",
+            TypeRefData(6, "Object", "System"),
+            Vector(),
+            Vector(MethodDefData(4, 0, 134, "Func", 41, Vector()),
+                   MethodDefData(5, 0, 150, "Main", 45, Vector()),
+                   MethodDefData(6, 0, 6278, ".ctor", 6, Vector()))
+          )
         )
       )
 
       DiffUtils.assertEqual(
         cilData.tables.methodDefTable,
         Vector(
-          MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-          MethodDefData(0, 134, "AnswerA", 40, Vector()),
-          MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-          MethodDefData(0, 134, "AnswerB", 40, Vector()),
-          MethodDefData(0, 129, "Func", 6, Vector()),
-          MethodDefData(0, 150, "Main", 44, Vector()),
-          MethodDefData(0, 6278, ".ctor", 6, Vector())
+          MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+          MethodDefData(1, 0, 134, "AnswerA", 41, Vector()),
+          MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+          MethodDefData(3, 0, 134, "AnswerB", 41, Vector()),
+          MethodDefData(4, 0, 134, "Func", 41, Vector()),
+          MethodDefData(5, 0, 150, "Main", 45, Vector()),
+          MethodDefData(6, 0, 6278, ".ctor", 6, Vector())
         )
       )
     }

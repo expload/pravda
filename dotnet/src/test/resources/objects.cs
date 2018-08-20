@@ -34,11 +34,12 @@ public class B
 [Program]
 public class MyProgram
 {
-    public void Func()
+    public int Func()
     {
         var a = new A(100);
         var b = new B(200);
         int c = a.AnswerA() + b.AnswerB();
+        return c;
     }
 
    public static void Main() {}

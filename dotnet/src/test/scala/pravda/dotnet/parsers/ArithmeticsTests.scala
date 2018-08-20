@@ -55,8 +55,6 @@ object ArithmeticsTests extends TestSuite {
         Method(List(LdcI4S(10), StSFld(FieldData(22, "x", 33)), Ret), 0, None)
       )
 
-      println(cilData.tables.methodDefTable)
-
       signatures.toList.sortBy(_._1) ==> List(
         (1, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
         (6, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),

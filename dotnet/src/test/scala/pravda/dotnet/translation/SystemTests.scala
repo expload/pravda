@@ -15,9 +15,6 @@ object SystemTests extends TestSuite {
         PravdaAssembler.parse(
           """
             |meta translator_mark "jump to methods"
-            |meta method {
-            |"name":"system","returnTpe":int8(0)
-            |}
             |dup
             |push "system"
             |eq
@@ -25,6 +22,9 @@ object SystemTests extends TestSuite {
             |push "Wrong method name"
             |throw
             |meta translator_mark "system method"
+            |meta method {
+            |"name":"system","returnTpe":int8(0)
+            |}
             |@method_system:
             |meta translator_mark "system local vars definition"
             |push null

@@ -14,12 +14,6 @@ object ArraysTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
         |meta translator_mark "jump to methods"
-        |meta method {
-        |"name":"WorkWithBytes","returnTpe":int8(0)
-        |}
-        |meta method {
-        |"name":"WorkWithArrays","returnTpe":int8(0)
-        |}
         |dup
         |push "WorkWithBytes"
         |eq
@@ -31,6 +25,9 @@ object ArraysTests extends TestSuite {
         |push "Wrong method name"
         |throw
         |meta translator_mark "WorkWithBytes method"
+        |meta method {
+        |"name":"WorkWithBytes","returnTpe":int8(0)
+        |}
         |@method_WorkWithBytes:
         |meta translator_mark "WorkWithBytes local vars definition"
         |push null
@@ -109,7 +106,6 @@ object ArraysTests extends TestSuite {
         |push int32(4)
         |dupn
         |concat
-        |swap
         |sput
         |pop
         |pop
@@ -148,7 +144,6 @@ object ArraysTests extends TestSuite {
         |push int32(4)
         |dupn
         |concat
-        |swap
         |sput
         |pop
         |pop
@@ -179,6 +174,9 @@ object ArraysTests extends TestSuite {
         |meta translator_mark "end of WorkWithBytes method"
         |jump @stop
         |meta translator_mark "WorkWithArrays method"
+        |meta method {
+        |"name":"WorkWithArrays","returnTpe":int8(0)
+        |}
         |@method_WorkWithArrays:
         |meta translator_mark "WorkWithArrays local vars definition"
         |push null

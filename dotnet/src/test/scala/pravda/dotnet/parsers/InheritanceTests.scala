@@ -23,7 +23,7 @@ object InheritanceTests extends TestSuite {
                  None),
           Method(List(Nop,
                       LdArg0,
-                      CallVirt(MethodDefData(0, 454, "Answer", 42, Vector())),
+                      CallVirt(MethodDefData(2, 0, 454, "Answer", 43, Vector())),
                       LdcI41,
                       Add,
                       StLoc0,
@@ -33,55 +33,65 @@ object InheritanceTests extends TestSuite {
                  2,
                  Some(16)),
           Method(List(Nop, LdcI40, StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
-          Method(List(LdArg0,
-                      LdArg1,
-                      Call(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val")))),
-                      Nop,
-                      Nop,
-                      LdArg0,
-                      LdArg1,
-                      StFld(FieldData(1, "AVal", 39)),
-                      Ret),
-                 0,
-                 None),
-          Method(List(Nop, LdArg0, LdFld(FieldData(1, "AVal", 39)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
+          Method(
+            List(LdArg0,
+                 LdArg1,
+                 Call(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val")))),
+                 Nop,
+                 Nop,
+                 LdArg0,
+                 LdArg1,
+                 StFld(FieldData(1, "AVal", 40)),
+                 Ret),
+            0,
+            None
+          ),
+          Method(List(Nop, LdArg0, LdFld(FieldData(1, "AVal", 40)), LdcI4S(42), Add, StLoc0, BrS(0), LdLoc0, Ret),
                  2,
                  Some(16)),
-          Method(List(LdArg0,
-                      LdArg1,
-                      Call(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val")))),
-                      Nop,
-                      Nop,
-                      LdArg0,
-                      LdArg1,
-                      StFld(FieldData(1, "BVal", 39)),
-                      Ret),
-                 0,
-                 None),
-          Method(List(Nop, LdArg0, LdFld(FieldData(1, "BVal", 39)), LdcI4S(43), Add, StLoc0, BrS(0), LdLoc0, Ret),
+          Method(
+            List(LdArg0,
+                 LdArg1,
+                 Call(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val")))),
+                 Nop,
+                 Nop,
+                 LdArg0,
+                 LdArg1,
+                 StFld(FieldData(1, "BVal", 40)),
+                 Ret),
+            0,
+            None
+          ),
+          Method(List(Nop, LdArg0, LdFld(FieldData(1, "BVal", 40)), LdcI4S(43), Add, StLoc0, BrS(0), LdLoc0, Ret),
                  2,
                  Some(16)),
           Method(
             List(
               Nop,
               LdcI4S(100),
-              NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal")))),
+              NewObj(MethodDefData(3, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal")))),
               StLoc0,
               LdcI4(200),
-              NewObj(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal")))),
+              NewObj(MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal")))),
               StLoc1,
               LdLoc0,
-              CallVirt(MethodDefData(0, 454, "Answer", 42, Vector())),
+              CallVirt(MethodDefData(2, 0, 454, "Answer", 43, Vector())),
               LdLoc1,
-              CallVirt(MethodDefData(0, 454, "Answer", 42, Vector())),
+              CallVirt(MethodDefData(2, 0, 454, "Answer", 43, Vector())),
               Add,
               StLoc2,
               LdLoc0,
-              CallVirt(MethodDefData(0, 454, "AnswerPlus1", 42, Vector())),
+              CallVirt(MethodDefData(1, 0, 454, "AnswerPlus1", 43, Vector())),
               StLoc3,
               LdLoc1,
-              CallVirt(MethodDefData(0, 454, "AnswerPlus1", 42, Vector())),
+              CallVirt(MethodDefData(1, 0, 454, "AnswerPlus1", 43, Vector())),
               StLocS(4),
+              LdLoc3,
+              LdLocS(4),
+              Add,
+              StLocS(5),
+              BrS(0),
+              LdLocS(5),
               Ret
             ),
             2,
@@ -94,14 +104,17 @@ object InheritanceTests extends TestSuite {
 
       val parentCls =
         TypeDefData(
+          1,
           1048577,
           "Parent",
           "",
           TypeRefData(6, "Object", "System"),
           Vector(),
-          Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
-                 MethodDefData(0, 454, "AnswerPlus1", 42, Vector()),
-                 MethodDefData(0, 454, "Answer", 42, Vector()))
+          Vector(
+            MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
+            MethodDefData(1, 0, 454, "AnswerPlus1", 43, Vector()),
+            MethodDefData(2, 0, 454, "Answer", 43, Vector())
+          )
         )
 
       DiffUtils.assertEqual(
@@ -125,54 +138,67 @@ object InheritanceTests extends TestSuite {
                LocalVar(Cls(parentCls), false),
                LocalVar(I4, false),
                LocalVar(I4, false),
+               LocalVar(I4, false),
                LocalVar(I4, false)
              ))),
-          (39, FieldSig(I4)),
-          (42, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-          (46, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+          (40, FieldSig(I4)),
+          (43, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+          (47, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )
 
       DiffUtils.assertEqual(
         cilData.tables.typeDefTable,
         Vector(
-          TypeDefData(0, "<Module>", "", Ignored, Vector(), Vector()),
+          TypeDefData(0, 0, "<Module>", "", Ignored, Vector(), Vector()),
           parentCls,
           TypeDefData(
+            2,
             1048577,
             "A",
             "",
             parentCls,
-            Vector(FieldData(1, "AVal", 39)),
-            Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-                   MethodDefData(0, 198, "Answer", 42, Vector()))
+            Vector(FieldData(1, "AVal", 40)),
+            Vector(MethodDefData(3, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+                   MethodDefData(4, 0, 198, "Answer", 43, Vector()))
           ),
           TypeDefData(
+            3,
             1048577,
             "B",
             "",
             parentCls,
-            Vector(FieldData(1, "BVal", 39)),
-            Vector(MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-                   MethodDefData(0, 198, "Answer", 42, Vector()))
+            Vector(FieldData(1, "BVal", 40)),
+            Vector(MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+                   MethodDefData(6, 0, 198, "Answer", 43, Vector()))
           ),
-          TypeDefData(1048577, "MyProgram", "", TypeRefData(6, "Object", "System"), Vector(), Vector())
+          TypeDefData(
+            4,
+            1048577,
+            "MyProgram",
+            "",
+            TypeRefData(6, "Object", "System"),
+            Vector(),
+            Vector(MethodDefData(7, 0, 134, "Func", 43, Vector()),
+                   MethodDefData(8, 0, 150, "Main", 47, Vector()),
+                   MethodDefData(9, 0, 6278, ".ctor", 6, Vector()))
+          )
         )
       )
 
       DiffUtils.assertEqual(
         cilData.tables.methodDefTable,
         Vector(
-          MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
-          MethodDefData(0, 454, "AnswerPlus1", 42, Vector()),
-          MethodDefData(0, 454, "Answer", 42, Vector()),
-          MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-          MethodDefData(0, 198, "Answer", 42, Vector()),
-          MethodDefData(0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-          MethodDefData(0, 198, "Answer", 42, Vector()),
-          MethodDefData(0, 129, "Func", 6, Vector()),
-          MethodDefData(0, 150, "Main", 46, Vector()),
-          MethodDefData(0, 6278, ".ctor", 6, Vector())
+          MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
+          MethodDefData(1, 0, 454, "AnswerPlus1", 43, Vector()),
+          MethodDefData(2, 0, 454, "Answer", 43, Vector()),
+          MethodDefData(3, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
+          MethodDefData(4, 0, 198, "Answer", 43, Vector()),
+          MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
+          MethodDefData(6, 0, 198, "Answer", 43, Vector()),
+          MethodDefData(7, 0, 134, "Func", 43, Vector()),
+          MethodDefData(8, 0, 150, "Main", 47, Vector()),
+          MethodDefData(9, 0, 6278, ".ctor", 6, Vector())
         )
       )
     }

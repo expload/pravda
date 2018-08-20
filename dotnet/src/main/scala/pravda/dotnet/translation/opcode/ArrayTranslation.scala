@@ -82,7 +82,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           for {
             token <- ctx.tctx.signatures.get(tokenSignIdx)
             size <- token match {
-              case FieldSig(ValueTpe(TypeDefData(_, _, fieldType, "", Ignored, Vector(), Vector())))
+              case FieldSig(ValueTpe(TypeDefData(_, _, fieldType, "", _, Vector(), Vector())))
                   if fieldType.startsWith("__StaticArrayInitTypeSize=") =>
                 Try { fieldType.drop("__StaticArrayInitTypeSize=".length).toLong }.toOption
             }

@@ -15,9 +15,6 @@ object IfTests extends TestSuite {
         PravdaAssembler.parse(
           """
         |meta translator_mark "jump to methods"
-        |meta method {
-        |"name":"ifs","returnTpe":int8(0)
-        |}
         |dup
         |push "ifs"
         |eq
@@ -25,6 +22,9 @@ object IfTests extends TestSuite {
         |push "Wrong method name"
         |throw
         |meta translator_mark "ifs method"
+        |meta method {
+        |"name":"ifs","returnTpe":int8(0)
+        |}
         |@method_ifs:
         |meta translator_mark "ifs local vars definition"
         |push null

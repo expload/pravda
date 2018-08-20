@@ -21,51 +21,75 @@ object ObjectsTests extends TestSuite {
         |push "Wrong method name"
         |throw
         |meta translator_mark "Func method"
+        |meta method {
+        |  "name": "Func", "returnTpe":int8(3)
+        |}
         |@method_Func:
         |meta translator_mark "Func local vars definition"
+        |push null
         |push null
         |push null
         |push null
         |meta translator_mark "Func method body"
         |push int32(100)
         |call @func_A.ctor
-        |push int32(3)
+        |push int32(5)
         |swapn
         |pop
         |push int32(200)
         |call @func_B.ctor
-        |push int32(1)
+        |push int32(4)
         |swapn
         |pop
-        |push int32(1)
+        |push int32(4)
         |dupn
         |push int32(1)
         |dupn
         |struct_get "AnswerA"
         |call
-        |push int32(0)
+        |push int32(4)
         |dupn
         |push int32(1)
         |dupn
         |struct_get "AnswerB"
         |call
         |add
-        |push int32(-2)
+        |push int32(3)
         |swapn
         |pop
+        |push int32(2)
+        |dupn
+        |push int32(2)
+        |swapn
+        |pop
+        |push int32(1)
+        |dupn
         |meta translator_mark "Func local vars clearing"
+        |swap
         |pop
+        |swap
         |pop
+        |swap
         |pop
+        |swap
+        |pop
+        |swap
         |pop
         |meta translator_mark "end of Func method"
         |jump @stop
+        |meta translator_mark "ctor method"
+        |@method_ctor:
+        |meta translator_mark "ctor local vars definition"
+        |meta translator_mark "ctor method body"
+        |meta translator_mark "ctor local vars clearing"
+        |meta translator_mark "end of ctor method"
+        |ret
         |meta translator_mark "A.AnswerA func"
         |@func_A.AnswerA:
         |meta translator_mark "A.AnswerA local vars definition"
         |push null
         |meta translator_mark "A.AnswerA func body"
-        |push int32(2)
+        |push int32(3)
         |dupn
         |struct_get "AVal"
         |push int32(42)

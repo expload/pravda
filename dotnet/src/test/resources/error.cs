@@ -1,5 +1,7 @@
 using System;
+using Com.Expload;
 
+[Program]
 public class ErrorClass
 {
     public void ErrorFunc() {

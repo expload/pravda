@@ -14,9 +14,6 @@ object StringTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
             |meta translator_mark "jump to methods"
-            |meta method {
-            |"name":"distributeSalary","returnTpe":int8(0)
-            |}
             |dup
             |push "distributeSalary"
             |eq
@@ -24,6 +21,9 @@ object StringTests extends TestSuite {
             |push "Wrong method name"
             |throw
             |meta translator_mark "distributeSalary method"
+            |meta method {
+            |"name":"distributeSalary","returnTpe":int8(0)
+            |}
             |@method_distributeSalary:
             |meta translator_mark "distributeSalary local vars definition"
             |push null
@@ -68,7 +68,6 @@ object StringTests extends TestSuite {
             |push int32(4)
             |dupn
             |concat
-            |swap
             |sput
             |pop
             |pop
@@ -104,7 +103,6 @@ object StringTests extends TestSuite {
             |push int32(4)
             |dupn
             |concat
-            |swap
             |sput
             |pop
             |pop

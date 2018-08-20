@@ -14,12 +14,6 @@ object StdLibTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
             |meta translator_mark "jump to methods"
-            |meta method {
-            |"name":"Ripemd160",int32(0):int8(14),"returnTpe":int8(14)
-            |}
-            |meta method {
-            |"name":"ValidateEd25519Signature",int32(1):int8(14),int32(2):int8(14),int32(0):int8(14),"returnTpe":int8(9)
-            |}
             |dup
             |push "Ripemd160"
             |eq
@@ -31,6 +25,9 @@ object StdLibTests extends TestSuite {
             |push "Wrong method name"
             |throw
             |meta translator_mark "Ripemd160 method"
+            |meta method {
+            |"name":"Ripemd160",int32(0):int8(11),"returnTpe":int8(14)
+            |}
             |@method_Ripemd160:
             |meta translator_mark "Ripemd160 local vars definition"
             |push null
@@ -54,6 +51,9 @@ object StdLibTests extends TestSuite {
             |meta translator_mark "end of Ripemd160 method"
             |jump @stop
             |meta translator_mark "ValidateEd25519Signature method"
+            |meta method {
+            |"name":"ValidateEd25519Signature",int32(1):int8(11),int32(2):int8(14),int32(0):int8(14),"returnTpe":int8(9)
+            |}
             |@method_ValidateEd25519Signature:
             |meta translator_mark "ValidateEd25519Signature local vars definition"
             |push null

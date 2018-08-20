@@ -26,21 +26,21 @@ object MethodCallingTests extends TestSuite {
           Method(
             List(
               Nop,
-              Call(MethodDefData(0, 150, "answer", 39, Vector())),
+              Call(MethodDefData(0, 0, 150, "answer", 39, Vector())),
               StLoc0,
-              Call(MethodDefData(0, 145, "secretAnswer", 39, Vector())),
+              Call(MethodDefData(1, 0, 145, "secretAnswer", 39, Vector())),
               StLoc1,
               LdLoc0,
               LdLoc1,
-              Call(MethodDefData(0, 150, "sum", 43, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
+              Call(MethodDefData(2, 0, 150, "sum", 43, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b")))),
               StLoc2,
-              NewObj(MethodDefData(0, 6278, ".ctor", 6, Vector())),
+              NewObj(MethodDefData(6, 0, 6278, ".ctor", 6, Vector())),
               StLoc3,
               LdLoc3,
-              CallVirt(MethodDefData(0, 134, "personalAnswer", 49, Vector())),
+              CallVirt(MethodDefData(3, 0, 134, "personalAnswer", 49, Vector())),
               StLocS(4),
               LdLoc3,
-              CallVirt(MethodDefData(0, 129, "personalSecretAnswer", 49, Vector())),
+              CallVirt(MethodDefData(4, 0, 129, "personalSecretAnswer", 49, Vector())),
               StLocS(5),
               Ret
             ),
@@ -71,14 +71,26 @@ object MethodCallingTests extends TestSuite {
                LocalVar(I4, false),
                LocalVar(I4, false),
                LocalVar(I4, false),
-               LocalVar(Cls(
-                          TypeDefData(1048577,
-                                      "Program",
-                                      "",
-                                      TypeRefData(6, "Object", "System"),
-                                      Vector(),
-                                      Vector(MethodDefData(0, 150, "answer", 39, Vector())))),
-                        false),
+               LocalVar(
+                 Cls(TypeDefData(
+                   1,
+                   1048577,
+                   "Program",
+                   "",
+                   TypeRefData(6, "Object", "System"),
+                   Vector(),
+                   Vector(
+                     MethodDefData(0, 0, 150, "answer", 39, Vector()),
+                     MethodDefData(1, 0, 145, "secretAnswer", 39, Vector()),
+                     MethodDefData(2, 0, 150, "sum", 43, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
+                     MethodDefData(3, 0, 134, "personalAnswer", 49, Vector()),
+                     MethodDefData(4, 0, 129, "personalSecretAnswer", 49, Vector()),
+                     MethodDefData(5, 0, 150, "Main", 53, Vector()),
+                     MethodDefData(6, 0, 6278, ".ctor", 6, Vector())
+                   )
+                 )),
+                 false
+               ),
                LocalVar(I4, false),
                LocalVar(I4, false)
              ))),

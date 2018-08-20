@@ -51,13 +51,14 @@ public class B: Parent
 [Program]
 public class MyProgram
 {
-    public void Func()
+    public int Func()
     {
         Parent a = new A(100);
         Parent b = new B(200);
         int c = a.Answer() + b.Answer();
         int d = a.AnswerPlus1();
         int e = b.AnswerPlus1();
+        return d + e;
     }
 
    public static void Main() {}

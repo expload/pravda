@@ -305,7 +305,8 @@ object ArraysTests extends TestSuite {
           (113,
            FieldSig(
              ValueTpe(
-               TypeDefData(275,
+               TypeDefData(3,
+                           275,
                            "__StaticArrayInitTypeSize=3",
                            "",
                            TypeRefData(6, "ValueType", "System"),
@@ -314,7 +315,8 @@ object ArraysTests extends TestSuite {
           (117,
            FieldSig(
              ValueTpe(
-               TypeDefData(275,
+               TypeDefData(6,
+                           275,
                            "__StaticArrayInitTypeSize=24",
                            "",
                            TypeRefData(6, "ValueType", "System"),
@@ -323,7 +325,8 @@ object ArraysTests extends TestSuite {
           (121,
            FieldSig(
              ValueTpe(
-               TypeDefData(275,
+               TypeDefData(5,
+                           275,
                            "__StaticArrayInitTypeSize=12",
                            "",
                            TypeRefData(6, "ValueType", "System"),
@@ -332,7 +335,8 @@ object ArraysTests extends TestSuite {
           (125,
            FieldSig(
              ValueTpe(
-               TypeDefData(275,
+               TypeDefData(4,
+                           275,
                            "__StaticArrayInitTypeSize=6",
                            "",
                            TypeRefData(6, "ValueType", "System"),

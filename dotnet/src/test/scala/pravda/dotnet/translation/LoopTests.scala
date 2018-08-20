@@ -15,9 +15,6 @@ object LoopTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
             |meta translator_mark "jump to methods"
-            |meta method {
-            |"name":"loops","returnTpe":int8(0)
-            |}
             |dup
             |push "loops"
             |eq
@@ -25,6 +22,9 @@ object LoopTests extends TestSuite {
             |push "Wrong method name"
             |throw
             |meta translator_mark "loops method"
+            |meta method {
+            |"name":"loops","returnTpe":int8(0)
+            |}
             |@method_loops:
             |meta translator_mark "loops local vars definition"
             |push null
@@ -125,9 +125,6 @@ object LoopTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
             |meta translator_mark "jump to methods"
-            |meta method {
-            |"name":"loops","returnTpe":int8(0)
-            |}
             |dup
             |push "loops"
             |eq
@@ -135,6 +132,9 @@ object LoopTests extends TestSuite {
             |push "Wrong method name"
             |throw
             |meta translator_mark "loops method"
+            |meta method {
+            |"name":"loops","returnTpe":int8(0)
+            |}
             |@method_loops:
             |meta translator_mark "loops local vars definition"
             |push null

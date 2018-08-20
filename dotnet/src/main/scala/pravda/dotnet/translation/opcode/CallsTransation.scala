@@ -122,13 +122,13 @@ case object CallsTransation extends OneToManyTranslator {
     def callMethodDef(m: MethodDefData): Int = {
       val void = ctx.tctx.signatures.get(m.signatureIdx).exists(isMethodVoid)
       val program = ctx.tctx.isProgramMethod(m)
-      -m.params.length + (if (void) 1 else 0) + (if (program) 0 else -1)
+      -m.params.length + (if (void) 0 else 1) + (if (program) 0 else -1)
     }
 
     op match {
       case Call(m: MethodDefData)     => Right(callMethodDef(m))
       case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
-      case NewObj(m: MethodDefData)   => Right(callMethodDef(m))
+      case NewObj(m: MethodDefData)   => Right(callMethodDef(m) + 2)
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(-1) else Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
