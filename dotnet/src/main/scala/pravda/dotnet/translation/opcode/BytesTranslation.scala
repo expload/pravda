@@ -35,37 +35,37 @@ object BytesTranslation extends OneToManyTranslator {
           OpcodeTranslator.HelperFunction(
             "array_to_bytes",
             List(
-              Operation.Orphan(Opcodes.DUP),
-              Operation.Orphan(Opcodes.LENGTH),
+              Operation(Opcodes.DUP),
+              Operation(Opcodes.LENGTH),
               Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY)),
               pushInt(0),
               Operation.Label("array_to_bytes_loop"),
               pushInt(4),
-              Operation.Orphan(Opcodes.DUPN),
+              Operation(Opcodes.DUPN),
               pushInt(2),
-              Operation.Orphan(Opcodes.DUPN),
-              Operation.Orphan(Opcodes.ARRAY_GET),
+              Operation(Opcodes.DUPN),
+              Operation(Opcodes.ARRAY_GET),
               pushType(Data.Type.Bytes),
-              Operation.Orphan(Opcodes.CAST),
+              Operation(Opcodes.CAST),
               pushInt(3),
-              Operation.Orphan(Opcodes.DUPN),
-              Operation.Orphan(Opcodes.CONCAT),
+              Operation(Opcodes.DUPN),
+              Operation(Opcodes.CONCAT),
               pushInt(3),
-              Operation.Orphan(Opcodes.SWAPN),
-              Operation.Orphan(Opcodes.POP),
+              Operation(Opcodes.SWAPN),
+              Operation(Opcodes.POP),
               pushInt(1),
-              Operation.Orphan(Opcodes.ADD),
-              Operation.Orphan(Opcodes.DUP),
+              Operation(Opcodes.ADD),
+              Operation(Opcodes.DUP),
               pushInt(4),
-              Operation.Orphan(Opcodes.DUPN),
-              Operation.Orphan(Opcodes.GT),
+              Operation(Opcodes.DUPN),
+              Operation(Opcodes.GT),
               Operation.JumpI(Some("array_to_bytes_loop")),
-              Operation.Orphan(Opcodes.POP),
-              Operation.Orphan(Opcodes.SWAP),
-              Operation.Orphan(Opcodes.POP),
-              Operation.Orphan(Opcodes.SWAP),
-              Operation.Orphan(Opcodes.POP),
-              Operation.Orphan(Opcodes.RET)
+              Operation(Opcodes.POP),
+              Operation(Opcodes.SWAP),
+              Operation(Opcodes.POP),
+              Operation(Opcodes.SWAP),
+              Operation(Opcodes.POP),
+              Operation(Opcodes.RET)
             )
           )))
     case _ => Left(UnknownOpcode)
@@ -78,6 +78,7 @@ object BytesTranslation extends OneToManyTranslator {
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _))       => Right(-1)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Slice", _))          => Right(-2)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Concat", _))         => Right(-1)
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Length", _))           => Right(0)
     case _                                                                                    => Left(UnknownOpcode)
   }
 
@@ -91,7 +92,7 @@ object BytesTranslation extends OneToManyTranslator {
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) =>
       Right(List(Operation.Call(Some("array_to_bytes"))))
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _)) =>
-      Right(List(Operation.Orphan(Opcodes.ARRAY_GET)))
+      Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Slice", _)) =>
       Right(
         List(pushInt(2),
@@ -101,7 +102,9 @@ object BytesTranslation extends OneToManyTranslator {
              Operation(Opcodes.SLICE))
       )
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Concat", _)) =>
-      Right(List(Operation.Orphan(Opcodes.SWAP), Operation.Orphan(Opcodes.CONCAT)))
+      Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT)))
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Length", _)) =>
+      Right(List(Operation(Opcodes.LENGTH)))
     case _ => Left(UnknownOpcode)
   }
 }

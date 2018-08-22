@@ -23,7 +23,7 @@ import pravda.dotnet.parsers.Signatures.FieldSig
 import pravda.dotnet.parsers.Signatures.SigType.ValueTpe
 import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
-import pravda.vm.asm
+import pravda.vm.asm.Operation
 import scodec.bits.ByteOrdering
 
 import scala.util.Try
@@ -32,10 +32,10 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
     op match {
       case NewArr(TypeRefData(6, typeName, namespaceName)) =>
-        val arrTypeF: PartialFunction[(String, String), asm.Operation] = {
+        val arrTypeF: PartialFunction[(String, String), Operation] = {
           case ("System", "Byte")   => pushType(Data.Type.Int8)
           case ("System", "Char")   => pushType(Data.Type.Int16)
           case ("System", "Int32")  => pushType(Data.Type.Int32)
@@ -46,15 +46,17 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
 
         val asmOps = arrTypeF
           .lift((namespaceName, typeName))
-          .map(List(_, asm.Operation.Orphan(Opcodes.NEW_ARRAY)))
+          .map(List(_, Operation(Opcodes.NEW_ARRAY)))
           .toRight(UnknownOpcode)
 
         asmOps
       case StElem(_) | StElemI1 | StElemI2 | StElemI4 | StElemI8 | StElemR4 | StElemR8 | StElemRef =>
-        Right(List(asm.Operation.Orphan(Opcodes.SWAP), asm.Operation.Orphan(Opcodes.ARRAY_MUT)))
+        Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.ARRAY_MUT)))
       case LdElem(_) | LdElemI1 | LdElemI2 | LdElemI4 | LdElemI8 | LdElemR4 | LdElemR8 | LdElemRef | LdElemU1 |
           LdElemU2 | LdElemU4 | LdElemU8 =>
-        Right(List(asm.Operation.Orphan(Opcodes.ARRAY_GET)))
+        Right(List(Operation(Opcodes.ARRAY_GET)))
+      case LdLen =>
+        Right(List(Operation(Opcodes.LENGTH)))
       case _ =>
         Left(UnknownOpcode)
     }
@@ -64,7 +66,7 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
 object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
   override def asmOps(ops: List[Op],
                       stackOffsetO: Option[Int],
-                      ctx: MethodTranslationCtx): Either[InnerTranslationError, (Int, List[asm.Operation])] = {
+                      ctx: MethodTranslationCtx): Either[InnerTranslationError, (Int, List[Operation])] = {
     ops.take(5) match {
       case List(
           OpcodeDetectors.IntLoad(arraySize),
@@ -108,7 +110,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           size <- bytesSize
           bytes = PE.bytesFromRva(ctx.tctx.cilData.sections, rva, Some(size))
           d <- data(bytes)
-        } yield (5, List(asm.Operation.New(d)))).toRight(UnknownOpcode)
+        } yield (5, List(Operation.New(d)))).toRight(UnknownOpcode)
       case _ => Left(UnknownOpcode)
     }
   }
