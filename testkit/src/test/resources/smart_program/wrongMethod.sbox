@@ -6,7 +6,7 @@ preconditions:
   storage:
 
 expectations:
-  watts-spent: 147
+  watts-spent: 145
   stack:
     "boom"
   heap:

@@ -21,6 +21,9 @@ object InheritanceTests extends TestSuite {
            |push "Wrong method name"
            |throw
            |meta translator_mark "Func method"
+           |meta method {
+           |  "name": "Func", "returnTpe":int8(3)
+           |}
            |@method_Func:
            |meta translator_mark "Func local vars definition"
            |push null
@@ -28,60 +31,102 @@ object InheritanceTests extends TestSuite {
            |push null
            |push null
            |push null
+           |push null
            |meta translator_mark "Func method body"
            |push int32(100)
-           |call @func_A.ctor
-           |push int32(5)
+           |new {}
+           |call @vtable_A
+           |push int32(2)
+           |swapn
+           |call @func_A.ctor_int32
+           |push int32(7)
            |swapn
            |pop
            |push int32(200)
-           |call @func_B.ctor
-           |push int32(3)
-           |swapn
-           |pop
-           |push int32(3)
-           |dupn
-           |push int32(1)
-           |dupn
-           |struct_get "Answer"
-           |call
+           |new {}
+           |call @vtable_B
            |push int32(2)
+           |swapn
+           |call @func_B.ctor_int32
+           |push int32(6)
+           |swapn
+           |pop
+           |push int32(6)
            |dupn
            |push int32(1)
            |dupn
            |struct_get "Answer"
            |call
+           |swap
+           |pop
+           |push int32(6)
+           |dupn
+           |push int32(1)
+           |dupn
+           |struct_get "Answer"
+           |call
+           |swap
+           |pop
            |add
-           |push int32(0)
+           |push int32(5)
            |swapn
            |pop
-           |push int32(1)
-           |dupn
-           |push int32(1)
-           |dupn
-           |struct_get "AnswerPlus1"
-           |call
-           |push int32(-2)
-           |swapn
-           |pop
-           |push int32(-1)
+           |push int32(6)
            |dupn
            |push int32(1)
            |dupn
            |struct_get "AnswerPlus1"
            |call
-           |push int32(-4)
+           |swap
+           |pop
+           |push int32(4)
            |swapn
            |pop
+           |push int32(5)
+           |dupn
+           |push int32(1)
+           |dupn
+           |struct_get "AnswerPlus1"
+           |call
+           |swap
+           |pop
+           |push int32(3)
+           |swapn
+           |pop
+           |push int32(3)
+           |dupn
+           |push int32(3)
+           |dupn
+           |add
+           |push int32(2)
+           |swapn
+           |pop
+           |push int32(1)
+           |dupn
            |meta translator_mark "Func local vars clearing"
+           |swap
            |pop
+           |swap
            |pop
+           |swap
            |pop
+           |swap
            |pop
+           |swap
            |pop
+           |swap
+           |pop
+           |swap
            |pop
            |meta translator_mark "end of Func method"
            |jump @stop
+           |meta translator_mark "ctor method"
+           |@method_ctor:
+           |meta translator_mark "ctor local vars definition"
+           |meta translator_mark "ctor method body"
+           |meta translator_mark "ctor local vars clearing"
+           |meta translator_mark "end of ctor method"
+           |ret
            |meta translator_mark "Parent.AnswerPlus1 func"
            |@func_Parent.AnswerPlus1:
            |meta translator_mark "Parent.AnswerPlus1 local vars definition"
@@ -93,16 +138,16 @@ object InheritanceTests extends TestSuite {
            |dupn
            |struct_get "Answer"
            |call
-           |push int32(1)
-           |add
-           |push int32(1)
-           |swapn
-           |pop
-           |push int32(0)
-           |dupn
-           |meta translator_mark "Parent.AnswerPlus1 local vars clearing"
            |swap
            |pop
+           |push int32(1)
+           |add
+           |push int32(2)
+           |swapn
+           |pop
+           |push int32(1)
+           |dupn
+           |meta translator_mark "Parent.AnswerPlus1 local vars clearing"
            |swap
            |pop
            |meta translator_mark "end of Parent.AnswerPlus1 func"
@@ -119,8 +164,6 @@ object InheritanceTests extends TestSuite {
            |push int32(1)
            |dupn
            |meta translator_mark "Parent.Answer local vars clearing"
-           |swap
-           |pop
            |swap
            |pop
            |meta translator_mark "end of Parent.Answer func"
@@ -143,8 +186,6 @@ object InheritanceTests extends TestSuite {
            |meta translator_mark "A.Answer local vars clearing"
            |swap
            |pop
-           |swap
-           |pop
            |meta translator_mark "end of A.Answer func"
            |ret
            |meta translator_mark "B.Answer func"
@@ -165,92 +206,83 @@ object InheritanceTests extends TestSuite {
            |meta translator_mark "B.Answer local vars clearing"
            |swap
            |pop
-           |swap
-           |pop
            |meta translator_mark "end of B.Answer func"
            |ret
-           |meta translator_mark "Parent.ctor func"
-           |@func_Parent.ctor:
-           |meta translator_mark "Parent.ctor func prefix"
-           |new {}
+           |meta translator_mark "Parent vtable initialization"
+           |@vtable_Parent:
            |dup
-           |push @Parent.AnswerPlus1
+           |push @func_Parent.AnswerPlus1
            |struct_mut "AnswerPlus1"
            |dup
-           |push @Parent.Answer
+           |push @func_Parent.Answer
            |struct_mut "Answer"
-           |push int32(2)
-           |swapn
-           |meta translator_mark "Parent.ctor local vars definition"
-           |meta translator_mark "Parent.ctor func body"
-           |push int32(2)
-           |dupn
-           |pop
-           |meta translator_mark "Parent.ctor local vars clearing"
-           |pop
-           |meta translator_mark "end of Parent.ctor func"
            |ret
-           |meta translator_mark "A.ctor func"
-           |@func_A.ctor:
-           |meta translator_mark "A.ctor func prefix"
-           |new {}
+           |meta translator_mark "Parent.ctor_int32 func"
+           |@func_Parent.ctor_int32:
+           |meta translator_mark "Parent.ctor_int32 local vars definition"
+           |meta translator_mark "Parent.ctor_int32 func body"
+           |push int32(2)
+           |dupn
+           |pop
+           |meta translator_mark "Parent.ctor_int32 local vars clearing"
+           |pop
+           |meta translator_mark "end of Parent.ctor_int32 func"
+           |ret
+           |meta translator_mark "A vtable initialization"
+           |@vtable_A:
            |dup
-           |push @A.Answer
+           |push @func_A.Answer
            |struct_mut "Answer"
            |dup
-           |push @Parent.AnswerPlus1
+           |push @func_Parent.AnswerPlus1
            |struct_mut "AnswerPlus1"
+           |ret
+           |meta translator_mark "A.ctor_int32 func"
+           |@func_A.ctor_int32:
+           |meta translator_mark "A.ctor_int32 local vars definition"
+           |meta translator_mark "A.ctor_int32 func body"
            |push int32(2)
-           |swapn
-           |meta translator_mark "A.ctor local vars definition"
-           |meta translator_mark "A.ctor func body"
+           |dupn
+           |push int32(2)
+           |dupn
+           |call @func_Parent.ctor_int32
+           |pop
            |push int32(2)
            |dupn
            |push int32(2)
-           |dupn
-           |push int32(2)
-           |dupn
-           |struct_get ".ctor_int32"
-           |call
-           |push int32(3)
-           |dupn
-           |push int32(3)
            |dupn
            |struct_mut "AVal"
-           |meta translator_mark "A.ctor local vars clearing"
+           |meta translator_mark "A.ctor_int32 local vars clearing"
            |pop
-           |meta translator_mark "end of A.ctor func"
+           |meta translator_mark "end of A.ctor_int32 func"
            |ret
-           |meta translator_mark "B.ctor func"
-           |@func_B.ctor:
-           |meta translator_mark "B.ctor func prefix"
-           |new {}
+           |meta translator_mark "B vtable initialization"
+           |@vtable_B:
            |dup
-           |push @B.Answer
+           |push @func_B.Answer
            |struct_mut "Answer"
            |dup
-           |push @Parent.AnswerPlus1
+           |push @func_Parent.AnswerPlus1
            |struct_mut "AnswerPlus1"
+           |ret
+           |meta translator_mark "B.ctor_int32 func"
+           |@func_B.ctor_int32:
+           |meta translator_mark "B.ctor_int32 local vars definition"
+           |meta translator_mark "B.ctor_int32 func body"
            |push int32(2)
-           |swapn
-           |meta translator_mark "B.ctor local vars definition"
-           |meta translator_mark "B.ctor func body"
+           |dupn
+           |push int32(2)
+           |dupn
+           |call @func_Parent.ctor_int32
+           |pop
            |push int32(2)
            |dupn
            |push int32(2)
-           |dupn
-           |push int32(2)
-           |dupn
-           |struct_get ".ctor_int32"
-           |call
-           |push int32(3)
-           |dupn
-           |push int32(3)
            |dupn
            |struct_mut "BVal"
-           |meta translator_mark "B.ctor local vars clearing"
+           |meta translator_mark "B.ctor_int32 local vars clearing"
            |pop
-           |meta translator_mark "end of B.ctor func"
+           |meta translator_mark "end of B.ctor_int32 func"
            |ret
            |meta translator_mark "helper functions"
            |@stop:

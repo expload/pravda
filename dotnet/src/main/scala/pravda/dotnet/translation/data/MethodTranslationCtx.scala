@@ -42,7 +42,7 @@ final case class TranslationCtx(
     methodsToTypes.get(idx).exists(_ eq programClass)
 
   def isProgramMethod(m: TablesData.MethodDefData): Boolean = {
-    val idx = cilData.tables.methodDefTable.indexWhere(_ eq m)
+    val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
     if (idx == -1) {
       false
     } else {
@@ -62,7 +62,6 @@ final case class MethodTranslationCtx(
     void: Boolean,
     func: Boolean,
     static: Boolean,
-    ctor: Boolean,
     struct: Option[String],
     debugInfo: Option[MethodDebugInformationData]
 )

@@ -32,27 +32,33 @@ object ObjectsTests extends TestSuite {
         |push null
         |meta translator_mark "Func method body"
         |push int32(100)
-        |call @func_A.ctor
+        |new {}
+        |call @vtable_A
+        |push int32(2)
+        |swapn
+        |call @func_A.ctor_int32
         |push int32(5)
         |swapn
         |pop
         |push int32(200)
-        |call @func_B.ctor
+        |new {}
+        |call @vtable_B
+        |push int32(2)
+        |swapn
+        |call @func_B.ctor_int32
         |push int32(4)
         |swapn
         |pop
         |push int32(4)
         |dupn
-        |push int32(1)
-        |dupn
-        |struct_get "AnswerA"
-        |call
+        |call @func_A.AnswerA
+        |swap
+        |pop
         |push int32(4)
         |dupn
-        |push int32(1)
-        |dupn
-        |struct_get "AnswerB"
-        |call
+        |call @func_B.AnswerB
+        |swap
+        |pop
         |add
         |push int32(3)
         |swapn
@@ -89,7 +95,7 @@ object ObjectsTests extends TestSuite {
         |meta translator_mark "A.AnswerA local vars definition"
         |push null
         |meta translator_mark "A.AnswerA func body"
-        |push int32(3)
+        |push int32(2)
         |dupn
         |struct_get "AVal"
         |push int32(42)
@@ -100,8 +106,6 @@ object ObjectsTests extends TestSuite {
         |push int32(1)
         |dupn
         |meta translator_mark "A.AnswerA local vars clearing"
-        |swap
-        |pop
         |swap
         |pop
         |meta translator_mark "end of A.AnswerA func"
@@ -124,21 +128,15 @@ object ObjectsTests extends TestSuite {
         |meta translator_mark "B.AnswerB local vars clearing"
         |swap
         |pop
-        |swap
-        |pop
         |meta translator_mark "end of B.AnswerB func"
         |ret
-        |meta translator_mark "A.ctor func"
-        |@func_A.ctor:
-        |meta translator_mark "A.ctor func prefix"
-        |new {}
-        |dup
-        |push @A.AnswerA
-        |struct_mut "AnswerA"
-        |push int32(2)
-        |swapn
-        |meta translator_mark "A.ctor local vars definition"
-        |meta translator_mark "A.ctor func body"
+        |meta translator_mark "A vtable initialization"
+        |@vtable_A:
+        |ret
+        |meta translator_mark "A.ctor_int32 func"
+        |@func_A.ctor_int32:
+        |meta translator_mark "A.ctor_int32 local vars definition"
+        |meta translator_mark "A.ctor_int32 func body"
         |push int32(2)
         |dupn
         |pop
@@ -147,21 +145,17 @@ object ObjectsTests extends TestSuite {
         |push int32(2)
         |dupn
         |struct_mut "AVal"
-        |meta translator_mark "A.ctor local vars clearing"
+        |meta translator_mark "A.ctor_int32 local vars clearing"
         |pop
-        |meta translator_mark "end of A.ctor func"
+        |meta translator_mark "end of A.ctor_int32 func"
         |ret
-        |meta translator_mark "B.ctor func"
-        |@func_B.ctor:
-        |meta translator_mark "B.ctor func prefix"
-        |new {}
-        |dup
-        |push @B.AnswerB
-        |struct_mut "AnswerB"
-        |push int32(2)
-        |swapn
-        |meta translator_mark "B.ctor local vars definition"
-        |meta translator_mark "B.ctor func body"
+        |meta translator_mark "B vtable initialization"
+        |@vtable_B:
+        |ret
+        |meta translator_mark "B.ctor_int32 func"
+        |@func_B.ctor_int32:
+        |meta translator_mark "B.ctor_int32 local vars definition"
+        |meta translator_mark "B.ctor_int32 func body"
         |push int32(2)
         |dupn
         |pop
@@ -170,9 +164,9 @@ object ObjectsTests extends TestSuite {
         |push int32(2)
         |dupn
         |struct_mut "BVal"
-        |meta translator_mark "B.ctor local vars clearing"
+        |meta translator_mark "B.ctor_int32 local vars clearing"
         |pop
-        |meta translator_mark "end of B.ctor func"
+        |meta translator_mark "end of B.ctor_int32 func"
         |ret
         |meta translator_mark "helper functions"
         |@stop:

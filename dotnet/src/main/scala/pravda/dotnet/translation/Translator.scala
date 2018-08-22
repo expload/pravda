@@ -24,7 +24,7 @@ import pravda.dotnet.data.{Method, TablesData}
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.{CIL, Signatures}
-import pravda.dotnet.parsers.Signatures.{MethodRefDefSig, _}
+import pravda.dotnet.parsers.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
 import pravda.vm.{Data, Meta, Opcodes, asm}
@@ -55,19 +55,16 @@ object Translator {
     distinctNames.flatMap(name => funcs.find(_.name == name))
   }
 
-  private def structCtorPrefix(typeDefData: TypeDefData, tctx: TranslationCtx, argsCount: Int): List[asm.Operation] = {
+  private def vtableInit(typeDefData: TypeDefData, tctx: TranslationCtx): List[asm.Operation] = {
 
     def collectMethodNames(typeDefData: TypeDefData, usedMethods: Vector[String]): Vector[(String, String)] = {
       val methodNames = typeDefData.methods.flatMap {
-        case MethodDefData(_, _, _, name, sigIdx, _) =>
-          for {
-            _ <- if (name == ".ctor") None else Some(())
-            sig <- tctx.signatures.get(sigIdx)
-            refDef <- sig match {
-              case s: MethodRefDefSig => Some(s)
-              case _                  => None
-            }
-          } yield CallsTransation.fullMethodName(name, refDef)
+        case MethodDefData(_, _, flags, name, sigIdx, _) =>
+          if (CallsTransation.isMethodVirtual(flags)) {
+            Some(CallsTransation.fullMethodName(name, tctx.signatures.get(sigIdx)))
+          } else {
+            None
+          }
       }
 
       val notUsedMethods = methodNames.filter(name => !usedMethods.contains(name))
@@ -80,28 +77,17 @@ object Translator {
       }
     }
 
-    List(asm.Operation.New(Data.Struct.empty)) ++
-      collectMethodNames(typeDefData, Vector.empty).flatMap {
-        case (name, tpe) =>
-          List(
-            asm.Operation(Opcodes.DUP),
-            asm.Operation.PushRef(s"$tpe.$name"),
-            asm.Operation.StructMut(Some(Data.Primitive.Utf8(name)))
-          )
-      } ++
-      argsCount
-        .to(1, -1)
-        .flatMap(
-          i =>
-            List(
-              asm.Operation.Push(Data.Primitive.Int32(i + 1)),
-              asm.Operation(Opcodes.SWAPN)
-          )
-        ) // move object to 0-th arg
+    collectMethodNames(typeDefData, Vector.empty).flatMap {
+      case (name, tpe) =>
+        List(
+          asm.Operation(Opcodes.DUP),
+          asm.Operation.PushRef(s"func_$tpe.$name"),
+          asm.Operation.StructMut(Some(Data.Primitive.Utf8(name)))
+        )
+    }.toList
   }
 
   private def translateMethod(cil: List[CIL.Op],
-                              asmPrefix: List[asm.Operation],
                               name: String,
                               kind: String,
                               id: Int,
@@ -110,13 +96,12 @@ object Translator {
                               void: Boolean,
                               func: Boolean,
                               static: Boolean,
-                              ctor: Boolean,
                               struct: Option[String],
                               debugInfo: Option[MethodDebugInformationData],
                               tctx: TranslationCtx): Either[TranslationError, MethodTranslation] = {
 
     val ctx =
-      MethodTranslationCtx(tctx, argsCount, localsCount, name, kind, void, func, static, ctor, struct, debugInfo)
+      MethodTranslationCtx(tctx, argsCount, localsCount, name, kind, void, func, static, struct, debugInfo)
 
     val opTranslationsE = {
       def doTranslation(cil: List[CIL.Op],
@@ -165,7 +150,7 @@ object Translator {
     }
 
     val clear = {
-      val cnt = localsCount + argsCount + (if (func) 0 else 1) + (if (struct.isDefined && !static && !ctor) 1 else 0)
+      val cnt = localsCount + argsCount + (if (func) 0 else 1)
       if (void) {
         List.fill(cnt)(asm.Operation(Opcodes.POP))
       } else {
@@ -213,23 +198,19 @@ object Translator {
         List(
           OpCodeTranslation(Left(s"$name $kind"),
                             List.empty,
-                            metaMethodMark.toList :+ asm.Operation.Label(s"${kind}_$name"))) ++
-          (if (asmPrefix.nonEmpty) List(OpCodeTranslation(Left(s"$name $kind prefix"), List.empty, asmPrefix))
-           else List.empty) ++
-          List(
-            OpCodeTranslation(Left(s"$name local vars definition"),
-                              List.empty,
-                              List.fill(localsCount)(asm.Operation.Push(Data.Primitive.Null))),
-            OpCodeTranslation(Left(s"$name $kind body"), List.empty, List.empty)
-          )
+                            metaMethodMark.toList :+ asm.Operation.Label(s"${kind}_$name")),
+          OpCodeTranslation(Left(s"$name local vars definition"),
+                            List.empty,
+                            List.fill(localsCount)(asm.Operation.Push(Data.Primitive.Null))),
+          OpCodeTranslation(Left(s"$name $kind body"), List.empty, List.empty)
+        )
           ++ opTranslations ++
+          List(OpCodeTranslation(Left(s"$name local vars clearing"), List.empty, clear)) ++
           List(
-            OpCodeTranslation(Left(s"$name local vars clearing"), List.empty, clear),
             OpCodeTranslation(Left(s"end of $name $kind"),
                               List.empty,
                               if (func) List(asm.Operation(Opcodes.RET))
-                              else List(asm.Operation.Jump(Some("stop"))))
-          ),
+                              else List(asm.Operation.Jump(Some("stop"))))),
         functions
       )
   }
@@ -299,11 +280,22 @@ object Translator {
     def filterMethods(pred: Int => Boolean): Either[TranslationError, List[Int]] =
       filterValidateMethods(pred, _ => true, ???)
 
-    val programMethodsFuncsE = filterValidateMethods(
-      i => tctx.isProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i),
-      i => !isStatic(i) && (isPrivate(i) || isPublic(i)),
-      InternalError("Only public or private non-static methods are allowed.")
-    )
+    val programMethodsFuncsE = for {
+      methodsFuncs <- filterValidateMethods(
+        i => tctx.isProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i),
+        i => !isStatic(i) && (isPrivate(i) || isPublic(i)),
+        InternalError("Only public or private non-static methods are allowed.")
+      )
+      _ <- {
+        val names = methodsFuncs.map(i => tctx.methodRow(i).name)
+        if (names.toSet.size != names.size) {
+          Left(
+            TranslationError(InternalError("It's forbidden to have overloaded program's functions or methods."), None))
+        } else {
+          Right(())
+        }
+      }
+    } yield methodsFuncs
 
     val programMethodsE = programMethodsFuncsE.map(_.filter(isPublic))
     val programFuncsE = programMethodsFuncsE.map(_.filter(isPrivate))
@@ -356,7 +348,6 @@ object Translator {
           val method = methods(i)
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, "ctor"),
-            List.empty,
             "ctor",
             "method",
             i,
@@ -365,7 +356,6 @@ object Translator {
             void = true,
             func = true,
             static = false,
-            ctor = false,
             struct = None,
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
@@ -383,7 +373,6 @@ object Translator {
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, methodRow.name),
-            List.empty,
             methodRow.name,
             "method",
             i,
@@ -392,7 +381,6 @@ object Translator {
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
             func = false,
             static = false,
-            ctor = false,
             struct = None,
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
@@ -410,7 +398,6 @@ object Translator {
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, methodRow.name),
-            List.empty,
             methodRow.name,
             "func",
             i,
@@ -419,7 +406,6 @@ object Translator {
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
             func = true,
             static = false,
-            ctor = false,
             struct = None,
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
@@ -440,7 +426,6 @@ object Translator {
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, name),
-            List.empty,
             name,
             "func",
             i,
@@ -449,7 +434,6 @@ object Translator {
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
             func = true,
             static = false,
-            ctor = false,
             struct = Some(structName),
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
@@ -464,13 +448,13 @@ object Translator {
         .map(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
+          val methodName = CallsTransation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
           val tpe = tctx.methodsToTypes(i)
           val structName = CallsTransation.fullTypeDefName(tpe)
-          val name = s"$structName.${methodRow.name}"
+          val name = s"$structName.$methodName"
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, name),
-            List.empty,
             name,
             "func",
             i,
@@ -479,7 +463,6 @@ object Translator {
             void = MethodExtractors.isVoid(methodRow, tctx.signatures),
             func = true,
             static = true,
-            ctor = false,
             struct = Some(structName),
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
@@ -491,28 +474,39 @@ object Translator {
     lazy val structCtorsOpsE: Either[TranslationError, List[MethodTranslation]] = for {
       structCtors <- structCtorsE
       opss <- structCtors
-        .map(i => {
+        .flatMap(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
+          val methodName = CallsTransation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
           val tpe = tctx.methodsToTypes(i)
           val structName = CallsTransation.fullTypeDefName(tpe)
-          val name = s"$structName.ctor"
+          val name = s"$structName.$methodName"
 
-          translateMethod(
-            BranchTransformer.transformBranches(method.opcodes, name),
-            structCtorPrefix(tpe, tctx, methodRow.params.length),
-            name,
-            "func",
-            i,
-            methodRow.params.length,
-            MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
-            void = true,
-            func = true,
-            static = false,
-            ctor = true,
-            struct = Some(structName),
-            tctx.pdbTables.map(_.methodDebugInformationTable(i)),
-            tctx
+          List(
+            Right(
+              MethodTranslation(
+                List(
+                  OpCodeTranslation(Left(s"$structName vtable initialization"),
+                                    List.empty,
+                                    Operation.Label(s"vtable_$structName") +:
+                                      vtableInit(tpe, tctx) :+
+                                      Operation(Opcodes.RET))),
+                List.empty
+              )),
+            translateMethod(
+              BranchTransformer.transformBranches(method.opcodes, name),
+              name,
+              "func",
+              i,
+              methodRow.params.length,
+              MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
+              void = true,
+              func = true,
+              static = false,
+              struct = Some(structName),
+              tctx.pdbTables.map(_.methodDebugInformationTable(i)),
+              tctx
+            )
           )
         })
         .sequence

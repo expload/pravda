@@ -15,21 +15,6 @@ object ZooProgramTests extends TestSuite {
         PravdaAssembler
           .parse("""
               |meta translator_mark "jump to methods"
-              |meta method {
-              |"name":"NewZoo","returnTpe":int8(3)
-              |}
-              |meta method {
-              |"name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
-              |}
-              |meta method {
-              |"name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
-              |}
-              |meta method {
-              |"name":"TransferPet",int32(1):int8(3),int32(2):int8(11),int32(0):int8(14),"returnTpe":int8(0)
-              |}
-              |meta method {
-              |"name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
-              |}
               |dup
               |push "NewZoo"
               |eq
@@ -53,12 +38,15 @@ object ZooProgramTests extends TestSuite {
               |push "Wrong method name"
               |throw
               |meta translator_mark "NewZoo method"
+              |meta method {
+              |"name":"NewZoo","returnTpe":int8(3)
+              |}
               |@method_NewZoo:
               |meta translator_mark "NewZoo local vars definition"
               |push null
               |meta translator_mark "NewZoo method body"
               |push x5A6F6F546F4F776E6572
-              |push "ZooCnt"
+              |push "p_ZooCnt"
               |sget
               |from
               |push int32(2)
@@ -68,18 +56,16 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
-              |push "ZooCnt"
+              |push "p_ZooCnt"
               |sget
               |push int32(1)
               |add
-              |push "ZooCnt"
-              |swap
+              |push "p_ZooCnt"
               |sput
-              |push "ZooCnt"
+              |push "p_ZooCnt"
               |sget
               |push int32(1)
               |push int32(-1)
@@ -98,6 +84,9 @@ object ZooProgramTests extends TestSuite {
               |meta translator_mark "end of NewZoo method"
               |jump @stop
               |meta translator_mark "TransferZoo method"
+              |meta method {
+              |"name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+              |}
               |@method_TransferZoo:
               |meta translator_mark "TransferZoo local vars definition"
               |push null
@@ -136,7 +125,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -149,6 +137,9 @@ object ZooProgramTests extends TestSuite {
               |meta translator_mark "end of TransferZoo method"
               |jump @stop
               |meta translator_mark "NewPet method"
+              |meta method {
+              |"name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
+              |}
               |@method_NewPet:
               |meta translator_mark "NewPet local vars definition"
               |push null
@@ -178,7 +169,7 @@ object ZooProgramTests extends TestSuite {
               |eq
               |jumpi @NewPet_br108
               |push "pet"
-              |push "PetId"
+              |push "p_PetId"
               |sget
               |push int8(11)
               |cast
@@ -198,7 +189,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -215,16 +205,14 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
-              |push "PetId"
+              |push "p_PetId"
               |sget
               |push int32(1)
               |add
-              |push "PetId"
-              |swap
+              |push "p_PetId"
               |sput
               |push int32(2)
               |dupn
@@ -254,6 +242,9 @@ object ZooProgramTests extends TestSuite {
               |meta translator_mark "end of NewPet method"
               |jump @stop
               |meta translator_mark "TransferPet method"
+              |meta method {
+              |"name":"TransferPet",int32(1):int8(3),int32(2):int8(11),int32(0):int8(14),"returnTpe":int8(0)
+              |}
               |@method_TransferPet:
               |meta translator_mark "TransferPet local vars definition"
               |push null
@@ -314,7 +305,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -330,7 +320,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -344,6 +333,9 @@ object ZooProgramTests extends TestSuite {
               |meta translator_mark "end of TransferPet method"
               |jump @stop
               |meta translator_mark "BreedPets method"
+              |meta method {
+              |"name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
+              |}
               |@method_BreedPets:
               |meta translator_mark "BreedPets local vars definition"
               |push null
@@ -434,7 +426,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -466,7 +457,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -504,12 +494,10 @@ object ZooProgramTests extends TestSuite {
               |meta translator_mark "ctor local vars definition"
               |meta translator_mark "ctor method body"
               |push int32(1)
-              |push "ZooCnt"
-              |swap
+              |push "p_ZooCnt"
               |sput
               |push int32(1)
-              |push "PetId"
-              |swap
+              |push "p_PetId"
               |sput
               |meta translator_mark "ctor local vars clearing"
               |meta translator_mark "end of ctor method"

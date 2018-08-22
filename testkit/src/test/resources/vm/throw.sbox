@@ -3,7 +3,7 @@ preconditions:
   stack:
     "Throw"
 expectations:
-  watts-spent: 129
+  watts-spent: 128
   stack:
     "Throw"
   heap:

@@ -18,10 +18,10 @@ object DotnetSandbox extends TestSuite {
     val exe = File.createTempFile("dotnet-", ".exe")
     val pdb = File.createTempFile("dotnet-", ".pdb")
     s"""csc ${src.getAbsolutePath}
-         |/out:${exe.getAbsolutePath}
-         |/reference:${exploadDll.getAbsolutePath}
-         |/debug:portable
-         |/pdb:${pdb.getAbsolutePath}
+         |-out:${exe.getAbsolutePath}
+         |-reference:${exploadDll.getAbsolutePath}
+         |-debug:portable
+         |-pdb:${pdb.getAbsolutePath}
       """.stripMargin.!!
 
     val Right((_, cilData, methods, signatures)) = FileParser.parsePe(Files.readAllBytes(exe.toPath))
