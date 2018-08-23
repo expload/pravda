@@ -78,7 +78,7 @@ object BytesTranslation extends OneToManyTranslator {
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _))       => Right(-1)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Slice", _))          => Right(-2)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Concat", _))         => Right(-1)
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Length", _))           => Right(0)
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Length", _))         => Right(0)
     case _                                                                                    => Left(UnknownOpcode)
   }
 

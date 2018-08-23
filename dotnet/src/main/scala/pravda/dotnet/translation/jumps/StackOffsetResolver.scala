@@ -34,7 +34,6 @@ object StackOffsetResolver {
     val unstableStackError =
       Left(InternalError("Unsupported sequence of instructions: stack is unstable"))
 
-
     op match {
       case Label(label) =>
         (labelOffsets.get(label), stackOffsetO) match {

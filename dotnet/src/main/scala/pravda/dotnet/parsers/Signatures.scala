@@ -38,34 +38,34 @@ object Signatures {
     def mkString: String = {
       def typeDefOrRefName(typeDefOrRef: TableRowData) = typeDefOrRef match {
         case TypeDefData(_, _, name, namespace, _, _, _) => s"$namespace.$name"
-        case TypeRefData(_, name, namespace) => s"$namespace.$name"
-        case _ => ???
+        case TypeRefData(_, name, namespace)             => s"$namespace.$name"
+        case _                                           => ???
       }
 
       this match {
-        case TypedByRef => ???
-        case SigType.Void => "void"
-        case SigType.Boolean => "bool"
-        case SigType.Char => "char"
-        case I1 => "int8"
-        case U1 => "uint8"
-        case I2 => "int16"
-        case U2 => "uint16"
-        case I4 => "int32"
-        case U4 => "uint32"
-        case I8 => "int64"
-        case U8 => "uint64"
-        case R4 => "float"
-        case R8 => "double"
-        case SigType.String => "string"
-        case I => "int"
-        case U => "uint"
-        case SigType.Object => "object"
-        case Cls(typeDefOrRef) => typeDefOrRefName(typeDefOrRef)
-        case ValueTpe(typeDefOrRef) => typeDefOrRefName(typeDefOrRef)
+        case TypedByRef              => ???
+        case SigType.Void            => "void"
+        case SigType.Boolean         => "bool"
+        case SigType.Char            => "char"
+        case I1                      => "int8"
+        case U1                      => "uint8"
+        case I2                      => "int16"
+        case U2                      => "uint16"
+        case I4                      => "int32"
+        case U4                      => "uint32"
+        case I8                      => "int64"
+        case U8                      => "uint64"
+        case R4                      => "float"
+        case R8                      => "double"
+        case SigType.String          => "string"
+        case I                       => "int"
+        case U                       => "uint"
+        case SigType.Object          => "object"
+        case Cls(typeDefOrRef)       => typeDefOrRefName(typeDefOrRef)
+        case ValueTpe(typeDefOrRef)  => typeDefOrRefName(typeDefOrRef)
         case Generic(tpe, tpeParams) => s"${tpe.mkString}<${tpeParams.map(_.mkString).mkString(", ")}>"
-        case Var(num) => s"var$num"
-        case Arr(tpe, shape) => s"${tpe.mkString}[${shape.mkString}]"
+        case Var(num)                => s"var$num"
+        case Arr(tpe, shape)         => s"${tpe.mkString}[${shape.mkString}]"
       }
     }
   }

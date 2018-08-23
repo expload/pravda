@@ -29,6 +29,7 @@ final case class TranslationCtx(
     methodsToTypes: Map[Int, TypeDefData],
     pdbTables: Option[TablesData]
 ) {
+
   def tpeByMethodDef(m: TablesData.MethodDefData): Option[TypeDefData] = {
     val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
     if (idx == -1) {

@@ -212,7 +212,7 @@ case object CallsTransation extends OneToManyTranslator {
                 Operation(Opcodes.DUPN),
                 Operation.StructGet(Some(Data.Primitive.Utf8(fullMethodName(m.name, Some(sig))))),
                 Operation.Call(None),
-             ) ++ clearObject(m)
+              ) ++ clearObject(m)
             )
           }
 
