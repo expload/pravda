@@ -1,14 +1,17 @@
 package pravda.dotnet
 package translation
 
+import pravda.common.bytes
 import pravda.vm.asm.PravdaAssembler
 import utest._
 
 object InheritanceTests extends TestSuite {
 
   val tests = Tests {
-    'objectsTranslation - {
+    'inheritanceTranslation - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("inheritance.exe")
+
+      println(bytes.byteString2hex(PravdaAssembler.assemble(Translator.translateAsm(methods, cilData, signatures).right.get, false)))
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
