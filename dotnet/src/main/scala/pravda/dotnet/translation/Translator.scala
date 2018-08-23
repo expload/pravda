@@ -420,9 +420,10 @@ object Translator {
         .map(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
+          val methodName = CallsTransation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
           val tpe = tctx.methodsToTypes(i)
           val structName = CallsTransation.fullTypeDefName(tpe)
-          val name = s"$structName.${methodRow.name}"
+          val name = s"$structName.$methodName"
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, name),

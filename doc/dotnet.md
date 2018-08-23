@@ -50,10 +50,10 @@ For the moment it supports the following:
 - Explicit conversion of primitive types via 
 `System.Convert.ToByte`, `System.Convert.ToChar`,`System.Convert.ToInt16`,`System.Convert.ToInt32`,`System.Convert.ToDouble`,`System.Convert.ToBoolean`,`System.Convert.ToString`
 - Cryptographic functions: Ripemd160 hashing, validation of Ed25519 Signature. See more in [Standard library](ref/vm/stdlib.md) docs.
+- User defined classes (although you can't store them in the storage yet).
 
 Things that are *not* supported:
-- User defined classes as values, classes is used only as _programs_ for the moment;
-- Standard C# library;
+- Standard C# library (except of some specific functions from the list above);
 - Standard C# collections.
 
 ## Examples
@@ -62,6 +62,7 @@ You can look at several examples of test _programs_ to learn current abilities o
 - [String examples](../dotnet/src/test/resources/strings.cs) that show how to operate with `String`s.
 - [Array examples](../dotnet/src/test/resources/arrays.cs) that show how to operate with arrays.
 - [Simple _program_](../dotnet/src/test/resources/smart_program.cs) with `balanceOf` and `transfer` methods similar to corresponding methods from [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard)
+- [Buffer](..testkit/src/test/resources/buffer.cs) -- Dynamic resizable array implemented in C#.
 - [Zoo _program_](../dotnet/src/test/resources/zoo_program.cs) that allows you to create zoos, pets and breed them.
 - [Poker _program_](..testkit/src/test/resources/poker.cs) that implements simple poker game on the blockchain. _(poker.cs was provided by [Ducatur team](https://github.com/DucaturFw/ExploadHackathonContract))_ 
 

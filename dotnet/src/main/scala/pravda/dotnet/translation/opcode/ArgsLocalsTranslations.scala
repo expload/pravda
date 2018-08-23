@@ -40,14 +40,16 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
       case StLoc1      => -1
       case StLoc2      => -1
       case StLoc3      => -1
-      case StLoc(num)  => -1
-      case StLocS(num) => -1
+      case StLoc(_)    => -1
+      case StLocS(_)   => -1
       case LdLoc0      => 1
       case LdLoc1      => 1
       case LdLoc2      => 1
       case LdLoc3      => 1
-      case LdLoc(num)  => 1
-      case LdLocS(num) => 1
+      case LdLoc(_)    => 1
+      case LdLocS(_)   => 1
+      case LdLocA(_)   => 1
+      case LdLocAS(_)  => 1
     }
 
     offsetF.lift(op).toRight(UnknownOpcode)
@@ -125,6 +127,9 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
       case LdLoc3      => loadLocal(3)
       case LdLoc(num)  => loadLocal(num)
       case LdLocS(num) => loadLocal(num.toInt)
+
+      case LdLocA(num)  => loadLocal(num)
+      case LdLocAS(num) => loadLocal(num.toInt)
     }
 
     translateF.lift(op).toRight(UnknownOpcode).joinRight
