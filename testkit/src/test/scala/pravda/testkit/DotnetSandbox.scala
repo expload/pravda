@@ -15,9 +15,14 @@ object DotnetSandbox extends TestSuite {
   def dotnetToAsm(filename: String): List[asm.Operation] = {
     val exploadDll = new File(getClass.getResource("/expload.dll").getPath)
     val src = new File(getClass.getResource(s"/$filename").getPath)
+    new File("/tmp/pravda/").mkdirs()
+    val tmpSrc = new File(s"/tmp/pravda/$filename")
+    if (!tmpSrc.exists()) {
+      Files.copy(src.toPath, tmpSrc.toPath)
+    }
     val exe = File.createTempFile("dotnet-", ".exe")
     val pdb = File.createTempFile("dotnet-", ".pdb")
-    s"""csc ${src.getAbsolutePath}
+    s"""csc ${tmpSrc.getAbsolutePath}
          |-out:${exe.getAbsolutePath}
          |-reference:${exploadDll.getAbsolutePath}
          |-debug:portable

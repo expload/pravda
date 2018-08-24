@@ -205,9 +205,6 @@ object VmSandbox {
       case Right(o) => o
     }
     val program = PravdaAssembler.assemble(ops, saveLabels = true)
-    if (c.expectations.watts == 604L) { // mega hack
-      println(program.toByteArray.map(b => f"$b%02X").mkString)
-    }
     val heap = {
       if (c.preconditions.memory.heap.nonEmpty) {
         val length = c.preconditions.memory.heap.map(_._1.data).max + 1
