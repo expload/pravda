@@ -21,6 +21,13 @@ object IfTests extends TestSuite {
         |jumpi @method_ifs
         |push "Wrong method name"
         |throw
+        |meta translator_mark "ctor method"
+        |@method_ctor:
+        |meta translator_mark "ctor local vars definition"
+        |meta translator_mark "ctor method body"
+        |meta translator_mark "ctor local vars clearing"
+        |meta translator_mark "end of ctor method"
+        |ret
         |meta translator_mark "ifs method"
         |meta method {
         |"name":"ifs","returnTpe":int8(0)
@@ -310,13 +317,6 @@ object IfTests extends TestSuite {
         |pop
         |meta translator_mark "end of ifs method"
         |jump @stop
-        |meta translator_mark "ctor method"
-        |@method_ctor:
-        |meta translator_mark "ctor local vars definition"
-        |meta translator_mark "ctor method body"
-        |meta translator_mark "ctor local vars clearing"
-        |meta translator_mark "end of ctor method"
-        |ret
         |meta translator_mark "helper functions"
         |@stop:
       """.stripMargin

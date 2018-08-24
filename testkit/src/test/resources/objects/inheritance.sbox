@@ -8,8 +8,8 @@ expectations:
   stack:
     int32(387)
   heap:
-     #0x0 = { "AVal": int32(100), "Answer": #0xAF3, "AnswerPlus1": #0x682 },
-     #0x1 = { "BVal": int32(200), "Answer": #0xD0A, "AnswerPlus1": #0x682 }
+     #0x0 = { "AVal": int32(100), "Answer": #0x66E, "AnswerPlus1": #0x1263 },
+     #0x1 = { "BVal": int32(200), "Answer": #0xB4A, "AnswerPlus1": #0x1263 }
   effects:
 
 ---------------------------------------

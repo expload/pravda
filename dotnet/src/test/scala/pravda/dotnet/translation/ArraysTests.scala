@@ -15,15 +15,113 @@ object ArraysTests extends TestSuite {
         PravdaAssembler.parse("""
         |meta translator_mark "jump to methods"
         |dup
-        |push "WorkWithBytes"
-        |eq
-        |jumpi @method_WorkWithBytes
-        |dup
         |push "WorkWithArrays"
         |eq
         |jumpi @method_WorkWithArrays
+        |dup
+        |push "WorkWithBytes"
+        |eq
+        |jumpi @method_WorkWithBytes
         |push "Wrong method name"
         |throw
+        |meta translator_mark "WorkWithArrays method"
+        |meta method {
+        |"name":"WorkWithArrays","returnTpe":int8(0)
+        |}
+        |@method_WorkWithArrays:
+        |meta translator_mark "WorkWithArrays local vars definition"
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |meta translator_mark "WorkWithArrays method body"
+        |new int16[97, 98, 99]
+        |push int32(7)
+        |swapn
+        |pop
+        |new int32[1, 2, 3]
+        |push int32(6)
+        |swapn
+        |pop
+        |new number[1.0, 2.0, 3.0]
+        |push int32(5)
+        |swapn
+        |pop
+        |push int32(3)
+        |push int8(11)
+        |new_array
+        |dup
+        |push int32(0)
+        |push "abc"
+        |swap
+        |array_mut
+        |dup
+        |push int32(1)
+        |push "def"
+        |swap
+        |array_mut
+        |dup
+        |push int32(2)
+        |push "rty"
+        |swap
+        |array_mut
+        |push int32(4)
+        |swapn
+        |pop
+        |new int32[4, 5, 6]
+        |push int32(3)
+        |swapn
+        |pop
+        |push int32(6)
+        |dupn
+        |push int32(1)
+        |push int32(100)
+        |swap
+        |array_mut
+        |push int32(5)
+        |dupn
+        |push int32(1)
+        |push int32(4)
+        |swap
+        |array_mut
+        |push int32(4)
+        |dupn
+        |push int32(1)
+        |push number(4.0)
+        |swap
+        |array_mut
+        |push int32(3)
+        |dupn
+        |push int32(1)
+        |push "asdf"
+        |swap
+        |array_mut
+        |push int32(2)
+        |dupn
+        |push int32(1)
+        |push int32(7)
+        |swap
+        |array_mut
+        |push int32(3)
+        |dupn
+        |length
+        |push int8(3)
+        |cast
+        |push int32(2)
+        |swapn
+        |pop
+        |meta translator_mark "WorkWithArrays local vars clearing"
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |meta translator_mark "end of WorkWithArrays method"
+        |jump @stop
         |meta translator_mark "WorkWithBytes method"
         |meta method {
         |"name":"WorkWithBytes","returnTpe":int8(0)
@@ -180,104 +278,6 @@ object ArraysTests extends TestSuite {
         |pop
         |pop
         |meta translator_mark "end of WorkWithBytes method"
-        |jump @stop
-        |meta translator_mark "WorkWithArrays method"
-        |meta method {
-        |"name":"WorkWithArrays","returnTpe":int8(0)
-        |}
-        |@method_WorkWithArrays:
-        |meta translator_mark "WorkWithArrays local vars definition"
-        |push null
-        |push null
-        |push null
-        |push null
-        |push null
-        |push null
-        |meta translator_mark "WorkWithArrays method body"
-        |new int16[97, 98, 99]
-        |push int32(7)
-        |swapn
-        |pop
-        |new int32[1, 2, 3]
-        |push int32(6)
-        |swapn
-        |pop
-        |new number[1.0, 2.0, 3.0]
-        |push int32(5)
-        |swapn
-        |pop
-        |push int32(3)
-        |push int8(11)
-        |new_array
-        |dup
-        |push int32(0)
-        |push "abc"
-        |swap
-        |array_mut
-        |dup
-        |push int32(1)
-        |push "def"
-        |swap
-        |array_mut
-        |dup
-        |push int32(2)
-        |push "rty"
-        |swap
-        |array_mut
-        |push int32(4)
-        |swapn
-        |pop
-        |new int32[4, 5, 6]
-        |push int32(3)
-        |swapn
-        |pop
-        |push int32(6)
-        |dupn
-        |push int32(1)
-        |push int32(100)
-        |swap
-        |array_mut
-        |push int32(5)
-        |dupn
-        |push int32(1)
-        |push int32(4)
-        |swap
-        |array_mut
-        |push int32(4)
-        |dupn
-        |push int32(1)
-        |push number(4.0)
-        |swap
-        |array_mut
-        |push int32(3)
-        |dupn
-        |push int32(1)
-        |push "asdf"
-        |swap
-        |array_mut
-        |push int32(2)
-        |dupn
-        |push int32(1)
-        |push int32(7)
-        |swap
-        |array_mut
-        |push int32(3)
-        |dupn
-        |length
-        |push int8(3)
-        |cast
-        |push int32(2)
-        |swapn
-        |pop
-        |meta translator_mark "WorkWithArrays local vars clearing"
-        |pop
-        |pop
-        |pop
-        |pop
-        |pop
-        |pop
-        |pop
-        |meta translator_mark "end of WorkWithArrays method"
         |jump @stop
         |meta translator_mark "ctor method"
         |@method_ctor:

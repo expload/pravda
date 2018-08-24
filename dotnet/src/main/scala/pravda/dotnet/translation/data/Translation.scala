@@ -25,7 +25,8 @@ final case class OpCodeTranslation(source: Either[String, List[CIL.Op]], // some
                                    sourceMarks: List[Meta.SourceMark],
                                    asmOps: List[asm.Operation])
 
-final case class MethodTranslation(opcodes: List[OpCodeTranslation],
+final case class MethodTranslation(name: String,
+                                   opcodes: List[OpCodeTranslation],
                                    additionalFunctions: List[OpcodeTranslator.HelperFunction])
 
 final case class Translation(jumpToMethods: List[asm.Operation],

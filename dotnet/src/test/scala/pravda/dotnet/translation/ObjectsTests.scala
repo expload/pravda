@@ -110,6 +110,22 @@ object ObjectsTests extends TestSuite {
         |pop
         |meta translator_mark "end of A.AnswerA func"
         |ret
+        |meta translator_mark "A.ctor_int32 func"
+        |@func_A.ctor_int32:
+        |meta translator_mark "A.ctor_int32 local vars definition"
+        |meta translator_mark "A.ctor_int32 func body"
+        |push int32(2)
+        |dupn
+        |pop
+        |push int32(2)
+        |dupn
+        |push int32(2)
+        |dupn
+        |struct_mut "AVal"
+        |meta translator_mark "A.ctor_int32 local vars clearing"
+        |pop
+        |meta translator_mark "end of A.ctor_int32 func"
+        |ret
         |meta translator_mark "B.AnswerB func"
         |@func_B.AnswerB:
         |meta translator_mark "B.AnswerB local vars definition"
@@ -130,28 +146,6 @@ object ObjectsTests extends TestSuite {
         |pop
         |meta translator_mark "end of B.AnswerB func"
         |ret
-        |meta translator_mark "A vtable initialization"
-        |@vtable_A:
-        |ret
-        |meta translator_mark "A.ctor_int32 func"
-        |@func_A.ctor_int32:
-        |meta translator_mark "A.ctor_int32 local vars definition"
-        |meta translator_mark "A.ctor_int32 func body"
-        |push int32(2)
-        |dupn
-        |pop
-        |push int32(2)
-        |dupn
-        |push int32(2)
-        |dupn
-        |struct_mut "AVal"
-        |meta translator_mark "A.ctor_int32 local vars clearing"
-        |pop
-        |meta translator_mark "end of A.ctor_int32 func"
-        |ret
-        |meta translator_mark "B vtable initialization"
-        |@vtable_B:
-        |ret
         |meta translator_mark "B.ctor_int32 func"
         |@func_B.ctor_int32:
         |meta translator_mark "B.ctor_int32 local vars definition"
@@ -167,6 +161,12 @@ object ObjectsTests extends TestSuite {
         |meta translator_mark "B.ctor_int32 local vars clearing"
         |pop
         |meta translator_mark "end of B.ctor_int32 func"
+        |ret
+        |meta translator_mark "A vtable initialization"
+        |@vtable_A:
+        |ret
+        |meta translator_mark "B vtable initialization"
+        |@vtable_B:
         |ret
         |meta translator_mark "helper functions"
         |@stop:

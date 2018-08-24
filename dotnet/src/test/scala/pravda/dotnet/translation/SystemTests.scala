@@ -21,6 +21,13 @@ object SystemTests extends TestSuite {
             |jumpi @method_system
             |push "Wrong method name"
             |throw
+            |meta translator_mark "ctor method"
+            |@method_ctor:
+            |meta translator_mark "ctor local vars definition"
+            |meta translator_mark "ctor method body"
+            |meta translator_mark "ctor local vars clearing"
+            |meta translator_mark "end of ctor method"
+            |ret
             |meta translator_mark "system method"
             |meta method {
             |"name":"system","returnTpe":int8(0)
@@ -58,13 +65,6 @@ object SystemTests extends TestSuite {
             |pop
             |meta translator_mark "end of system method"
             |jump @stop
-            |meta translator_mark "ctor method"
-            |@method_ctor:
-            |meta translator_mark "ctor local vars definition"
-            |meta translator_mark "ctor method body"
-            |meta translator_mark "ctor local vars clearing"
-            |meta translator_mark "end of ctor method"
-            |ret
             |meta translator_mark "helper functions"
             |@stop:
           """.stripMargin).right.get

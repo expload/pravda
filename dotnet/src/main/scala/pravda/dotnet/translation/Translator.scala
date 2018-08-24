@@ -195,6 +195,7 @@ object Translator {
       opTranslations <- opTranslationsE
     } yield
       MethodTranslation(
+        s"${kind}_$name",
         List(
           OpCodeTranslation(Left(s"$name $kind"),
                             List.empty,
@@ -329,18 +330,21 @@ object Translator {
     val jumpToMethodsE: Either[TranslationError, List[Operation]] = for {
       programMethods <- programMethodsE
     } yield {
-      programMethods.flatMap(i => {
-        val name = tctx.cilData.tables.methodDefTable(i).name
-        List(
-          asm.Operation(Opcodes.DUP),
-          asm.Operation.Push(Data.Primitive.Utf8(name)),
-          asm.Operation(Opcodes.EQ),
-          asm.Operation.JumpI(Some(s"method_$name"))
-        )
-      })
+      programMethods
+        .map(i => {
+          val name = tctx.cilData.tables.methodDefTable(i).name
+          (name,
+           List(
+             asm.Operation(Opcodes.DUP),
+             asm.Operation.Push(Data.Primitive.Utf8(name)),
+             asm.Operation(Opcodes.EQ),
+             asm.Operation.JumpI(Some(s"method_$name"))
+           ))
+        })
+        .sortBy(_._1)
+        .flatMap(_._2)
     }
 
-    // FIXME method overloading isn't supported
     val ctorOpsE: Either[TranslationError, Option[MethodTranslation]] = for {
       ctor <- programCtorE
       ops <- ctor match {
@@ -486,6 +490,7 @@ object Translator {
           List(
             Right(
               MethodTranslation(
+                s"vtable_$structName",
                 List(
                   OpCodeTranslation(Left(s"$structName vtable initialization"),
                                     List.empty,
@@ -551,10 +556,12 @@ object Translator {
 
     translatorMark("jump to methods") ++
       t.jumpToMethods ++
-      t.methods.flatMap(_.opcodes.flatMap(opcodeToAsm)) ++
-      t.funcs.flatMap(_.opcodes.flatMap(opcodeToAsm)) ++
+      t.methods.sortBy(_.name).flatMap(_.opcodes.flatMap(opcodeToAsm)) ++
+      t.funcs.sortBy(_.name).flatMap(_.opcodes.flatMap(opcodeToAsm)) ++
       translatorMark("helper functions") ++
-      t.helperFunctions.flatMap { case OpcodeTranslator.HelperFunction(name, ops) => asm.Operation.Label(name) :: ops } ++
+      t.helperFunctions.sortBy(_.name).flatMap {
+        case OpcodeTranslator.HelperFunction(name, ops) => asm.Operation.Label(name) :: ops
+      } ++
       t.finishOps
   }
 
