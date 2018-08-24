@@ -23,7 +23,7 @@ object CommandLineTest extends TestSuite {
     }
 
     "int parser should parse" - {
-      primTypesParser[Int](1, "--integer", "1")(_.intValue)
+      primTypesParser(1, "--integer", "1")(_.intValue)
     }
 
     "int parser should fail" - {
@@ -34,43 +34,43 @@ object CommandLineTest extends TestSuite {
     }
 
     "long parser should parse" - {
-      primTypesParser[Long](999L, "--long", "999")(_.longValue)
+      primTypesParser(999L, "--long", "999")(_.longValue)
     }
 
     "hex parser should parse" - {
-      primTypesParser[Hex](Hex @@ 1L, "--hex", "0x01")(_.hex)
-      primTypesParser[Hex](Hex @@ 1L, "--hex", "0x1")(_.hex)
-      primTypesParser[Hex](Hex @@ 255L, "--hex", "0xFF")(_.hex)
+      primTypesParser(1L, "--hex", "0x01")(_.hex)
+      primTypesParser(1L, "--hex", "0x1")(_.hex)
+      primTypesParser(255L, "--hex", "0xFF")(_.hex)
     }
 
     "bool parser should parse" - {
-      primTypesParser[Boolean](true, "--boolean", "true")(_.boolValue)
-      primTypesParser[Boolean](false, "--boolean", "false")(_.boolValue)
+      primTypesParser(true, "--boolean", "true")(_.boolValue)
+      primTypesParser(false, "--boolean", "false")(_.boolValue)
     }
 
     "YesOrNo parser should parse" - {
-      primTypesParser[YesOrNo](YesOrNo @@ true, "--yesOrNo", "yes")(_.yesOrNoValue)
-      primTypesParser[YesOrNo](YesOrNo @@ false, "--yesOrNo", "no")(_.yesOrNoValue)
+      primTypesParser(true, "--yesOrNo", "yes")(_.yesOrNoValue)
+      primTypesParser(false, "--yesOrNo", "no")(_.yesOrNoValue)
     }
 
     "bigdecimal parser should parse" - {
-      primTypesParser[BigDecimal](1.0, "--bigdecimal", "1.0")(_.bigDecimalValue)
-      primTypesParser[BigDecimal](200L, "--bigdecimal", "200")(_.bigDecimalValue)
-      primTypesParser[BigDecimal](100, "--bigdecimal", "100")(_.bigDecimalValue)
+      primTypesParser(BigDecimal(1.0), "--bigdecimal", "1.0")(_.bigDecimalValue)
+      primTypesParser(BigDecimal(200), "--bigdecimal", "200")(_.bigDecimalValue)
+      primTypesParser(BigDecimal(100), "--bigdecimal", "100")(_.bigDecimalValue)
     }
 
     "double parser should parse" - {
-      primTypesParser[Double](1.0, "--double", "1.0")(_.doubleValue)
-      primTypesParser[Double](200f, "--double", "200")(_.doubleValue)
-      primTypesParser[Double](100, "--double", "100")(_.doubleValue)
+      primTypesParser(1.0, "--double", "1.0")(_.doubleValue)
+      primTypesParser(200.0, "--double", "200")(_.doubleValue)
+      primTypesParser(100.0, "--double", "100")(_.doubleValue)
     }
 
     "uri parser should parse" - {
-      otherTypesParser[URI](new URI("http://localhost"), "--uri", "http://localhost")(_.uriValue)
-      otherTypesParser[URI](new URI("https://localhost"), "--uri", "https://localhost")(_.uriValue)
-      otherTypesParser[URI](new URI("http://localhost:8080/api/public/broadcast"),
-                            "--uri",
-                            "http://localhost:8080/api/public/broadcast")(_.uriValue)
+      otherTypesParser(new URI("http://localhost"), "--uri", "http://localhost")(_.uriValue)
+      otherTypesParser(new URI("https://localhost"), "--uri", "https://localhost")(_.uriValue)
+      otherTypesParser(new URI("http://localhost:8080/api/public/broadcast"),
+                       "--uri",
+                       "http://localhost:8080/api/public/broadcast")(_.uriValue)
     }
 
     "duration parser should parse" - {
@@ -79,29 +79,27 @@ object CommandLineTest extends TestSuite {
     }
 
     "sequence parser should parse" - {
-      otherTypesParser[Seq[Int]](Seq(1), "--seq", "1")(_.seqInts)
-      otherTypesParser[Seq[Int]](Seq(1, 2, 3), "--seq", "1,2,3")(_.seqInts)
+      otherTypesParser(Seq(1), "--seq", "1")(_.seqInts)
+      otherTypesParser(Seq(1, 2, 3), "--seq", "1,2,3")(_.seqInts)
     }
 
     "tuple parser should parse" - {
-      otherTypesParser[(String, Int)]("a" -> 1, "--tuple2", "a->1")(_.tupleOfStringInt)
-      otherTypesParser[(String, Int)]("abc" -> 999, "--tuple2", "abc->999")(_.tupleOfStringInt)
+      otherTypesParser("a" -> 1, "--tuple2", "a->1")(_.tupleOfStringInt)
+      otherTypesParser("abc" -> 999, "--tuple2", "abc->999")(_.tupleOfStringInt)
     }
 
     "map parser should parse" - {
-      otherTypesParser[Map[String, Boolean]](Map("a" -> true), "--map", "a->true")(_.mapStringToBool)
-      otherTypesParser[Map[String, Boolean]](Map("a" -> true, "b" -> false), "--map", "a->true,b->false")(
-        _.mapStringToBool)
+      otherTypesParser(Map("a" -> true), "--map", "a->true")(_.mapStringToBool)
+      otherTypesParser(Map("a" -> true, "b" -> false), "--map", "a->true,b->false")(_.mapStringToBool)
     }
 
     "seq of tuple should parse" - {
-      otherTypesParser[Seq[(String, String)]](Seq(("a", "b")), "--seqtuple", "a->b")(_.seqTupleStringString)
-      otherTypesParser[Seq[(String, String)]](Seq(("a", "b"), ("c", "d")), "--seqtuple", "a->b,c->d")(
-        _.seqTupleStringString)
+      otherTypesParser(Seq(("a", "b")), "--seqtuple", "a->b")(_.seqTupleStringString)
+      otherTypesParser(Seq(("a", "b"), ("c", "d")), "--seqtuple", "a->b,c->d")(_.seqTupleStringString)
     }
 
     "char parser should parse" - {
-      primTypesParser[Char]('a', "--char", "a")(_.charValue)
+      primTypesParser('a', "--char", "a")(_.charValue)
     }
 
     "char parser should fail" - {
@@ -227,12 +225,12 @@ object CommandLineTest extends TestSuite {
   final case class Config(
       flag: Boolean = false,
       intValue: Int = 0,
-      hex: Hex = Hex @@ 0L,
+      hex: Long = 0L,
       longValue: Long = 0L,
       stringValue: String = "",
       doubleValue: Double = 0.0,
       boolValue: Boolean = false,
-      yesOrNoValue: YesOrNo = YesOrNo @@ false,
+      yesOrNoValue: Boolean = false,
       debug: Boolean = false,
       bigDecimalValue: BigDecimal = BigDecimal("0.0"),
       uriValue: URI = new URI("http://localhost"),
