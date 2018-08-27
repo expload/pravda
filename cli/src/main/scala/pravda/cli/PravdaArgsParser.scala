@@ -19,7 +19,7 @@ package pravda.cli
 
 import java.io.File
 
-import pravda.cli.PravdaConfig.{CompileMode, CodegenMode}
+import pravda.cli.PravdaConfig.{CompileMode, CodegenMode, DefaultValues}
 import pravda.common.bytes
 import pravda.common.domain.NativeCoin
 import pravda.yopt._
@@ -37,7 +37,10 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
 
   val model: CommandLine.Head[PravdaConfig] =
     head("pravda")
-      .text(s"Pravda ${pravda.cli.BuildInfo.version} Command Line Interface")
+      .text(
+        s"Pravda ${pravda.cli.BuildInfo.version} Command Line Interface\n\n" +
+          "To get info about options for particular command you can use flag --help or -h after command." +
+          " For example, to get help about \"gen address\" command, type \"pravda gen address -h\"")
       .children(
         cmd("gen")
           .text("Generate auxiliary data for Pravda.")
@@ -235,21 +238,21 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             opt[Long]('l', "limit")
-              .text("Watt limit (300 by default).") // FIXME what to do with default values?
+              .text(s"Watt limit (${DefaultValues.Broadcast.WATT_LIMIT} by default).") // FIXME what to do with default values?
               .action {
                 case (limit, config: PravdaConfig.Broadcast) =>
                   config.copy(wattLimit = limit)
                 case (_, otherwise) => otherwise
               },
             opt[Long]('p', "price")
-              .text("Watt price (1 by default).") // FIXME what to do with default values?
+              .text(s"Watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).") // FIXME what to do with default values?
               .action {
                 case (price, config: PravdaConfig.Broadcast) =>
                   config.copy(wattPrice = NativeCoin @@ price)
                 case (_, otherwise) => otherwise
               },
             opt[String]('e', "endpoint")
-              .text("Node endpoint (http://localhost:8080/api/public/broadcast by default).") // FIXME what to do with default values?
+              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).") // FIXME what to do with default values?
               .action {
                 case (endpoint, config: PravdaConfig.Broadcast) =>
                   config.copy(endpoint = endpoint)
