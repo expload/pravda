@@ -81,8 +81,8 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
       "Pops first item from stack, interprets it as key. Pops second item from stack, interprets it as value. Puts (key -> value) record to program's storage. "
   )
   def put(): Unit = ifStorage { storage =>
-    val value = memory.pop()
     val key = memory.pop()
+    val value = memory.pop()
     val bytesTotal = value.volume + key.volume
     val maybePrevious = storage.put(key, value)
 

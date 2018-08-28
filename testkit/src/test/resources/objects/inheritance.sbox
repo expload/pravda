@@ -1,0 +1,16 @@
+preconditions:
+  watts-limit: 3000
+  stack:
+    "Func"
+
+expectations:
+  watts-spent: 604
+  stack:
+    int32(387)
+  heap:
+     #0x0 = { "AVal": int32(100), "Answer": #0x496, "AnswerPlus1": #0xCA0 },
+     #0x1 = { "BVal": int32(200), "Answer": #0x7D5, "AnswerPlus1": #0xCA0 }
+  effects:
+
+---------------------------------------
+#dotnet inheritance.cs

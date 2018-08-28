@@ -16,9 +16,6 @@ object CompareTests extends TestSuite {
         PravdaAssembler.parse(
           """
         |meta translator_mark "jump to methods"
-        |meta method {
-        |"name":"compare","returnTpe":int8(0)
-        |}
         |dup
         |push "compare"
         |eq
@@ -26,6 +23,9 @@ object CompareTests extends TestSuite {
         |push "Wrong method name"
         |throw
         |meta translator_mark "compare method"
+        |meta method {
+        |"name":"compare","returnTpe":int8(0)
+        |}
         |@method_compare:
         |meta translator_mark "compare local vars definition"
         |push null

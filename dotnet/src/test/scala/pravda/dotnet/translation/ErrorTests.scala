@@ -11,7 +11,7 @@ object ErrorTests extends TestSuite{
 
       Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).left.get.mkString ==>
       """|Call(MemberRefData(TypeRefData(6,Console,System),WriteLine,16)) is not supported
-         |  error.cs:6,9-6,74""".stripMargin
+         |  error.cs:8,9-8,74""".stripMargin
     }
   }
 }

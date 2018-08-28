@@ -4,20 +4,20 @@ preconditions:
     "NewZoo"
   heap:
   storage:
-    "ZooCnt" = int32(1),
-    "PetId" = int32(1)
+    "p_ZooCnt" = int32(1),
+    "p_PetId" = int32(1)
 
 expectations:
-  watts-spent: 812
+  watts-spent: 863
   stack:
     int32(1)
   heap:
   effects:
-    sget "ZooCnt" int32(1),
+    sget "p_ZooCnt" int32(1),
     sput x5A6F6F546F4F776E657200000001 x0000000000000000000000000000000000000000000000000000000000000000,
-    sget "ZooCnt" int32(1),
-    sput "ZooCnt" int32(2),
-    sget "ZooCnt" int32(2)
+    sget "p_ZooCnt" int32(1),
+    sput "p_ZooCnt" int32(2),
+    sget "p_ZooCnt" int32(2)
 
 ---
 #dotnet zoo_program.cs

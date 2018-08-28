@@ -145,7 +145,7 @@ object ZooProgramTests extends TestSuite {
               LdLoc1,
               LdArg0,
               LdLoc1,
-              Call(MethodDefData(0, 129, "GenerateSignature", 171, Vector(ParamData(0, 1, "pet")))),
+              Call(MethodDefData(0, 0, 129, "GenerateSignature", 171, Vector(ParamData(0, 1, "pet")))),
               CallVirt(MemberRefData(TypeSpecData(104), "put", 62)),
               Nop,
               LdArg0,
@@ -278,6 +278,7 @@ object ZooProgramTests extends TestSuite {
             5,
             Some(87)
           ),
+          Method(List(Nop, Ret), 0, None),
           Method(
             List(
               LdArg0,
@@ -305,12 +306,9 @@ object ZooProgramTests extends TestSuite {
             ),
             2,
             None
-          ),
-          Method(List(Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
+          )
         )
       )
-
     }
   }
 }

@@ -63,8 +63,8 @@ object PravdaAssembler {
     def putOp(opcode: Int): Unit =
       bytecode.put(opcode.toByte)
 
-    // Go to `name` using `opcode`
-    def goto(name: String, opcode: Int): Unit = {
+    // put placeholder for the label reference
+    def pushRef(name: String): Unit = {
       if (saveLabels) {
         putOp(Opcodes.META)
         Metadata.LabelUse(name).writeToByteBuffer(bytecode)
@@ -74,6 +74,11 @@ object PravdaAssembler {
       gotos.put(bytecode.position, name)
       // Just a placeholer. Ref is constant sized
       Primitive.Ref.Void.writeToByteBuffer(bytecode)
+    }
+
+    // Go to `name` using `opcode`
+    def goto(name: String, opcode: Int): Unit = {
+      pushRef(name)
       putOp(opcode)
     }
 
@@ -110,6 +115,7 @@ object PravdaAssembler {
       case Jump(None)        => putOp(Opcodes.JUMP)
       case JumpI(None)       => putOp(Opcodes.JUMPI)
       case Call(None)        => putOp(Opcodes.CALL)
+      case PushRef(name)     => pushRef(name)
       case Orphan(opcode)    => putOp(opcode)
       // Simple operations
       case Nop        => ()
@@ -138,55 +144,72 @@ object PravdaAssembler {
     val buffer = bytecode.asReadOnlyByteBuffer()
     val operations = mutable.Buffer.empty[Operation]
     var label = Option.empty[String]
+
     while (buffer.hasRemaining) {
       val opcode = buffer.get & 0xff
-      operations += Operation.operationByOpcode.getOrElse(
-        key = opcode,
-        default = (opcode: @switch) match {
-          case Opcodes.META =>
-            Metadata.readFromByteBuffer(buffer) match {
-              case Metadata.LabelDef(name) => Operation.Label(name)
-              case Metadata.LabelUse(name) =>
-                label = Some(name)
-                Operation.Nop
-              case metadata => Operation.Meta(metadata)
-            }
-          case Opcodes.STRUCT_GET_STATIC =>
-            val offset = buffer.position()
-            Data.readFromByteBuffer(buffer) match {
-              case key: Primitive => StructGet(Some(key))
-              case data           => throw UnexpectedTypeException(data, Some(offset))
-            }
-          case Opcodes.STRUCT_MUT_STATIC =>
-            val offset = buffer.position()
-            Data.readFromByteBuffer(buffer) match {
-              case key: Primitive => StructMut(Some(key))
-              case data           => throw UnexpectedTypeException(data, Some(offset))
-            }
-          case Opcodes.PUSHX if label.nonEmpty =>
-            Data.readFromByteBuffer(buffer)
-            Operation.Nop
-          case Opcodes.JUMP if label.nonEmpty =>
-            val op = Operation.Jump(label)
-            label = None
-            op
-          case Opcodes.JUMPI if label.nonEmpty =>
-            val op = Operation.JumpI(label)
-            label = None
-            op
-          case Opcodes.CALL if label.nonEmpty =>
-            val op = Operation.Call(label)
-            label = None
-            op
-          case Opcodes.NEW        => Operation.New(Data.readFromByteBuffer(buffer))
-          case Opcodes.PUSHX      => Operation.Push(Data.readFromByteBuffer(buffer))
-          case Opcodes.JUMP       => Operation.Jump(None)
-          case Opcodes.JUMPI      => Operation.JumpI(None)
-          case Opcodes.CALL       => Operation.Call(None)
-          case Opcodes.STRUCT_GET => Operation.StructGet(None)
-          case Opcodes.STRUCT_MUT => Operation.StructMut(None)
-        }
-      )
+
+      (opcode: @switch) match {
+        case Opcodes.META =>
+          Metadata.readFromByteBuffer(buffer) match {
+            case Metadata.LabelDef(name) =>
+              operations += Operation.Label(name)
+            case Metadata.LabelUse(name) =>
+              label = Some(name)
+            case metadata =>
+              operations += Operation.Meta(metadata)
+          }
+        case Opcodes.STRUCT_GET_STATIC =>
+          val offset = buffer.position()
+          Data.readFromByteBuffer(buffer) match {
+            case key: Primitive => operations += StructGet(Some(key))
+            case data           => throw UnexpectedTypeException(data, Some(offset))
+          }
+        case Opcodes.STRUCT_MUT_STATIC =>
+          val offset = buffer.position()
+          Data.readFromByteBuffer(buffer) match {
+            case key: Primitive => operations += StructMut(Some(key))
+            case data           => throw UnexpectedTypeException(data, Some(offset))
+          }
+        case Opcodes.PUSHX if label.nonEmpty =>
+          Data.readFromByteBuffer(buffer)
+          operations += Operation.PushRef(label.get)
+          label = None
+        case Opcodes.PUSHX =>
+          val offset = buffer.position()
+          Data.readFromByteBuffer(buffer) match {
+            case p: Primitive => operations += Operation.Push(p)
+            case data         => throw UnexpectedTypeException(data, Some(offset))
+          }
+        case Opcodes.JUMP =>
+          operations.last match {
+            case Operation.PushRef(l) =>
+              operations.remove(operations.length - 1)
+              operations += Operation.Jump(Some(l))
+            case _ =>
+              operations += Operation.Jump(None)
+          }
+        case Opcodes.JUMPI =>
+          operations.last match {
+            case Operation.PushRef(l) =>
+              operations.remove(operations.length - 1)
+              operations += Operation.JumpI(Some(l))
+            case _ =>
+              operations += Operation.JumpI(None)
+          }
+        case Opcodes.CALL =>
+          operations.last match {
+            case Operation.PushRef(l) =>
+              operations.remove(operations.length - 1)
+              operations += Operation.Call(Some(l))
+            case _ =>
+              operations += Operation.Call(None)
+          }
+
+        case Opcodes.NEW                                    => operations += Operation.New(Data.readFromByteBuffer(buffer))
+        case Opcodes.STRUCT_GET                             => operations += Operation.StructGet(None)
+        case Opcodes.STRUCT_MUT                             => operations += Operation.StructMut(None)
+        case op if Operation.operationByOpcode.contains(op) => operations += Operation.operationByOpcode(op)
+      }
     }
 
     operations.filter(_ != Nop)
@@ -201,6 +224,7 @@ object PravdaAssembler {
     case Jump(Some(label))  => s"${mnemonic(Opcodes.JUMP)} @$label"
     case JumpI(Some(label)) => s"${mnemonic(Opcodes.JUMPI)} @$label"
     case Call(Some(label))  => s"${mnemonic(Opcodes.CALL)} @$label"
+    case PushRef(label)     => s"${mnemonic(Opcodes.PUSHX)} @$label"
     case Jump(None)         => mnemonic(Opcodes.JUMP)
     case JumpI(None)        => mnemonic(Opcodes.JUMPI)
     case Call(None)         => mnemonic(Opcodes.CALL)
@@ -246,12 +270,13 @@ object PravdaAssembler {
     import Data.parser.{primitive => dataPrimitive, all => dataAll}
     val digit = P(CharIn('0' to '9'))
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_"))
-    val alphadig = P(alpha | digit)
-    val ident = P("@" ~ (alpha.rep(1) ~ alphadig.rep(1).?).!)
+    val alphadigdot = P(alpha | digit | ".")
+    val ident = P("@" ~ (alpha.rep(1) ~ alphadigdot.rep(1).?).!)
     val whitespace = P(CharIn(" \t\r\n").rep)
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 
     val label = P(ident ~ ":").map(n => Operation.Label(n))
+    val pushRef = P(IgnoreCase("push") ~ delim ~ ident).map(Operation.PushRef)
     val push = P(IgnoreCase("push") ~ delim ~ dataPrimitive).map(Operation.Push)
     val `new` = P(IgnoreCase("new") ~ delim ~ dataAll).map(Operation.New)
     val jump = P(IgnoreCase("jump") ~ (delim ~ ident).?).map(Operation.Jump)
@@ -265,7 +290,7 @@ object PravdaAssembler {
 
     val operation = Operation.Orphans
       .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))
-      .++(Seq(jumpi, jump, call, push, `new`, struct_get, struct_mut, label, comment, meta))
+      .++(Seq(jumpi, jump, call, pushRef, push, `new`, struct_get, struct_mut, label, comment, meta))
       .reduce(_ | _)
 
     P(whitespace ~ operation.rep(sep = delim) ~ whitespace)

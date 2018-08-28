@@ -21,6 +21,7 @@ import fastparse.byte.all._
 import LE._
 
 final case class TablesInfo(
+    customAttributeTable: Vector[TablesInfo.CustomAttributeRow] = Vector.empty,
     fieldTable: Vector[TablesInfo.FieldRow] = Vector.empty,
     fieldRVATable: Vector[TablesInfo.FieldRVARow] = Vector.empty,
     memberRefTable: Vector[TablesInfo.MemberRefRow] = Vector.empty,
@@ -60,7 +61,7 @@ object TablesInfo {
                                 hasDeclSecurity: Index,
                                 hasFieldMarshal: Index,
                                 hasSemantics: Index,
-                                customAttibute: Index,
+                                customAttibuteType: Index,
                                 typeDefOrRef: Index,
                                 typeOrMethodDef: Index,
                                 methodDefOrRef: Index,
@@ -91,9 +92,9 @@ object TablesInfo {
   case object AssemblyRefOSRow        extends TableRowInfo
   case object AssemblyRefProcessorRow extends TableRowInfo
 
-  case object ClassLayoutRow     extends TableRowInfo
-  case object ConstantRow        extends TableRowInfo
-  case object CustomAttributeRow extends TableRowInfo
+  case object ClassLayoutRow                                                          extends TableRowInfo
+  case object ConstantRow                                                             extends TableRowInfo
+  final case class CustomAttributeRow(parentIdx: Long, typeIdx: Long, valueIdx: Long) extends TableRowInfo
 
   case object DeclSecurityRow extends TableRowInfo
 
@@ -188,9 +189,9 @@ object TablesInfo {
   def constantRow(indexes: TableIndexes): P[ConstantRow.type] =
     P(AnyBytes(2 + indexes.hasConstant.size + indexes.blobHeap.size)).map(_ => ConstantRow)
 
-  def customAttributeRow(indexes: TableIndexes): P[CustomAttributeRow.type] =
-    P(AnyBytes(indexes.hasCustomAttribute.size + indexes.customAttibute.size + indexes.blobHeap.size))
-      .map(_ => CustomAttributeRow)
+  def customAttributeRow(indexes: TableIndexes): P[CustomAttributeRow] =
+    P(indexes.hasCustomAttribute.parser ~ indexes.customAttibuteType.parser ~ indexes.blobHeap.parser)
+      .map(CustomAttributeRow.tupled)
 
   def declSecurityRow(indexes: TableIndexes): P[DeclSecurityRow.type] =
     P(AnyBytes(2 + indexes.hasDeclSecurity.size + indexes.blobHeap.size)).map(_ => DeclSecurityRow)
@@ -339,7 +340,7 @@ object TablesInfo {
       case 9  => tablesId(interfaceImplRow)
       case 10 => tableRep(memberRefRow).map(r => Right(_.copy(memberRefTable = r)))
       case 11 => tablesId(constantRow)
-      case 12 => tablesId(customAttributeRow)
+      case 12 => tableRep(customAttributeRow).map(r => Right(_.copy(customAttributeTable = r)))
       case 13 => tablesId(fieldMarshalRow)
       case 14 => tablesId(declSecurityRow)
       case 15 => tablesId(classLayoutRow)

@@ -48,6 +48,8 @@ namespace Com.Expload {
        public Bytes Slice(int start, int length) { return null; }
        // Concatenate two Bytes
        public Bytes Concat(Bytes other) { return null; }
+       // Length of byte array
+       public int Length() { return 0; }
     }
 
     public class StdLib {

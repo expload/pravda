@@ -624,6 +624,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class BytesArray(data: mutable.Buffer[ByteString])    extends Array
   }
 
+  object Struct {
+    def empty: Struct = Struct(mutable.Map.empty)
+  }
+
   final case class Struct(data: mutable.Map[Primitive, Primitive]) extends Data
 
   // scalafix:off DisableSyntax.keywords.null
@@ -957,6 +961,9 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
       extends Exception(s"Unexpected length: $expected expected but $given given at $offset")
+
+  final case class UnknownMeta(meta: Meta, offset: Option[Int] = None)
+      extends Exception(s"Unexpected meta: ${meta.mkString}${offset.map(o => s" at $o").getOrElse("")}")
 
   final case class InvalidData(data: Data) extends Exception(s"Invalid data: ${data.mkString()}")
 

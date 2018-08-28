@@ -9,8 +9,6 @@ class MyProgram {
         Bytes voidAddress = Bytes.VOID_ADDRESS;
         Bytes programAddress = Info.ProgramAddress();
     }
-}
 
-class MainClass {
     public static void Main() {}
 }

@@ -5,7 +5,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 ```pravda [gen|run|compile|broadcast|node]```
 
 ## Description
-Pravda 0.5.5-35-ga18e200-SNAPSHOT Command Line Interface
+Pravda 0.5.5-47-g1b50a72-SNAPSHOT Command Line Interface
 
 No options available
 ## Commands

@@ -32,7 +32,43 @@ object Signatures {
 
   import Heaps._
 
-  sealed trait SigType
+  sealed trait SigType {
+    import SigType._
+
+    def mkString: String = {
+      def typeDefOrRefName(typeDefOrRef: TableRowData) = typeDefOrRef match {
+        case TypeDefData(_, _, name, namespace, _, _, _) => s"$namespace.$name"
+        case TypeRefData(_, name, namespace)             => s"$namespace.$name"
+        case _                                           => ???
+      }
+
+      this match {
+        case TypedByRef              => ???
+        case SigType.Void            => "void"
+        case SigType.Boolean         => "bool"
+        case SigType.Char            => "char"
+        case I1                      => "int8"
+        case U1                      => "uint8"
+        case I2                      => "int16"
+        case U2                      => "uint16"
+        case I4                      => "int32"
+        case U4                      => "uint32"
+        case I8                      => "int64"
+        case U8                      => "uint64"
+        case R4                      => "float"
+        case R8                      => "double"
+        case SigType.String          => "string"
+        case I                       => "int"
+        case U                       => "uint"
+        case SigType.Object          => "object"
+        case Cls(typeDefOrRef)       => typeDefOrRefName(typeDefOrRef)
+        case ValueTpe(typeDefOrRef)  => typeDefOrRefName(typeDefOrRef)
+        case Generic(tpe, tpeParams) => s"${tpe.mkString}<${tpeParams.map(_.mkString).mkString(", ")}>"
+        case Var(num)                => s"var$num"
+        case Arr(tpe, shape)         => s"${tpe.mkString}[${shape.mkString}]"
+      }
+    }
+  }
 
   object SigType {
     case object TypedByRef                                           extends SigType
@@ -58,7 +94,9 @@ object Signatures {
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
     final case class Var(num: Int)                                   extends SigType
 
-    final case class ArrayShape(rank: Int, sizes: List[Int], loBounds: List[Int])
+    final case class ArrayShape(rank: Int, sizes: List[Int], loBounds: List[Int]) {
+      def mkString: String = s"$rank[${sizes.mkString(", ")}][${loBounds.mkString(", ")}]"
+    }
     final case class Arr(tpe: SigType, shape: ArrayShape) extends SigType
   }
 

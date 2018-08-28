@@ -25,6 +25,8 @@ public class ProgramArrays
 
         arr1[0] = 2;
         arr1[1] = 1;
+
+        int len = bytes1.Length();
     }
 
     public void WorkWithArrays() {
@@ -39,6 +41,8 @@ public class ProgramArrays
         doubles[1] = 4.0;
         strings[1] = "asdf";
         uints[1] = 7;
+
+        int len = strings.Length;
     }
 
     static public void Main () {}

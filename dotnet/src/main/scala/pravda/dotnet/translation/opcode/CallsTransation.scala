@@ -21,6 +21,7 @@ import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.Signatures.SigType._
 import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.translation.TypeDetectors
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes}
@@ -56,6 +57,25 @@ case object CallsTransation extends OneToManyTranslator {
     case _                  => false
   }
 
+  def isMethodVirtual(flags: Short): Boolean = (flags & 0x40) != 0
+
+  def fullMethodName(name: String, sigO: Option[Signature]): String = {
+    val normalizedName = if (name == ".ctor" || name == ".cctor") name.drop(1) else name
+    val sigParams = sigO.collect { case m: MethodRefDefSig => m.params }.getOrElse(List.empty)
+    if (sigParams.nonEmpty) {
+      s"${normalizedName}_${sigParams.map(_.tpe.mkString).mkString("_")}"
+    } else {
+      normalizedName
+    }
+  }
+
+  def fullTypeDefName(typeDefData: TypeDefData): String =
+    if (typeDefData.namespace.nonEmpty) {
+      s"${typeDefData.namespace}.${typeDefData.name}"
+    } else {
+      typeDefData.name
+    }
+
   private lazy val getDefaultFunction =
     dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
       List(
@@ -83,7 +103,7 @@ case object CallsTransation extends OneToManyTranslator {
       ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
     case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
       val res = for {
-        parentSig <- ctx.signatures.get(parentSigIdx)
+        parentSig <- ctx.tctx.signatures.get(parentSigIdx)
       } yield {
         if (detectMapping(parentSig)) {
           name match {
@@ -104,10 +124,18 @@ case object CallsTransation extends OneToManyTranslator {
   }
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
+    def callMethodDef(m: MethodDefData): Int = {
+      val void = ctx.tctx.signatures.get(m.signatureIdx).exists(isMethodVoid)
+      val program = ctx.tctx.isProgramMethod(m)
+      -m.params.length + (if (void) 0 else 1) + (if (program || ctx.static) 0 else -1)
+    }
+
     op match {
-      case Call(MethodDefData(_, _, name, signatureIdx, params)) =>
-        val void = ctx.signatures.get(signatureIdx).exists(isMethodVoid)
-        Right(if (void) -params.length else -params.length + 1)
+      case Call(m: MethodDefData)     => Right(callMethodDef(m))
+      case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
+      case NewObj(m: MethodDefData)   => Right(callMethodDef(m) + 2)
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
+        if (ctx.struct.isDefined) Right(-1) else Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _))                      => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _))                    => Right(0)
@@ -115,15 +143,14 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
       case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _))                     => Right(-1)
-      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _))                         => Right(0)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
-          parentSig <- ctx.signatures.get(parentSigIdx)
-          methodSig <- ctx.signatures.get(methodSigIdx)
+          parentSig <- ctx.tctx.signatures.get(parentSigIdx)
+          methodSig <- ctx.tctx.signatures.get(methodSigIdx)
         } yield {
           lazy val paramsCnt = methodParamsCount(methodSig)
-          lazy val offset = if (isMethodVoid(methodSig)) -paramsCnt - 1 else -paramsCnt - 1 + 1 // FIXME static methods are not supported
+          lazy val offset = if (isMethodVoid(methodSig)) -paramsCnt - 1 else -paramsCnt - 1 + 1
 
           if (detectMapping(parentSig) && mappingsMethods.contains(name)) {
             Right(offset)
@@ -142,9 +169,87 @@ case object CallsTransation extends OneToManyTranslator {
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
 
+    def clearObject(m: MethodDefData): List[Operation] = {
+      val void = ctx.tctx.signatures.get(m.signatureIdx).exists(isMethodVoid)
+      if (void) {
+        List(Operation(Opcodes.POP))
+      } else {
+        List(Operation(Opcodes.SWAP), Operation(Opcodes.POP))
+      }
+    }
+
+    def callFunc(m: MethodDefData): Either[InnerTranslationError, List[Operation]] =
+      if (ctx.tctx.isProgramMethod(m)) {
+        Right(List(Operation.Call(Some(s"func_${m.name}"))))
+      } else {
+        val tpeO = ctx.tctx.tpeByMethodDef(m)
+        tpeO match {
+          case Some(tpe) =>
+            Right(
+              Operation.Call(
+                Some(
+                  s"func_${fullTypeDefName(tpe)}.${fullMethodName(m.name, ctx.tctx.signatures.get(m.signatureIdx))}"
+                )) +: clearObject(m)
+            )
+          case None =>
+            Left(UnknownOpcode)
+        }
+      }
+
     op match {
-      case Call(MethodDefData(_, _, name, _, params))                          => Right(List(Operation.Call(Some(s"func_$name"))))
-      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) => Right(List.empty)
+      case Call(m: MethodDefData) => callFunc(m)
+      case CallVirt(m: MethodDefData) =>
+        if (!ctx.tctx.isProgramMethod(m) && isMethodVirtual(m.flags)) {
+          val res = for {
+            sig <- ctx.tctx.signatures.get(m.signatureIdx).collect {
+              case m: MethodRefDefSig => m
+            }
+          } yield {
+            val paramsCnt = methodParamsCount(sig)
+            Right(
+              List(
+                Operation.Push(Data.Primitive.Int32(paramsCnt + 1)),
+                Operation(Opcodes.DUPN),
+                Operation.StructGet(Some(Data.Primitive.Utf8(fullMethodName(m.name, Some(sig))))),
+                Operation.Call(None),
+              ) ++ clearObject(m)
+            )
+          }
+
+          res.getOrElse(Left(InternalError("Wrong signatures")))
+        } else {
+          callFunc(m)
+        }
+      case NewObj(m: MethodDefData) =>
+        val tpeO = ctx.tctx.tpeByMethodDef(m)
+        tpeO match {
+          case Some(tpe) =>
+            Right(
+              List(
+                Operation.New(Data.Struct.empty),
+                Operation.Call(Some(s"vtable_${fullTypeDefName(tpe)}"))
+              ) ++
+                m.params.length
+                  .to(1, -1)
+                  .toList
+                  .flatMap(
+                    i =>
+                      List(
+                        Operation.Push(Data.Primitive.Int32(i + 1)),
+                        Operation(Opcodes.SWAPN)
+                    )
+                  ) // move object to 0-th arg
+                :+ Operation.Call(
+                  Some(
+                    s"func_${fullTypeDefName(tpe)}.${fullMethodName(m.name, ctx.tctx.signatures.get(m.signatureIdx))}"
+                  )
+                )
+            )
+
+          case None => Left(UnknownOpcode)
+        }
+      case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
+        if (ctx.struct.isDefined) Right(List(Operation(Opcodes.POP))) else Right(List.empty)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
         Right(List(Operation.Orphan(Opcodes.FROM)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _)) =>
@@ -161,7 +266,7 @@ case object CallsTransation extends OneToManyTranslator {
         Right(List(Operation.Orphan(Opcodes.THROW)))
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
-          parentSig <- ctx.signatures.get(parentSigIdx)
+          parentSig <- ctx.tctx.signatures.get(parentSigIdx)
         } yield {
           if (detectMapping(parentSig)) {
             name match {
@@ -182,7 +287,6 @@ case object CallsTransation extends OneToManyTranslator {
                   dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
                     List(
                       Operation(Opcodes.CONCAT),
-                      Operation(Opcodes.SWAP),
                       Operation(Opcodes.SPUT),
                       Operation(Opcodes.POP),
                       Operation(Opcodes.POP)

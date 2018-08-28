@@ -67,6 +67,6 @@ class ZooProgram {
             return "";
         }
     }
-}
 
-class MainClass { public static void Main() {} }
+    public static void Main() {}
+}

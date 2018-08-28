@@ -23,23 +23,14 @@ import pravda.vm.asm.PravdaAssembler
 import pravda.vm.asm
 
 object TranslationVisualizer {
+  // TODO simplify or rewrite, meta infromation
+
   private def renderAsmOp(op: asm.Operation): String =
     PravdaAssembler.render(op, pretty = true).replace('\n', ' ')
 
   private def visualizeOpcode(opcode: OpCodeTranslation): List[(String, String)] = {
     val sourceColumnRaw = opcode.source.fold(List(_), _.map(_.toString))
-
-    val sourceColumnHead = (sourceColumnRaw match {
-      case head :: _ => s"[<$head> "
-      case _         => "["
-    }) + s"stack_offset=${opcode.stackOffset.fold("none")(_.toString)}]"
-
-    val sourceColumnTail = sourceColumnRaw match {
-      case _ :: tail => tail.map(s => s"[<$s>]")
-      case _         => List.empty
-    }
-
-    val sourceColumn = sourceColumnHead :: sourceColumnTail
+    val sourceColumn = sourceColumnRaw.map(c => s"[<$c>]")
 
     opcode.asmOps
       .map(renderAsmOp)
@@ -55,7 +46,7 @@ object TranslationVisualizer {
       }
       .mkString("\n")
 
-    s"""|[method ${method.name} args=${method.argsCount} locals=${method.localsCount} func=${method.func}]
+    s"""|[method]
         |$opcodes""".stripMargin
   }
 

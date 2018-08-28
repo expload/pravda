@@ -14,23 +14,118 @@ object ArraysTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
         |meta translator_mark "jump to methods"
-        |meta method {
-        |"name":"WorkWithBytes","returnTpe":int8(0)
-        |}
-        |meta method {
-        |"name":"WorkWithArrays","returnTpe":int8(0)
-        |}
-        |dup
-        |push "WorkWithBytes"
-        |eq
-        |jumpi @method_WorkWithBytes
         |dup
         |push "WorkWithArrays"
         |eq
         |jumpi @method_WorkWithArrays
+        |dup
+        |push "WorkWithBytes"
+        |eq
+        |jumpi @method_WorkWithBytes
         |push "Wrong method name"
         |throw
+        |meta translator_mark "WorkWithArrays method"
+        |meta method {
+        |"name":"WorkWithArrays","returnTpe":int8(0)
+        |}
+        |@method_WorkWithArrays:
+        |meta translator_mark "WorkWithArrays local vars definition"
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |push null
+        |meta translator_mark "WorkWithArrays method body"
+        |new int16[97, 98, 99]
+        |push int32(7)
+        |swapn
+        |pop
+        |new int32[1, 2, 3]
+        |push int32(6)
+        |swapn
+        |pop
+        |new number[1.0, 2.0, 3.0]
+        |push int32(5)
+        |swapn
+        |pop
+        |push int32(3)
+        |push int8(11)
+        |new_array
+        |dup
+        |push int32(0)
+        |push "abc"
+        |swap
+        |array_mut
+        |dup
+        |push int32(1)
+        |push "def"
+        |swap
+        |array_mut
+        |dup
+        |push int32(2)
+        |push "rty"
+        |swap
+        |array_mut
+        |push int32(4)
+        |swapn
+        |pop
+        |new int32[4, 5, 6]
+        |push int32(3)
+        |swapn
+        |pop
+        |push int32(6)
+        |dupn
+        |push int32(1)
+        |push int32(100)
+        |swap
+        |array_mut
+        |push int32(5)
+        |dupn
+        |push int32(1)
+        |push int32(4)
+        |swap
+        |array_mut
+        |push int32(4)
+        |dupn
+        |push int32(1)
+        |push number(4.0)
+        |swap
+        |array_mut
+        |push int32(3)
+        |dupn
+        |push int32(1)
+        |push "asdf"
+        |swap
+        |array_mut
+        |push int32(2)
+        |dupn
+        |push int32(1)
+        |push int32(7)
+        |swap
+        |array_mut
+        |push int32(3)
+        |dupn
+        |length
+        |push int8(3)
+        |cast
+        |push int32(2)
+        |swapn
+        |pop
+        |meta translator_mark "WorkWithArrays local vars clearing"
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |pop
+        |meta translator_mark "end of WorkWithArrays method"
+        |jump @stop
         |meta translator_mark "WorkWithBytes method"
+        |meta method {
+        |"name":"WorkWithBytes","returnTpe":int8(0)
+        |}
         |@method_WorkWithBytes:
         |meta translator_mark "WorkWithBytes local vars definition"
         |push null
@@ -42,31 +137,39 @@ object ArraysTests extends TestSuite {
         |push null
         |push null
         |push null
+        |push null
         |meta translator_mark "WorkWithBytes method body"
         |new int8[1, 2, 3]
-        |push int32(10)
+        |push int32(11)
         |swapn
         |pop
         |new int8[4, 5, 6]
         |call @array_to_bytes
-        |push int32(9)
+        |push int32(10)
         |swapn
         |pop
         |new int8[7, 8, 9]
         |call @array_to_bytes
+        |push int32(9)
+        |swapn
+        |pop
+        |push int32(10)
+        |dupn
+        |push int32(0)
+        |array_get
         |push int32(8)
         |swapn
         |pop
-        |push int32(9)
+        |push int32(10)
         |dupn
-        |push int32(0)
+        |push int32(2)
         |array_get
         |push int32(7)
         |swapn
         |pop
         |push int32(9)
         |dupn
-        |push int32(2)
+        |push int32(1)
         |array_get
         |push int32(6)
         |swapn
@@ -78,14 +181,7 @@ object ArraysTests extends TestSuite {
         |push int32(5)
         |swapn
         |pop
-        |push int32(7)
-        |dupn
-        |push int32(1)
-        |array_get
-        |push int32(4)
-        |swapn
-        |pop
-        |push int32(8)
+        |push int32(9)
         |dupn
         |push int32(1)
         |push int32(2)
@@ -94,13 +190,13 @@ object ArraysTests extends TestSuite {
         |add
         |swap
         |slice
-        |push int32(3)
+        |push int32(4)
         |swapn
         |pop
         |push x6279746573
-        |push int32(9)
+        |push int32(10)
         |dupn
-        |push int32(9)
+        |push int32(10)
         |dupn
         |push int32(2)
         |dupn
@@ -109,7 +205,6 @@ object ArraysTests extends TestSuite {
         |push int32(4)
         |dupn
         |concat
-        |swap
         |sput
         |pop
         |pop
@@ -137,7 +232,7 @@ object ArraysTests extends TestSuite {
         |eq
         |jumpi @WorkWithBytes_br192
         |push x6279746573
-        |push int32(9)
+        |push int32(10)
         |dupn
         |new int8[7, 8, 9]
         |call @array_to_bytes
@@ -148,23 +243,28 @@ object ArraysTests extends TestSuite {
         |push int32(4)
         |dupn
         |concat
-        |swap
         |sput
         |pop
         |pop
         |@WorkWithBytes_br192:
-        |push int32(9)
+        |push int32(10)
         |dupn
         |push int32(0)
         |push int32(2)
         |swap
         |array_mut
-        |push int32(9)
+        |push int32(10)
         |dupn
         |push int32(1)
         |push int32(1)
         |swap
         |array_mut
+        |push int32(9)
+        |dupn
+        |length
+        |push int32(3)
+        |swapn
+        |pop
         |meta translator_mark "WorkWithBytes local vars clearing"
         |pop
         |pop
@@ -176,92 +276,8 @@ object ArraysTests extends TestSuite {
         |pop
         |pop
         |pop
+        |pop
         |meta translator_mark "end of WorkWithBytes method"
-        |jump @stop
-        |meta translator_mark "WorkWithArrays method"
-        |@method_WorkWithArrays:
-        |meta translator_mark "WorkWithArrays local vars definition"
-        |push null
-        |push null
-        |push null
-        |push null
-        |push null
-        |meta translator_mark "WorkWithArrays method body"
-        |new int16[97, 98, 99]
-        |push int32(6)
-        |swapn
-        |pop
-        |new int32[1, 2, 3]
-        |push int32(5)
-        |swapn
-        |pop
-        |new number[1.0, 2.0, 3.0]
-        |push int32(4)
-        |swapn
-        |pop
-        |push int32(3)
-        |push int8(11)
-        |new_array
-        |dup
-        |push int32(0)
-        |push "abc"
-        |swap
-        |array_mut
-        |dup
-        |push int32(1)
-        |push "def"
-        |swap
-        |array_mut
-        |dup
-        |push int32(2)
-        |push "rty"
-        |swap
-        |array_mut
-        |push int32(3)
-        |swapn
-        |pop
-        |new int32[4, 5, 6]
-        |push int32(2)
-        |swapn
-        |pop
-        |push int32(5)
-        |dupn
-        |push int32(1)
-        |push int32(100)
-        |swap
-        |array_mut
-        |push int32(4)
-        |dupn
-        |push int32(1)
-        |push int32(4)
-        |swap
-        |array_mut
-        |push int32(3)
-        |dupn
-        |push int32(1)
-        |push number(4.0)
-        |swap
-        |array_mut
-        |push int32(2)
-        |dupn
-        |push int32(1)
-        |push "asdf"
-        |swap
-        |array_mut
-        |push int32(1)
-        |dupn
-        |push int32(1)
-        |push int32(7)
-        |swap
-        |array_mut
-        |meta translator_mark "WorkWithArrays local vars clearing"
-        |pop
-        |pop
-        |pop
-        |pop
-        |pop
-        |pop
-        |meta translator_mark "end of WorkWithArrays method"
         |jump @stop
         |meta translator_mark "ctor method"
         |@method_ctor:

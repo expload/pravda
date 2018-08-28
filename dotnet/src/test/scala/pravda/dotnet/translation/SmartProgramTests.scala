@@ -15,12 +15,6 @@ object SmartProgramTests extends TestSuite {
         PravdaAssembler
           .parse("""
            |meta translator_mark "jump to methods"
-           |meta method {
-           |"name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
-           |}
-           |meta method {
-           |"name":"transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
-           |}
            |dup
            |push "balanceOf"
            |eq
@@ -32,6 +26,9 @@ object SmartProgramTests extends TestSuite {
            |push "Wrong method name"
            |throw
            |meta translator_mark "balanceOf method"
+           |meta method {
+           |"name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
+           |}
            |@method_balanceOf:
            |meta translator_mark "balanceOf local vars definition"
            |push null
@@ -55,7 +52,17 @@ object SmartProgramTests extends TestSuite {
            |pop
            |meta translator_mark "end of balanceOf method"
            |jump @stop
+           |meta translator_mark "ctor method"
+           |@method_ctor:
+           |meta translator_mark "ctor local vars definition"
+           |meta translator_mark "ctor method body"
+           |meta translator_mark "ctor local vars clearing"
+           |meta translator_mark "end of ctor method"
+           |ret
            |meta translator_mark "transfer method"
+           |meta method {
+           |"name":"transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+           |}
            |@method_transfer:
            |meta translator_mark "transfer local vars definition"
            |push null
@@ -126,7 +133,6 @@ object SmartProgramTests extends TestSuite {
            |push int32(4)
            |dupn
            |concat
-           |swap
            |sput
            |pop
            |pop
@@ -148,7 +154,6 @@ object SmartProgramTests extends TestSuite {
            |push int32(4)
            |dupn
            |concat
-           |swap
            |sput
            |pop
            |pop
@@ -162,13 +167,6 @@ object SmartProgramTests extends TestSuite {
            |pop
            |meta translator_mark "end of transfer method"
            |jump @stop
-           |meta translator_mark "ctor method"
-           |@method_ctor:
-           |meta translator_mark "ctor local vars definition"
-           |meta translator_mark "ctor method body"
-           |meta translator_mark "ctor local vars clearing"
-           |meta translator_mark "end of ctor method"
-           |ret
            |meta translator_mark "helper functions"
            |@storage_get_default:
            |push int32(2)
@@ -210,12 +208,6 @@ object SmartProgramTests extends TestSuite {
         PravdaAssembler.parse(
           s"""
              |meta translator_mark "jump to methods"
-             |meta method {
-             |"name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
-             |}
-             |meta method {
-             |"name":"transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
-             |}
              |dup
              |push "balanceOf"
              |eq
@@ -227,6 +219,9 @@ object SmartProgramTests extends TestSuite {
              |push "Wrong method name"
              |throw
              |meta translator_mark "balanceOf method"
+             |meta method {
+             |"name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
+             |}
              |@method_balanceOf:
              |meta translator_mark "balanceOf local vars definition"
              |push null
@@ -259,7 +254,23 @@ object SmartProgramTests extends TestSuite {
              |pop
              |meta translator_mark "end of balanceOf method"
              |jump @stop
+             |meta translator_mark "ctor method"
+             |@method_ctor:
+             |meta translator_mark "ctor local vars definition"
+             |meta translator_mark "ctor method body"
+             |meta source_mark {
+             |"sl":int32(23),"sc":int32(31),"el":int32(23),"src":"$src","ec":int32(32)
+             |}
+             |meta source_mark {
+             |"sl":int32(23),"sc":int32(32),"el":int32(23),"src":"$src","ec":int32(33)
+             |}
+             |meta translator_mark "ctor local vars clearing"
+             |meta translator_mark "end of ctor method"
+             |ret
              |meta translator_mark "transfer method"
+             |meta method {
+             |"name":"transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+             |}
              |@method_transfer:
              |meta translator_mark "transfer local vars definition"
              |push null
@@ -348,7 +359,6 @@ object SmartProgramTests extends TestSuite {
              |push int32(4)
              |dupn
              |concat
-             |swap
              |sput
              |pop
              |pop
@@ -373,7 +383,6 @@ object SmartProgramTests extends TestSuite {
              |push int32(4)
              |dupn
              |concat
-             |swap
              |sput
              |pop
              |pop
@@ -390,16 +399,6 @@ object SmartProgramTests extends TestSuite {
              |pop
              |meta translator_mark "end of transfer method"
              |jump @stop
-             |meta translator_mark "ctor method"
-             |@method_ctor:
-             |meta translator_mark "ctor local vars definition"
-             |meta translator_mark "ctor method body"
-             |meta source_mark {
-             |"sl":int32(6),"sc":int32(5),"el":int32(6),"src":"$src","ec":int32(62)
-             |}
-             |meta translator_mark "ctor local vars clearing"
-             |meta translator_mark "end of ctor method"
-             |ret
              |meta translator_mark "helper functions"
              |@storage_get_default:
              |push int32(2)

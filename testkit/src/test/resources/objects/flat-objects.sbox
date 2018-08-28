@@ -1,0 +1,14 @@
+preconditions:
+  watts-limit: 3000
+  stack:
+    "Func"
+expectations:
+  watts-spent: 345
+  stack:
+    int32(385)
+  heap:
+    #0x0 = { "AVal": int32(100) },
+    #0x1 = { "BVal": int32(200) }
+  effects:
+---------------------------------------
+#dotnet objects.cs

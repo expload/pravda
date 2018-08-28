@@ -90,6 +90,7 @@ object SmartProgramTests extends TestSuite {
             5,
             Some(37)
           ),
+          Method(List(Nop, Ret), 0, None),
           Method(
             List(
               LdArg0,
@@ -102,9 +103,7 @@ object SmartProgramTests extends TestSuite {
             ),
             0,
             None
-          ),
-          Method(List(Nop, Ret), 0, None),
-          Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
+          )
         )
       )
 
@@ -167,6 +166,43 @@ object SmartProgramTests extends TestSuite {
                            Tpe(Void, false),
                            List(Tpe(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false), Tpe(I4, false)))),
           (86, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+        )
+      )
+
+      DiffUtils.assertEqual(
+        cilData.tables.customAttributeTable,
+        Vector(
+          CustomAttributeData(Ignored,
+                              MemberRefData(TypeRefData(6,
+                                                        "CompilationRelaxationsAttribute",
+                                                        "System.Runtime.CompilerServices"),
+                                            ".ctor",
+                                            1)),
+          CustomAttributeData(Ignored,
+                              MemberRefData(TypeRefData(6,
+                                                        "RuntimeCompatibilityAttribute",
+                                                        "System.Runtime.CompilerServices"),
+                                            ".ctor",
+                                            6)),
+          CustomAttributeData(Ignored,
+                              MemberRefData(TypeRefData(6, "DebuggableAttribute", "System.Diagnostics"), ".ctor", 10)),
+          CustomAttributeData(
+            TypeDefData(
+              1,
+              1048576,
+              "MyProgram",
+              "",
+              TypeRefData(6, "Object", "System"),
+              Vector(FieldData(1, "balances", 64)),
+              Vector(
+                MethodDefData(0, 0, 134, "balanceOf", 73, Vector(ParamData(0, 1, "tokenOwner"))),
+                MethodDefData(1, 0, 134, "transfer", 79, Vector(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+                MethodDefData(2, 0, 150, "Main", 86, Vector()),
+                MethodDefData(3, 0, 6278, ".ctor", 6, Vector())
+              )
+            ),
+            MemberRefData(TypeRefData(10, "Program", "Com.Expload"), ".ctor", 6)
+          )
         )
       )
     }

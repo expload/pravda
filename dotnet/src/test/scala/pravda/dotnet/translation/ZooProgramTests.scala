@@ -15,335 +15,32 @@ object ZooProgramTests extends TestSuite {
         PravdaAssembler
           .parse("""
               |meta translator_mark "jump to methods"
-              |meta method {
-              |"name":"NewZoo","returnTpe":int8(3)
-              |}
-              |meta method {
-              |"name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
-              |}
-              |meta method {
-              |"name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
-              |}
-              |meta method {
-              |"name":"TransferPet",int32(1):int8(3),int32(2):int8(11),int32(0):int8(14),"returnTpe":int8(0)
-              |}
-              |meta method {
-              |"name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
-              |}
               |dup
-              |push "NewZoo"
+              |push "BreedPets"
               |eq
-              |jumpi @method_NewZoo
-              |dup
-              |push "TransferZoo"
-              |eq
-              |jumpi @method_TransferZoo
+              |jumpi @method_BreedPets
               |dup
               |push "NewPet"
               |eq
               |jumpi @method_NewPet
               |dup
+              |push "NewZoo"
+              |eq
+              |jumpi @method_NewZoo
+              |dup
               |push "TransferPet"
               |eq
               |jumpi @method_TransferPet
               |dup
-              |push "BreedPets"
+              |push "TransferZoo"
               |eq
-              |jumpi @method_BreedPets
+              |jumpi @method_TransferZoo
               |push "Wrong method name"
               |throw
-              |meta translator_mark "NewZoo method"
-              |@method_NewZoo:
-              |meta translator_mark "NewZoo local vars definition"
-              |push null
-              |meta translator_mark "NewZoo method body"
-              |push x5A6F6F546F4F776E6572
-              |push "ZooCnt"
-              |sget
-              |from
-              |push int32(2)
-              |dupn
-              |push int8(14)
-              |cast
-              |push int32(4)
-              |dupn
-              |concat
-              |swap
-              |sput
-              |pop
-              |pop
-              |push "ZooCnt"
-              |sget
-              |push int32(1)
-              |add
-              |push "ZooCnt"
-              |swap
-              |sput
-              |push "ZooCnt"
-              |sget
-              |push int32(1)
-              |push int32(-1)
-              |mul
-              |add
-              |push int32(2)
-              |swapn
-              |pop
-              |push int32(1)
-              |dupn
-              |meta translator_mark "NewZoo local vars clearing"
-              |swap
-              |pop
-              |swap
-              |pop
-              |meta translator_mark "end of NewZoo method"
-              |jump @stop
-              |meta translator_mark "TransferZoo method"
-              |@method_TransferZoo:
-              |meta translator_mark "TransferZoo local vars definition"
-              |push null
-              |meta translator_mark "TransferZoo method body"
-              |push x5A6F6F546F4F776E6572
-              |push int32(4)
-              |dupn
-              |push x
-              |call @storage_get_default
-              |from
-              |eq
-              |push int8(3)
-              |cast
-              |push int32(2)
-              |swapn
-              |pop
-              |push int32(1)
-              |dupn
-              |push int8(9)
-              |cast
-              |not
-              |push int8(3)
-              |cast
-              |push int32(1)
-              |eq
-              |jumpi @TransferZoo_br45
-              |push x5A6F6F546F4F776E6572
-              |push int32(4)
-              |dupn
-              |push int32(6)
-              |dupn
-              |push int32(2)
-              |dupn
-              |push int8(14)
-              |cast
-              |push int32(4)
-              |dupn
-              |concat
-              |swap
-              |sput
-              |pop
-              |pop
-              |@TransferZoo_br45:
-              |meta translator_mark "TransferZoo local vars clearing"
-              |pop
-              |pop
-              |pop
-              |pop
-              |meta translator_mark "end of TransferZoo method"
-              |jump @stop
-              |meta translator_mark "NewPet method"
-              |@method_NewPet:
-              |meta translator_mark "NewPet local vars definition"
-              |push null
-              |push null
-              |push null
-              |meta translator_mark "NewPet method body"
-              |push x5A6F6F546F4F776E6572
-              |push int32(6)
-              |dupn
-              |push x
-              |call @storage_get_default
-              |from
-              |eq
-              |push int8(3)
-              |cast
-              |push int32(4)
-              |swapn
-              |pop
-              |push int32(3)
-              |dupn
-              |push int8(9)
-              |cast
-              |not
-              |push int8(3)
-              |cast
-              |push int32(1)
-              |eq
-              |jumpi @NewPet_br108
-              |push "pet"
-              |push "PetId"
-              |sget
-              |push int8(11)
-              |cast
-              |swap
-              |concat
-              |push int32(3)
-              |swapn
-              |pop
-              |push x506574546F4F776E6572
-              |push int32(3)
-              |dupn
-              |from
-              |push int32(2)
-              |dupn
-              |push int8(14)
-              |cast
-              |push int32(4)
-              |dupn
-              |concat
-              |swap
-              |sput
-              |pop
-              |pop
-              |push x5065745369676E6174757265
-              |push int32(3)
-              |dupn
-              |push int32(4)
-              |dupn
-              |call @func_GenerateSignature
-              |push int32(2)
-              |dupn
-              |push int8(14)
-              |cast
-              |push int32(4)
-              |dupn
-              |concat
-              |swap
-              |sput
-              |pop
-              |pop
-              |push "PetId"
-              |sget
-              |push int32(1)
-              |add
-              |push "PetId"
-              |swap
-              |sput
-              |push int32(2)
-              |dupn
-              |push int32(2)
-              |swapn
-              |pop
-              |jump @NewPet_br116
-              |@NewPet_br108:
-              |push ""
-              |push int32(2)
-              |swapn
-              |pop
-              |@NewPet_br116:
-              |push int32(1)
-              |dupn
-              |meta translator_mark "NewPet local vars clearing"
-              |swap
-              |pop
-              |swap
-              |pop
-              |swap
-              |pop
-              |swap
-              |pop
-              |swap
-              |pop
-              |meta translator_mark "end of NewPet method"
-              |jump @stop
-              |meta translator_mark "TransferPet method"
-              |@method_TransferPet:
-              |meta translator_mark "TransferPet local vars definition"
-              |push null
-              |meta translator_mark "TransferPet method body"
-              |push x506574546F4F776E6572
-              |push int32(4)
-              |dupn
-              |push x
-              |call @storage_get_default
-              |from
-              |eq
-              |push int8(3)
-              |cast
-              |push int8(9)
-              |cast
-              |not
-              |push int8(3)
-              |cast
-              |push int32(1)
-              |eq
-              |jumpi @TransferPet_br47
-              |push x5A6F6F546F4F776E6572
-              |push int32(5)
-              |dupn
-              |push x
-              |call @storage_get_default
-              |push int32(6)
-              |dupn
-              |eq
-              |push int8(3)
-              |cast
-              |jump @TransferPet_br48
-              |@TransferPet_br47:
-              |push int32(0)
-              |@TransferPet_br48:
-              |push int32(2)
-              |swapn
-              |pop
-              |push int32(1)
-              |dupn
-              |push int8(9)
-              |cast
-              |not
-              |push int8(3)
-              |cast
-              |push int32(1)
-              |eq
-              |jumpi @TransferPet_br82
-              |push x506574546F4F776E6572
-              |push int32(4)
-              |dupn
-              |push int32(7)
-              |dupn
-              |push int32(2)
-              |dupn
-              |push int8(14)
-              |cast
-              |push int32(4)
-              |dupn
-              |concat
-              |swap
-              |sput
-              |pop
-              |pop
-              |push x506574546F5A6F6F
-              |push int32(4)
-              |dupn
-              |push int32(6)
-              |dupn
-              |push int32(2)
-              |dupn
-              |push int8(14)
-              |cast
-              |push int32(4)
-              |dupn
-              |concat
-              |swap
-              |sput
-              |pop
-              |pop
-              |@TransferPet_br82:
-              |meta translator_mark "TransferPet local vars clearing"
-              |pop
-              |pop
-              |pop
-              |pop
-              |pop
-              |meta translator_mark "end of TransferPet method"
-              |jump @stop
               |meta translator_mark "BreedPets method"
+              |meta method {
+              |"name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
+              |}
               |@method_BreedPets:
               |meta translator_mark "BreedPets local vars definition"
               |push null
@@ -434,7 +131,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -466,7 +162,6 @@ object ZooProgramTests extends TestSuite {
               |push int32(4)
               |dupn
               |concat
-              |swap
               |sput
               |pop
               |pop
@@ -499,17 +194,310 @@ object ZooProgramTests extends TestSuite {
               |pop
               |meta translator_mark "end of BreedPets method"
               |jump @stop
+              |meta translator_mark "NewPet method"
+              |meta method {
+              |"name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
+              |}
+              |@method_NewPet:
+              |meta translator_mark "NewPet local vars definition"
+              |push null
+              |push null
+              |push null
+              |meta translator_mark "NewPet method body"
+              |push x5A6F6F546F4F776E6572
+              |push int32(6)
+              |dupn
+              |push x
+              |call @storage_get_default
+              |from
+              |eq
+              |push int8(3)
+              |cast
+              |push int32(4)
+              |swapn
+              |pop
+              |push int32(3)
+              |dupn
+              |push int8(9)
+              |cast
+              |not
+              |push int8(3)
+              |cast
+              |push int32(1)
+              |eq
+              |jumpi @NewPet_br108
+              |push "pet"
+              |push "p_PetId"
+              |sget
+              |push int8(11)
+              |cast
+              |swap
+              |concat
+              |push int32(3)
+              |swapn
+              |pop
+              |push x506574546F4F776E6572
+              |push int32(3)
+              |dupn
+              |from
+              |push int32(2)
+              |dupn
+              |push int8(14)
+              |cast
+              |push int32(4)
+              |dupn
+              |concat
+              |sput
+              |pop
+              |pop
+              |push x5065745369676E6174757265
+              |push int32(3)
+              |dupn
+              |push int32(4)
+              |dupn
+              |call @func_GenerateSignature
+              |push int32(2)
+              |dupn
+              |push int8(14)
+              |cast
+              |push int32(4)
+              |dupn
+              |concat
+              |sput
+              |pop
+              |pop
+              |push "p_PetId"
+              |sget
+              |push int32(1)
+              |add
+              |push "p_PetId"
+              |sput
+              |push int32(2)
+              |dupn
+              |push int32(2)
+              |swapn
+              |pop
+              |jump @NewPet_br116
+              |@NewPet_br108:
+              |push ""
+              |push int32(2)
+              |swapn
+              |pop
+              |@NewPet_br116:
+              |push int32(1)
+              |dupn
+              |meta translator_mark "NewPet local vars clearing"
+              |swap
+              |pop
+              |swap
+              |pop
+              |swap
+              |pop
+              |swap
+              |pop
+              |swap
+              |pop
+              |meta translator_mark "end of NewPet method"
+              |jump @stop
+              |meta translator_mark "NewZoo method"
+              |meta method {
+              |"name":"NewZoo","returnTpe":int8(3)
+              |}
+              |@method_NewZoo:
+              |meta translator_mark "NewZoo local vars definition"
+              |push null
+              |meta translator_mark "NewZoo method body"
+              |push x5A6F6F546F4F776E6572
+              |push "p_ZooCnt"
+              |sget
+              |from
+              |push int32(2)
+              |dupn
+              |push int8(14)
+              |cast
+              |push int32(4)
+              |dupn
+              |concat
+              |sput
+              |pop
+              |pop
+              |push "p_ZooCnt"
+              |sget
+              |push int32(1)
+              |add
+              |push "p_ZooCnt"
+              |sput
+              |push "p_ZooCnt"
+              |sget
+              |push int32(1)
+              |push int32(-1)
+              |mul
+              |add
+              |push int32(2)
+              |swapn
+              |pop
+              |push int32(1)
+              |dupn
+              |meta translator_mark "NewZoo local vars clearing"
+              |swap
+              |pop
+              |swap
+              |pop
+              |meta translator_mark "end of NewZoo method"
+              |jump @stop
+              |meta translator_mark "TransferPet method"
+              |meta method {
+              |"name":"TransferPet",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0),int32(2):int8(11)
+              |}
+              |@method_TransferPet:
+              |meta translator_mark "TransferPet local vars definition"
+              |push null
+              |meta translator_mark "TransferPet method body"
+              |push x506574546F4F776E6572
+              |push int32(4)
+              |dupn
+              |push x
+              |call @storage_get_default
+              |from
+              |eq
+              |push int8(3)
+              |cast
+              |push int8(9)
+              |cast
+              |not
+              |push int8(3)
+              |cast
+              |push int32(1)
+              |eq
+              |jumpi @TransferPet_br47
+              |push x5A6F6F546F4F776E6572
+              |push int32(5)
+              |dupn
+              |push x
+              |call @storage_get_default
+              |push int32(6)
+              |dupn
+              |eq
+              |push int8(3)
+              |cast
+              |jump @TransferPet_br48
+              |@TransferPet_br47:
+              |push int32(0)
+              |@TransferPet_br48:
+              |push int32(2)
+              |swapn
+              |pop
+              |push int32(1)
+              |dupn
+              |push int8(9)
+              |cast
+              |not
+              |push int8(3)
+              |cast
+              |push int32(1)
+              |eq
+              |jumpi @TransferPet_br82
+              |push x506574546F4F776E6572
+              |push int32(4)
+              |dupn
+              |push int32(7)
+              |dupn
+              |push int32(2)
+              |dupn
+              |push int8(14)
+              |cast
+              |push int32(4)
+              |dupn
+              |concat
+              |sput
+              |pop
+              |pop
+              |push x506574546F5A6F6F
+              |push int32(4)
+              |dupn
+              |push int32(6)
+              |dupn
+              |push int32(2)
+              |dupn
+              |push int8(14)
+              |cast
+              |push int32(4)
+              |dupn
+              |concat
+              |sput
+              |pop
+              |pop
+              |@TransferPet_br82:
+              |meta translator_mark "TransferPet local vars clearing"
+              |pop
+              |pop
+              |pop
+              |pop
+              |pop
+              |meta translator_mark "end of TransferPet method"
+              |jump @stop
+              |meta translator_mark "TransferZoo method"
+              |meta method {
+              |"name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+              |}
+              |@method_TransferZoo:
+              |meta translator_mark "TransferZoo local vars definition"
+              |push null
+              |meta translator_mark "TransferZoo method body"
+              |push x5A6F6F546F4F776E6572
+              |push int32(4)
+              |dupn
+              |push x
+              |call @storage_get_default
+              |from
+              |eq
+              |push int8(3)
+              |cast
+              |push int32(2)
+              |swapn
+              |pop
+              |push int32(1)
+              |dupn
+              |push int8(9)
+              |cast
+              |not
+              |push int8(3)
+              |cast
+              |push int32(1)
+              |eq
+              |jumpi @TransferZoo_br45
+              |push x5A6F6F546F4F776E6572
+              |push int32(4)
+              |dupn
+              |push int32(6)
+              |dupn
+              |push int32(2)
+              |dupn
+              |push int8(14)
+              |cast
+              |push int32(4)
+              |dupn
+              |concat
+              |sput
+              |pop
+              |pop
+              |@TransferZoo_br45:
+              |meta translator_mark "TransferZoo local vars clearing"
+              |pop
+              |pop
+              |pop
+              |pop
+              |meta translator_mark "end of TransferZoo method"
+              |jump @stop
               |meta translator_mark "ctor method"
               |@method_ctor:
               |meta translator_mark "ctor local vars definition"
               |meta translator_mark "ctor method body"
               |push int32(1)
-              |push "ZooCnt"
-              |swap
+              |push "p_ZooCnt"
               |sput
               |push int32(1)
-              |push "PetId"
-              |swap
+              |push "p_PetId"
               |sput
               |meta translator_mark "ctor local vars clearing"
               |meta translator_mark "end of ctor method"

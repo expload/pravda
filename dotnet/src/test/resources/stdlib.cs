@@ -12,8 +12,6 @@ class MyProgram {
     {
         return StdLib.ValidateEd25519Signature(pubKey, message, sign);
     }
-}
 
-class MainClass {
     public static void Main() {}
 }

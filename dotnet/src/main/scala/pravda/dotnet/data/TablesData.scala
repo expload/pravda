@@ -28,6 +28,7 @@ import cats.syntax.traverse._
 import pravda.dotnet.utils._
 
 final case class TablesData(
+    customAttributeTable: Vector[TablesData.CustomAttributeData],
     fieldTable: Vector[TablesData.FieldData],
     fieldRVATable: Vector[TablesData.FieldRVAData],
     memberRefTable: Vector[TablesData.MemberRefData],
@@ -58,7 +59,10 @@ final case class TablesData(
 object TablesData {
 
   sealed trait TableRowData
-  final case class MethodDefData(implFlags: Short,
+  final case class CustomAttributeData(parent: TableRowData, tpe: TableRowData /* value is ignored */ )
+      extends TableRowData
+  final case class MethodDefData(id: Int,
+                                 implFlags: Short,
                                  flags: Short,
                                  name: String,
                                  signatureIdx: Long,
@@ -68,10 +72,11 @@ object TablesData {
   final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
   final case class FieldRVAData(field: FieldData, rva: Long)                                   extends TableRowData
   final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData
-  final case class TypeDefData(flags: Int,
+  final case class TypeDefData(id: Int,
+                               flags: Int,
                                name: String,
                                namespace: String,
-                               parent: TableRowData,
+                               var parent: TableRowData,
                                fields: Vector[FieldData],
                                methods: Vector[MethodDefData])
       extends TableRowData
@@ -88,15 +93,16 @@ object TablesData {
 
   def fromInfo(peData: PeData): Either[String, TablesData] = {
 
-    def sizesFromIds(ids: Vector[Long]): Vector[Long] =
+    def sizesFromIds(ids: Vector[Long], len: Long): Vector[Long] = {
       ids match {
         case rest :+ last =>
           val sizes = for {
             i <- rest.indices
           } yield ids(i + 1) - ids(i)
-          sizes.toVector :+ (ids.length - last)
+          sizes.toVector :+ (len - last + 1)
         case _ => Vector.empty
       }
+    }
 
     val standAlongSigList = peData.tables.standAloneSigTable.map {
       case StandAloneSigRow(blobIdx) => StandAloneSigData(blobIdx)
@@ -129,14 +135,15 @@ object TablesData {
     }.sequence
 
     def methodListV(paramList: Vector[ParamData]): Either[String, Vector[MethodDefData]] = {
-      val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx))
+      val paramListSizes = sizesFromIds(peData.tables.methodDefTable.map(_.paramListIdx), paramList.length.toLong)
 
       peData.tables.methodDefTable.zipWithIndex.map {
         case (MethodDefRow(_, implFlags, flags, nameIdx, signatureIdx, paramListIdx), i) =>
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
           } yield
-            MethodDefData(implFlags,
+            MethodDefData(i,
+                          implFlags,
                           flags,
                           name,
                           signatureIdx,
@@ -153,17 +160,19 @@ object TablesData {
     }.sequence
 
     def typeDefListV(fieldList: Vector[FieldData],
-                     methodList: Vector[MethodDefData]): Either[String, Vector[TypeDefData]] = {
-      val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx))
-      val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx))
+                     methodList: Vector[MethodDefData],
+                     typeRefList: Vector[TypeRefData]): Either[String, Vector[TypeDefData]] = {
+      val fieldListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.fieldListIdx), fieldList.length.toLong)
+      val methodListSizes = sizesFromIds(peData.tables.typeDefTable.map(_.methodListIdx), methodList.length.toLong)
 
-      peData.tables.typeDefTable.zipWithIndex.map {
+      val typeDefRawE: Either[String, Vector[TypeDefData]] = peData.tables.typeDefTable.zipWithIndex.map {
         case (TypeDefRow(flags, nameIdx, namespaceIdx, parent, fieldListIdx, methodListIdx), i) =>
           for {
             name <- Heaps.string(peData.stringHeap, nameIdx)
             namespace <- Heaps.string(peData.stringHeap, namespaceIdx)
           } yield
             TypeDefData(
+              i,
               flags,
               name,
               namespace,
@@ -172,6 +181,21 @@ object TablesData {
               methodList.slice(methodListIdx.toInt - 1, methodListIdx.toInt + methodListSizes(i).toInt - 1)
             )
       }.sequence
+
+      for {
+        typeDefList <- typeDefRawE
+      } yield {
+        peData.tables.typeDefTable.zipWithIndex.foreach {
+          case (row, i) =>
+            for {
+              parent <- CodedIndexes.typeDefOrRef(row.parent, typeDefList, typeRefList, typeSpecList)
+            } yield {
+              typeDefList(i).parent = parent // FIXME we could implement more sophisticated algorithm
+            }
+        }
+      }
+
+      typeDefRawE
     }
 
     def memberRefListV(typeDefTable: Vector[TypeDefData],
@@ -182,6 +206,17 @@ object TablesData {
             name <- Heaps.string(peData.stringHeap, nameIdx)
             cls <- CodedIndexes.memberRefParent(clsIdx, typeDefTable, typeRefTable, typeSpecList)
           } yield MemberRefData(cls, name, signatureIdx)
+      }.sequence
+
+    def customAttributeListV(typeDefTable: Vector[TypeDefData],
+                             methodDefTable: Vector[MethodDefData],
+                             memberRefTable: Vector[MemberRefData]): Either[String, Vector[CustomAttributeData]] =
+      peData.tables.customAttributeTable.map {
+        case CustomAttributeRow(parentIdx, typeIdx, _) =>
+          for {
+            parent <- CodedIndexes.hasCustomAttribute(parentIdx, typeDefTable)
+            tpe <- CodedIndexes.customAttributeType(typeIdx, methodDefTable, memberRefTable)
+          } yield CustomAttributeData(parent, tpe)
       }.sequence
 
     val documentListV: Either[String, Vector[DocumentData]] =
@@ -221,13 +256,15 @@ object TablesData {
       fieldList <- fieldListV
       fieldRVAList <- fieldRVAListV
       methodList <- methodListV(paramList)
-      typeDefList <- typeDefListV(fieldList, methodList)
       typeRefList <- typeRefListV
+      typeDefList <- typeDefListV(fieldList, methodList, typeRefList)
       memberRefList <- memberRefListV(typeDefList, typeRefList)
+      customAttributeList <- customAttributeListV(typeDefList, methodList, memberRefList)
       documentList <- documentListV
       methodDebugInformationList <- methodDebugInformationListV(documentList)
     } yield
       TablesData(
+        customAttributeList,
         fieldList,
         fieldRVAList,
         memberRefList,

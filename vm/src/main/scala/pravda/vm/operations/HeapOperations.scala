@@ -238,13 +238,13 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
 
   @OpcodeImplementation(
     opcode = STRUCT_MUT,
-    description = "Takes reference to struct, primitive and key from the stack." +
+    description = "Takes key, primitive and reference to struct from the stack." +
       "Puts a primitive at key in struct corresponding by the given reference."
   )
   def structMut(): Unit = {
     val key = memory.pop()
-    val reference = ref(memory.pop())
     val value = memory.pop()
+    val reference = ref(memory.pop())
     val struct = memory.heapGet(reference.data)
     struct match {
       case Struct(data) =>
@@ -255,7 +255,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
 
   @OpcodeImplementation(
     opcode = STRUCT_MUT_STATIC,
-    description = "Takes reference to struct and primitive from " +
+    description = "Takes primitive and reference to struct from " +
       "the stack and key from bytes subsequent to opcode." +
       "Puts a primitive at key in struct corresponding by the given reference."
   )

@@ -4,7 +4,7 @@ preconditions:
     "hello world",
     "Ripemd160"
 expectations:
-  watts-spent: 285
+  watts-spent: 283
   stack:
     x98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f
   heap:

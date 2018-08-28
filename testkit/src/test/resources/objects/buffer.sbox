@@ -1,0 +1,17 @@
+preconditions:
+  watts-limit: 3000
+  stack:
+    "Func"
+expectations:
+  watts-spent: 2808
+    stack:
+      "13510"
+    heap:
+      #0x0 = { "size": int32(9), "buffer": #0x3 },
+      #0x1 = int32[1, 3],
+      #0x2 = int32[1, 3, 5, 7, 9],
+      #0x3 = int32[1, 10, 5, 7, 9, 11, 13, 15, 17, 0, 0]
+    effects:
+
+---------------------------------------
+#dotnet buffer.cs

@@ -15,16 +15,23 @@ object SystemTests extends TestSuite {
         PravdaAssembler.parse(
           """
             |meta translator_mark "jump to methods"
-            |meta method {
-            |"name":"system","returnTpe":int8(0)
-            |}
             |dup
             |push "system"
             |eq
             |jumpi @method_system
             |push "Wrong method name"
             |throw
+            |meta translator_mark "ctor method"
+            |@method_ctor:
+            |meta translator_mark "ctor local vars definition"
+            |meta translator_mark "ctor method body"
+            |meta translator_mark "ctor local vars clearing"
+            |meta translator_mark "end of ctor method"
+            |ret
             |meta translator_mark "system method"
+            |meta method {
+            |"name":"system","returnTpe":int8(0)
+            |}
             |@method_system:
             |meta translator_mark "system local vars definition"
             |push null
@@ -58,13 +65,6 @@ object SystemTests extends TestSuite {
             |pop
             |meta translator_mark "end of system method"
             |jump @stop
-            |meta translator_mark "ctor method"
-            |@method_ctor:
-            |meta translator_mark "ctor local vars definition"
-            |meta translator_mark "ctor method body"
-            |meta translator_mark "ctor local vars clearing"
-            |meta translator_mark "end of ctor method"
-            |ret
             |meta translator_mark "helper functions"
             |@stop:
           """.stripMargin).right.get
