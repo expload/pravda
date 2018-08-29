@@ -37,6 +37,4 @@ trait Environment {
   // Balance
   def balance(address: Address): NativeCoin
   def transfer(from: Address, to: Address, amount: NativeCoin): Unit
-  def accrue(address: Address, amount: NativeCoin): Unit
-  def withdraw(address: Address, amount: NativeCoin): Unit
 }

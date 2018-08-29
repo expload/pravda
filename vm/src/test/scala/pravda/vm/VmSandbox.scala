@@ -258,18 +258,6 @@ object VmSandbox {
         balances(to) = Data.Primitive.BigInt(toBalance + amount)
         effects += EnvironmentEffect.BalanceTransfer(from, to, amount)
       }
-
-      def accrue(address: Address, amount: NativeCoin): Unit = {
-        val b = balances.get(address).fold(scala.BigInt(0))(_.data)
-        balances(address) = Data.Primitive.BigInt(b + amount)
-        effects += EnvironmentEffect.BalanceAccrue(address, amount)
-      }
-
-      def withdraw(address: Address, amount: NativeCoin): Unit = {
-        val b = balances.get(address).fold(scala.BigInt(0))(_.data)
-        balances(address) = Data.Primitive.BigInt(b - amount)
-        effects += EnvironmentEffect.BalanceWithdraw(address, amount)
-      }
     }
 
     val storage: Storage = new Storage {
