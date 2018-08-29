@@ -19,9 +19,8 @@ package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.parsers.PE
-import pravda.dotnet.parsers.Signatures.FieldSig
-import pravda.dotnet.parsers.Signatures.SigType.ValueTpe
-import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
+import pravda.dotnet.parsers.Signatures.{FieldSig, SigType}
+import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationCtx, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 import scodec.bits.ByteOrdering
@@ -84,9 +83,14 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           for {
             token <- ctx.tctx.signatures.get(tokenSignIdx)
             size <- token match {
-              case FieldSig(ValueTpe(TypeDefData(_, _, fieldType, "", _, Vector(), Vector())))
+              case FieldSig(SigType.ValueTpe(TypeDefData(_, _, fieldType, "", _, Vector(), Vector())))
                   if fieldType.startsWith("__StaticArrayInitTypeSize=") =>
                 Try { fieldType.drop("__StaticArrayInitTypeSize=".length).toLong }.toOption
+              case FieldSig(SigType.I1) => Some(1L)
+              case FieldSig(SigType.I2) => Some(2L)
+              case FieldSig(SigType.I4) => Some(4L)
+              case FieldSig(SigType.U8) => Some(8L)
+              case _ => None
             }
           } yield size
 

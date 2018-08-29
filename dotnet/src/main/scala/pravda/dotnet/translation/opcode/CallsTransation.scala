@@ -130,10 +130,21 @@ case object CallsTransation extends OneToManyTranslator {
       -m.params.length + (if (void) 0 else 1) + (if (program || ctx.static) 0 else -1)
     }
 
+    def callMethodRef(signatureIdx: Long): Int = {
+      val sig = ctx.tctx.signatures.get(signatureIdx)
+      val void = sig.exists(isMethodVoid)
+      val paramsLen = sig.map(methodParamsCount).getOrElse(0)
+      -paramsLen + (if (void) 0 else 1)
+    }
+
     op match {
       case Call(m: MethodDefData)     => Right(callMethodDef(m))
       case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
       case NewObj(m: MethodDefData)   => Right(callMethodDef(m) + 2)
+
+      case CallVirt(MemberRefData(TypeRefData(_, _, "Com.Expload.Programs"), _, signatureIdx)) =>
+        Right(callMethodRef(signatureIdx))
+
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(-1) else Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
@@ -143,6 +154,8 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
       case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _))                     => Right(-1)
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Com.Expload"), "Program", _), _)) =>
+        Right(0)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
@@ -248,22 +261,36 @@ case object CallsTransation extends OneToManyTranslator {
 
           case None => Left(UnknownOpcode)
         }
+
+      case CallVirt(MemberRefData(TypeRefData(_, _, "Com.Expload.Programs"), methodName, signatureIdx)) =>
+        val paramsLen = ctx.tctx.signatures.get(signatureIdx).map(methodParamsCount).getOrElse(0)
+        val swapAddress = paramsLen
+          .to(1, -1)
+          .flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
+          .toList
+        Right(
+          swapAddress ++ List(Operation.Push(Data.Primitive.Utf8(methodName)),
+                              Operation(Opcodes.SWAP),
+                              Operation.Push(Data.Primitive.Int32(paramsLen + 1)),
+                              Operation(Opcodes.PCALL)))
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(List(Operation(Opcodes.POP))) else Right(List.empty)
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
-        Right(List(Operation.Orphan(Opcodes.FROM)))
+        Right(List(Operation(Opcodes.FROM)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _)) =>
-        Right(List(Operation.Orphan(Opcodes.OWNER)))
+        Right(List(Operation(Opcodes.OWNER)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _)) =>
-        Right(List(Operation.Orphan(Opcodes.BALANCE)))
+        Right(List(Operation(Opcodes.BALANCE)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "ProgramAddress", _)) =>
-        Right(List(Operation.Orphan(Opcodes.PADDR)))
+        Right(List(Operation(Opcodes.PADDR)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _)) =>
-        Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation.Orphan(Opcodes.SCALL)))
+        Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) =>
-        Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation.Orphan(Opcodes.SCALL)))
+        Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _)) =>
-        Right(List(Operation.Orphan(Opcodes.THROW)))
+        Right(List(Operation(Opcodes.THROW)))
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Com.Expload"), "Program", _), _)) =>
+        Right(List())
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
           parentSig <- ctx.tctx.signatures.get(parentSigIdx)

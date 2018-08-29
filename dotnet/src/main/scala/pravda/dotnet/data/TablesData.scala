@@ -38,6 +38,7 @@ final case class TablesData(
     typeRefTable: Vector[TablesData.TypeRefData],
     typeSpecTable: Vector[TablesData.TypeSpecData],
     standAloneSigTable: Vector[TablesData.StandAloneSigData],
+    methodSpecTable: Vector[TablesData.MethodSpecData],
     documentTable: Vector[TablesData.DocumentData],
     methodDebugInformationTable: Vector[TablesData.MethodDebugInformationData]
 ) {
@@ -52,6 +53,7 @@ final case class TablesData(
     case 0x11 => Some(standAloneSigTable)
     case 0x1B => Some(typeSpecTable)
     case 0x1D => Some(fieldRVATable)
+    case 0x2B => Some(methodSpecTable)
     case _    => None
   }
 }
@@ -84,6 +86,8 @@ object TablesData {
   final case class TypeSpecData(signatureIdx: Long)                                       extends TableRowData
 
   final case class StandAloneSigData(signatureIdx: Long) extends TableRowData
+
+  final case class MethodSpecData(method: TableRowData, signatureIdx: Long) extends TableRowData
 
   final case class DocumentData(path: String)
   final case class MethodDebugInformationData(document: Option[String], points: List[Heaps.SequencePoint])
@@ -219,6 +223,15 @@ object TablesData {
           } yield CustomAttributeData(parent, tpe)
       }.sequence
 
+    def methodSpecListV(methodDefTable: Vector[MethodDefData],
+                        memberRefTable: Vector[MemberRefData]): Either[String, Vector[MethodSpecData]] =
+      peData.tables.methodSpecTable.map {
+        case MethodSpecRow(methodIdx, signatureIdx) =>
+          for {
+            method <- CodedIndexes.methodDefOrRef(methodIdx, methodDefTable, memberRefTable)
+          } yield MethodSpecData(method, signatureIdx)
+      }.sequence
+
     val documentListV: Either[String, Vector[DocumentData]] =
       peData.tables.documentTable.map {
         case DocumentRow(nameIdx, _, _, _) =>
@@ -260,6 +273,7 @@ object TablesData {
       typeDefList <- typeDefListV(fieldList, methodList, typeRefList)
       memberRefList <- memberRefListV(typeDefList, typeRefList)
       customAttributeList <- customAttributeListV(typeDefList, methodList, memberRefList)
+      methodSpecList <- methodSpecListV(methodList, memberRefList)
       documentList <- documentListV
       methodDebugInformationList <- methodDebugInformationListV(documentList)
     } yield
@@ -274,6 +288,7 @@ object TablesData {
         typeRefList,
         typeSpecList,
         standAlongSigList,
+        methodSpecList,
         documentList,
         methodDebugInformationList
       )

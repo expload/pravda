@@ -54,6 +54,22 @@ object CodedIndexes {
     }
   }
 
+  def methodDefOrRef(idx: Long,
+                     methodDefTable: Vector[MethodDefData],
+                     memberRefTable: Vector[MemberRefData]): Either[String, TableRowData] = {
+    val tableIdx = idx & 0x1
+    val rowIdx = (idx >> 1).toInt - 1
+    if (rowIdx == -1) {
+      Right(Ignored)
+    } else {
+      tableIdx match {
+        case 0 => Right(methodDefTable(rowIdx))
+        case 1 => Right(memberRefTable(rowIdx))
+        case n => Left(s"Unknown TypeDefOrRef table index: $n")
+      }
+    }
+  }
+
   def hasCustomAttribute(idx: Long, typeDefTable: Vector[TypeDefData]): Either[String, TableRowData] = {
     val tableIdx = idx & 0x1f
     val rowIdx = (idx >> 5).toInt - 1
