@@ -264,7 +264,8 @@ case object CallsTransation extends OneToManyTranslator {
 
       case CallVirt(MemberRefData(TypeRefData(_, _, "Com.Expload.Programs"), methodName, signatureIdx)) =>
         val paramsLen = ctx.tctx.signatures.get(signatureIdx).map(methodParamsCount).getOrElse(0)
-        val swapAddress = (2 to (paramsLen + 1)).flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
+        val swapAddress = (2 to (paramsLen + 1))
+          .flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
           .toList
         Right(
           swapAddress ++ List(Operation.Push(Data.Primitive.Utf8(methodName)),

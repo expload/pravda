@@ -90,7 +90,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
               case FieldSig(SigType.I2) => Some(2L)
               case FieldSig(SigType.I4) => Some(4L)
               case FieldSig(SigType.U8) => Some(8L)
-              case _ => None
+              case _                    => None
             }
           } yield size
 
