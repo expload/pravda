@@ -14,6 +14,7 @@ import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 
 object VmSandbox {
 
@@ -28,7 +29,8 @@ object VmSandbox {
   final case class Preconditions(balances: Map[Address, Primitive.BigInt],
                                  watts: Long = 0,
                                  memory: Memory = Memory(),
-                                 storage: Map[Primitive, Data] = Map.empty)
+                                 storage: Map[Primitive, Data] = Map.empty,
+                                 programs: Map[Address, Primitive.Bytes] = Map.empty)
 
   final case class Memory(stack: Seq[Data.Primitive] = Nil, heap: Map[Data.Primitive.Ref, Data] = Map.empty)
 
@@ -80,15 +82,18 @@ object VmSandbox {
       val watts = P("watts-limit:" ~/ space ~ uint)
       val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
-      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.?).map {
-        case (b, w, m, s) =>
-          Preconditions(
-            balances = b.getOrElse(Nil).toMap,
-            watts = w.toLong,
-            memory = m.getOrElse(Memory()),
-            storage = s.getOrElse(Nil).toMap
-          )
-      }
+      val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
+      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ programs.?)
+        .map {
+          case (b, w, m, s, ps) =>
+            Preconditions(
+              balances = b.getOrElse(Nil).toMap,
+              watts = w.toLong,
+              memory = m.getOrElse(Memory()),
+              storage = s.getOrElse(Nil).toMap,
+              programs = ps.getOrElse(Nil).toMap
+            )
+        }
     }
 
     val expectations = {
@@ -222,24 +227,45 @@ object VmSandbox {
 
     val environment: Environment = new Environment {
       val balances = mutable.Map(c.preconditions.balances.toSeq: _*)
+      val programs = mutable.Map(c.preconditions.programs.toSeq: _*)
+      val sealedPrograms = mutable.Map[Address, Boolean]()
 
       def executor: Address =
         Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0x00))
 
-      def sealProgram(address: Address): Unit =
+      def sealProgram(address: Address): Unit = {
+        sealedPrograms(address) = true
         effects += EnvironmentEffect.ProgramSeal(address)
+      }
 
-      def updateProgram(address: Address, code: ByteString): Unit =
-        effects += EnvironmentEffect.ProgramUpdate(address, code)
+      def updateProgram(address: Address, code: ByteString): Unit = {
+        if (sealedPrograms.get(address).exists(identity)) {
+          programs(address) = Data.Primitive.Bytes(code)
+          effects += EnvironmentEffect.ProgramUpdate(address, code)
+        }
+      }
 
       def createProgram(owner: Address, code: ByteString): Address = {
-        val address = Address @@ ByteString.EMPTY // TODO generate
+        val randomBytes = new Array[Byte](32)
+        Random.nextBytes(randomBytes)
+        val address = Address @@ ByteString.copyFrom(randomBytes)
+        programs(address) = Data.Primitive.Bytes(code)
         effects += EnvironmentEffect.ProgramCreate(owner, address, code)
         address
       }
 
-      def getProgram(address: Address): Option[ProgramContext] =
-        None // TODO program mocking
+      def getProgram(address: Address): Option[ProgramContext] = {
+        programs.get(address).map { p =>
+          ProgramContext(
+            new Storage { // TODO meaningful storage
+              override def get(key: Data): Option[Data] = None
+              override def put(key: Data, value: Data): Option[Data] = None
+              override def delete(key: Data): Option[Data] = None
+            },
+            p.data.asReadOnlyByteBuffer()
+          )
+        }
+      }
 
       def getProgramOwner(address: Address): Option[Address] =
         None // TODO program mocking
@@ -250,7 +276,6 @@ object VmSandbox {
         balance
       }
 
-      // TODO Method is too complex. we should move functionality to NativeCoinOperations
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
         val fromBalance = balances.get(from).fold(scala.BigInt(0))(_.data)
         val toBalance = balances.get(to).fold(scala.BigInt(0))(_.data)
@@ -295,7 +320,7 @@ object VmSandbox {
     }
 
     val res =
-      vm.spawn(ByteBuffer.wrap(program.toByteArray), environment, memory, wattCounter, Some(storage), None, false)
+      vm.spawn(ByteBuffer.wrap(program.toByteArray), environment, memory, wattCounter, Some(storage), None, true)
 
     DiffUtils.assertEqual(
       printExpectations(

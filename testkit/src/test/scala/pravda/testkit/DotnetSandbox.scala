@@ -12,19 +12,27 @@ import scala.sys.process._
 
 object DotnetSandbox extends TestSuite {
 
-  def dotnetToAsm(filename: String): List[asm.Operation] = {
+  def dotnetToAsm(filename: String, dlls: List[String]): List[asm.Operation] = {
     val exploadDll = new File(getClass.getResource("/expload.dll").getPath)
-    val src = new File(getClass.getResource(s"/$filename").getPath)
+
     new File("/tmp/pravda/").mkdirs()
-    val tmpSrc = new File(s"/tmp/pravda/$filename")
-    if (!tmpSrc.exists()) {
-      Files.copy(src.toPath, tmpSrc.toPath)
+
+    val tmpSrcs =
+      (filename :: dlls).map(f => (new File(getClass.getResource(s"/$f").getPath), new File(s"/tmp/pravda/$f")))
+
+    tmpSrcs.foreach {
+      case (from, dest) =>
+        if (!dest.exists()) {
+          Files.copy(from.toPath, dest.toPath)
+        }
     }
+
     val exe = File.createTempFile("dotnet-", ".exe")
     val pdb = File.createTempFile("dotnet-", ".pdb")
-    s"""csc ${tmpSrc.getAbsolutePath}
+    s"""csc ${tmpSrcs.head._2.getAbsolutePath}
          |-out:${exe.getAbsolutePath}
          |-reference:${exploadDll.getAbsolutePath}
+         |${tmpSrcs.tail.map(dll => s"-reference:${dll._2.getAbsolutePath}").mkString("\n")}
          |-debug:portable
          |-pdb:${pdb.getAbsolutePath}
       """.stripMargin.!!
@@ -37,7 +45,7 @@ object DotnetSandbox extends TestSuite {
 
   val tests = SandboxUtils.constructTestsFromDir(
     new File(getClass.getResource("/").getPath), {
-      case VmSandbox.Macro("dotnet", List(filename)) => dotnetToAsm(filename)
+      case VmSandbox.Macro("dotnet", filename :: dlls) => dotnetToAsm(filename, dlls)
     }
   )
 }

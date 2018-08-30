@@ -23,7 +23,7 @@ import com.google.protobuf.ByteString
 import pravda.common.domain
 import pravda.common.domain.Address
 import pravda.vm.Meta.{GlobalMeta, SegmentMeta}
-import pravda.vm.VmError.{NoSuchProgram, UnexpectedError}
+import pravda.vm.VmError.{NoSuchProgram, PcallDenied, UnexpectedError}
 import pravda.vm.WattCounter.{CpuBasic, CpuStorageUse}
 import pravda.vm._
 import pravda.vm.operations._
@@ -165,6 +165,8 @@ class VmImpl extends Vm {
           case PCALL =>
             if (pcallAllowed) {
               systemOperations.pcall()
+            } else {
+              throw VmErrorException(PcallDenied)
             }
           case THROW => systemOperations.`throw`()
           case _     =>
