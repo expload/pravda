@@ -15,9 +15,9 @@ object PcallTests extends TestSuite {
         PravdaAssembler.parse("""
           |meta translator_mark "jump to methods"
           |dup
-          |push "scall"
+          |push "pcall"
           |eq
-          |jumpi @method_scall
+          |jumpi @method_pcall
           |push "Wrong method name"
           |throw
           |meta translator_mark "ctor method"
@@ -27,22 +27,21 @@ object PcallTests extends TestSuite {
           |meta translator_mark "ctor local vars clearing"
           |meta translator_mark "end of ctor method"
           |ret
-          |meta translator_mark "scall method"
+          |meta translator_mark "pcall method"
           |meta method {
-          |"name":"scall","returnTpe":int8(3)
+          |"name":"pcall","returnTpe":int8(3)
           |}
-          |@method_scall:
-          |meta translator_mark "scall local vars definition"
+          |@method_pcall:
+          |meta translator_mark "pcall local vars definition"
           |push null
           |push null
-          |meta translator_mark "scall method body"
-          |new int8[1, 2, 3, 4]
-          |call @array_to_bytes
+          |meta translator_mark "pcall method body"
+          |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int32(10)
           |push int32(20)
           |push int32(2)
           |swapn
-          |push int32(1)
+          |push int32(3)
           |swapn
           |push "Add"
           |swap
@@ -58,48 +57,16 @@ object PcallTests extends TestSuite {
           |pop
           |push int32(2)
           |dupn
-          |meta translator_mark "scall local vars clearing"
+          |meta translator_mark "pcall local vars clearing"
           |swap
           |pop
           |swap
           |pop
           |swap
           |pop
-          |meta translator_mark "end of scall method"
+          |meta translator_mark "end of pcall method"
           |jump @stop
           |meta translator_mark "helper functions"
-          |@array_to_bytes:
-          |dup
-          |length
-          |push x
-          |push int32(0)
-          |@array_to_bytes_loop:
-          |push int32(4)
-          |dupn
-          |push int32(2)
-          |dupn
-          |array_get
-          |push int8(14)
-          |cast
-          |push int32(3)
-          |dupn
-          |concat
-          |push int32(3)
-          |swapn
-          |pop
-          |push int32(1)
-          |add
-          |dup
-          |push int32(4)
-          |dupn
-          |gt
-          |jumpi @array_to_bytes_loop
-          |pop
-          |swap
-          |pop
-          |swap
-          |pop
-          |ret
           |@stop:
       """.stripMargin).right.get
       )

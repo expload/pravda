@@ -5,8 +5,8 @@ namespace Com.Expload.Programs
 {
     [Program]
     public class MyProgram {
-        public int scall() {
-            int res = ProgramHelper.Program<MyAnotherProgram>(new Bytes(1, 2, 3, 4)).Add(10, 20);
+        public int pcall() {
+            int res = ProgramHelper.Program<MyAnotherProgram>(Bytes.VOID_ADDRESS).Add(10, 20);
             return res;
         }
 
