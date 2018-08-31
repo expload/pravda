@@ -10,15 +10,15 @@ This dll file serves **only as meta info** for translator,
 it __doesn't__ provide any meaningful implementation for these methods.
 Translator just looks at calls of these methods and generates necessary Pravda bytecode.
  
-You can download `expload.dll` [here](../dotnet/src/test/resources/expload.dll). 
-Source of this dll can be found [here](../dotnet/src/test/resources/expload.cs). 
+You can download `expload.dll` [here](../../../dotnet/src/test/resources/expload.dll).
+Source of this dll can be found [here](../../../dotnet/src/test/resources/expload.cs).
 
 For full support of all translation features you need also to compile your program with `/debug:portable` option.
 This options will trigger the creation of `your_program.pdb` file that contains various auxiliary information about C# source.
  
-_Portable_ pdb files are quite new, so you need up-to-date `csc` compiler to generate them. See more [here](https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md). 
+_Portable_ pdb files are quite new, so you need up-to-date `csc` compiler to generate them. See more [here](https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md).
 
-To compile your C# program with [`expload.dll`](../dotnet/src/test/resources/expload.dll):
+To compile your C# program with [`expload.dll`](../../../dotnet/src/test/resources/expload.dll):
 ```bash
 csc your_program.cs /reference:expload.dll /debug:portable
 ```
@@ -49,10 +49,10 @@ For the moment it supports the following:
 - Arrays of primitive types (`int`, `byte`, `String`), reading and writing of particular elements;
 - Explicit conversion of primitive types via 
 `System.Convert.ToByte`, `System.Convert.ToChar`,`System.Convert.ToInt16`,`System.Convert.ToInt32`,`System.Convert.ToDouble`,`System.Convert.ToBoolean`,`System.Convert.ToString`
-- Cryptographic functions: Ripemd160 hashing, validation of Ed25519 Signature. See more in [Standard library](ref/vm/stdlib.md) docs.
+- Cryptographic functions: Ripemd160 hashing, validation of Ed25519 Signature. See more in [Standard library](../vm/stdlib.md) docs.
 - User defined classes (although you can't store them in the storage yet).
 - Calling other programs via `ProgramHelper.Program<...>` interface.
-See some examples ([scall.cs](../../../testkit/src/test/resources/scall.cs), [scall_program.cs](../../../testkit/src/test/resources/scall_program.cs)).
+See some examples ([pcall.cs](../../../dotnet/src/test/resources/pcall.cs), [pcall_program.cs](../../../dotnet/src/test/resources/pcall_program.cs)).
 
 Things that are *not* supported:
 - Standard C# library (except of some specific functions from the list above);
