@@ -15,21 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.io.{File, PrintWriter}
+import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import com.google.protobuf.ByteString
 import pravda.cli.PravdaArgsParser
 import pravda.vm.{Data, StandardLibrary}
 import pravda.vm.asm.Operation
 import pravda.vm.operations.annotation.OpcodeImplementation
 
-import scala.language.higherKinds
+import cats.data._
+import cats.data.Validated._
+import cats.implicits._
 
 object GenDocs extends App {
 
-  final val DoNotEditWarn = s"<!--\nTHIS FILE IS GENERATED. DO NOT EDIT MANUALLY!\n-->\n"
+  final val DoNotEditWarn =
+    s"""<!--
+       |THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
+       |-->""".stripMargin
 
   private def table(header: String*)(rows: List[List[String]])(): String = {
 
@@ -55,31 +59,50 @@ object GenDocs extends App {
     s"$headerView\n$hline\n${rowsView.mkString("\n")}"
   }
 
-  def genCliDocs(): Unit = {
+  private def writeToFile(f: File, content: Array[Byte], check: Boolean): ValidatedNel[String, Unit] =
+    if (check) {
+      if (!f.exists() || !f.isFile) {
+        s"File ${f.getAbsoluteFile} doesn't exist.".invalidNel
+      } else {
+        val equals = Files.readAllBytes(Paths.get(f.getAbsolutePath)).sameElements(content)
+        if (!equals) {
+          s"File ${f.getAbsoluteFile} doesn't correspond to actual docs.".invalidNel
+        } else {
+          ().validNel
+        }
+      }
+    } else {
+      if (!f.getParentFile.exists()) {
+        f.getParentFile.mkdirs()
+      }
+      Files.write(Paths.get(f.getAbsolutePath), content)
+      ().validNel
+    }
+
+  private def writeToFile(f: File, content: String, check: Boolean): ValidatedNel[String, Unit] =
+    writeToFile(f, content.getBytes(StandardCharsets.UTF_8), check)
+
+  def genCliDocs(check: Boolean = false): ValidatedNel[String, Unit] = {
 
     val outDir = new File("doc/ref/cli")
     val mainPageName = "main.md"
 
     val mainPage = (
-      new File(outDir, mainPageName).getAbsolutePath,
-      ByteString.copyFrom(PravdaArgsParser.root.toMarkdown, StandardCharsets.UTF_8)
+      new File(outDir, mainPageName),
+      PravdaArgsParser.root.toMarkdown.getBytes(StandardCharsets.UTF_8)
     )
 
     val pages = PravdaArgsParser.paths.map { path =>
       val name = new File(outDir, s"${path.toString}.md")
       val content = path.toMarkdown
-      val bcontent = ByteString.copyFrom(content, StandardCharsets.UTF_8)
-      (name.getAbsolutePath, bcontent)
+      val bcontent = content.getBytes(StandardCharsets.UTF_8)
+      (name, bcontent)
     } :+ mainPage
 
-    outDir.mkdirs()
-
-    for ((name, content) <- pages) {
-      Files.write(Paths.get(name), content.toByteArray)
-    }
+    pages.map { case (f, content) => writeToFile(f, content, check) }.sequence_
   }
 
-  def genOpcodesDocs() = {
+  def genOpcodesDocs(check: Boolean = false): ValidatedNel[String, Unit] = {
 
     val operationModules = List(
       classOf[pravda.vm.operations.DataOperations],
@@ -108,15 +131,16 @@ object GenDocs extends App {
       }
     }
 
-    new PrintWriter("doc/ref/vm/opcodes.md") {
-      write(DoNotEditWarn)
-      write("# Pravda VM opcodes\n")
-      write(view)
-      close()
-    }
+    writeToFile(
+      new File("doc/ref/vm/opcodes.md"),
+      s"""$DoNotEditWarn
+         |# Pravda VM opcodes
+         |$view""".stripMargin,
+      check
+    )
   }
 
-  def genStdlibDocs() = {
+  def genStdlibDocs(check: Boolean = false): ValidatedNel[String, Unit] = {
 
     def nameToFileName(x: String) = {
       x.charAt(0).toLower + x.toList.tail
@@ -168,34 +192,44 @@ object GenDocs extends App {
          |""".stripMargin
     }
 
-    val dir = new File("doc/ref/vm/stdlib")
-    if (!dir.exists()) dir.mkdirs()
+    val docsRes: ValidatedNel[String, Unit] = docs
+      .map {
+        case (name, content) =>
+          writeToFile(
+            new File(s"doc/ref/vm/stdlib/$name.md"),
+            s"$DoNotEditWarn\n$content",
+            check
+          )
+      }
+      .toList
+      .sequence_
 
-    docs.foreach {
-      case (name, content) =>
-        new PrintWriter(s"doc/ref/vm/stdlib/$name.md") {
-          write(DoNotEditWarn)
-          write(content)
-          close()
+    val stdlibRes = {
+      val stdlibTable = table("Name", "Description") {
+        StandardLibrary.All.toList.map { f =>
+          List(s"[${f.name}](stdlib/${nameToFileName(f.name)}.md)", f.description)
         }
-        ()
-    }
-
-    new PrintWriter(s"doc/ref/vm/stdlib.md") {
-      write(DoNotEditWarn)
-      write(
-        table("Name", "Description") {
-          StandardLibrary.All.toList.map { f =>
-            List(s"[${f.name}](stdlib/${nameToFileName(f.name)}.md)", f.description)
-
-          }
-        }
+      }
+      writeToFile(
+        new File(s"doc/ref/vm/stdlib.md"),
+        s"$DoNotEditWarn\n$stdlibTable",
+        check
       )
-      close()
     }
+
+    (docsRes, stdlibRes).mapN { case _ => () }
   }
 
-  genCliDocs()
-  genOpcodesDocs()
-  genStdlibDocs()
+  val check = args.contains("--check")
+
+  val res: ValidatedNel[String, Unit] = (genCliDocs(check), genOpcodesDocs(check), genStdlibDocs(check)).mapN {
+    case _ => ()
+  }
+
+  res match {
+    case Validated.Invalid(e) =>
+      println(e.toList.mkString("\n"))
+      sys.exit(1)
+    case _                    =>
+  }
 }

@@ -5,7 +5,9 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 ```pravda [gen|run|compile|broadcast|node]```
 
 ## Description
-Pravda 0.5.5-47-g1b50a72-SNAPSHOT Command Line Interface
+Pravda 0.5.5 Command Line Interface
+
+To get info about options for particular command you can use flag --help or -h after command. For example, to get help about "gen address" command, type "pravda gen address -h"
 
 No options available
 ## Commands
