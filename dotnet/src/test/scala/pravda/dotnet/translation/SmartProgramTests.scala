@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package translation
 
 import pravda.vm.asm.PravdaAssembler
@@ -205,8 +206,7 @@ object SmartProgramTests extends TestSuite {
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).right.get,
-        PravdaAssembler.parse(
-          s"""
+        PravdaAssembler.parse(s"""
              |meta translator_mark "jump to methods"
              |dup
              |push "balanceOf"
