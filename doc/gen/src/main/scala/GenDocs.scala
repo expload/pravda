@@ -230,6 +230,6 @@ object GenDocs extends App {
     case Validated.Invalid(e) =>
       println(e.toList.mkString("\n"))
       sys.exit(1)
-    case _                    =>
+    case _ =>
   }
 }
