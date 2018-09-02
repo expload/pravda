@@ -14,7 +14,7 @@ object BsonTranscode extends TestSuite {
 
       val storedProrgram = StoredProgram(ByteString.copyFrom(Array[Byte](0x01, 0x02)),
                                          Address @@ ByteString.copyFrom(Array[Byte](0x03, 0x04)),
-                                        `sealed` = false)
+                                         `sealed` = false)
       val bson = transcode(storedProrgram).to[Bson]
       transcode(Bson @@ bson).to[StoredProgram] ==> storedProrgram
     }

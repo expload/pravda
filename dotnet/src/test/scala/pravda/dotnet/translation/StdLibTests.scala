@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package translation
 
 import pravda.vm.asm.PravdaAssembler
@@ -12,7 +13,9 @@ object StdLibTests extends TestSuite {
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
-        PravdaAssembler.parse("""
+        PravdaAssembler
+          .parse(
+            """
             |meta translator_mark "jump to methods"
             |dup
             |push "Ripemd160"
@@ -93,7 +96,9 @@ object StdLibTests extends TestSuite {
             |ret
             |meta translator_mark "helper functions"
             |@stop:
-          """.stripMargin).right.get
+          """.stripMargin)
+          .right
+          .get
       )
     }
   }

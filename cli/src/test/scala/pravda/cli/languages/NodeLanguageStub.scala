@@ -6,6 +6,7 @@ import pravda.common.domain.NativeCoin
 
 class NodeLanguageStub(result: Either[String, String]) extends NodeLanguage[Id] {
   def launch(configPath: String): Id[Unit] = ()
+
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,
                                   privateKey: ByteString,

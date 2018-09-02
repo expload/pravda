@@ -7,7 +7,9 @@ import com.google.protobuf.ByteString
 
 import scala.collection.mutable
 
-final class IoLanguageStub(stdin: Option[ByteString] = None, val files: mutable.Map[String, ByteString] = mutable.Map.empty) extends IoLanguage[Id] {
+final class IoLanguageStub(stdin: Option[ByteString] = None,
+                           val files: mutable.Map[String, ByteString] = mutable.Map.empty)
+    extends IoLanguage[Id] {
 
   import IoLanguageStub._
 

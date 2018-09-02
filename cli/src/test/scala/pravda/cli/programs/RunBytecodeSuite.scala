@@ -19,8 +19,7 @@ object RunBytecodeSuite extends TestSuite {
   // because stub VM actually doesn't execute programs.
   final val ProgramFromStdIn = ByteString.copyFrom(Array[Byte](1))
   final val ProgramFromStdInResult = Data.Primitive.Int8(42)
-  final val ProgramFromStdInJson = ByteString.copyFromUtf8(
-    """{
+  final val ProgramFromStdInJson = ByteString.copyFromUtf8("""{
       |  "spentWatts" : 0,
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
@@ -30,8 +29,7 @@ object RunBytecodeSuite extends TestSuite {
   final val ProgramFromFile = ByteString.copyFrom(Array[Byte](3))
   final val ProgramFromFileName = "a.out"
   final val ProgramFromFileResult = Data.Primitive.Int16(740)
-  final val ProgramFromFileJson = ByteString.copyFromUtf8(
-    """{
+  final val ProgramFromFileJson = ByteString.copyFromUtf8("""{
       |  "spentWatts" : 0,
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
@@ -48,15 +46,18 @@ object RunBytecodeSuite extends TestSuite {
     "run using default executor and stdin" - {
       val io = new IoLanguageStub(Some(ProgramFromStdIn))
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, ExecutionResult]] =
+        def run(program: ByteString,
+                executor: ByteString,
+                storagePath: String,
+                wattLimit: Long): Id[Either[String, ExecutionResult]] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
-                buildExecResult(
-                  new MemoryImpl(
-                    stack = ArrayBuffer(ProgramFromStdInResult),
-                    heap = ArrayBuffer.empty
-                  )
+              buildExecResult(
+                new MemoryImpl(
+                  stack = ArrayBuffer(ProgramFromStdInResult),
+                  heap = ArrayBuffer.empty
                 )
+              )
             case _ => buildExecResult(EmptyMemory)
           }
       }
@@ -71,7 +72,10 @@ object RunBytecodeSuite extends TestSuite {
         files = mutable.Map(ProgramFromFileName -> ProgramFromFile)
       )
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, ExecutionResult]] =
+        def run(program: ByteString,
+                executor: ByteString,
+                storagePath: String,
+                wattLimit: Long): Id[Either[String, ExecutionResult]] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
               buildExecResult(
@@ -91,7 +95,10 @@ object RunBytecodeSuite extends TestSuite {
     "check file not found error" - {
       val io = new IoLanguageStub()
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[Either[String, ExecutionResult]] =
+        def run(program: ByteString,
+                executor: ByteString,
+                storagePath: String,
+                wattLimit: Long): Id[Either[String, ExecutionResult]] =
           buildExecResult(EmptyMemory)
       }
       val program = new RunBytecode[Id](io, vm)

@@ -1,4 +1,5 @@
 package pravda.dotnet
+
 package translation
 
 import pravda.vm.asm.PravdaAssembler
@@ -12,8 +13,7 @@ object SystemTests extends TestSuite {
 
       assertWithAsmDiff(
         Translator.translateAsm(methods, cilData, signatures).right.get,
-        PravdaAssembler.parse(
-          """
+        PravdaAssembler.parse("""
             |meta translator_mark "jump to methods"
             |dup
             |push "system"
