@@ -34,6 +34,8 @@ trait Environment {
   def getProgram(address: Address): Option[ProgramContext]
   def getProgramOwner(address: Address): Option[Address]
 
+  def event(address: Address, name: String, data: Data): Unit
+
   // Balance
   def balance(address: Address): NativeCoin
   def transfer(from: Address, to: Address, amount: NativeCoin): Unit

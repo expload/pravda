@@ -167,6 +167,7 @@ class VmImpl extends Vm {
               systemOperations.pcall()
             }
           case THROW => systemOperations.`throw`()
+          case EVENT => systemOperations.event()
           case _     =>
         }
 

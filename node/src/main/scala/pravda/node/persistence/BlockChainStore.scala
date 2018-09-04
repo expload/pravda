@@ -17,12 +17,13 @@
 
 package pravda.node.persistence
 
+import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.db.DB
 import implicits._
+import pravda.vm.Data
 
 object BlockChainStore {
-
   def balanceEntry(db: DB): Entry[Address, NativeCoin] = Entry[Address, NativeCoin](db, "balance")
-
+  def eventsEntry(db: DB): Entry[ByteString, Data] = Entry[ByteString, Data](db, "events")
 }

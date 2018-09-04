@@ -36,7 +36,7 @@ import pravda.node.persistence.FileStore
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 import pravda.vm.{Environment, ProgramContext, Storage, _}
 import pravda.node.persistence._
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain._
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 
 import scala.collection.mutable
@@ -203,41 +203,38 @@ object Abci {
 
   object EnvironmentEffect {
 
-    final case class StorageRemove(program: Address, key: Data, value: Option[Data])
-      extends EnvironmentEffect
+    final case class StorageRemove(program: Address, key: Data, value: Option[Data]) extends EnvironmentEffect
 
     final case class StorageWrite(program: Address, key: Data, previous: Option[Data], value: Data)
-      extends EnvironmentEffect
+        extends EnvironmentEffect
 
-    final case class StorageRead(program: Address, key: Data, value: Option[Data])
-      extends EnvironmentEffect
+    final case class StorageRead(program: Address, key: Data, value: Option[Data]) extends EnvironmentEffect
 
-    final case class ProgramCreate(address: Address, program: Data.Primitive.Bytes)
-      extends EnvironmentEffect
+    final case class ProgramCreate(address: Address, program: Data.Primitive.Bytes) extends EnvironmentEffect
 
-    final case class ProgramSeal(address: Address)
-      extends EnvironmentEffect
+    final case class ProgramSeal(address: Address) extends EnvironmentEffect
 
-    final case class ProgramUpdate(address: Address, program: Data.Primitive.Bytes)
-      extends EnvironmentEffect
+    final case class ProgramUpdate(address: Address, program: Data.Primitive.Bytes) extends EnvironmentEffect
 
     // TODO program address
-    final case class Transfer(from: Address, to: Address, amount: NativeCoin)
-      extends EnvironmentEffect
+    final case class Transfer(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
 
-    final case class ShowBalance(address: Address, amount: NativeCoin)
-      extends EnvironmentEffect
+    final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
   }
+
+  final case class Event(address: Address, name: String, data: Data)
 
   final class BlockDependentEnvironment(db: DB) {
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
+    private val events = mutable.Buffer.empty[Event]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
     private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(db, "effects"), cache, operations)
+    private lazy val eventsPath = new CachedDbPath(new PureDbPath(db, "events"), cache, operations)
     private lazy val blockBalancesPath = new CachedDbPath(new PureDbPath(db, "balance"), cache, operations)
 
     def transactionEnvironment(executor: Address, tid: TransactionId): TransactionDependentEnvironment = {
@@ -253,6 +250,7 @@ object Abci {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
       private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
+      private val transactionEvents = mutable.Buffer.empty[Event]
       private val transactionCache = mutable.Map.empty[String, Option[Array[Byte]]]
 
       private lazy val transactionProgramsPath =
@@ -264,6 +262,7 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
+        events ++= transactionEvents
       }
 
       import EnvironmentEffect._
@@ -319,6 +318,10 @@ object Abci {
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
       }
 
+      def event(address: Address, name: String, data: Data): Unit = {
+        transactionEvents += Event(address, name, data)
+      }
+
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
         if (amount < 0)
           throw AmountShouldNotBeNegativeException()
@@ -366,6 +369,7 @@ object Abci {
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
+      events.clear()
       cache.clear()
       fee = NativeCoin.zero
     }
@@ -400,6 +404,18 @@ object Abci {
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
+      }
+
+      events.groupBy {
+        case Event(address, name, data) => (address, name)
+      }.foreach {
+        case ((address, name), evs) =>
+          val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
+          evs.zipWithIndex.foreach {
+            case (Event(_, _, data), i) =>
+              eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
+          }
+          eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
       }
 
       db.syncBatch(operations: _*)

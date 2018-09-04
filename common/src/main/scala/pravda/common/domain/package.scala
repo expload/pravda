@@ -18,7 +18,7 @@
 package pravda.common
 
 import com.google.protobuf.ByteString
-import pravda.common.bytes.hex2byteString
+import pravda.common.bytes._
 import supertagged.TaggedType
 
 import scala.util.Try
@@ -53,4 +53,12 @@ package object domain {
   }
   type Address = Address.Type
 
+  def eventKey(address: Address, name: String): String =
+    s"${byteString2hex(address)}:$name"
+
+  def eventKeyLength(address: Address, name: String): String =
+    s"${byteString2hex(address)}:$name:length"
+
+  def eventKeyOffset(address: Address, name: String, offset: Long): String =
+    s"${byteString2hex(address)}:$name:$offset"
 }
