@@ -29,6 +29,10 @@ namespace Com.Expload {
         public static Bytes ProgramAddress() { return null; }
     }
 
+    public class Log {
+        public static void Event<T>(string name, T data) { return; }
+    }
+
     public class Error {
         public static void Throw(String message) { return; }
     }

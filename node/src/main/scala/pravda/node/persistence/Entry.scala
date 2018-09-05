@@ -53,6 +53,8 @@ class Entry[K, V](
     db.put(key(id), value)(keyWriter, valueWriter)
 
   def startsWith(id: K, offset: K, count: Long): Future[List[V]] = {
+    println(key(id))
+    println(key(offset))
     db.startsWithAs[V](key(id), key(offset), count)(keyWriter, valueReader)
   }
 

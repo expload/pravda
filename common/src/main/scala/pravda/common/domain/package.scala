@@ -57,8 +57,9 @@ package object domain {
     s"${byteString2hex(address)}:$name"
 
   def eventKeyLength(address: Address, name: String): String =
-    s"${byteString2hex(address)}:$name:length"
+    s"${byteString2hex(address)}:$name:#length"
+  // the # character has the lower ASCII code so it will be place before any number
 
   def eventKeyOffset(address: Address, name: String, offset: Long): String =
-    s"${byteString2hex(address)}:$name:$offset"
+    f"${byteString2hex(address)}:$name:$offset%016x"
 }

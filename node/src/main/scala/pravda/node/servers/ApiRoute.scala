@@ -35,6 +35,7 @@ import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.{ExecutionInfo, TransactionData}
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.{Bson, transcode}
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
@@ -63,7 +64,6 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
     Unmarshaller.strict(s => s.toInt)
 
   val balances: Entry[Address, NativeCoin] = balanceEntry(db)
-  val events: Entry[ByteString, Data] = eventsEntry(db)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -160,6 +160,7 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
         } ~
         get {
           path("events") {
+            import pravda.node.data.serialization.bson._
             parameters(
               (
                 'address.as(hexUnmarshaller),
@@ -168,12 +169,17 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
                 'count.as(intUnmarshaller).?
               )) { (address, name, offsetO, countO) =>
               val offset = offsetO.getOrElse(0)
-              val count = countO.map(c => math.max(c, ApiRoute.MaxEventCount)).getOrElse(ApiRoute.MaxEventCount)
-              val f = events.startsWith(ByteString.copyFromUtf8(eventKey(Address @@ address, name)),
-                                        ByteString.copyFromUtf8(eventKeyOffset(Address @@ address, name, offset.toLong)),
-                                        count.toLong)
+              val count = countO.map(c => math.min(c, ApiRoute.MaxEventCount)).getOrElse(ApiRoute.MaxEventCount)
+              val f = db
+                .startsWith(
+                  bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
+                  bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
+                  count.toLong
+                )
+                .map(_.map(r => transcode(Bson @@ r.bytes).to[Data]))
+
               onSuccess(f) { res =>
-                complete(res.map(_.mkString()))
+                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d.mkString()) })
               }
             }
           }
@@ -183,4 +189,6 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
 
 object ApiRoute {
   final val MaxEventCount = 1000
+
+  final case class EventItem(offset: Int, data: String)
 }

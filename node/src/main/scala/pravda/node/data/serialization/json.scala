@@ -31,6 +31,7 @@ import jackson.pretty.prettyJacksonTokenWriterProducer
 import org.json4s.JsonAST
 import org.json4s.JsonAST.JValue
 import pravda.node.data.blockchain.ExecutionInfo
+import pravda.node.servers.ApiRoute
 import pravda.vm.Data
 import tethys.readers.FieldName
 import tethys.readers.tokens.TokenIterator
@@ -230,6 +231,13 @@ object json {
 
   implicit val initialDistributionWriter: JsonWriter[CoinDistributionMember] =
     jsonWriter[CoinDistributionMember]
+
+
+  implicit val eventItemReader: JsonReader[ApiRoute.EventItem] =
+    jsonReader[ApiRoute.EventItem]
+
+  implicit val eventItemWriter: JsonWriter[ApiRoute.EventItem] =
+    jsonWriter[ApiRoute.EventItem]
 
   //---------------------------------------------------------------------------
   // ABCI
