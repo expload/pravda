@@ -273,6 +273,7 @@ lazy val cli = (project in file("cli"))
   .dependsOn(codegen)
 
 lazy val `gen-doc` = (project in file("doc") / "gen")
+  .settings(commonSettings: _*)
   .settings(
     skip in publish := true,
     normalizedName := "pravda-gen-doc",

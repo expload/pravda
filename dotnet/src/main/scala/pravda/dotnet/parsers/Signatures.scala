@@ -65,6 +65,7 @@ object Signatures {
         case ValueTpe(typeDefOrRef)  => typeDefOrRefName(typeDefOrRef)
         case Generic(tpe, tpeParams) => s"${tpe.mkString}<${tpeParams.map(_.mkString).mkString(", ")}>"
         case Var(num)                => s"var$num"
+        case MVar(num)               => s"mvar$num"
         case Arr(tpe, shape)         => s"${tpe.mkString}[${shape.mkString}]"
       }
     }
@@ -93,6 +94,7 @@ object Signatures {
     final case class ValueTpe(typeDefOrRef: TableRowData)            extends SigType
     final case class Generic(tpe: SigType, tpeParams: List[SigType]) extends SigType
     final case class Var(num: Int)                                   extends SigType
+    final case class MVar(num: Int)                                  extends SigType
 
     final case class ArrayShape(rank: Int, sizes: List[Int], loBounds: List[Int]) {
       def mkString: String = s"$rank[${sizes.mkString(", ")}][${loBounds.mkString(", ")}]"
@@ -163,6 +165,7 @@ object Signatures {
       case 0x18 => simpleType(SigType.I)
       case 0x19 => simpleType(SigType.U)
       case 0x1c => simpleType(SigType.Object)
+      case 0x1e => compressedUInt.map(i => Right(SigType.MVar(i)))
       case 0x1d =>
         for {
           tpeV <- sigType(tablesData)

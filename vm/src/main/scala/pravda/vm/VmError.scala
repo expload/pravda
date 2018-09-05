@@ -30,6 +30,7 @@ object VmError {
   case object InvalidAddress    extends VmError(104)
 
   case object OperationDenied      extends VmError(200)
+  case object PcallDenied          extends VmError(201)
   case object NoSuchProgram        extends VmError(300)
   case object NoSuchLibrary        extends VmError(301)
   case object NoSuchMethod         extends VmError(302)

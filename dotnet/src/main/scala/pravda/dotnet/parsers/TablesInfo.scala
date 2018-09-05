@@ -31,6 +31,7 @@ final case class TablesInfo(
     typeRefTable: Vector[TablesInfo.TypeRefRow] = Vector.empty,
     typeSpecTable: Vector[TablesInfo.TypeSpecRow] = Vector.empty,
     standAloneSigTable: Vector[TablesInfo.StandAloneSigRow] = Vector.empty,
+    methodSpecTable: Vector[TablesInfo.MethodSpecRow] = Vector.empty,
     documentTable: Vector[TablesInfo.DocumentRow] = Vector.empty,
     methodDebugInformationTable: Vector[TablesInfo.MethodDebugInformationRow] = Vector.empty
 )
@@ -123,11 +124,11 @@ object TablesInfo {
                                 signatureIdx: Long,
                                 paramListIdx: Long)
       extends TableRowInfo
-  case object MethodImplRow      extends TableRowInfo
-  case object MethodSemanticsRow extends TableRowInfo
-  case object MethodSpecRow      extends TableRowInfo
-  case object ModuleRow          extends TableRowInfo
-  case object ModuleRefRow       extends TableRowInfo
+  case object MethodImplRow                                           extends TableRowInfo
+  case object MethodSemanticsRow                                      extends TableRowInfo
+  final case class MethodSpecRow(methodIdx: Long, signatureIdx: Long) extends TableRowInfo
+  case object ModuleRow                                               extends TableRowInfo
+  case object ModuleRefRow                                            extends TableRowInfo
 
   case object NestedClassRow extends TableRowInfo
 
@@ -256,8 +257,8 @@ object TablesInfo {
   def methodSemanticsRow(indexes: TableIndexes): P[MethodSemanticsRow.type] =
     P(AnyBytes(2 + indexes.methodDef.size + indexes.hasSemantics.size)).map(_ => MethodSemanticsRow)
 
-  def methodSpecRow(indexes: TableIndexes): P[MethodSpecRow.type] =
-    P(AnyBytes(indexes.methodDefOrRef.size + indexes.blobHeap.size)).map(_ => MethodSpecRow)
+  def methodSpecRow(indexes: TableIndexes): P[MethodSpecRow] =
+    P(indexes.methodDefOrRef.parser ~ indexes.blobHeap.parser).map(MethodSpecRow.tupled)
 
   def moduleRow(indexes: TableIndexes): P[ModuleRow.type] =
     P(AnyBytes(2 + indexes.stringHeap.size + indexes.guidHeap.size * 3)).map(_ => ModuleRow)
@@ -371,7 +372,7 @@ object TablesInfo {
       case 40 => tablesId(manifestResourceRow)
       case 41 => tablesId(nestedClassRow)
       case 42 => tablesId(genericParamRow)
-      case 43 => tablesId(methodSpecRow)
+      case 43 => tableRep(methodSpecRow).map(r => Right(_.copy(methodSpecTable = r)))
       case 44 => tablesId(genericParamConstraintRow)
       // 45
       // 46

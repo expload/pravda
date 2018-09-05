@@ -63,4 +63,8 @@ namespace Com.Expload {
         public static bool ValidateEd25519Signature(Bytes pubKey, Bytes message, Bytes signature) { return false; }
         public static bool ValidateEd25519Signature(Bytes pubKey, String message, Bytes signature) { return false; }
     }
+
+    public class ProgramHelper {
+        public static T Program<T>(Bytes address) { return default(T); }
+    }
 }
