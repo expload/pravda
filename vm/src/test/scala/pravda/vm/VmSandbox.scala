@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import fastparse.StringReprOps
 import fastparse.core.{Parsed, Parser}
-import pravda.common.DiffUtils
+import pravda.common.{DiffUtils, bytes => byteUtils}
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.vm.Data.Primitive
 import pravda.vm.VmSandbox.EnvironmentEffect._
@@ -49,7 +49,13 @@ object VmSandbox {
     final case class BalanceTransfer(from: Address, to: Address, coins: NativeCoin)       extends EnvironmentEffect
   }
 
-  final case class Expectations(watts: Long, memory: Memory, effects: Seq[EnvironmentEffect], error: Option[String])
+  final case class EnviromentEvent(address: Address, name: String, data: Data)
+
+  final case class Expectations(watts: Long,
+                                memory: Memory,
+                                effects: Seq[EnvironmentEffect],
+                                events: Seq[EnviromentEvent],
+                                error: Option[String])
 
   val parser: Parser[Case, Char, String] = {
 
@@ -131,10 +137,13 @@ object VmSandbox {
         P("effects:" ~/ space ~ (sput | sget | sdel | pcreate | pupdate | transfer | balance).rep(sep = `,`))
       }
 
+      val events = P(
+        "events:" ~/ space ~ (address ~ ws ~ notws.! ~ ws ~ all).map(EnviromentEvent.tupled).rep(sep = `,`))
+
       val error = P("error:" ~/ space ~ (space ~ "|" ~ CharsWhile(_ != '\n').! ~ "\n").rep).map(_.mkString("\n")).?
 
-      P("expectations:" ~/ space ~ watts ~ space ~ memory ~ space ~ effects.? ~ space ~ error).map {
-        case (w, mem, eff, err) => Expectations(w.toLong, mem, eff.getOrElse(Nil), err)
+      P("expectations:" ~/ space ~ watts ~ space ~ memory ~ space ~ effects.? ~ space ~ events.? ~ error).map {
+        case (w, mem, eff, evs, err) => Expectations(w.toLong, mem, eff.getOrElse(Nil), evs.getOrElse(Nil), err)
       }
     }
 
@@ -164,11 +173,16 @@ object VmSandbox {
       case ProgramCreate(owner, address, program) => ???
       case ProgramUpdate(address, program)        => ???
       case ProgramSeal(address)                   => ???
-      case BalanceGet(address, coins)             => s"balance x${pravda.common.bytes.byteString2hex(address)} $coins"
+      case BalanceGet(address, coins)             => s"balance x${byteUtils.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
       case BalanceTransfer(from, to, coins)       => ???
       // TODO implement printing of all other effects
+    }
+
+    def printEvent(event: EnviromentEvent) = event match {
+      case VmSandbox.EnviromentEvent(address, name, data) =>
+        s"x${byteUtils.byteString2hex(address)} $name ${data.mkString()}"
     }
 
     s"""
@@ -179,6 +193,8 @@ object VmSandbox {
        |  ${e.memory.heap.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }.mkString(",\n  ")}
        |effects:
        |  ${e.effects.map(printEffect).mkString(",\n  ")}
+       |events:
+       |  ${e.events.map(printEvent).mkString(",\n  ")}
        |${e.error.fold("")(vmError => s"error: \n${vmError.split('\n').map("||" + _).mkString("\n")}\n")}""".stripMargin
   }
 
@@ -224,6 +240,7 @@ object VmSandbox {
     val wattCounter = new WattCounterImpl(c.preconditions.watts)
 
     val effects = mutable.Buffer[EnvironmentEffect]()
+    val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
 
     val environment: Environment = new Environment {
       val balances = mutable.Map(c.preconditions.balances.toSeq: _*)
@@ -283,6 +300,13 @@ object VmSandbox {
         balances(to) = Data.Primitive.BigInt(toBalance + amount)
         effects += EnvironmentEffect.BalanceTransfer(from, to, amount)
       }
+      override def event(address: Address, name: String, data: Data): Unit = {
+        val key = (address, name)
+        if (!events.contains(key)) {
+          events(key) = mutable.Buffer.empty
+        }
+        events(key) += data
+      }
     }
 
     val storage: Storage = new Storage {
@@ -308,7 +332,13 @@ object VmSandbox {
     }
 
     val res =
-      vm.spawn(ByteBuffer.wrap(program.toByteArray), environment, memory, wattCounter, Some(storage), None, true)
+      vm.spawn(ByteBuffer.wrap(program.toByteArray),
+               environment,
+               memory,
+               wattCounter,
+               Some(storage),
+               Some(Address.Void),
+               true)
 
     DiffUtils.assertEqual(
       printExpectations(
@@ -319,6 +349,9 @@ object VmSandbox {
             res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
           ),
           effects,
+          events.flatMap {
+            case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
+          }.toSeq,
           res.error.map(_.mkString)
         )
       ),

@@ -13,8 +13,15 @@ def in_tmp_dir(path):
     return os.path.join(tmp_dir, path)
 
 def run_if_changed(name, inputs, script, outputs):
+
+    def output_getmtime(f):
+        if os.path.exists(f):
+            return os.path.getmtime(f)
+        else:
+            return 0
+
     input_mtime = max(map(os.path.getmtime, inputs))
-    output_mtime = min(map(os.path.getmtime, outputs))
+    output_mtime = min(map(output_getmtime, outputs))
 
     if input_mtime > output_mtime:
         print(f"Executing {name}...")
@@ -43,7 +50,7 @@ def compile_exe(inputs, outputs):
 
 def compile_exe_pdb(inputs, outputs):
     return compile_exe(inputs, outputs[:1]) + \
-           ["-debug:portable", f"-pdb:{in_tmp_dir(outputs[1])}"]
+           ["-debug:portable", f"-pdb:{in_tmp_dir(outputs[1].rpartition('.')[0])}"]
 
 run_if_changed("expload.dll compilation",
                ["expload.cs"], compile_dll, ["expload.dll"])
@@ -53,6 +60,7 @@ for filename in ["arithmetics",
                  "closure",
                  "compare",
                  "error",
+                 "event",
                  "if",
                  "inheritance",
                  "loop",
