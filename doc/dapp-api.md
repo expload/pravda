@@ -2,14 +2,17 @@
 
 Pravda specifies unified API for DApps (Distributed Applications). 
 
-This API allows client to execute different action on the Pravda blockchain, such as run arbitrary code, call methods from existing programs, get balance by address, sign binary data and transfer money from one address to another.
+This API allows client to execute different action on the Pravda blockchain,
+such as run arbitrary code, call methods from existing programs,
+get balance by address, sign binary data and transfer money from one address to another.
 
 
 # API Methods
 
 ## Get current user address
 
-You can get the _current user_ addres. The _current user_ is the user who signs a Pravda transaction by its private key, that is an executor of the transaction.
+You can get the _current user_ addres. The _current user_ is the user who signs a Pravda transaction by its private key,
+that is an executor of the transaction.
 
 If there is no current user an API implemenation should return `NoKeys` error.
 
@@ -66,7 +69,10 @@ DApps API Specification introduces __method__ entity. This entity is similar to 
 
 DApp API specification establishes REST API for calling methods of the program with a given address.
 
-An implementaion of the Standard should ask the current user if he confirms this transaction or not. An implementaion of the Standard should show the user the programm addres, program method and arguments to be executed.  If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+An implementaion of the Standard should ask the current user if he confirms this transaction or not.
+An implementaion of the Standard should show the user the programm addres, program method and arguments to be executed.
+If this transaction is not confirmed, `NotConfirmed` error should be sent.
+On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
 
 If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
@@ -117,7 +123,8 @@ and each such type string corresponds to one [data](ref/vm/data.md) type. Detail
 
 ### Examples
 
-For example if we are calling `balanceOf` method for user with `0xABCDEF` address of some program with `0xe1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0` address we should pass:
+For example if we are calling `balanceOf` method for user with `0xABCDEF` address
+of some program with `0xe1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0` address we should pass:
 
 ```
 curl -X POST -H "Content-Type: application/json" --data '{"address": "e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0", "method": "balanceOf", "args": [{"tpe": "bytes", "value": "ABCDEF"}] }'  <api url>/api/program/method
@@ -135,7 +142,10 @@ And receive:
 ## Transfer money
 This method allows you to transfer money from current user to any Pravda address
 
-An implementaion of the Standard should ask the current user if he confirms this transfer or not. It should show the amount and the address of the transferring. If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+An implementaion of the Standard should ask the current user if he confirms this transfer or not.
+It should show the amount and the address of the transferring.
+If this transaction is not confirmed, `NotConfirmed` error should be sent.
+On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
 
 If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
@@ -153,7 +163,8 @@ If there is no current user, an implemenation of the Standard should return `NoK
 
 ### Examples
 
-The following command will transfer 100 coins from the current account to the account with address `e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0`
+The following command will transfer 100 coins from the current account to the account
+with address `e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0`
 ```
 curl -X POST -H "Content-Type: application/json" --data '{ "to": "e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0", "amount": 100 }' <api url>/api/transfer
 ```
@@ -162,7 +173,10 @@ curl -X POST -H "Content-Type: application/json" --data '{ "to": "e1941077e00b3c
 ## Execute VM bytecode
 This method allows you to execute any Pravda bytecode
 
-An implementaion of the Standard should ask the current user if he confirms this execution or not. It should show the bytecode translated to the Pravda assembler. If this transaction is not confirmed, `NotConfirmed` error should be sent. On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
+An implementaion of the Standard should ask the current user if he confirms this execution or not.
+It should show the bytecode translated to the Pravda assembler.
+If this transaction is not confirmed, `NotConfirmed` error should be sent.
+On the other hand, if the transaction is confirmed, it should be signed with the current user private key and boradcasted to the Pravda blockchain.
 
 If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
@@ -191,7 +205,11 @@ If there is no current user, an implemenation of the Standard should return `NoK
 ## Sign binary data
 This method allows you to execute any Pravda bytecode
 
-An implementaion of the Standard should ask the current user if he confirms this signing or not. It should be possible to see the data. If the currenit user doesn't allow to sign the data, `NotConfirmed` error should be sent. On the other hand, if the current user allows to sign the data, the data should be signed with the current user private key and returned back.
+An implementaion of the Standard should ask the current user if he confirms this signing or not.
+It should be possible to see the data. If the currenit user doesn't allow to sign the data,
+`NotConfirmed` error should be sent.
+On the other hand, if the current user allows to sign the data,
+the data should be signed with the current user private key and returned back.
 
 If there is no current user, an implemenation of the Standard should return `NoKeys` error.
 
@@ -216,7 +234,8 @@ If there is no current user, an implemenation of the Standard should return `NoK
 ```
 
 ### Additional information 
-You can also sign binary data with `application/octet-stream` or `application/base64` http content types by using `api/binary/sign?app=<application name>` url with corresponding type.
+You can also sign binary data with `application/octet-stream` or `application/base64`
+http content types by using `api/binary/sign?app=<application name>` url with corresponding type.
 
 ## Get the events generated by program
 You can get the generated events by name and the address of the program where they were generated.
@@ -231,11 +250,11 @@ The list of data from events with given name at the given address:
 ```
 [
     {
-        "data": "<some data from the first event>"
+        "data": "<some data from the first event>",
         "offset": 0
     },
     {
-        "data": "<some data from the second event>"
+        "data": "<some data from the second event>",
         "offset": 1
     }
     ...
@@ -244,7 +263,7 @@ The list of data from events with given name at the given address:
 
 ### Examples
 ```
-curl <api url>/api/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent`
+curl <api url>/api/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent
 ```
 will return all events for give address and name
 
