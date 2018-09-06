@@ -156,6 +156,8 @@ case object CallsTransation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _))                     => Right(-1)
       case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Com.Expload"), "Program", _), _)) =>
         Right(0)
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "Log", "Com.Expload"), "Event", _), _)) =>
+        Right(-2)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
@@ -288,6 +290,8 @@ case object CallsTransation extends OneToManyTranslator {
         Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _)) =>
         Right(List(Operation(Opcodes.THROW)))
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "Log", "Com.Expload"), "Event", _), _)) =>
+        Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.EVENT)))
       case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Com.Expload"), "Program", _), _)) =>
         Right(List())
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>

@@ -28,24 +28,25 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain._
 import pravda.node
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.{ExecutionInfo, TransactionData}
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.{Bson, transcode}
 import pravda.node.db.DB
-import pravda.node.persistence.BlockChainStore.balanceEntry
+import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
 import pravda.node.servers.Abci.BlockDependentEnvironment
-import pravda.vm.ExecutionResult
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
+import pravda.vm.{Data, ExecutionResult}
 
-import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.concurrent.duration._
-import scala.util.{Failure, Random, Success, Try}
+import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.language.postfixOps
+import scala.util.{Failure, Random, Success, Try}
 
 class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: ExecutionContext) {
 
@@ -84,6 +85,7 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
       vm.spawn(program, env, MemoryImpl.empty, new WattCounterImpl(Long.MaxValue), from)
     }
     Await.result(execResultF, DryrunTimeout) // FIXME: make it in non-blocking way
+    // 5 seconds is very little amount of time
   }
 
   val route: Route =
@@ -155,8 +157,38 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
               }
             }
           }
+        } ~
+        get {
+          path("events") {
+            import pravda.node.data.serialization.bson._
+            parameters(
+              (
+                'address.as(hexUnmarshaller),
+                'name,
+                'offset.as(intUnmarshaller).?,
+                'count.as(intUnmarshaller).?
+              )) { (address, name, offsetO, countO) =>
+              val offset = offsetO.getOrElse(0)
+              val count = countO.map(c => math.min(c, ApiRoute.MaxEventCount)).getOrElse(ApiRoute.MaxEventCount)
+              val f = db
+                .startsWith(
+                  bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
+                  bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
+                  count.toLong
+                )
+                .map(_.map(r => transcode(Bson @@ r.bytes).to[Data]))
+
+              onSuccess(f) { res =>
+                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d.mkString()) })
+              }
+            }
+          }
         }
     }
 }
 
-object ApiRoute {}
+object ApiRoute {
+  final val MaxEventCount = 1000
+
+  final case class EventItem(offset: Int, data: String)
+}

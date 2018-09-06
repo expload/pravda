@@ -18,6 +18,7 @@
 package pravda.node.data.serialization
 
 import com.google.protobuf.ByteString
+import pravda.vm.Data
 import reactivemongo.bson.{BSONDocument, BSONValue}
 import reactivemongo.bson.buffer.{ArrayBSONBuffer, ArrayReadableBuffer}
 import supertagged.{Tagged, lifterF}
@@ -56,6 +57,22 @@ trait BsonTranscoder {
 
   implicit def taggedWriterLifter[T: BsonWriter, U]: BsonWriter[Tagged[T, U]] =
     lifterF[BsonWriter].lift[T, U]
+
+  // Data
+
+  implicit def dataWriter(implicit arrayWriter: BsonWriter[Array[Byte]]): BsonWriter[Data] =
+    new BsonWriter[Data] {
+      override def write0: Data => BSONValue = { x =>
+        arrayWriter.write0(x.toByteString.toByteArray)
+      }
+    }
+
+  implicit def dataReader(implicit arrayReader: BsonReader[Array[Byte]]): BsonReader[Data] =
+    new BsonReader[Data] {
+      override def read0: PartialFunction[BSONValue, Data] = {
+        case x if arrayReader.read0.isDefinedAt(x) => Data.fromBytes(arrayReader.read0(x))
+      }
+    }
 
   // Protobuf
 

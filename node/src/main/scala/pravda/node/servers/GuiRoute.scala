@@ -43,6 +43,7 @@ import pravda.node.db.DB
 import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.utils
+import pravda.vm.Data
 import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
@@ -71,20 +72,21 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
     case _: EnvironmentEffect.StorageRead   => "Read from storage"
     case _: EnvironmentEffect.StorageWrite  => "Write to storage"
-    case _: EnvironmentEffect.Withdraw      => "Withdraw NC"
-    case _: EnvironmentEffect.Accrue        => "Put NC"
+    case _: EnvironmentEffect.Transfer      => "Transfer NC"
     case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
   }
 
   private def mono(s: ByteString): Node =
     'span ('class /= "hash", byteUtils.byteString2hex(s))
 
-  private def mono(s: Array[Byte]): Node =
-    'span ('class /= "hash", byteUtils.bytes2hex(s))
+  private def mono(s: Data): Node =
+    'span ('class /= "hash", s.mkString(pretty = true))
 
   private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
-    def localKey(key: String) = key.substring(key.lastIndexOf(':') + 1)
-    def showOption(value: Option[Array[Byte]]): Node = value match {
+
+    def localKey(key: Data) = key.mkString(pretty = true)
+
+    def showOption(value: Option[Data]): Node = value match {
       case None    => 'span ('fontStyle @= "italic", "None")
       case Some(s) => mono(s)
     }
@@ -103,30 +105,29 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           "Program address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
         )
-      case EnvironmentEffect.StorageRemove(key, value) =>
+      case EnvironmentEffect.StorageRemove(program, key, value) =>
         Map(
+          "Program" -> mono(program),
           "Key" -> localKey(key),
           "Removed value" -> showOption(value)
         )
-      case EnvironmentEffect.StorageWrite(key, prev, value) =>
+      case EnvironmentEffect.StorageWrite(program, key, prev, value) =>
         Map(
+          "Program" -> mono(program),
           "Key" -> localKey(key),
           "Written value" -> mono(value),
           "Previous value" -> showOption(prev)
         )
-      case EnvironmentEffect.StorageRead(key, value) =>
+      case EnvironmentEffect.StorageRead(program, key, value) =>
         Map(
+          "Program" -> mono(program),
           "Key" -> localKey(key),
           "Readen value" -> showOption(value)
         )
-      case EnvironmentEffect.Withdraw(from, amount) =>
+      case EnvironmentEffect.Transfer(from, to, amount) =>
         Map(
           "From" -> mono(from),
-          "Amount" -> 'span (amount.toString)
-        )
-      case EnvironmentEffect.Accrue(to, amount) =>
-        Map(
-          "To" -> mono(to),
+          "From" -> mono(to),
           "Amount" -> 'span (amount.toString)
         )
       case EnvironmentEffect.ShowBalance(address, amount) =>
@@ -152,8 +153,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     PravdaAssembler.render(operations)
   }
 
-  private def programToAsm(program: Array[Byte]): String =
-    programToAsm(ByteString.copyFrom(program))
+  private def programToAsm(program: Data.Primitive.Bytes): String =
+    programToAsm(program.data)
 
   private def programToAsm(program: ByteString): String =
     asmAstToAsm(PravdaAssembler.disassemble(program))

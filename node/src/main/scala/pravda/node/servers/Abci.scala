@@ -25,7 +25,7 @@ import java.security.MessageDigest
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import pravda.node.clients.AbciClient
-import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTransaction}
+import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
@@ -36,7 +36,7 @@ import pravda.node.persistence.FileStore
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 import pravda.vm.{Environment, ProgramContext, Storage, _}
 import pravda.node.persistence._
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain._
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 
 import scala.collection.mutable
@@ -202,27 +202,39 @@ object Abci {
   sealed trait EnvironmentEffect
 
   object EnvironmentEffect {
-    final case class StorageRemove(key: String, value: Option[Array[Byte]]) extends EnvironmentEffect
-    final case class StorageWrite(key: String, previous: Option[Array[Byte]], value: Array[Byte])
+
+    final case class StorageRemove(program: Address, key: Data, value: Option[Data]) extends EnvironmentEffect
+
+    final case class StorageWrite(program: Address, key: Data, previous: Option[Data], value: Data)
         extends EnvironmentEffect
-    final case class StorageRead(key: String, value: Option[Array[Byte]])  extends EnvironmentEffect
-    final case class ProgramCreate(address: Address, program: Array[Byte]) extends EnvironmentEffect
-    final case class ProgramSeal(address: Address)                         extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: Array[Byte]) extends EnvironmentEffect
-    final case class Withdraw(from: Address, amount: NativeCoin)           extends EnvironmentEffect
-    final case class Accrue(to: Address, amount: NativeCoin)               extends EnvironmentEffect
-    final case class ShowBalance(address: Address, amount: NativeCoin)     extends EnvironmentEffect
+
+    final case class StorageRead(program: Address, key: Data, value: Option[Data]) extends EnvironmentEffect
+
+    final case class ProgramCreate(address: Address, program: Data.Primitive.Bytes) extends EnvironmentEffect
+
+    final case class ProgramSeal(address: Address) extends EnvironmentEffect
+
+    final case class ProgramUpdate(address: Address, program: Data.Primitive.Bytes) extends EnvironmentEffect
+
+    // TODO program address
+    final case class Transfer(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
+
+    final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
   }
+
+  final case class Event(address: Address, name: String, data: Data)
 
   final class BlockDependentEnvironment(db: DB) {
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
+    private val events = mutable.Buffer.empty[Event]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
     private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(db, "effects"), cache, operations)
+    private lazy val eventsPath = new CachedDbPath(new PureDbPath(db, "events"), cache, operations)
     private lazy val blockBalancesPath = new CachedDbPath(new PureDbPath(db, "balance"), cache, operations)
 
     def transactionEnvironment(executor: Address, tid: TransactionId): TransactionDependentEnvironment = {
@@ -238,6 +250,7 @@ object Abci {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
       private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
+      private val transactionEvents = mutable.Buffer.empty[Event]
       private val transactionCache = mutable.Map.empty[String, Option[Array[Byte]]]
 
       private lazy val transactionProgramsPath =
@@ -249,16 +262,17 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
+        events ++= transactionEvents
       }
 
       import EnvironmentEffect._
 
-      private final class WsProgramStorage(dbPath: DbPath) extends Storage {
+      private final class WsProgramStorage(address: Address, dbPath: DbPath) extends Storage {
 
         def get(key: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
-          transactionEffects += StorageRead(dbPath.mkKey(hexKey), value)
+          transactionEffects += StorageRead(address, key, value.map(Data.fromBytes))
           value.map(Data.fromBytes)
         }
 
@@ -266,14 +280,14 @@ object Abci {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val array = value.toByteString.toByteArray
           val prev = dbPath.putRawBytes(hexKey, array)
-          transactionEffects += StorageWrite(dbPath.mkKey(hexKey), prev, array)
+          transactionEffects += StorageWrite(address, key, prev.map(Data.fromBytes), Data.fromBytes(array))
           prev.map(Data.fromBytes)
         }
 
         def delete(key: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.remove(hexKey)
-          transactionEffects += StorageRemove(dbPath.mkKey(hexKey), value)
+          transactionEffects += StorageRemove(address, key, value.map(Data.fromBytes))
           value.map(Data.fromBytes)
         }
       }
@@ -285,7 +299,7 @@ object Abci {
         val sp = StoredProgram(code, owner, `sealed` = false)
 
         transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
-        transactionEffects += ProgramCreate(address, code.toByteArray)
+        transactionEffects += ProgramCreate(address, Data.Primitive.Bytes(code))
         address
       }
 
@@ -301,12 +315,26 @@ object Abci {
         if (oldSb.`sealed`) throw ProgramIsSealedException()
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
-        transactionEffects += ProgramUpdate(address, code.toByteArray)
+        transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
+      }
+
+      def event(address: Address, name: String, data: Data): Unit = {
+        transactionEvents += Event(address, name, data)
       }
 
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
-        withdraw(from, amount)
-        accrue(to, amount)
+        if (amount < 0)
+          throw AmountShouldNotBeNegativeException()
+
+        val current = balance(from)
+
+        if (current < amount)
+          throw NotEnoughMoneyException()
+
+        transactionBalancesPath.put(byteUtils.byteString2hex(from), current - amount)
+        transactionBalancesPath.put(byteUtils.byteString2hex(to), current + amount)
+        transactionEffects += EnvironmentEffect.Transfer(from, to, amount)
+
       }
 
       def balance(address: Address): NativeCoin = {
@@ -314,25 +342,6 @@ object Abci {
           transactionBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
         transactionEffects += ShowBalance(address, bal)
         bal
-      }
-
-      def withdraw(address: Address, amount: NativeCoin): Unit = {
-        if (amount < 0) throw AmountShouldNotBeNegativeException()
-
-        val current = balance(address)
-        if (current < amount) throw NotEnoughMoneyException()
-
-        transactionBalancesPath.put(byteUtils.byteString2hex(address), current - amount)
-        transactionEffects += Withdraw(address, amount)
-
-      }
-
-      def accrue(address: Address, amount: NativeCoin): Unit = {
-        if (amount < 0) throw AmountShouldNotBeNegativeException()
-
-        val current = balance(address)
-        transactionBalancesPath.put(byteUtils.byteString2hex(address), current + amount)
-        transactionEffects += Accrue(address, amount)
       }
 
       private def getStoredProgram(address: ByteString) =
@@ -347,7 +356,7 @@ object Abci {
       def getProgram(address: Address): Option[ProgramContext] =
         getStoredProgram(address) map { program =>
           val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
-          val storage = new WsProgramStorage(newPath)
+          val storage = new WsProgramStorage(address, newPath)
           ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
         }
     }
@@ -360,6 +369,7 @@ object Abci {
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
+      events.clear()
       cache.clear()
       fee = NativeCoin.zero
     }
@@ -395,6 +405,20 @@ object Abci {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
+
+      events
+        .groupBy {
+          case Event(address, name, data) => (address, name)
+        }
+        .foreach {
+          case ((address, name), evs) =>
+            val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
+            evs.zipWithIndex.foreach {
+              case (Event(_, _, data), i) =>
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
+            }
+            eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
+        }
 
       db.syncBatch(operations: _*)
       clear()

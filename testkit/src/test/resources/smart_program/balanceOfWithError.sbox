@@ -14,6 +14,7 @@ expectations:
   effects:
   error:
     |Unexpected type: Null
+    |program address: 0000000000000000000000000000000000000000000000000000000000000000
     |  balanceOf method body (smart_program.cs:9,9-9,51)
     |  balanceOf method body (smart_program.cs:9,9-9,51)
 

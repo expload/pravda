@@ -196,4 +196,17 @@ final class SystemOperations(memory: Memory,
     val message = utf8(memory.pop())
     throw VmErrorException(UserError(message))
   }
+
+  @OpcodeImplementation(
+    opcode = EVENT,
+    description =
+      "Takes string and arbitrary data from stack, create new event with name as given string and with given data.")
+  def event(): Unit = {
+    val name = utf8(memory.pop())
+    val data = memory.pop()
+    maybeProgramAddress match {
+      case Some(addr) => environment.event(addr, name, data)
+      case None       => throw VmErrorException(OperationDenied)
+    }
+  }
 }

@@ -10,15 +10,15 @@ This dll file serves **only as meta info** for translator,
 it __doesn't__ provide any meaningful implementation for these methods.
 Translator just looks at calls of these methods and generates necessary Pravda bytecode.
  
-You can download `expload.dll` [here](../../../dotnet/src/test/resources/expload.dll).
-Source of this dll can be found [here](../../../dotnet/src/test/resources/expload.cs).
+You can download `expload.dll` [here](../../../dotnet-tests/resources/expload.dll).
+Source of this dll can be found [here](../../../dotnet-tests/resources/expload.cs).
 
 For full support of all translation features you need also to compile your program with `/debug:portable` option.
 This options will trigger the creation of `your_program.pdb` file that contains various auxiliary information about C# source.
  
 _Portable_ pdb files are quite new, so you need up-to-date `csc` compiler to generate them. See more [here](https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md).
 
-To compile your C# program with [`expload.dll`](../../../dotnet/src/test/resources/expload.dll):
+To compile your C# program with [`expload.dll`](../../../dotnet-tests/resources/expload.dll):
 ```bash
 csc your_program.cs /reference:expload.dll /debug:portable
 ```
@@ -52,7 +52,8 @@ For the moment it supports the following:
 - Cryptographic functions: Ripemd160 hashing, validation of Ed25519 Signature. See more in [Standard library](../vm/stdlib.md) docs.
 - User defined classes (although you can't store them in the storage yet).
 - Calling other programs via `ProgramHelper.Program<...>` interface.
-See some examples ([pcall.cs](../../../dotnet/src/test/resources/pcall.cs), [pcall_program.cs](../../../dotnet/src/test/resources/pcall_program.cs)).
+See some examples ([pcall.cs](../../../dotnet-tests/resources/pcall.cs), [pcall_program.cs](../../../dotnet-tests/pcall_program.cs)).
+- Create events in your program via `Log.Event("name of event", <some_data>)`, see [event.cs](../../../dotnet-tests/resources/event.cs)
 
 Things that are *not* supported:
 - Standard C# library (except of some specific functions from the list above);
@@ -61,10 +62,10 @@ Things that are *not* supported:
 ## Examples
 
 You can look at several examples of test _programs_ to learn current abilities of translation:
-- [String examples](../../../dotnet/src/test/resources/strings.cs) that show how to operate with `String`s.
-- [Array examples](../../../dotnet/src/test/resources/arrays.cs) that show how to operate with arrays.
-- [Simple _program_](../../../dotnet/src/test/resources/smart_program.cs) with `balanceOf` and `transfer` methods similar to corresponding methods from [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard)
+- [String examples](../../../dotnet-tests/resources/strings.cs) that show how to operate with `String`s.
+- [Array examples](../../../dotnet-tests/resources/arrays.cs) that show how to operate with arrays.
+- [Simple _program_](../../../dotnet-tests/resources/smart_program.cs) with `balanceOf` and `transfer` methods similar to corresponding methods from [ERC20](https://theethereum.wiki/w/index.php/ERC20_Token_Standard)
 - [Buffer](../../../testkit/src/test/resources/buffer.cs) -- Dynamic resizable array implemented in C#.
-- [Zoo _program_](../../../dotnet/src/test/resources/zoo_program.cs) that allows you to create zoos, pets and breed them.
+- [Zoo _program_](../../../dotnet-tests/resources/zoo_program.cs) that allows you to create zoos, pets and breed them.
 - [Poker _program_](../../../testkit/src/test/resources/poker.cs) that implements simple poker game on the blockchain. _(poker.cs was provided by [Ducatur team](https://github.com/DucaturFw/ExploadHackathonContract))_
 

@@ -58,6 +58,8 @@ val commonSettings = Seq(
   resolvers += Resolver.bintrayRepo("expload", "oss")
 )// ++ scalafixSettings
 
+val dotnetTests = file("dotnet-tests/resources")
+
 lazy val common = (project in file("common"))
   .settings(commonSettings: _*)
   .settings(
@@ -134,7 +136,8 @@ lazy val dotnet = (project in file("dotnet"))
   .settings(
     name := "pravda-dotnet",
     normalizedName := "pravda-dotnet",
-    description := "Pravda .NET-compatible languages"
+    description := "Pravda .NET-compatible languages",
+    unmanagedResourceDirectories in Test += dotnetTests
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -287,7 +290,8 @@ lazy val testkit = (project in file("testkit"))
   .settings(commonSettings: _*)
   .settings(
     skip in publish := true,
-    normalizedName := "pravda-testkit"
+    normalizedName := "pravda-testkit",
+    unmanagedResourceDirectories in Test += dotnetTests
   )
   .dependsOn(common % "test->test")
   .dependsOn(vm % "compile->compile;test->test")

@@ -52,8 +52,18 @@ class Entry[K, V](
   def put(id: K, value: V) =
     db.put(key(id), value)(keyWriter, valueWriter)
 
-  def startsWith[P](st: P)(implicit stKeyWriter: KeyWriter[String :: P :: HNil]): Future[List[V]] = {
-    db.startsWithAs[V](prefix :: st :: HNil)(stKeyWriter, valueReader)
+  def startsWith(id: K, offset: K, count: Long): Future[List[V]] = {
+    println(key(id))
+    println(key(offset))
+    db.startsWithAs[V](key(id), key(offset), count)(keyWriter, valueReader)
+  }
+
+  def startsWith(id: K, offset: K): Future[List[V]] = {
+    db.startsWithAs[V](key(id), key(offset))(keyWriter, valueReader)
+  }
+
+  def startsWith(id: K): Future[List[V]] = {
+    db.startsWithAs[V](key(id))(keyWriter, valueReader)
   }
 
   def all(implicit stKeyWriter: KeyWriter[String]): Future[List[V]] = {
