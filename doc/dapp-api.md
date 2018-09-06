@@ -240,6 +240,7 @@ The list of data from events with given name at the given address:
     }
     ...
 ]
+```
 
 ### Examples
 ```
