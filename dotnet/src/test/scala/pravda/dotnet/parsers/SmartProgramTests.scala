@@ -211,29 +211,32 @@ object SmartProgramTests extends TestSuite {
       val Right((pdb, tables)) = parsePdbFile("smart_program.pdb")
       val src = "/tmp/pravda/smart_program.cs"
 
-      tables.methodDebugInformationTable ==> Vector(
-        MethodDebugInformationData(Some(src),
-                                   List(SequencePoint(0, 8, 44, 8, 45),
-                                        SequencePoint(1, 9, 9, 9, 51),
-                                        SequencePoint(17, 10, 5, 10, 6))),
-        MethodDebugInformationData(
-          Some(src),
-          List(
-            SequencePoint(0, 12, 48, 12, 49),
-            SequencePoint(1, 13, 9, 13, 24),
-            SequencePoint(9, 13, 25, 13, 26),
-            SequencePoint(10, 14, 13, 14, 65),
-            SequencePoint(37, 14, 66, 14, 67),
-            SequencePoint(38, 15, 17, 15, 93),
-            SequencePoint(74, 16, 17, 16, 71),
-            SequencePoint(102, 17, 13, 17, 14),
-            SequencePoint(103, 18, 9, 18, 10),
-            SequencePoint(104, 19, 5, 19, 6)
-          )
-        ),
-        MethodDebugInformationData(Some(src), List(SequencePoint(0, 6, 5, 6, 62))),
-        MethodDebugInformationData(Some(src), List(SequencePoint(0, 23, 31, 23, 32), SequencePoint(1, 23, 32, 23, 33))),
-        MethodDebugInformationData(None, List())
+      DiffUtils.assertEqual(
+        tables.methodDebugInformationTable,
+        Vector(
+          MethodDebugInformationData(Some(src),
+                                     List(SequencePoint(0, 8, 44, 8, 45),
+                                          SequencePoint(1, 9, 9, 9, 51),
+                                          SequencePoint(17, 10, 5, 10, 6))),
+          MethodDebugInformationData(
+            Some(src),
+            List(
+              SequencePoint(0, 12, 48, 12, 49),
+              SequencePoint(1, 13, 9, 13, 24),
+              SequencePoint(9, 13, 25, 13, 26),
+              SequencePoint(10, 14, 13, 14, 65),
+              SequencePoint(37, 14, 66, 14, 67),
+              SequencePoint(38, 15, 17, 15, 93),
+              SequencePoint(74, 16, 17, 16, 71),
+              SequencePoint(102, 17, 13, 17, 14),
+              SequencePoint(103, 18, 9, 18, 10),
+              SequencePoint(104, 19, 5, 19, 6)
+            )
+          ),
+          MethodDebugInformationData(Some(src),
+                                     List(SequencePoint(0, 21, 31, 21, 32), SequencePoint(1, 21, 32, 21, 33))),
+          MethodDebugInformationData(Some(src), List(SequencePoint(0, 6, 5, 6, 62)))
+        )
       )
 
     }

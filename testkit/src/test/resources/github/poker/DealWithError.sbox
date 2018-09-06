@@ -15,6 +15,7 @@ expectations:
     sput x5461626C654361726473FFFFFFFF int32(0)
   error:
     |WrongStackIndex
+    |program address: 0000000000000000000000000000000000000000000000000000000000000000
     |  Deal method body (poker.cs:21,9-21,31)
 
 ---

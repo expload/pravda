@@ -259,10 +259,7 @@ object SmartProgramTests extends TestSuite {
              |meta translator_mark "ctor local vars definition"
              |meta translator_mark "ctor method body"
              |meta source_mark {
-             |"sl":int32(23),"sc":int32(31),"el":int32(23),"src":"$src","ec":int32(32)
-             |}
-             |meta source_mark {
-             |"sl":int32(23),"sc":int32(32),"el":int32(23),"src":"$src","ec":int32(33)
+             |  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"$src","ec":int32(62)
              |}
              |meta translator_mark "ctor local vars clearing"
              |meta translator_mark "end of ctor method"

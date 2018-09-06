@@ -13,6 +13,7 @@ expectations:
   effects:
   error:
     |UserError(Wrong method name)
+    |program address: 0000000000000000000000000000000000000000000000000000000000000000
     |  jump to methods
 ---
 #dotnet smart_program.cs

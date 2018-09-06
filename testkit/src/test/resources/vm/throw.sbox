@@ -10,6 +10,7 @@ expectations:
   effects:
   error:
     |UserError(Oops!)
+    |program address: 0000000000000000000000000000000000000000000000000000000000000000
     |  Throw method body (vm_ops.cs:8,9-8,30)
 
 ---------------------------------------
