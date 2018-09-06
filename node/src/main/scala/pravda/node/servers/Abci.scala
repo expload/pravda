@@ -406,17 +406,19 @@ object Abci {
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
-      events.groupBy {
-        case Event(address, name, data) => (address, name)
-      }.foreach {
-        case ((address, name), evs) =>
-          val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
-          evs.zipWithIndex.foreach {
-            case (Event(_, _, data), i) =>
-              eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
-          }
-          eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
-      }
+      events
+        .groupBy {
+          case Event(address, name, data) => (address, name)
+        }
+        .foreach {
+          case ((address, name), evs) =>
+            val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
+            evs.zipWithIndex.foreach {
+              case (Event(_, _, data), i) =>
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
+            }
+            eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
+        }
 
       db.syncBatch(operations: _*)
       clear()

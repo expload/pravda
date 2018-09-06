@@ -248,7 +248,8 @@ class DB(
 
   class StartsConstructor[V] {
 
-    def apply[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K], valueReader: ValueReader[V]): Future[List[V]] =
+    def apply[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K],
+                                                    valueReader: ValueReader[V]): Future[List[V]] =
       startsWith[K](prefix, offset, count)(keyWriter).map(_.map(_.as[V](valueReader)))
 
     def apply[K](prefix: K, offset: K)(implicit keyWriter: KeyWriter[K], valueReader: ValueReader[V]): Future[List[V]] =
@@ -260,23 +261,25 @@ class DB(
 
   def startsWithAs[V] = new StartsConstructor[V]
 
-  def startsWith[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] = Future {
-    val prefixBytes = keyWriter.toBytes(prefix)
-    val offsetBytes = keyWriter.toBytes(offset)
-    tryCloseable(db.iterator()) { it =>
-      val it = db.iterator()
-      it.seek(offsetBytes)
-      val res = ListBuffer.empty[Result]
-      while (res.length.toLong < count && it.hasNext && it.peekNext.getKey.startsWith(prefixBytes)) {
-        val v = Result(it.peekNext.getValue)
-        res += v
-        it.next
+  def startsWith[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] =
+    Future {
+      val prefixBytes = keyWriter.toBytes(prefix)
+      val offsetBytes = keyWriter.toBytes(offset)
+      tryCloseable(db.iterator()) { it =>
+        val it = db.iterator()
+        it.seek(offsetBytes)
+        val res = ListBuffer.empty[Result]
+        while (res.length.toLong < count && it.hasNext && it.peekNext.getKey.startsWith(prefixBytes)) {
+          val v = Result(it.peekNext.getValue)
+          res += v
+          it.next
+        }
+        res.toList
       }
-      res.toList
     }
-  }
 
-  def startsWith[K](prefix: K, offset: K)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] = startsWith(prefix, offset, Long.MaxValue)
+  def startsWith[K](prefix: K, offset: K)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] =
+    startsWith(prefix, offset, Long.MaxValue)
 
   def startsWith[K](prefix: K)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] = startsWith(prefix, prefix)
 

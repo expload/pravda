@@ -34,7 +34,10 @@ object EventTests extends TestSuite {
             NewArr(TypeRefData(6, "Byte", "System")),
             Dup,
             LdToken(FieldData(307, "12DADA1FFF4D4787ADE3333147202C3B443E376F", 64)),
-            Call(MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"), "InitializeArray", 36)),
+            Call(
+              MemberRefData(TypeRefData(6, "RuntimeHelpers", "System.Runtime.CompilerServices"),
+                            "InitializeArray",
+                            36)),
             NewObj(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), ".ctor", 44)),
             Call(MethodSpecData(MemberRefData(TypeRefData(10, "Log", "Com.Expload"), "Event", 16), 50)),
             Nop,

@@ -232,7 +232,6 @@ object json {
   implicit val initialDistributionWriter: JsonWriter[CoinDistributionMember] =
     jsonWriter[CoinDistributionMember]
 
-
   implicit val eventItemReader: JsonReader[ApiRoute.EventItem] =
     jsonReader[ApiRoute.EventItem]
 
