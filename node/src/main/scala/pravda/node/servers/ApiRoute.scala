@@ -99,21 +99,32 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
                'nonce.as(intUnmarshaller).?,
                'wattLimit.as[Long],
                'wattPrice.as[Long],
-               'mode.?)) { (from, signature, maybeNonce, wattLimit, wattPrice, maybeMode) =>
-              extractStrictEntity(1.second) { body =>
-                val program = bodyToTransactionData(body)
-                val nonce = maybeNonce.getOrElse(Random.nextInt())
-                val tx =
-                  SignedTransaction(Address @@ from, program, signature, wattLimit, NativeCoin @@ wattPrice, nonce)
-                println(Show[SignedTransaction].show(tx))
-                val mode = maybeMode.getOrElse("commit")
-                val result = abciClient.broadcastTransaction(tx, mode)
+               'wattPayer.as(hexUnmarshaller).?,
+               'wattPayerSignature.as(hexUnmarshaller).?,
+               'mode.?)) {
+              (from, signature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature, maybeMode) =>
+                extractStrictEntity(1.second) { body =>
+                  val program = bodyToTransactionData(body)
+                  val nonce = maybeNonce.getOrElse(Random.nextInt())
+                  val tx = SignedTransaction(
+                    Address @@ from,
+                    program,
+                    signature,
+                    wattLimit,
+                    NativeCoin @@ wattPrice,
+                    wattPayer.map(Address @@ _),
+                    wattPayerSignature,
+                    nonce
+                  )
+                  println(Show[SignedTransaction].show(tx))
+                  val mode = maybeMode.getOrElse("commit")
+                  val result = abciClient.broadcastTransaction(tx, mode)
 
-                onSuccess(result) {
-                  case Right(info) => complete(info)
-                  case Left(error) => complete(error)
+                  onSuccess(result) {
+                    case Right(info) => complete(info)
+                    case Left(error) => complete(error)
+                  }
                 }
-              }
             }
           }
         }
