@@ -356,3 +356,18 @@ lazy val plaintest = (project in file("plaintest"))
       "com.lihaoyi" %% "utest" % "0.6.3"
     )
   )
+
+lazy val `coins-receiving` = (project in file("services/coins-receiving"))
+  .settings(commonSettings: _*)
+  .settings(
+    skip in publish := true,
+    normalizedName := "pravda-services-coins-receiving",
+    libraryDependencies ++= Seq(
+      // Networking
+      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
+      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
+      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
+      // UI
+      "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0"
+    )
+  )
