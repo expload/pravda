@@ -7,7 +7,7 @@ preconditions:
     "init" = null
 
 expectations:
-  watts-spent: 180
+  watts-spent: 201
   stack:
     "boom"
   heap:

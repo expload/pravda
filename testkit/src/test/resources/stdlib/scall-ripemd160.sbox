@@ -3,12 +3,15 @@ preconditions:
   stack:
     "hello world",
     "Ripemd160"
+  storage:
+    "init" = null
 expectations:
-  watts-spent: 283
+  watts-spent: 318
   stack:
     x98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f
   heap:
   effects:
+    sget "init" null
 ---------------------------------------
 #dotnet stdlib.cs
 

@@ -89,7 +89,7 @@ object VmSandbox {
       val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
       val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
-      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ programs.?)
+      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
         .map {
           case (b, w, m, s, ps) =>
             Preconditions(

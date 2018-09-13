@@ -5,14 +5,16 @@ preconditions:
   heap:
   storage:
     "p_ZooCnt" = int32(1),
-    "p_PetId" = int32(1)
+    "p_PetId" = int32(1),
+    "init" = null
 
 expectations:
-  watts-spent: 863
+  watts-spent: 898
   stack:
     int32(1)
   heap:
   effects:
+    sget "init" null,
     sget "p_ZooCnt" int32(1),
     sput x5A6F6F546F4F776E657200000001 x0000000000000000000000000000000000000000000000000000000000000000,
     sget "p_ZooCnt" int32(1),

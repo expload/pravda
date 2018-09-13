@@ -2,15 +2,16 @@ preconditions:
   watts-limit: 3000
   stack:
     "Func"
-
+  storage:
+    "init" = null
 expectations:
-  watts-spent: 604
+  watts-spent: 639
   stack:
     int32(387)
   heap:
-     #0x0 = { "AVal": int32(100), "Answer": #0x496, "AnswerPlus1": #0xCA0 },
-     #0x1 = { "BVal": int32(200), "Answer": #0x7D5, "AnswerPlus1": #0xCA0 }
+     #0x0 = { "AVal": int32(100), "Answer": #0x5AE, "AnswerPlus1": #0xDB8 },
+     #0x1 = { "BVal": int32(200), "Answer": #0x8ED, "AnswerPlus1": #0xDB8 }
   effects:
-
+    sget "init" null
 ---------------------------------------
 #dotnet inheritance.cs

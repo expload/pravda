@@ -8,7 +8,7 @@ preconditions:
     x62616C616E6365730000000000000000000000000000000000000000000000000000000000000000 = int32(100)
 
 expectations:
-  watts-spent: 1302
+  watts-spent: 1323
   stack:
   heap:
   effects:
