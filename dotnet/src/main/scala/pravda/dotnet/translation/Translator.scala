@@ -230,7 +230,7 @@ object Translator {
     } else {
       val cls = classesWithProgramAttribute(0)
       if (cls.fields.exists(f => FieldsTranslation.isStatic(f.flags))) {
-        Left(TranslationError(InternalError("Static fields in program class are forbidden."), None))
+        Left(TranslationError(InternalError("Static fields in program class are forbidden"), None))
       } else {
         val methodsToTypes: Map[Int, TypeDefData] = cilData.tables.methodDefTable.zipWithIndex.flatMap {
           case (m, i) => cilData.tables.typeDefTable.find(_.methods.exists(_ == m)).map(i -> _)
@@ -285,13 +285,13 @@ object Translator {
       methodsFuncs <- filterValidateMethods(
         i => tctx.isProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i),
         i => !isStatic(i) && (isPrivate(i) || isPublic(i)),
-        InternalError("Only public or private non-static methods are allowed.")
+        InternalError("Only public or private non-static methods are allowed")
       )
       _ <- {
         val names = methodsFuncs.map(i => tctx.methodRow(i).name)
         if (names.toSet.size != names.size) {
           Left(
-            TranslationError(InternalError("It's forbidden to have overloaded program's functions or methods."), None))
+            TranslationError(InternalError("It's forbidden to have overloaded program's functions or methods"), None))
         } else {
           Right(())
         }
@@ -305,11 +305,11 @@ object Translator {
       ctors <- filterValidateMethods(
         i => tctx.isProgramMethod(i) && (isCtor(i) || isCctor(i)),
         i => !isCctor(i) && tctx.methodRow(i).params.isEmpty,
-        InternalError("Constructor mustn't take any arguments. Static constructors are forbidden.")
+        InternalError("Constructor mustn't take any arguments. Static constructors are forbidden")
       )
       ctor <- {
         if (ctors.length > 1) {
-          Left(TranslationError(InternalError("It's forbidden to have more than one program's constructor."), None))
+          Left(TranslationError(InternalError("It's forbidden to have more than one program's constructor"), None))
         } else if (ctors.length == 1) {
           Right(Some(ctors.head))
         } else {
@@ -361,14 +361,14 @@ object Translator {
             asm.Operation(Opcodes.OWNER),
             asm.Operation(Opcodes.EQ),
             asm.Operation.JumpI(Some("ctor_ok_1")),
-            asm.Operation.Push(Data.Primitive.Utf8("Only owner can call the constructor.")),
+            asm.Operation.Push(Data.Primitive.Utf8("Only owner can call the constructor")),
             asm.Operation(Opcodes.THROW),
             asm.Operation.Label("ctor_ok_1"),
             asm.Operation.Push(Data.Primitive.Utf8("init")),
             asm.Operation(Opcodes.SEXIST),
             asm.Operation(Opcodes.NOT),
             asm.Operation.JumpI(Some("ctor_ok_2")),
-            asm.Operation.Push(Data.Primitive.Utf8("Program has been already initialized.")),
+            asm.Operation.Push(Data.Primitive.Utf8("Program has been already initialized")),
             asm.Operation(Opcodes.THROW),
             asm.Operation.Label("ctor_ok_2"),
             asm.Operation.Push(Data.Primitive.Utf8("init")),
@@ -562,7 +562,7 @@ object Translator {
           asm.Operation.Push(Data.Primitive.Utf8("init")),
           asm.Operation(Opcodes.SEXIST),
           asm.Operation.JumpI(Some("methods")),
-          asm.Operation.Push(Data.Primitive.Utf8("Program was not initialized.")),
+          asm.Operation.Push(Data.Primitive.Utf8("Program was not initialized")),
           asm.Operation(Opcodes.THROW),
           asm.Operation.Label("methods")
         ) ++ jumpToMethods ++ List(
