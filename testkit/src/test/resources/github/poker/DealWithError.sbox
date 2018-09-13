@@ -4,14 +4,15 @@ preconditions:
     x01, x02, x03, x04, x05, x06, x07, x08, "Deal"
   heap:
   storage:
-    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
-
+    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
+    "init" = null
 expectations:
-  watts-spent: 361
+  watts-spent: 417
   stack:
     x01, x02, x03, x04, x05, x06, x07, x08, "Deal", int32(0), null, null, null, null, null, null, null, null
   heap:
   effects:
+    sget "init" null,
     sput x5461626C654361726473FFFFFFFF int32(0)
   error:
     |WrongStackIndex

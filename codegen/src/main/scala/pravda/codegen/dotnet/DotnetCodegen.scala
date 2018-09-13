@@ -177,6 +177,6 @@ object DotnetCodegen {
 
   def generate(byteCode: ByteString): GeneratedFile = { // (BigInteger, Methods)
     val (name, methods) = extractInfo(byteCode)
-    (name.capitalize + ".cs", generateMethods(name, methods))
+    (name.capitalize + ".cs", generateMethods(name, methods.filter(_.name != "ctor")))
   }
 }

@@ -88,7 +88,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
                   List(
                     asm.Operation(Opcodes.POP),
                     asm.Operation(Opcodes.POP),
-                    pushString("Mapping modification is forbidden."),
+                    pushString("Mapping modification is forbidden"),
                     asm.Operation(Opcodes.THROW)
                   )
                 case _ => defaultStore

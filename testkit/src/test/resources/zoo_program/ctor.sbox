@@ -1,0 +1,20 @@
+preconditions:
+  watts-limit: 10000
+  stack:
+    "ctor"
+  heap:
+  storage:
+
+expectations:
+  watts-spent: 514
+  stack:
+  heap:
+  effects:
+    sget "init",
+    sput "init" null,
+    sput "p_ZooCnt" int32(1),
+    sput "p_PetId" int32(1)
+
+
+---
+#dotnet zoo_program.cs

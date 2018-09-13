@@ -89,7 +89,7 @@ object VmSandbox {
       val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
       val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
-      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ programs.?)
+      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
         .map {
           case (b, w, m, s, ps) =>
             Preconditions(
@@ -242,13 +242,14 @@ object VmSandbox {
     val effects = mutable.Buffer[EnvironmentEffect]()
     val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
 
+    val pExecutor = Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
+
     val environment: Environment = new Environment {
       val balances = mutable.Map(c.preconditions.balances.toSeq: _*)
       val programs = mutable.Map(c.preconditions.programs.toSeq: _*)
       val sealedPrograms = mutable.Map[Address, Boolean]()
 
-      def executor: Address =
-        Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0x00))
+      def executor: Address = pExecutor
 
       def sealProgram(address: Address): Unit = {
         sealedPrograms(address) = true
@@ -285,7 +286,7 @@ object VmSandbox {
       }
 
       def getProgramOwner(address: Address): Option[Address] =
-        None // TODO program mocking
+        Some(pExecutor) // TODO display actual owner for created programs
 
       def balance(address: Address): NativeCoin = {
         val balance = NativeCoin @@ balances.get(address).fold(0L)(_.data.toLong)

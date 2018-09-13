@@ -4,14 +4,16 @@ preconditions:
     null, "balanceOf"
   heap:
   storage:
+    "init" = null,
     x62616C616E6365730011 = int32(10)
 
 expectations:
-  watts-spent: 143
+  watts-spent: 199
   stack:
     null, "balanceOf", null, x62616C616E636573, null, int32(0)
   heap:
   effects:
+   sget "init" null
   error:
     |Unexpected type: Null
     |program address: 0000000000000000000000000000000000000000000000000000000000000000

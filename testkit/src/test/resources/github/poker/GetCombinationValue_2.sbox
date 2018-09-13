@@ -4,14 +4,15 @@ preconditions:
     int32(0), int32(2), int32(4), int32(6), int32(80), "GetCombinationValue"
   heap:
   storage:
-    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
-
+    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
+    "init" = null
 expectations:
-  watts-spent: 4253
+  watts-spent: 4309
   stack:
     int32(50)
   heap:
   effects:
+    sget "init" null
 
 ---
 #dotnet poker.cs

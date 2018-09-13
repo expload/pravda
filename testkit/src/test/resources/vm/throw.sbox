@@ -2,12 +2,15 @@ preconditions:
   watts-limit: 1000
   stack:
     "Throw"
+  storage:
+    "init" = null
 expectations:
-  watts-spent: 128
+  watts-spent: 184
   stack:
     "Throw"
   heap:
   effects:
+    sget "init" null
   error:
     |UserError(Oops!)
     |program address: 0000000000000000000000000000000000000000000000000000000000000000

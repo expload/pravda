@@ -2,12 +2,15 @@ preconditions:
   watts-limit: 10000
   stack:
     "MakeEvent"
+  storage:
+    "init" = null
 expectations:
-  watts-spent: 444
+  watts-spent: 500
   stack:
   heap:
     #0x0 = int8[1, 2, 3, 4]
   effects:
+    sget "init" null
   events:
     x0000000000000000000000000000000000000000000000000000000000000000 my_event int32(1234),
     x0000000000000000000000000000000000000000000000000000000000000000 my_event "my_string",
