@@ -16,6 +16,10 @@ object ZooProgramTests extends TestSuite {
         PravdaAssembler
           .parse("""
               |meta translator_mark "jump to methods"
+              |dup
+              |push "ctor"
+              |eq
+              |jumpi @method_ctor
               |push "init"
               |sexist
               |jumpi @methods
@@ -42,10 +46,6 @@ object ZooProgramTests extends TestSuite {
               |push "TransferZoo"
               |eq
               |jumpi @method_TransferZoo
-              |dup
-              |push "ctor"
-              |eq
-              |jumpi @method_ctor
               |push "Wrong method name"
               |throw
               |meta translator_mark "BreedPets method"
@@ -501,9 +501,13 @@ object ZooProgramTests extends TestSuite {
               |meta translator_mark "end of TransferZoo method"
               |jump @stop
               |meta translator_mark "ctor method"
+              |meta method {
+              |  "name":"ctor","returnTpe":int8(0)
+              |}
               |@method_ctor:
               |meta translator_mark "ctor check"
               |from
+              |paddr
               |owner
               |eq
               |jumpi @ctor_ok_1
@@ -517,8 +521,8 @@ object ZooProgramTests extends TestSuite {
               |push "Program has been already initialized"
               |throw
               |@ctor_ok_2:
-              |push "init"
               |push null
+              |push "init"
               |sput
               |meta translator_mark "ctor local vars definition"
               |meta translator_mark "ctor method body"
@@ -529,8 +533,9 @@ object ZooProgramTests extends TestSuite {
               |push "p_PetId"
               |sput
               |meta translator_mark "ctor local vars clearing"
+              |pop
               |meta translator_mark "end of ctor method"
-              |ret
+              |jump @stop
               |meta translator_mark "GenerateSignature func"
               |@func_GenerateSignature:
               |meta translator_mark "GenerateSignature local vars definition"

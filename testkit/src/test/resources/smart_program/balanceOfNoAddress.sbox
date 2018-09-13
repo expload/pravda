@@ -7,7 +7,7 @@ preconditions:
     "init" = null
 
 expectations:
-  watts-spent: 262
+  watts-spent: 283
   stack:
     int32(0)
   heap:

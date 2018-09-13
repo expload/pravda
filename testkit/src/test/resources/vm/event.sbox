@@ -5,7 +5,7 @@ preconditions:
   storage:
     "init" = null
 expectations:
-  watts-spent: 479
+  watts-spent: 500
   stack:
   heap:
     #0x0 = int8[1, 2, 3, 4]

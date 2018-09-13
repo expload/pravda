@@ -8,7 +8,7 @@ preconditions:
   storage:
     "init" = null
 expectations:
-  watts-spent: 1307
+  watts-spent: 1328
   stack:
     false
   heap:

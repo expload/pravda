@@ -174,7 +174,6 @@ object Translator {
     }
 
     val metaMethodMark = if (!func) {
-      val name = tctx.methodRow(id).name
       for {
         methodSign <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
         methodTpe <- CallsTransation.methodType(methodSign)
@@ -308,12 +307,12 @@ object Translator {
         InternalError("Constructor mustn't take any arguments. Static constructors are forbidden")
       )
       ctor <- {
-        if (ctors.length > 1) {
-          Left(TranslationError(InternalError("It's forbidden to have more than one program's constructor"), None))
-        } else if (ctors.length == 1) {
-          Right(Some(ctors.head))
+        if (ctors.length != 1) {
+          Left(
+            TranslationError(InternalError("It's forbidden to have more than one or zero program's constructors"),
+                             None))
         } else {
-          Right(None)
+          Right(ctors.head)
         }
       }
     } yield ctor
@@ -327,37 +326,32 @@ object Translator {
     val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
     //val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
 
-    val jumpToMethodsE: Either[TranslationError, List[Operation]] = {
-      def jumpToMethod(name: String) =
-        (name,
-         List(
-           asm.Operation(Opcodes.DUP),
-           asm.Operation.Push(Data.Primitive.Utf8(name)),
-           asm.Operation(Opcodes.EQ),
-           asm.Operation.JumpI(Some(s"method_$name"))
-         ))
-
-      for {
-        programMethods <- programMethodsE
-        ctor <- programCtorE
-      } yield {
-        (programMethods
-          .map(i => {
-            val name = tctx.cilData.tables.methodDefTable(i).name
-            jumpToMethod(name)
-          }) ++ (if (ctor.isDefined) List(jumpToMethod("ctor")) else List.empty))
-          .sortBy(_._1)
-          .flatMap(_._2)
-      }
+    val jumpToMethodsE: Either[TranslationError, List[Operation]] = for {
+      programMethods <- programMethodsE
+    } yield {
+      programMethods
+        .map(i => {
+          val name = tctx.cilData.tables.methodDefTable(i).name
+          (name,
+           List(
+             asm.Operation(Opcodes.DUP),
+             asm.Operation.Push(Data.Primitive.Utf8(name)),
+             asm.Operation(Opcodes.EQ),
+             asm.Operation.JumpI(Some(s"method_$name"))
+           ))
+        })
+        .sortBy(_._1)
+        .flatMap(_._2)
     }
 
-    val ctorOpsE: Either[TranslationError, Option[MethodTranslation]] = for {
+    val ctorOpsE: Either[TranslationError, MethodTranslation] = for {
       ctor <- programCtorE
       ops <- ctor match {
-        case Some(i) =>
+        case i =>
           val method = methods(i)
           val prefix = List(
             asm.Operation(Opcodes.FROM),
+            asm.Operation(Opcodes.PADDR),
             asm.Operation(Opcodes.OWNER),
             asm.Operation(Opcodes.EQ),
             asm.Operation.JumpI(Some("ctor_ok_1")),
@@ -371,8 +365,8 @@ object Translator {
             asm.Operation.Push(Data.Primitive.Utf8("Program has been already initialized")),
             asm.Operation(Opcodes.THROW),
             asm.Operation.Label("ctor_ok_2"),
-            asm.Operation.Push(Data.Primitive.Utf8("init")),
             asm.Operation.Push(Data.Primitive.Null),
+            asm.Operation.Push(Data.Primitive.Utf8("init")),
             asm.Operation(Opcodes.SPUT),
           )
 
@@ -384,15 +378,14 @@ object Translator {
             0,
             MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
             void = true,
-            func = true,
+            func = false,
             static = false,
             struct = None,
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
           ).map(res =>
-            Some(res.copy(
-              opcodes = res.opcodes.head :: OpCodeTranslation(Left("ctor check"), List.empty, prefix) :: res.opcodes.tail)))
-        case None => Right(None)
+            res.copy(
+              opcodes = res.opcodes.head :: OpCodeTranslation(Left("ctor check"), List.empty, prefix) :: res.opcodes.tail))
       }
     } yield ops
 
@@ -555,10 +548,14 @@ object Translator {
       structCtorsOps <- structCtorsOpsE
       jumpToMethods <- jumpToMethodsE
     } yield {
-      val methodsOps = programMethodsOps ++ ctorOps.toList
+      val methodsOps = ctorOps :: programMethodsOps
       val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
       Translation(
         List(
+          asm.Operation(Opcodes.DUP),
+          asm.Operation.Push(Data.Primitive.Utf8("ctor")),
+          asm.Operation(Opcodes.EQ),
+          asm.Operation.JumpI(Some("method_ctor")),
           asm.Operation.Push(Data.Primitive.Utf8("init")),
           asm.Operation(Opcodes.SEXIST),
           asm.Operation.JumpI(Some("methods")),

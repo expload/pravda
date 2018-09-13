@@ -5,7 +5,7 @@ preconditions:
   storage:
     "init" = null
 expectations:
-  watts-spent: 380
+  watts-spent: 401
   stack:
     int32(385)
   heap:

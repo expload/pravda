@@ -8,7 +8,7 @@ preconditions:
     "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
     "init" = null
 expectations:
-  watts-spent: 793
+  watts-spent: 814
   stack:
   heap:
   effects:

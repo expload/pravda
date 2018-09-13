@@ -8,7 +8,7 @@ preconditions:
     x62616C616E6365730011 = int32(10)
 
 expectations:
-  watts-spent: 178
+  watts-spent: 199
   stack:
     null, "balanceOf", null, x62616C616E636573, null, int32(0)
   heap:
