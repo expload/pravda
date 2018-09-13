@@ -16,10 +16,20 @@ object SmartProgramTests extends TestSuite {
         PravdaAssembler
           .parse("""
            |meta translator_mark "jump to methods"
+           |push "init"
+           |sexist
+           |jumpi @methods
+           |push "Program was not initialized."
+           |throw
+           |@methods:
            |dup
            |push "balanceOf"
            |eq
            |jumpi @method_balanceOf
+           |dup
+           |push "ctor"
+           |eq
+           |jumpi @method_ctor
            |dup
            |push "transfer"
            |eq
@@ -55,6 +65,24 @@ object SmartProgramTests extends TestSuite {
            |jump @stop
            |meta translator_mark "ctor method"
            |@method_ctor:
+           |meta translator_mark "ctor check"
+           |from
+           |owner
+           |eq
+           |jumpi @ctor_ok_1
+           |push "Only owner can call the constructor."
+           |throw
+           |@ctor_ok_1:
+           |push "init"
+           |sexist
+           |not
+           |jumpi @ctor_ok_2
+           |push "Program has been already initialized."
+           |throw
+           |@ctor_ok_2:
+           |push "init"
+           |push null
+           |sput
            |meta translator_mark "ctor local vars definition"
            |meta translator_mark "ctor method body"
            |meta translator_mark "ctor local vars clearing"
@@ -208,10 +236,20 @@ object SmartProgramTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).right.get,
         PravdaAssembler.parse(s"""
              |meta translator_mark "jump to methods"
+             |push "init"
+             |sexist
+             |jumpi @methods
+             |push "Program was not initialized."
+             |throw
+             |@methods:
              |dup
              |push "balanceOf"
              |eq
              |jumpi @method_balanceOf
+             |dup
+             |push "ctor"
+             |eq
+             |jumpi @method_ctor
              |dup
              |push "transfer"
              |eq
@@ -256,6 +294,24 @@ object SmartProgramTests extends TestSuite {
              |jump @stop
              |meta translator_mark "ctor method"
              |@method_ctor:
+             |meta translator_mark "ctor check"
+             |from
+             |owner
+             |eq
+             |jumpi @ctor_ok_1
+             |push "Only owner can call the constructor."
+             |throw
+             |@ctor_ok_1:
+             |push "init"
+             |sexist
+             |not
+             |jumpi @ctor_ok_2
+             |push "Program has been already initialized."
+             |throw
+             |@ctor_ok_2:
+             |push "init"
+             |push null
+             |sput
              |meta translator_mark "ctor local vars definition"
              |meta translator_mark "ctor method body"
              |meta source_mark {

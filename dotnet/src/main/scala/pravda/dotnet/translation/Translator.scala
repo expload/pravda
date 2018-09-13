@@ -327,22 +327,28 @@ object Translator {
     val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
     //val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
 
-    val jumpToMethodsE: Either[TranslationError, List[Operation]] = for {
-      programMethods <- programMethodsE
-    } yield {
-      programMethods
-        .map(i => {
-          val name = tctx.cilData.tables.methodDefTable(i).name
-          (name,
-           List(
-             asm.Operation(Opcodes.DUP),
-             asm.Operation.Push(Data.Primitive.Utf8(name)),
-             asm.Operation(Opcodes.EQ),
-             asm.Operation.JumpI(Some(s"method_$name"))
-           ))
-        })
-        .sortBy(_._1)
-        .flatMap(_._2)
+    val jumpToMethodsE: Either[TranslationError, List[Operation]] = {
+      def jumpToMethod(name: String) =
+        (name,
+         List(
+           asm.Operation(Opcodes.DUP),
+           asm.Operation.Push(Data.Primitive.Utf8(name)),
+           asm.Operation(Opcodes.EQ),
+           asm.Operation.JumpI(Some(s"method_$name"))
+         ))
+
+      for {
+        programMethods <- programMethodsE
+        ctor <- programCtorE
+      } yield {
+        (programMethods
+          .map(i => {
+            val name = tctx.cilData.tables.methodDefTable(i).name
+            jumpToMethod(name)
+          }) ++ (if (ctor.isDefined) List(jumpToMethod("ctor")) else List.empty))
+          .sortBy(_._1)
+          .flatMap(_._2)
+      }
     }
 
     val ctorOpsE: Either[TranslationError, Option[MethodTranslation]] = for {
@@ -350,6 +356,26 @@ object Translator {
       ops <- ctor match {
         case Some(i) =>
           val method = methods(i)
+          val prefix = List(
+            asm.Operation(Opcodes.FROM),
+            asm.Operation(Opcodes.OWNER),
+            asm.Operation(Opcodes.EQ),
+            asm.Operation.JumpI(Some("ctor_ok_1")),
+            asm.Operation.Push(Data.Primitive.Utf8("Only owner can call the constructor.")),
+            asm.Operation(Opcodes.THROW),
+            asm.Operation.Label("ctor_ok_1"),
+            asm.Operation.Push(Data.Primitive.Utf8("init")),
+            asm.Operation(Opcodes.SEXIST),
+            asm.Operation(Opcodes.NOT),
+            asm.Operation.JumpI(Some("ctor_ok_2")),
+            asm.Operation.Push(Data.Primitive.Utf8("Program has been already initialized.")),
+            asm.Operation(Opcodes.THROW),
+            asm.Operation.Label("ctor_ok_2"),
+            asm.Operation.Push(Data.Primitive.Utf8("init")),
+            asm.Operation.Push(Data.Primitive.Null),
+            asm.Operation(Opcodes.SPUT),
+          )
+
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, "ctor"),
             "ctor",
@@ -363,7 +389,9 @@ object Translator {
             struct = None,
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
-          ).map(Some(_))
+          ).map(res =>
+            Some(res.copy(
+              opcodes = res.opcodes.head :: OpCodeTranslation(Left("ctor check"), List.empty, prefix) :: res.opcodes.tail)))
         case None => Right(None)
       }
     } yield ops
@@ -530,7 +558,14 @@ object Translator {
       val methodsOps = programMethodsOps ++ ctorOps.toList
       val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
       Translation(
-        /*metaMethods ++*/ jumpToMethods ++ List(
+        List(
+          asm.Operation.Push(Data.Primitive.Utf8("init")),
+          asm.Operation(Opcodes.SEXIST),
+          asm.Operation.JumpI(Some("methods")),
+          asm.Operation.Push(Data.Primitive.Utf8("Program was not initialized.")),
+          asm.Operation(Opcodes.THROW),
+          asm.Operation.Label("methods")
+        ) ++ jumpToMethods ++ List(
           asm.Operation.Push(Data.Primitive.Utf8("Wrong method name")),
           asm.Operation(Opcodes.THROW)
         ),

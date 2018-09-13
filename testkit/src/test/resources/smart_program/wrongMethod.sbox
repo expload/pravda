@@ -4,13 +4,15 @@ preconditions:
     "boom"
   heap:
   storage:
+    "init" = null
 
 expectations:
-  watts-spent: 145
+  watts-spent: 180
   stack:
     "boom"
   heap:
   effects:
+   sget "init" null
   error:
     |UserError(Wrong method name)
     |program address: 0000000000000000000000000000000000000000000000000000000000000000

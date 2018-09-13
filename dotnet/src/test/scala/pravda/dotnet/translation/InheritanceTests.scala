@@ -15,10 +15,20 @@ object InheritanceTests extends TestSuite {
         Translator.translateAsm(methods, cilData, signatures).right.get,
         PravdaAssembler.parse("""
            |meta translator_mark "jump to methods"
+           |push "init"
+           |sexist
+           |jumpi @methods
+           |push "Program was not initialized."
+           |throw
+           |@methods:
            |dup
            |push "Func"
            |eq
            |jumpi @method_Func
+           |dup
+           |push "ctor"
+           |eq
+           |jumpi @method_ctor
            |push "Wrong method name"
            |throw
            |meta translator_mark "Func method"
@@ -123,6 +133,24 @@ object InheritanceTests extends TestSuite {
            |jump @stop
            |meta translator_mark "ctor method"
            |@method_ctor:
+           |meta translator_mark "ctor check"
+           |from
+           |owner
+           |eq
+           |jumpi @ctor_ok_1
+           |push "Only owner can call the constructor."
+           |throw
+           |@ctor_ok_1:
+           |push "init"
+           |sexist
+           |not
+           |jumpi @ctor_ok_2
+           |push "Program has been already initialized."
+           |throw
+           |@ctor_ok_2:
+           |push "init"
+           |push null
+           |sput
            |meta translator_mark "ctor local vars definition"
            |meta translator_mark "ctor method body"
            |meta translator_mark "ctor local vars clearing"

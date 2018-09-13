@@ -4,13 +4,15 @@ preconditions:
     x0011, "balanceOf"
   heap:
   storage:
+    "init" = null
 
 expectations:
-  watts-spent: 227
+  watts-spent: 262
   stack:
     int32(0)
   heap:
   effects:
+   sget "init" null,
    sget x62616C616E6365730011
 ---
 #dotnet smart_program.cs
