@@ -128,7 +128,7 @@ class AbciClient(port: Int)(implicit
                                   wattPrice: NativeCoin,
                                   mode: String = "commit"): Future[ErrorOrExecInfo] = {
 
-    val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, Random.nextInt())
+    val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, None, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)

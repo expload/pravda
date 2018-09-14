@@ -31,10 +31,11 @@ object blockchain {
     def program: TransactionData
     def wattLimit: Long
     def wattPrice: NativeCoin
+    def wattPayer: Option[Address]
     def nonce: Int
 
-    def forSignature: (Address, TransactionData, Long, NativeCoin, Int) =
-      (from, program, wattLimit, wattPrice, nonce)
+    def forSignature: (Address, TransactionData, Long, NativeCoin, Int, Option[Address]) =
+      (from, program, wattLimit, wattPrice, nonce, wattPayer)
   }
 
   object Transaction {
@@ -43,6 +44,7 @@ object blockchain {
                                          program: TransactionData,
                                          wattLimit: Long,
                                          wattPrice: NativeCoin,
+                                         wattPayer: Option[Address],
                                          nonce: Int)
         extends Transaction
 
@@ -51,6 +53,8 @@ object blockchain {
                                        signature: ByteString,
                                        wattLimit: Long,
                                        wattPrice: NativeCoin,
+                                       wattPayer: Option[Address],
+                                       wattPayerSignature: Option[ByteString],
                                        nonce: Int)
         extends Transaction
 
@@ -70,6 +74,8 @@ object blockchain {
                                            signature: ByteString,
                                            wattLimit: Long,
                                            wattPrice: NativeCoin,
+                                           wattPayer: Option[Address],
+                                           wattPayerSignature: Option[ByteString],
                                            nonce: Int)
         extends Transaction
   }

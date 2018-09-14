@@ -118,7 +118,11 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       _ <- checkTransaction(authTx)
       tid = TransactionId.forEncodedTransaction(encodedTransaction)
       env = environmentProvider.transactionEnvironment(authTx.from, tid)
-      _ <- Try(environmentProvider.withdraw(authTx.from, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
+      // Select watt payer. if watt payer is defined use them,
+      // else use transaction sender (from).
+      // Signature is checked above in `checkTransaction` function.
+      wattPayer = authTx.wattPayer.fold(authTx.from)(identity)
+      _ <- Try(environmentProvider.withdraw(wattPayer, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
       vm = new VmImpl()
       execResult = vm.spawn(authTx.program, env, MemoryImpl.empty, new WattCounterImpl(authTx.wattLimit), authTx.from)
     } yield {
@@ -127,7 +131,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       }
       val total = execResult.wattCounter.total
       val remaining = authTx.wattLimit - total
-      environmentProvider.accrue(authTx.from, NativeCoin(authTx.wattPrice * remaining))
+      environmentProvider.accrue(wattPayer, NativeCoin(authTx.wattPrice * remaining))
       environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
       execResult
     }

@@ -67,6 +67,7 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
         program = TransactionData @@ data,
         wattLimit = wattLimit,
         wattPrice = wattPrice,
+        wattPayer = None,
         nonce = Random.nextInt()
       )
 

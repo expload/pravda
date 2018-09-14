@@ -312,6 +312,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                                                                  TransactionData @@ data,
                                                                  wattLimit.toLong,
                                                                  NativeCoin.amount(wattPrice),
+                                                                 None,
                                                                  Random.nextInt())
                             cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                           }
@@ -365,6 +366,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                                                                    TransactionData @@ data,
                                                                    wattLimit.toLong,
                                                                    NativeCoin.amount(wattPrice),
+                                                                   None,
                                                                    Random.nextInt())
                               cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                             }
