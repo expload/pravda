@@ -51,6 +51,9 @@ def compile_dll(inputs, outputs):
 def compile_exe(inputs, outputs):
     return compile(inputs, outputs, [])
 
+def compile_exe_optimized(inputs, outputs):
+    return compile(inputs, outputs, ["-optimize+"])
+
 def compile_exe_pdb(inputs, outputs):
     return compile_exe(inputs, outputs[:1]) + \
            ["-debug:portable", f"-pdb:{in_tmp_dir(outputs[1].rpartition('.')[0])}"]
@@ -76,6 +79,11 @@ for filename in ["arithmetics",
                  "zoo_program"]:
     run_if_changed(f"{filename} compilation",
                    [f"{filename}.cs", in_dll_dir("Pravda.dll")], compile_exe, [f"{filename}.exe"])
+
+for filename in ["static_class"]:
+    run_if_changed(f"{filename} compilation",
+                   [f"{filename}.cs", "expload.dll"], compile_exe_optimized, [f"{filename}.exe"])
+
 
 for filename in ["smart_program", "hello_world"]:
     run_if_changed(f"{filename} compilation",

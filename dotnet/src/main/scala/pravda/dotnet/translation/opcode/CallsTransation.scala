@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package pravda.dotnet.translation
 
-package pravda.dotnet.translation.opcode
+package opcode
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
@@ -36,28 +37,6 @@ case object CallsTransation extends OneToManyTranslator {
       case _                                                    => false
     }
   }
-
-  def methodType(sig: Signature): Option[SigType] =
-    sig match {
-      case MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), _) => Some(tpe)
-      case _                                              => None
-    }
-
-  def methodParams(sig: Signature): Option[List[Tpe]] =
-    sig match {
-      case MethodRefDefSig(_, _, _, _, 0, _, params) => Some(params)
-      case _                                         => None
-    }
-
-  private def methodParamsCount(sig: Signature): Int =
-    methodParams(sig).map(_.length).getOrElse(0)
-
-  def isMethodVoid(sig: Signature): Boolean = methodType(sig) match {
-    case Some(SigType.Void) => true
-    case _                  => false
-  }
-
-  def isMethodVirtual(flags: Short): Boolean = (flags & 0x40) != 0
 
   def fullMethodName(name: String, sigO: Option[Signature]): String = {
     val normalizedName = if (name == ".ctor" || name == ".cctor") name.drop(1) else name
@@ -125,15 +104,15 @@ case object CallsTransation extends OneToManyTranslator {
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
     def callMethodDef(m: MethodDefData): Int = {
-      val void = ctx.tctx.signatures.get(m.signatureIdx).exists(isMethodVoid)
+      val void = MethodExtractors.isVoid(m, ctx.tctx.signatures)
       val program = ctx.tctx.isProgramMethod(m)
       -m.params.length + (if (void) 0 else 1) + (if (program || ctx.static) 0 else -1)
     }
 
     def callMethodRef(signatureIdx: Long): Int = {
       val sig = ctx.tctx.signatures.get(signatureIdx)
-      val void = sig.exists(isMethodVoid)
-      val paramsLen = sig.map(methodParamsCount).getOrElse(0)
+      val void = sig.exists(MethodExtractors.isVoid)
+      val paramsLen = sig.map(MethodExtractors.methodParamsCount).getOrElse(0)
       -paramsLen + (if (void) 0 else 1)
     }
 
@@ -164,8 +143,8 @@ case object CallsTransation extends OneToManyTranslator {
           parentSig <- ctx.tctx.signatures.get(parentSigIdx)
           methodSig <- ctx.tctx.signatures.get(methodSigIdx)
         } yield {
-          lazy val paramsCnt = methodParamsCount(methodSig)
-          lazy val offset = if (isMethodVoid(methodSig)) -paramsCnt - 1 else -paramsCnt - 1 + 1
+          lazy val paramsCnt = MethodExtractors.methodParamsCount(methodSig)
+          lazy val offset = if (MethodExtractors.isVoid(methodSig)) -paramsCnt - 1 else -paramsCnt - 1 + 1
 
           if (detectMapping(parentSig) && mappingsMethods.contains(name)) {
             Right(offset)
@@ -185,8 +164,11 @@ case object CallsTransation extends OneToManyTranslator {
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
 
     def clearObject(m: MethodDefData): List[Operation] = {
-      val void = ctx.tctx.signatures.get(m.signatureIdx).exists(isMethodVoid)
-      if (void) {
+      val void = MethodExtractors.isVoid(m, ctx.tctx.signatures)
+      val static = MethodExtractors.isStatic(m)
+      if (static) {
+        List.empty
+      } else if (void) {
         List(Operation(Opcodes.POP))
       } else {
         List(Operation(Opcodes.SWAP), Operation(Opcodes.POP))
@@ -214,13 +196,13 @@ case object CallsTransation extends OneToManyTranslator {
     op match {
       case Call(m: MethodDefData) => callFunc(m)
       case CallVirt(m: MethodDefData) =>
-        if (!ctx.tctx.isProgramMethod(m) && isMethodVirtual(m.flags)) {
+        if (!ctx.tctx.isProgramMethod(m) && MethodExtractors.isVirtual(m)) {
           val res = for {
             sig <- ctx.tctx.signatures.get(m.signatureIdx).collect {
               case m: MethodRefDefSig => m
             }
           } yield {
-            val paramsCnt = methodParamsCount(sig)
+            val paramsCnt = MethodExtractors.methodParamsCount(sig)
             Right(
               List(
                 Operation.Push(Data.Primitive.Int32(paramsCnt + 1)),
@@ -263,9 +245,8 @@ case object CallsTransation extends OneToManyTranslator {
 
           case None => Left(UnknownOpcode)
         }
-
-      case CallVirt(MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), methodName, signatureIdx)) =>
-        val paramsLen = ctx.tctx.signatures.get(signatureIdx).map(methodParamsCount).getOrElse(0)
+      case CallVirt(m @ MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), methodName, signatureIdx)) =>
+        val paramsLen = MethodExtractors.methodParamsCount(m, ctx.tctx.signatures)
         val swapAddress = (2 to (paramsLen + 1))
           .flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
           .toList

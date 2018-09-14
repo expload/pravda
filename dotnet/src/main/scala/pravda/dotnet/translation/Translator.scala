@@ -59,8 +59,8 @@ object Translator {
 
     def collectMethodNames(typeDefData: TypeDefData, usedMethods: Vector[String]): Vector[(String, String)] = {
       val methodNames = typeDefData.methods.flatMap {
-        case MethodDefData(_, _, flags, name, sigIdx, _) =>
-          if (CallsTransation.isMethodVirtual(flags)) {
+        case m @ MethodDefData(_, _, flags, name, sigIdx, _) =>
+          if (MethodExtractors.isVirtual(m)) {
             Some(CallsTransation.fullMethodName(name, tctx.signatures.get(sigIdx)))
           } else {
             None
@@ -176,8 +176,8 @@ object Translator {
     val metaMethodMark = if (!func) {
       for {
         methodSign <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
-        methodTpe <- CallsTransation.methodType(methodSign)
-        argTpes <- CallsTransation.methodParams(methodSign)
+        methodTpe <- MethodExtractors.methodType(methodSign)
+        argTpes <- MethodExtractors.methodParams(methodSign)
       } yield
         asm.Operation.Meta(
           Meta.MethodSignature(
@@ -244,29 +244,15 @@ object Translator {
 
   def translateAllMethods(methods: List[Method], tctx: TranslationCtx): Either[TranslationError, Translation] = {
 
-    def isCtor(methodIdx: Int): Boolean = {
-      val methodRow = tctx.methodRow(methodIdx)
-      methodRow.name == ".ctor" && (methodRow.flags & 0x1800) != 0 // maybe the mask should be different (see 252-nd page in spec)
-    }
+    def withMethodTable(isFunc: MethodDefData => Boolean): Int => Boolean =
+      i => isFunc(tctx.methodRow(i))
 
-    def isCctor(methodIdx: Int): Boolean = {
-      val methodRow = tctx.methodRow(methodIdx)
-      methodRow.name == ".cctor" && (methodRow.flags & 0x1810) != 0 // maybe the mask should be different (see 252-nd page in spec)
-    }
-
-    def isMain(methodIdx: Int): Boolean = {
-      val methodRow = tctx.methodRow(methodIdx)
-      methodRow.name == "Main" && (methodRow.flags & 0x10) != 0
-    }
-
-    def isPrivate(methodIdx: Int): Boolean =
-      (tctx.methodRow(methodIdx).flags & 0x7) == 0x1
-
-    def isPublic(methodIdx: Int): Boolean =
-      (tctx.methodRow(methodIdx).flags & 0x7) == 0x6
-
-    def isStatic(methodIdx: Int): Boolean =
-      (tctx.methodRow(methodIdx).flags & 0x10) != 0
+    val isCtor = withMethodTable(MethodExtractors.isCtor)
+    val isCctor = withMethodTable(MethodExtractors.isCctor)
+    val isMain = withMethodTable(MethodExtractors.isMain)
+    val isPrivate = withMethodTable(MethodExtractors.isPrivate)
+    val isPublic = withMethodTable(MethodExtractors.isPublic)
+    val isStatic = withMethodTable(MethodExtractors.isStatic)
 
     def filterValidateMethods(pred: Int => Boolean,
                               validate: Int => Boolean,

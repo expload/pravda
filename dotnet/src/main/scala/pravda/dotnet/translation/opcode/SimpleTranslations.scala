@@ -20,16 +20,16 @@ package pravda.dotnet.translation.opcode
 import pravda.dotnet.parsers.CIL
 import pravda.dotnet.parsers.CIL._
 import pravda.dotnet.translation.data._
-import pravda.vm.asm
+import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes}
 
 case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
-                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
+                         ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
 
-    val translateF: PartialFunction[CIL.Op, List[asm.Operation]] = {
+    val translateF: PartialFunction[CIL.Op, List[Operation]] = {
       case LdcI40     => List(pushInt(0))
       case LdcI41     => List(pushInt(1))
       case LdcI42     => List(pushInt(2))
@@ -44,7 +44,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case LdcI4S(v)  => List(pushInt(v.toInt))
       case LdcR4(f)   => List(pushFloat(f.toDouble))
       case LdcR8(d)   => List(pushFloat(d))
-      case LdStr(s)   => List(asm.Operation.Push(Data.Primitive.Utf8(s)))
+      case LdStr(s)   => List(Operation.Push(Data.Primitive.Utf8(s)))
 
       case ConvI1 => cast(Data.Type.Int8)
       case ConvU1 => cast(Data.Type.Int8)
@@ -55,24 +55,29 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case ConvI8 => cast(Data.Type.BigInt)
       case ConvU8 => cast(Data.Type.BigInt)
 
-      case Add => List(asm.Operation(Opcodes.ADD))
-      case Mul => List(asm.Operation(Opcodes.MUL))
-      case Div => List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.DIV))
-      case Rem => List(asm.Operation(Opcodes.SWAP), asm.Operation(Opcodes.MOD))
-      case Sub => List(pushInt(-1), asm.Operation(Opcodes.MUL), asm.Operation(Opcodes.ADD))
+      case Add => List(Operation(Opcodes.ADD))
+      case Mul => List(Operation(Opcodes.MUL))
+      case Div => List(Operation(Opcodes.SWAP), Operation(Opcodes.DIV))
+      case Rem => List(Operation(Opcodes.SWAP), Operation(Opcodes.MOD))
+      case Sub => List(pushInt(-1), Operation(Opcodes.MUL), Operation(Opcodes.ADD))
 
-      case Clt   => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.LT) :: cast(Data.Type.Int32)
-      case CltUn => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.LT) :: cast(Data.Type.Int32)
-      case Cgt   => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.GT) :: cast(Data.Type.Int32)
-      case CgtUn => asm.Operation(Opcodes.SWAP) :: asm.Operation(Opcodes.GT) :: cast(Data.Type.Int32)
-      case Ceq   => asm.Operation(Opcodes.EQ) :: cast(Data.Type.Int32)
+      case Clt   => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
+      case CltUn => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
+      case Cgt   => Operation(Opcodes.SWAP) :: Operation(Opcodes.GT) :: cast(Data.Type.Int32)
+      case CgtUn => Operation(Opcodes.SWAP) :: Operation(Opcodes.GT) :: cast(Data.Type.Int32)
+      case Ceq   => Operation(Opcodes.EQ) :: cast(Data.Type.Int32)
       case Not =>
-        cast(Data.Type.Boolean) ++ (asm.Operation(Opcodes.NOT) :: cast(Data.Type.Int32))
+        cast(Data.Type.Boolean) ++ (Operation(Opcodes.NOT) :: cast(Data.Type.Int32))
 
-      case Dup => List(asm.Operation.Orphan(Opcodes.DUP))
+      case Dup => List(Operation.Orphan(Opcodes.DUP))
 
       case Nop => List()
-      case Ret => List()
+      case Ret =>
+        if (!ctx.func) {
+          List(Operation.Jump(Some("stop"))) // TODO that's wrong, we need to clear local vars first
+        } else {
+          List(Operation(Opcodes.RET))
+        }
     }
 
     translateF.lift(op).toRight(UnknownOpcode)
