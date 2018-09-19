@@ -1,13 +1,13 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
 import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import utest._
 
 // all *.exe files was compiled by csc *.cs

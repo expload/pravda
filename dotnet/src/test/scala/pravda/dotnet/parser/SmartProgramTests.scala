@@ -1,14 +1,14 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import utest._
 
 object SmartProgramTests extends TestSuite {
@@ -17,7 +17,7 @@ object SmartProgramTests extends TestSuite {
     'smartProgramParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("smart_program.exe")
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(
@@ -110,7 +110,7 @@ object SmartProgramTests extends TestSuite {
       val mappingClass = Cls(TypeRefData(10, "Mapping`2", "Expload.Pravda"))
       val addressClass = Cls(TypeRefData(10, "Bytes", "Expload.Pravda"))
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         signatures.toList.sortBy(_._1),
         List(
           1 -> MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false))),
@@ -169,7 +169,7 @@ object SmartProgramTests extends TestSuite {
         )
       )
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         cilData.tables.customAttributeTable,
         Vector(
           CustomAttributeData(Ignored,
@@ -211,7 +211,7 @@ object SmartProgramTests extends TestSuite {
       val Right((pdb, tables)) = parsePdbFile("smart_program.pdb")
       val src = "/tmp/pravda/smart_program.cs"
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         tables.methodDebugInformationTable,
         Vector(
           MethodDebugInformationData(Some(src),

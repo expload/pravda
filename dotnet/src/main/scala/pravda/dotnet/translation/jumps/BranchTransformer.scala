@@ -17,8 +17,8 @@
 
 package pravda.dotnet.translation.jumps
 
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL._
 
 object BranchTransformer {
 

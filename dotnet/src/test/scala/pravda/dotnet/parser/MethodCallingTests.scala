@@ -1,13 +1,13 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import utest._
 
 object MethodCallingTests extends TestSuite {
@@ -15,7 +15,7 @@ object MethodCallingTests extends TestSuite {
   val tests = Tests {
     'methodCallingParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("method_calling.exe")
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(List(Nop, LdcI4S(42), StLoc0, BrS(0), LdLoc0, Ret), 1, Some(16)),
@@ -51,7 +51,7 @@ object MethodCallingTests extends TestSuite {
         )
       )
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         signatures.toList.sortBy(_._1),
         List(
           (1, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),

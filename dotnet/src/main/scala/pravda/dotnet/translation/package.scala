@@ -19,8 +19,8 @@ package pravda.dotnet
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.Signatures
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.Signatures
+import pravda.dotnet.parser.Signatures._
 
 package object translation {
 

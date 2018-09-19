@@ -17,8 +17,8 @@
 
 package pravda.dotnet.translation.opcode
 
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes}
@@ -72,12 +72,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case Dup => List(Operation.Orphan(Opcodes.DUP))
 
       case Nop => List()
-      case Ret =>
-        if (!ctx.func) {
-          List(Operation.Jump(Some("stop"))) // TODO that's wrong, we need to clear local vars first
-        } else {
-          List(Operation(Opcodes.RET))
-        }
+      case Ret => List(Operation.Jump(Some(s"${ctx.name}_lvc")))
     }
 
     translateF.lift(op).toRight(UnknownOpcode)

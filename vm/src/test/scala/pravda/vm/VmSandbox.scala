@@ -3,10 +3,9 @@ package pravda.vm
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import fastparse.StringReprOps
-import fastparse.core.{Parsed, Parser}
-import pravda.common.{DiffUtils, bytes => byteUtils}
+import fastparse.all._
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.{bytes => byteUtils}
 import pravda.vm.Data.Primitive
 import pravda.vm.VmSandbox.EnvironmentEffect._
 import pravda.vm.asm.{Operation, PravdaAssembler}
@@ -16,15 +15,16 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
+import scala.language.higherKinds
+
 object VmSandbox {
 
   final case class Macro(name: String, args: List[String])
 
   type MacroHandler = PartialFunction[Macro, Seq[Operation]]
 
-  final case class Case(program: Either[Macro, Seq[Operation]],
-                        expectations: Expectations,
-                        preconditions: Preconditions)
+  final case class Case(program: Option[Either[Macro, Seq[Operation]]] = None,
+                        preconditions: Option[Preconditions] = None)
 
   final case class Preconditions(balances: Map[Address, Primitive.BigInt],
                                  watts: Long = 0,
@@ -57,11 +57,9 @@ object VmSandbox {
                                 events: Seq[EnviromentEvent],
                                 error: Option[String])
 
-  val parser: Parser[Case, Char, String] = {
-
+  val (preconditions, program) = {
     import Data.parser._
     import PravdaAssembler.{parser => assemblerParser}
-    import fastparse.all._
 
     val space = P(CharIn("\r\t\n ").rep())
     val `=` = P(space ~ "=" ~ space)
@@ -89,7 +87,7 @@ object VmSandbox {
       val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
       val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
-      P("preconditions:" ~/ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
+      P(space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
         .map {
           case (b, w, m, s, ps) =>
             Preconditions(
@@ -102,69 +100,14 @@ object VmSandbox {
         }
     }
 
-    val expectations = {
-
-      val watts = P("watts-spent:" ~/ space ~ int)
-
-      val effects = {
-
-        val sput = P("sput" ~/ ws ~ primitive ~ ws ~ all).map {
-          case (k, v) => EnvironmentEffect.StoragePut(k, v)
-        }
-
-        val sget = P("sget" ~/ ws ~ primitive ~ (ws ~ all).?).map {
-          case (k, v) => EnvironmentEffect.StorageGet(k, v)
-        }
-
-        val sdel = P("sdel" ~/ ws ~ primitive).map(EnvironmentEffect.StorageDelete)
-
-        val pcreate = P("pcreate" ~/ ws ~ address ~ ws ~ address ~ ws ~ bytes).map {
-          case (owner, addr, program) => EnvironmentEffect.ProgramCreate(owner, addr, program.data)
-        }
-
-        val pupdate = P("pupdate" ~/ ws ~ address ~ ws ~ bytes).map {
-          case (addr, program) => EnvironmentEffect.ProgramUpdate(addr, program.data)
-        }
-
-        val transfer = P("transfer" ~/ ws ~ address ~ ws ~ address ~ ws ~ bigint).map {
-          case (from, to, amount) => EnvironmentEffect.BalanceTransfer(from, to, NativeCoin @@ amount.data.toLong)
-        }
-
-        val balance = P("balance" ~/ ws ~ address ~ ws ~ bigint).map {
-          case (addr, amount) => EnvironmentEffect.BalanceGet(addr, NativeCoin @@ amount.data.toLong)
-        }
-
-        P("effects:" ~/ space ~ (sput | sget | sdel | pcreate | pupdate | transfer | balance).rep(sep = `,`))
-      }
-
-      val events = P(
-        "events:" ~/ space ~ (address ~ ws ~ notws.! ~ ws ~ all).map(EnviromentEvent.tupled).rep(sep = `,`))
-
-      val error = P("error:" ~/ space ~ (space ~ "|" ~ CharsWhile(_ != '\n').! ~ "\n").rep).map(_.mkString("\n")).?
-
-      P("expectations:" ~/ space ~ watts ~ space ~ memory ~ space ~ effects.? ~ space ~ events.? ~ error).map {
-        case (w, mem, eff, evs, err) => Expectations(w.toLong, mem, eff.getOrElse(Nil), evs.getOrElse(Nil), err)
-      }
-    }
-
     val `macro` = ("#" ~/ alpha ~ ws ~ (notws.! ~ space).rep()).map { case (name, args) => Macro(name, args.toList) }
     val program = `macro`.map(Left(_)) | assemblerParser.map(Right(_))
 
-    P(
-      Start ~ space
-        ~ preconditions ~ space
-        ~ expectations ~ space
-        ~ "-".rep(min = 3) ~ space
-        ~ program ~ End).map {
-      case (p, exp, prog) =>
-        Case(prog, exp, p)
-    }
+    (preconditions, program)
   }
 
   def printExpectations(e: Expectations): String = {
     def printData(d: Data) = d.mkString(pretty = true).replace('\n', ' ')
-
-    //def printAddress(address: Address) = printData(Data.Primitive.Bytes(address))
 
     def printEffect(effect: EnvironmentEffect) = effect match {
       case StoragePut(key, value)                 => s"sput ${printData(key)} ${printData(value)}"
@@ -185,59 +128,58 @@ object VmSandbox {
         s"x${byteUtils.byteString2hex(address)} $name ${data.mkString()}"
     }
 
-    s"""
-       |watts-spent: ${e.watts}
-       |stack:
-       |  ${e.memory.stack.map(printData).mkString(", ")}
-       |heap:
-       |  ${e.memory.heap.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }.mkString(",\n  ")}
-       |effects:
-       |  ${e.effects.map(printEffect).mkString(",\n  ")}
-       |events:
-       |  ${e.events.map(printEvent).mkString(",\n  ")}
-       |${e.error.fold("")(vmError => s"error: \n${vmError.split('\n').map("||" + _).mkString("\n")}\n")}""".stripMargin
-  }
-
-  def parseCase(text: String): Either[String, Case] = {
-    parser.parse(text) match {
-      case Parsed.Success(c, _) =>
-        Right(c)
-      case Parsed.Failure(_, index, extra) =>
-        val in = extra.input
-        def aux(start: Int, i: Int, lim: Int): String = {
-          if (lim > 0 && i < text.length
-              && text.charAt(i) != '\n'
-              && text.charAt(i) != '\r'
-              && text.charAt(i) != ' ') aux(start, i + 1, lim - 1)
-          else text.substring(start, i - 1)
+    def combine(ops: Seq[(String, Option[String])]): String =
+      ops
+        .flatMap { op =>
+          for {
+            text <- op._2
+          } yield s"""|${op._1}
+              ${text.split('\n').map("|  " + _).mkString("\n")}""".stripMargin
         }
-        val pos = StringReprOps.prettyIndex(in, index)
-        val found = aux(index, index, 20)
-        Left(s"$pos: ${extra.traced.expected} expected but '$found' found.")
-    }
+        .mkString("\n")
+
+    def nonEmptyReduce[T, A[T] <: Iterable[T], B](a: A[T])(reduce: A[T] => B): Option[B] =
+      if (a.isEmpty) {
+        None
+      } else {
+        Some(reduce(a))
+      }
+
+    s"watts-spent: ${e.watts}\n" +
+      combine(
+        Seq(
+          "stack" -> nonEmptyReduce(e.memory.stack)(_.map(printData).mkString(", ")),
+          "heap" -> nonEmptyReduce(e.memory.heap.toSeq)(_.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }
+            .mkString(",\n  ")),
+          "effects" -> nonEmptyReduce(e.effects)(_.map(printEffect).mkString(",\n  ")),
+          "events" -> nonEmptyReduce(e.events)(_.map(printEvent).mkString(",\n  ")),
+          "error" -> nonEmptyReduce(e.error.toList)(_.head.split('\n').map("|" + _).mkString("\n"))
+        ))
   }
 
-  def assertCase(c: Case, macroHandler: MacroHandler = PartialFunction.empty): Unit = {
+  def sandboxRun(program: Either[Macro, Seq[Operation]],
+                 pre: Preconditions,
+                 macroHandler: MacroHandler = PartialFunction.empty): Expectations = {
     val vm = new VmImpl()
-    val ops = c.program match {
+    val ops = program match {
       case Left(m) =>
         assert(macroHandler.isDefinedAt(m), s"Unknown macro: #${m.name} ${m.args.mkString(" ")}")
         macroHandler(m)
       case Right(o) => o
     }
-    val program = PravdaAssembler.assemble(ops, saveLabels = true)
+    val asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
     val heap = {
-      if (c.preconditions.memory.heap.nonEmpty) {
-        val length = c.preconditions.memory.heap.map(_._1.data).max + 1
+      if (pre.memory.heap.nonEmpty) {
+        val length = pre.memory.heap.map(_._1.data).max + 1
         val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
-        c.preconditions.memory.heap.foreach { case (ref, value) => buffer(ref.data) = value }
+        pre.memory.heap.foreach { case (ref, value) => buffer(ref.data) = value }
         buffer
       } else {
         ArrayBuffer[Data]()
       }
     }
-    val memory = MemoryImpl(ArrayBuffer(c.preconditions.memory.stack: _*), heap)
-    val wattCounter = new WattCounterImpl(c.preconditions.watts)
+    val memory = MemoryImpl(ArrayBuffer(pre.memory.stack: _*), heap)
+    val wattCounter = new WattCounterImpl(pre.watts)
 
     val effects = mutable.Buffer[EnvironmentEffect]()
     val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
@@ -245,8 +187,8 @@ object VmSandbox {
     val pExecutor = Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
 
     val environment: Environment = new Environment {
-      val balances = mutable.Map(c.preconditions.balances.toSeq: _*)
-      val programs = mutable.Map(c.preconditions.programs.toSeq: _*)
+      val balances = mutable.Map(pre.balances.toSeq: _*)
+      val programs = mutable.Map(pre.programs.toSeq: _*)
       val sealedPrograms = mutable.Map[Address, Boolean]()
 
       def executor: Address = pExecutor
@@ -311,7 +253,7 @@ object VmSandbox {
     }
 
     val storage: Storage = new Storage {
-      val storageItems: mutable.Map[Data, Data] = mutable.Map[Data, Data](c.preconditions.storage.toSeq: _*)
+      val storageItems: mutable.Map[Data, Data] = mutable.Map[Data, Data](pre.storage.toSeq: _*)
 
       override def get(key: Data): Option[Data] = {
         val value = storageItems.get(key)
@@ -333,7 +275,7 @@ object VmSandbox {
     }
 
     val res =
-      vm.spawn(ByteBuffer.wrap(program.toByteArray),
+      vm.spawn(ByteBuffer.wrap(asmProgram.toByteArray),
                environment,
                memory,
                wattCounter,
@@ -341,22 +283,17 @@ object VmSandbox {
                Some(Address.Void),
                true)
 
-    DiffUtils.assertEqual(
-      printExpectations(
-        Expectations(
-          res.wattCounter.spent,
-          Memory(
-            res.memory.stack,
-            res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
-          ),
-          effects,
-          events.flatMap {
-            case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
-          }.toSeq,
-          res.error.map(_.mkString)
-        )
+    Expectations(
+      res.wattCounter.spent,
+      Memory(
+        res.memory.stack,
+        res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
       ),
-      printExpectations(c.expectations)
+      effects,
+      events.flatMap {
+        case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
+      }.toSeq,
+      res.error.map(_.mkString)
     )
   }
 }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.dotnet.parsers
+package pravda.dotnet.parser
 
 import fastparse.byte.all._
 import LE._

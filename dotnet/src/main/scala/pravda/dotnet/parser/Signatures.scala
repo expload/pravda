@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.dotnet.parsers
+package pravda.dotnet.parser
 
 import fastparse.byte.all._
-import pravda.dotnet.parsers.CIL.CilData
+import pravda.dotnet.parser.CIL.CilData
 import pravda.dotnet.utils._
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.data.{Heaps, TablesData}
@@ -26,7 +26,7 @@ import cats.instances.vector._
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
-import pravda.dotnet.parsers.Signatures.SigType.ArrayShape
+import pravda.dotnet.parser.Signatures.SigType.ArrayShape
 
 object Signatures {
 

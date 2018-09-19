@@ -1,6 +1,6 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
 import utest._
 

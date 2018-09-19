@@ -17,7 +17,7 @@
 
 package pravda.dotnet.translation.data
 
-import pravda.dotnet.parsers.CIL
+import pravda.dotnet.parser.CIL
 import pravda.vm.Meta
 
 sealed trait InnerTranslationError {

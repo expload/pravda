@@ -1,10 +1,10 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL._
 import utest._
 
 object EventTests extends TestSuite {

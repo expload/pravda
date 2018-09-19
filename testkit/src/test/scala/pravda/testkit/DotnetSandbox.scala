@@ -3,7 +3,7 @@ package pravda.testkit
 import java.io.File
 import java.nio.file.Files
 
-import pravda.dotnet.parsers.FileParser
+import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.Translator
 import pravda.vm.{SandboxUtils, VmSandbox, asm}
 import utest._
@@ -43,7 +43,7 @@ object DotnetSandbox extends TestSuite {
     asm
   }
 
-  val tests = SandboxUtils.constructTestsFromDir(
+  val tests = VmSandbox.constructTests(
     new File(getClass.getResource("/").getPath), {
       case VmSandbox.Macro("dotnet", filename :: dlls) => dotnetToAsm(filename, dlls)
     }

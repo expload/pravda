@@ -17,8 +17,8 @@
 
 package pravda.dotnet.data
 
-import pravda.dotnet.parsers.PE.Info._
-import pravda.dotnet.parsers.TablesInfo._
+import pravda.dotnet.parser.PE.Info._
+import pravda.dotnet.parser.TablesInfo._
 
 import cats.instances.vector._
 import cats.instances.list._

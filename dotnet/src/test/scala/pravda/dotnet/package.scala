@@ -3,9 +3,9 @@ package pravda
 import java.nio.file.{Files, Paths}
 
 import pravda.dotnet.data.{Method, TablesData}
-import pravda.dotnet.parsers.CIL.CilData
-import pravda.dotnet.parsers.PE.Info.{Pdb, Pe}
-import pravda.dotnet.parsers.{FileParser, Signatures}
+import pravda.dotnet.parser.CIL.CilData
+import pravda.dotnet.parser.PE.Info.{Pdb, Pe}
+import pravda.dotnet.parser.{FileParser, Signatures}
 
 package object dotnet {
 

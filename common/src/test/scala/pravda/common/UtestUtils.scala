@@ -1,25 +1,28 @@
-package pravda.vm
+package pravda.common
 
-import pravda.vm.VmSandbox.MacroHandler
+import java.io.File
+
 import utest.framework._
 import utest._
 
-import scala.io.Source
+object UtestUtils {
 
-object SandboxUtils {
+  def constructTestsFromDir[T, U](dir: File,
+                                  ext: String,
+                                  processFile: File => Either[String, U],
+                                  test: U => T,
+                                  target: U => T,
+                                  assertT: (T, T) => Unit): utest.Tests = {
 
-  def constructTestsFromDir(dir: java.io.File, macroHandler: MacroHandler = PartialFunction.empty): utest.Tests = {
-
-    def walkDir(prefix: String, dir: java.io.File): Option[(Tree[String], TestCallTree)] =
+    def walkDir(prefix: String, dir: File): Option[(Tree[String], TestCallTree)] =
       if (dir.isDirectory) {
-        val files = dir.listFiles.filter(f => f.isFile && f.getName.endsWith(".sbox"))
-        val fileNames = files.map(f => Tree(f.getName.stripSuffix(".sbox")))
+        val files = dir.listFiles.filter(f => f.isFile && f.getName.endsWith(s".$ext"))
+        val fileNames = files.map(f => Tree(f.getName.stripSuffix(s".$ext")))
         val fileCalls = files.map(f =>
           new TestCallTree(Left {
-            val caseE = VmSandbox.parseCase(Source.fromFile(f).mkString)
-            caseE match {
+            processFile(f) match {
               case Left(err) => Predef.assert(false, err)
-              case Right(c)  => VmSandbox.assertCase(c, macroHandler)
+              case Right(p) => assertT(test(p), target(p))
             }
           }))
 

@@ -1,13 +1,13 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import utest._
 
 object LoopTests extends TestSuite {
@@ -16,7 +16,7 @@ object LoopTests extends TestSuite {
     'loopParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("loop.exe")
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(

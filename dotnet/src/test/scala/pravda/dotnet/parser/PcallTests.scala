@@ -1,12 +1,12 @@
-package pravda.dotnet.parsers
+package pravda.dotnet.parser
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.dotnet.data.Method
 import pravda.dotnet.parsePeFile
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import utest._
 
 object PcallTests extends TestSuite {
@@ -15,7 +15,7 @@ object PcallTests extends TestSuite {
     'pcallParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("pcall.exe")
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(
@@ -41,7 +41,7 @@ object PcallTests extends TestSuite {
           Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Ret), 0, None)
         )
       )
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         signatures.toList.sortBy(_._1),
         List(
           (1, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),

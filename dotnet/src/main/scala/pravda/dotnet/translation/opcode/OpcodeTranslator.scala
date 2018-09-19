@@ -17,7 +17,7 @@
 
 package pravda.dotnet.translation.opcode
 
-import pravda.dotnet.parsers.CIL
+import pravda.dotnet.parser.CIL
 import pravda.vm.asm
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation._

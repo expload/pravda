@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.dotnet.parsers
+package pravda.dotnet.parser
 
 import fastparse.byte.all._
 import pravda.dotnet.data.{Method, TablesData}
-import pravda.dotnet.parsers.CIL.CilData
-import pravda.dotnet.parsers.PE.Info.{Pdb, Pe}
+import pravda.dotnet.parser.CIL.CilData
+import pravda.dotnet.parser.PE.Info.{Pdb, Pe}
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._

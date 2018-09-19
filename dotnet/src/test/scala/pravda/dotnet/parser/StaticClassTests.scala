@@ -1,11 +1,11 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.common.DiffUtils
+import pravda.dotnet.parser.CIL._
+import pravda.common.TestUtils
 import utest._
 
 object StaticClassTests extends TestSuite {
@@ -14,7 +14,7 @@ object StaticClassTests extends TestSuite {
     'staticClassParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("static_class.exe")
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(List(LdArg1, Call(MethodDefData(5, 0, 150, "BytesToHex", 65, Vector(ParamData(0, 1, "bytes")))), Ret),

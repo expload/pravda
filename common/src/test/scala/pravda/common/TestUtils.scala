@@ -1,6 +1,6 @@
 package pravda.common
 
-object DiffUtils {
+object TestUtils {
 
   def printFirstDiff(s1: String, s2: String): String = {
     val firstDiff = (0 until math.min(s1.length, s2.length)).find(i => s1(i) != s2(i))

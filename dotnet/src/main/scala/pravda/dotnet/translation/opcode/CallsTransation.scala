@@ -18,10 +18,10 @@ package pravda.dotnet.translation
 
 package opcode
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.TypeDetectors
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation

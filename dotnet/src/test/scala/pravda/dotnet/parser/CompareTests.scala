@@ -1,11 +1,11 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL._
 import utest._
 
 object CompareTests extends TestSuite {
@@ -14,7 +14,7 @@ object CompareTests extends TestSuite {
     'compareParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("compare.exe")
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(

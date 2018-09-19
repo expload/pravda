@@ -1,13 +1,13 @@
 package pravda.dotnet
 
-package parsers
+package parser
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.Signatures.SigType._
-import pravda.dotnet.parsers.Signatures._
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.Signatures.SigType._
+import pravda.dotnet.parser.Signatures._
 import utest._
 
 object InheritanceTests extends TestSuite {
@@ -15,7 +15,7 @@ object InheritanceTests extends TestSuite {
   val tests = Tests {
     'objectsParse - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("inheritance.exe")
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         methods,
         List(
           Method(List(LdArg0, Call(MemberRefData(TypeRefData(6, "Object", "System"), ".ctor", 6)), Nop, Nop, Ret),
@@ -117,7 +117,7 @@ object InheritanceTests extends TestSuite {
           )
         )
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         signatures.toList.sortBy(_._1),
         List(
           (1, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
@@ -147,7 +147,7 @@ object InheritanceTests extends TestSuite {
         )
       )
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         cilData.tables.typeDefTable,
         Vector(
           TypeDefData(0, 0, "<Module>", "", Ignored, Vector(), Vector()),
@@ -186,7 +186,7 @@ object InheritanceTests extends TestSuite {
         )
       )
 
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         cilData.tables.methodDefTable,
         Vector(
           MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),

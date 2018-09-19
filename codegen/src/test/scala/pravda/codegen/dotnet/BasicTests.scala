@@ -1,6 +1,6 @@
 package pravda.codegen.dotnet
 
-import pravda.common.DiffUtils
+import pravda.common.TestUtils
 import pravda.vm.Meta
 import utest._
 
@@ -10,7 +10,7 @@ object BasicTests extends TestSuite {
 
   val tests = Tests {
     'one_method - {
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         DotnetCodegen.generateMethods(
           "ERC20",
           List(
@@ -22,7 +22,7 @@ object BasicTests extends TestSuite {
     }
 
     'ERC20 - {
-      DiffUtils.assertEqual(
+      TestUtils.assertEqual(
         DotnetCodegen.generateMethods(
           "ERC20",
           List(
