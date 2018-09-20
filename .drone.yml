@@ -40,7 +40,7 @@ pipeline:
   package-publish-nuget:
     image: microsoft/dotnet:2.1-sdk
     environment:
-      - PRAVDA_VERSION=${DRONE_TAG}
+      - PRAVDA_VERSION=${DRONE_TAG##v}
     commands:
       - cd /workdir/code/PravdaDotNet
       - dotnet pack -c Release
