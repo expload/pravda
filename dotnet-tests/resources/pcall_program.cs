@@ -1,7 +1,7 @@
 using System;
-using Com.Expload;
+using Expload.Pravda;
 
-namespace Com.Expload.Programs
+namespace Expload.Pravda.Programs
 {
     [Program]
     public class MyAnotherProgram {

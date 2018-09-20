@@ -48,7 +48,7 @@ object SmartProgramTests extends TestSuite {
               Nop,
               LdArg0,
               LdFld(FieldData(1, "balances", 64)),
-              Call(MemberRefData(TypeRefData(10, "Info", "Com.Expload"), "Sender", 42)),
+              Call(MemberRefData(TypeRefData(10, "Info", "Expload.Pravda"), "Sender", 42)),
               LdcI40,
               CallVirt(MemberRefData(TypeSpecData(20), "getDefault", 28)),
               LdArg2,
@@ -61,10 +61,10 @@ object SmartProgramTests extends TestSuite {
               Nop,
               LdArg0,
               LdFld(FieldData(1, "balances", 64)),
-              Call(MemberRefData(TypeRefData(10, "Info", "Com.Expload"), "Sender", 42)),
+              Call(MemberRefData(TypeRefData(10, "Info", "Expload.Pravda"), "Sender", 42)),
               LdArg0,
               LdFld(FieldData(1, "balances", 64)),
-              Call(MemberRefData(TypeRefData(10, "Info", "Com.Expload"), "Sender", 42)),
+              Call(MemberRefData(TypeRefData(10, "Info", "Expload.Pravda"), "Sender", 42)),
               LdcI40,
               CallVirt(MemberRefData(TypeSpecData(20), "getDefault", 28)),
               LdArg2,
@@ -107,8 +107,8 @@ object SmartProgramTests extends TestSuite {
         )
       )
 
-      val mappingClass = Cls(TypeRefData(10, "Mapping`2", "Com.Expload"))
-      val addressClass = Cls(TypeRefData(10, "Bytes", "Com.Expload"))
+      val mappingClass = Cls(TypeRefData(10, "Mapping`2", "Expload.Pravda"))
+      val addressClass = Cls(TypeRefData(10, "Bytes", "Expload.Pravda"))
 
       DiffUtils.assertEqual(
         signatures.toList.sortBy(_._1),
@@ -156,7 +156,7 @@ object SmartProgramTests extends TestSuite {
                            false,
                            0,
                            Tpe(I4, false),
-                           List(Tpe(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false)))),
+                           List(Tpe(Cls(TypeRefData(10, "Bytes", "Expload.Pravda")), false)))),
           (79,
            MethodRefDefSig(true,
                            false,
@@ -164,7 +164,7 @@ object SmartProgramTests extends TestSuite {
                            false,
                            0,
                            Tpe(Void, false),
-                           List(Tpe(Cls(TypeRefData(10, "Bytes", "Com.Expload")), false), Tpe(I4, false)))),
+                           List(Tpe(Cls(TypeRefData(10, "Bytes", "Expload.Pravda")), false), Tpe(I4, false)))),
           (86, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
         )
       )
@@ -201,7 +201,7 @@ object SmartProgramTests extends TestSuite {
                 MethodDefData(3, 0, 6278, ".ctor", 6, Vector())
               )
             ),
-            MemberRefData(TypeRefData(10, "Program", "Com.Expload"), ".ctor", 6)
+            MemberRefData(TypeRefData(10, "Program", "Expload.Pravda"), ".ctor", 6)
           )
         )
       )

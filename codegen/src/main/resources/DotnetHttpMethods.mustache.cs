@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Com.Expload.{{programName}} {
+namespace Expload.Pravda.{{programName}} {
     {{#parseClasses}}
     [System.Serializable]
     class {{resultTpeClass}}Result {

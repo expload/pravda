@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Com.Expload.Program {
+namespace Expload.Pravda.Program {
     [System.Serializable]
     class IntResult {
        public int value;

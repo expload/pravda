@@ -142,21 +142,21 @@ case object CallsTransation extends OneToManyTranslator {
       case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
       case NewObj(m: MethodDefData)   => Right(callMethodDef(m) + 2)
 
-      case CallVirt(MemberRefData(TypeRefData(_, _, "Com.Expload.Programs"), _, signatureIdx)) =>
+      case CallVirt(MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), _, signatureIdx)) =>
         Right(callMethodRef(signatureIdx))
 
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(-1) else Right(0)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _))                     => Right(1)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _))                      => Right(0)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _))                    => Right(0)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "ProgramAddress", _))             => Right(1)
-      case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _))                => Right(0)
-      case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) => Right(-2)
-      case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _))                     => Right(-1)
-      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Com.Expload"), "Program", _), _)) =>
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Sender", _))                     => Right(1)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Owner", _))                      => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Balance", _))                    => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "ProgramAddress", _))             => Right(1)
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "Ripemd160", _))                => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "ValidateEd25519Signature", _)) => Right(-2)
+      case Call(MemberRefData(TypeRefData(_, "Error", "Expload.Pravda"), "Throw", _))                     => Right(-1)
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Expload.Pravda"), "Program", _), _)) =>
         Right(0)
-      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "Log", "Com.Expload"), "Event", _), _)) =>
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "Log", "Expload.Pravda"), "Event", _), _)) =>
         Right(-2)
 
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
@@ -264,7 +264,7 @@ case object CallsTransation extends OneToManyTranslator {
           case None => Left(UnknownOpcode)
         }
 
-      case CallVirt(MemberRefData(TypeRefData(_, _, "Com.Expload.Programs"), methodName, signatureIdx)) =>
+      case CallVirt(MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), methodName, signatureIdx)) =>
         val paramsLen = ctx.tctx.signatures.get(signatureIdx).map(methodParamsCount).getOrElse(0)
         val swapAddress = (2 to (paramsLen + 1))
           .flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
@@ -276,23 +276,23 @@ case object CallsTransation extends OneToManyTranslator {
                               Operation(Opcodes.PCALL)))
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(List(Operation(Opcodes.POP))) else Right(List.empty)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Sender", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Sender", _)) =>
         Right(List(Operation(Opcodes.FROM)))
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Owner", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Owner", _)) =>
         Right(List(Operation(Opcodes.OWNER)))
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "Balance", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Balance", _)) =>
         Right(List(Operation(Opcodes.BALANCE)))
-      case Call(MemberRefData(TypeRefData(_, "Info", "Com.Expload"), "ProgramAddress", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "ProgramAddress", _)) =>
         Right(List(Operation(Opcodes.PADDR)))
-      case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "Ripemd160", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "Ripemd160", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation(Opcodes.SCALL)))
-      case Call(MemberRefData(TypeRefData(_, "StdLib", "Com.Expload"), "ValidateEd25519Signature", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "ValidateEd25519Signature", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation(Opcodes.SCALL)))
-      case Call(MemberRefData(TypeRefData(_, "Error", "Com.Expload"), "Throw", _)) =>
+      case Call(MemberRefData(TypeRefData(_, "Error", "Expload.Pravda"), "Throw", _)) =>
         Right(List(Operation(Opcodes.THROW)))
-      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "Log", "Com.Expload"), "Event", _), _)) =>
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "Log", "Expload.Pravda"), "Event", _), _)) =>
         Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.EVENT)))
-      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Com.Expload"), "Program", _), _)) =>
+      case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Expload.Pravda"), "Program", _), _)) =>
         Right(List())
       case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
         val res = for {
