@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <PackageId>Expload.Pravda</>
+    <PackageId>Expload.Pravda</PackageId>
     <PackageVersion>$(PRAVDA_VERSION)</PackageVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
