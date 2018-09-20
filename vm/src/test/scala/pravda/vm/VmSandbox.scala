@@ -23,7 +23,7 @@ object VmSandbox {
 
   type MacroHandler = PartialFunction[Macro, Seq[Operation]]
 
-  final case class Case(program: Option[Either[Macro, Seq[Operation]]] = None,
+  final case class Case(program: Option[Seq[Operation]] = None,
                         preconditions: Option[Preconditions] = None)
 
   final case class Preconditions(balances: Map[Address, Primitive.BigInt],
@@ -63,10 +63,10 @@ object VmSandbox {
 
     val space = P(CharIn("\r\t\n ").rep())
     val `=` = P(space ~ "=" ~ space)
-    val ws = P(CharIn("\r\t\n ").rep(min = 1))
-    val notws = P(CharsWhile(!"\r\t\n ".contains(_)))
+    //val ws = P(CharIn("\r\t\n ").rep(min = 1))
+    //val notws = P(CharsWhile(!"\r\t\n ".contains(_)))
     val `,` = P(space ~ "," ~ space)
-    val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_").rep(1).!)
+    //val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_").rep(1).!)
 
     val memory = {
       val stack = P("stack:" ~/ space ~ primitive.rep(sep = `,`))
@@ -100,8 +100,7 @@ object VmSandbox {
         }
     }
 
-    val `macro` = ("#" ~/ alpha ~ ws ~ (notws.! ~ space).rep()).map { case (name, args) => Macro(name, args.toList) }
-    val program = `macro`.map(Left(_)) | assemblerParser.map(Right(_))
+    val program = assemblerParser
 
     (preconditions, program)
   }
@@ -157,16 +156,9 @@ object VmSandbox {
         ))
   }
 
-  def sandboxRun(program: Either[Macro, Seq[Operation]],
-                 pre: Preconditions,
-                 macroHandler: MacroHandler = PartialFunction.empty): Expectations = {
+  def sandboxRun(ops: Seq[Operation],
+                 pre: Preconditions): Expectations = {
     val vm = new VmImpl()
-    val ops = program match {
-      case Left(m) =>
-        assert(macroHandler.isDefinedAt(m), s"Unknown macro: #${m.name} ${m.args.mkString(" ")}")
-        macroHandler(m)
-      case Right(o) => o
-    }
     val asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
     val heap = {
       if (pre.memory.heap.nonEmpty) {

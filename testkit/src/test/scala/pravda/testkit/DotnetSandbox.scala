@@ -3,22 +3,23 @@ package pravda.testkit
 import java.io.File
 import java.nio.file.Files
 
+import fastparse.all._
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.Translator
-import pravda.vm.{SandboxUtils, VmSandbox, asm}
-import utest._
+import pravda.proverka._
+import pravda.vm.{VmSandbox, asm}
 
 import scala.sys.process._
 
-object DotnetSandbox extends TestSuite {
+object DotnetSandbox extends Proverka {
 
-  def dotnetToAsm(filename: String, dlls: List[String]): List[asm.Operation] = {
+  private def dotnetToAsm(filename: String, dlls: List[String]): Either[String, List[asm.Operation]] = {
     val exploadDll = new File("PravdaDotNet/Pravda.dll")
 
     new File("/tmp/pravda/").mkdirs()
 
     val tmpSrcs =
-      (filename :: dlls).map(f => (new File(getClass.getResource(s"/$f").getPath), new File(s"/tmp/pravda/$f")))
+      (filename :: dlls).map(f => (new File(s"dotnet-tests/resources/$f"), new File(s"/tmp/pravda/$f")))
 
     tmpSrcs.foreach {
       case (from, dest) =>
@@ -37,15 +38,35 @@ object DotnetSandbox extends TestSuite {
          |-pdb:${pdb.getAbsolutePath}
       """.stripMargin.!!
 
-    val Right((_, cilData, methods, signatures)) = FileParser.parsePe(Files.readAllBytes(exe.toPath))
-    val Right((_, pdbTables)) = FileParser.parsePdb(Files.readAllBytes(pdb.toPath))
-    val Right(asm) = Translator.translateAsm(methods, cilData, signatures, Some(pdbTables))
-    asm
+    for {
+      pe <- FileParser.parsePe(Files.readAllBytes(exe.toPath))
+      (_, cilData, methods, signatures) = pe
+      pdb <- FileParser.parsePdb(Files.readAllBytes(pdb.toPath))
+      (_, pdbTables) = pdb
+      asm <- Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).left.map(_.mkString)
+    } yield asm
   }
 
-  val tests = VmSandbox.constructTests(
-    new File(getClass.getResource("/").getPath), {
-      case VmSandbox.Macro("dotnet", filename :: dlls) => dotnetToAsm(filename, dlls)
+  lazy val dir = new File("testkit/src/test/resources")
+  override lazy val ext = "sbox"
+
+  type State = VmSandbox.Case
+  lazy val initState = VmSandbox.Case()
+
+  lazy val scheme = Seq(
+    parserInput("preconditions")(VmSandbox.preconditions.map(p => s => s.copy(preconditions = Some(p)))),
+    input("dotnet-files") { text =>
+      val file :: dlls = text.split("\\s+").toList
+      dotnetToAsm(file, dlls).map(ops => s => s.copy(program = Some(ops)))
+    },
+    textOutput("expectations") { c =>
+      val res = for {
+        pre <- c.preconditions
+        prog <- c.program
+      } yield VmSandbox.printExpectations(VmSandbox.sandboxRun(prog, pre))
+
+      res.toRight("preconditions or program is missing")
     }
   )
+
 }

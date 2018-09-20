@@ -1,21 +1,18 @@
-preconditions:
-  watts-limit: 1000
-  stack:
-    "Throw"
-  storage:
-    "init" = null
-expectations:
-  watts-spent: 184
-  stack:
-    "Throw"
-  heap:
-  effects:
-    sget "init" null
-  error:
-    |UserError(Oops!)
-    |program address: 0000000000000000000000000000000000000000000000000000000000000000
-    |  Throw method body (vm_ops.cs:8,9-8,30)
-
----------------------------------------
-#dotnet vm_ops.cs
-
+---preconditions
+watts-limit: 1000
+stack:
+  "Throw"
+storage:
+  "init" = null
+---expectations
+watts-spent: 184
+stack
+  "Throw"
+effects
+  sget "init" null
+error
+  |UserError(Oops!)
+  |program address: 0000000000000000000000000000000000000000000000000000000000000000
+  |  Throw method body (vm_ops.cs:8,9-8,30)
+---dotnet-files
+vm_ops.cs

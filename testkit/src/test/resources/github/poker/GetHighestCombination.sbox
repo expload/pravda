@@ -1,17 +1,16 @@
-preconditions:
-  watts-limit: 1000000
-  stack:
-    int32(13), int32(26), int32(1), int32(2), int32(16), int32(30), int32(31), "GetHighestCombination"
-  heap:
-  storage:
-    "p_cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
-    "init" = null
-expectations:
-  watts-spent: 113478
-  stack:
-    int32(600005)
-  heap:
-    #0x5D = int8[30],
+---preconditions
+watts-limit: 1000000
+stack:
+  int32(13), int32(26), int32(1), int32(2), int32(16), int32(30), int32(31), "GetHighestCombination"
+storage:
+  "p_cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
+  "init" = null
+---expectations
+watts-spent: 117629
+stack
+  int32(600005)
+heap
+  #0x5D = int8[30],
     #0xE = int8[31],
     #0x3D = int8[1],
     #0xA = int8[13],
@@ -116,8 +115,8 @@ expectations:
     #0x16 = int8[1],
     #0x1E = int8[13],
     #0x5A = int8[26]
-  effects:
-    sget "init" null,
+effects
+  sget "init" null,
     sget "p_cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
     sget "p_cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
     sget "p_cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
@@ -139,6 +138,5 @@ expectations:
     sget "p_cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
     sget "p_cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
     sget "p_cardCombinations" x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
-
----
-#dotnet poker.cs
+---dotnet-files
+poker.cs
