@@ -22,7 +22,8 @@ object PcallTests extends TestSuite {
             List(
               Nop,
               LdSFld(MemberRefData(TypeRefData(10, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", 21)),
-              Call(MethodSpecData(MemberRefData(TypeRefData(10, "ProgramHelper", "Expload.Pravda"), "Program", 25), 33)),
+              Call(
+                MethodSpecData(MemberRefData(TypeRefData(10, "ProgramHelper", "Expload.Pravda"), "Program", 25), 33)),
               LdcI4S(10),
               LdcI4S(20),
               CallVirt(MemberRefData(TypeRefData(14, "MyAnotherProgram", "Expload.Pravda.Programs"), "Add", 38)),
