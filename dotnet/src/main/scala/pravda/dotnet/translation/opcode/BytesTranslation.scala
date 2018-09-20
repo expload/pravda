@@ -79,7 +79,7 @@ object BytesTranslation extends OneToManyTranslator {
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Slice", _))          => Right(-2)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Concat", _))         => Right(-1)
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Length", _))         => Right(0)
-    case _                                                                                    => Left(UnknownOpcode)
+    case _                                                                                       => Left(UnknownOpcode)
   }
 
   def asmOpsOne(op: CIL.Op,

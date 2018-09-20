@@ -30,7 +30,7 @@ package object translation {
 
       def unapply(sigType: SigType): Boolean = sigType match {
         case SigType.Cls(TypeRefData(_, "Bytes", "Expload.Pravda")) => true
-        case _                                                   => false
+        case _                                                      => false
       }
     }
 
@@ -38,7 +38,7 @@ package object translation {
 
       def unapply(sigType: SigType): Boolean = sigType match {
         case SigType.Cls(TypeRefData(_, "Mapping`2", "Expload.Pravda")) => true
-        case _                                                       => false
+        case _                                                          => false
       }
     }
   }
