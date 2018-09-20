@@ -37,6 +37,16 @@ pipeline:
       - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
+  package-publish-nuget:
+    image: microsoft/dotnet:2.1-sdk
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG}
+    commands:
+      - cd /workdir/code/PravdaDotNet
+      - dotnet pack -c Release
+      - dotnet nuget push bin/Release/Pravda.$PRAVDA_VERSION.nupkg -ApiKey $NUGET_KEY -Source https://api.nuget.org/v3/index.json      
+    when:
+      event: tag
   publish-github-releases:
     image: plugins/github-release
     files:
