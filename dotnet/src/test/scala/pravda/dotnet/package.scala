@@ -10,7 +10,7 @@ import pravda.dotnet.parser.{FileParser, Signatures}
 package object dotnet {
 
   private def readResourceBytes(filename: String) =
-    Files.readAllBytes(Paths.get(this.getClass.getResource(s"/$filename").getPath))
+    Files.readAllBytes(Paths.get(s"dotnet-tests/resources/$filename"))
 
   def parsePeFile(file: String): Either[String, (Pe, CilData, List[Method], Map[Long, Signatures.Signature])] = {
     val fileBytes = readResourceBytes(file)

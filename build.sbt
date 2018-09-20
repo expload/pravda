@@ -149,6 +149,7 @@ lazy val dotnet = (project in file("dotnet"))
   )
   .dependsOn(`vm-asm`)
   .dependsOn(common % "test->test")
+  .dependsOn(proverka % "compile->test")
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
