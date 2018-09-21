@@ -29,7 +29,7 @@ object BytesTranslation extends OneToManyTranslator {
   override def additionalFunctionsOne(
       op: CIL.Op,
       ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
-    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) =>
+    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), ".ctor", signatureIdx)) =>
       Right(
         List(
           OpcodeTranslator.HelperFunction(
@@ -72,28 +72,28 @@ object BytesTranslation extends OneToManyTranslator {
   }
 
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = op match {
-    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "EMPTY", _))            => Right(1)
-    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "VOID_ADDRESS", _))     => Right(1)
-    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) => Right(0)
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _))       => Right(-1)
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Slice", _))          => Right(-2)
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Concat", _))         => Right(-1)
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Length", _))         => Right(0)
-    case _                                                                                    => Left(UnknownOpcode)
+    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "EMPTY", _))            => Right(1)
+    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", _))     => Right(1)
+    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), ".ctor", signatureIdx)) => Right(0)
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "get_Item", _))       => Right(-1)
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Slice", _))          => Right(-2)
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Concat", _))         => Right(-1)
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Length", _))         => Right(0)
+    case _                                                                                       => Left(UnknownOpcode)
   }
 
   def asmOpsOne(op: CIL.Op,
                 stackOffsetO: Option[Int],
                 ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = op match {
-    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "EMPTY", _)) =>
+    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "EMPTY", _)) =>
       Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY))))
-    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "VOID_ADDRESS", _)) =>
+    case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", _)) =>
       Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.copyFrom(Array.fill[Byte](32)(0))))))
-    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), ".ctor", signatureIdx)) =>
+    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), ".ctor", signatureIdx)) =>
       Right(List(Operation.Call(Some("array_to_bytes"))))
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "get_Item", _)) =>
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "get_Item", _)) =>
       Right(List(Operation(Opcodes.ARRAY_GET)))
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Slice", _)) =>
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Slice", _)) =>
       Right(
         List(pushInt(2),
              Operation(Opcodes.DUPN),
@@ -101,9 +101,9 @@ object BytesTranslation extends OneToManyTranslator {
              Operation(Opcodes.SWAP),
              Operation(Opcodes.SLICE))
       )
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Concat", _)) =>
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Concat", _)) =>
       Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT)))
-    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Com.Expload"), "Length", _)) =>
+    case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Length", _)) =>
       Right(List(Operation(Opcodes.LENGTH)))
     case _ => Left(UnknownOpcode)
   }

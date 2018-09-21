@@ -126,7 +126,7 @@ object StringsTests extends TestSuite {
            TypeSig(
              Tpe(
                Generic(
-                 Cls(TypeRefData(10, "Mapping`2", "Com.Expload")),
+                 Cls(TypeRefData(10, "Mapping`2", "Expload.Pravda")),
                  List(String, String)
                ),
                false
@@ -145,7 +145,7 @@ object StringsTests extends TestSuite {
           (74,
            FieldSig(
              Generic(
-               Cls(TypeRefData(10, "Mapping`2", "Com.Expload")),
+               Cls(TypeRefData(10, "Mapping`2", "Expload.Pravda")),
                List(String, String)
              ))),
           (82, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))

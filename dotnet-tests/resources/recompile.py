@@ -5,12 +5,15 @@ import os
 import shutil
 
 tmp_dir = "/tmp/pravda"
+dll_dir = "../../PravdaDotNet"
 
 if not os.path.exists(tmp_dir):
     os.makedirs(tmp_dir)
 
 def in_tmp_dir(path):
-    return os.path.join(tmp_dir, path)
+    return os.path.join(tmp_dir, os.path.basename(path))
+def in_dll_dir(path):
+    return os.path.join(dll_dir, os.path.basename(path))
 
 def run_if_changed(name, inputs, script, outputs):
 
@@ -30,7 +33,7 @@ def run_if_changed(name, inputs, script, outputs):
         print(script(inputs, outputs))
         subprocess.call(script(inputs, outputs))
         for output in outputs:
-            shutil.copy2(in_tmp_dir(output), ".")
+            shutil.copy2(in_tmp_dir(output), output)
 
 def compile(inputs, outputs, flags):
     res = ["csc", in_tmp_dir(inputs[0]),
@@ -52,8 +55,8 @@ def compile_exe_pdb(inputs, outputs):
     return compile_exe(inputs, outputs[:1]) + \
            ["-debug:portable", f"-pdb:{in_tmp_dir(outputs[1].rpartition('.')[0])}"]
 
-run_if_changed("expload.dll compilation",
-               ["expload.cs"], compile_dll, ["expload.dll"])
+run_if_changed("Pravda.dll compilation",
+               [in_dll_dir("Pravda.cs")], compile_dll, [in_dll_dir("Pravda.dll")])
 
 for filename in ["arithmetics",
                  "arrays",
@@ -72,13 +75,13 @@ for filename in ["arithmetics",
                  "system",
                  "zoo_program"]:
     run_if_changed(f"{filename} compilation",
-                   [f"{filename}.cs", "expload.dll"], compile_exe, [f"{filename}.exe"])
+                   [f"{filename}.cs", in_dll_dir("Pravda.dll")], compile_exe, [f"{filename}.exe"])
 
 for filename in ["smart_program", "hello_world"]:
     run_if_changed(f"{filename} compilation",
-                   [f"{filename}.cs", "expload.dll"], compile_exe_pdb, [f"{filename}.exe", f"{filename}.pdb"])
+                   [f"{filename}.cs", in_dll_dir("Pravda.dll")], compile_exe_pdb, [f"{filename}.exe", f"{filename}.pdb"])
 
 run_if_changed("pcall_program compilation",
-               ["pcall_program.cs", "expload.dll"], compile_dll, ["pcall_program.dll"])
+               ["pcall_program.cs", in_dll_dir("Pravda.dll")], compile_dll, ["pcall_program.dll"])
 run_if_changed("pcall compilation",
-               ["pcall.cs", "expload.dll", "pcall_program.dll"], compile_exe, ["pcall.exe"])
+               ["pcall.cs", in_dll_dir("Pravda.dll"), "pcall_program.dll"], compile_exe, ["pcall.exe"])
