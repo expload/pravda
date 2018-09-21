@@ -15,7 +15,7 @@ object VmSuite extends Proverka {
   lazy val scheme = Seq(
     parserInput("preconditions")(VmSandbox.preconditions.map(p => s => s.copy(preconditions = Some(p)))),
     parserInput("code")(VmSandbox.program.map(p => s => s.copy(program = Some(p)))),
-    textOutput("expectations"){ c =>
+    textOutput("expectations") { c =>
       val res = for {
         pre <- c.preconditions
         prog <- c.program

@@ -23,8 +23,7 @@ object VmSandbox {
 
   type MacroHandler = PartialFunction[Macro, Seq[Operation]]
 
-  final case class Case(program: Option[Seq[Operation]] = None,
-                        preconditions: Option[Preconditions] = None)
+  final case class Case(program: Option[Seq[Operation]] = None, preconditions: Option[Preconditions] = None)
 
   final case class Preconditions(balances: Map[Address, Primitive.BigInt],
                                  watts: Long = 0,
@@ -156,8 +155,7 @@ object VmSandbox {
         ))
   }
 
-  def sandboxRun(ops: Seq[Operation],
-                 pre: Preconditions): Expectations = {
+  def sandboxRun(ops: Seq[Operation], pre: Preconditions): Expectations = {
     val vm = new VmImpl()
     val asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
     val heap = {
