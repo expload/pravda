@@ -1,6 +1,7 @@
 using System;
 using Expload.Pravda;
 
+// this interface is obligatory for programs that are called with ProgramHelper.Program<...>
 namespace Expload.Pravda.Programs
 {
     [Program]
