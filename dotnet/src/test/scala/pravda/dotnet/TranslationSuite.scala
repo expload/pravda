@@ -1,15 +1,13 @@
 package pravda.dotnet
-
-package translation
-
 import java.io.File
 
-import pravda.proverka._
+import pravda.dotnet.translation.Translator
+import pravda.proverka.{Proverka, input, textOutput}
 import pravda.vm.asm
 import pravda.vm.asm.PravdaAssembler
 
 object TranslationSuite extends Proverka {
-  lazy val dir = new File("dotnet/src/test/resources")
+  lazy val dir = new File("dotnet/src/test/resources/translation")
   override lazy val ext = "trs"
 
   final case class Translation(ops: List[asm.Operation] = List.empty)

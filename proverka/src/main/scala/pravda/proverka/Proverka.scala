@@ -105,6 +105,8 @@ trait Proverka extends TestSuite {
       }
 
     if (sections.map(_.name).sorted != scheme.map(_.sectionName).sorted) {
+      println(sections.map(_.name).sorted)
+      println(scheme.map(_.sectionName).sorted)
       Left("Scheme and sections don't match each other")
     } else {
       aux(initState, scheme.toList)

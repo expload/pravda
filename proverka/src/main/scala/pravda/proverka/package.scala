@@ -57,6 +57,6 @@ package object proverka {
     textOutput(name) { s =>
       for {
         p <- produce(s)
-      } yield pprint.apply(p).plainText
+      } yield pprint.apply(p, height = Int.MaxValue).plainText
     }
 }

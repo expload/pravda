@@ -1,19 +1,18 @@
 package pravda.dotnet
 
-package translation
-
+import pravda.dotnet.translation.Translator
 import utest._
 
-object ErrorTests extends TestSuite {
+object TranslationErrorTests extends TestSuite {
 
   val tests = Tests {
-    'helloWorld - {
+    'error - {
       val Right((_, cilData, methods, signatures)) = parsePeFile("error.exe")
       val Right((_, pdbTables)) = parsePdbFile("error.pdb")
 
       Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).left.get.mkString ==>
         """|Call(MemberRefData(TypeRefData(6,Console,System),WriteLine,16)) is not supported
-         |  error.cs:8,9-8,74""".stripMargin
+           |  error.cs:8,9-8,74""".stripMargin
     }
   }
 }
