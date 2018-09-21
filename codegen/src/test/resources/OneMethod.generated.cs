@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Com.Expload.ERC20 {
+namespace Expload.Pravda.ERC20 {
     [System.Serializable]
     class UintResult {
        public uint value;

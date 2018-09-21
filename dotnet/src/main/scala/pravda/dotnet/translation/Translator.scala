@@ -220,7 +220,8 @@ object Translator {
                        signatures: Map[Long, Signatures.Signature],
                        pdbTables: Option[TablesData] = None): Either[TranslationError, Translation] = {
     val classesWithProgramAttribute = cilData.tables.customAttributeTable.collect {
-      case CustomAttributeData(td: TypeDefData, MemberRefData(TypeRefData(_, "Program", "Com.Expload"), ".ctor", _)) =>
+      case CustomAttributeData(td: TypeDefData,
+                               MemberRefData(TypeRefData(_, "Program", "Expload.Pravda"), ".ctor", _)) =>
         td
     }
 

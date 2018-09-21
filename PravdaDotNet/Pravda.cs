@@ -3,7 +3,8 @@ using System;
 // WARNING
 // Purpose of this dll is only to marks specific methods for translator.
 // Translator detects them and generates necessary bytecode.
-namespace Com.Expload {
+namespace Expload.Pravda {
+
     // Special attribute to mark classes to be translated to Pravda program
     public class Program : Attribute {}
 

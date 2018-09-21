@@ -13,7 +13,7 @@ import scala.sys.process._
 object DotnetSandbox extends TestSuite {
 
   def dotnetToAsm(filename: String, dlls: List[String]): List[asm.Operation] = {
-    val exploadDll = new File(getClass.getResource("/expload.dll").getPath)
+    val exploadDll = new File("PravdaDotNet/Pravda.dll")
 
     new File("/tmp/pravda/").mkdirs()
 
