@@ -135,7 +135,7 @@ object StaticClassTests extends TestSuite {
               LdLoc0,
               LdArg0,
               LdLoc1,
-              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), "get_Item", 27)),
+              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Expload.Pravda"), "get_Item", 27)),
               Call(MethodDefData(4, 0, 150, "ByteToHex", 60, Vector(ParamData(0, 1, "b")))),
               Call(MemberRefData(TypeRefData(6, "String", "System"), "Concat", 16)),
               StLoc0,
@@ -145,7 +145,7 @@ object StaticClassTests extends TestSuite {
               StLoc1,
               LdLoc1,
               LdArg0,
-              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Com.Expload"), "Length", 32)),
+              CallVirt(MemberRefData(TypeRefData(10, "Bytes", "Expload.Pravda"), "Length", 32)),
               BltS(-32),
               LdLoc0,
               Ret

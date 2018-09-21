@@ -1,7 +1,7 @@
-using Com.Expload;
+using Expload.Pravda;
 using System;
 
-namespace Com.Expload
+namespace Expload.Pravda
 {
     public static class StringUtils {
         private static string HexPart(int b)

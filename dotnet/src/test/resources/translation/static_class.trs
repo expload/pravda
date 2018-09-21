@@ -27,7 +27,7 @@ meta translator_mark "ToHex local vars definition"
 meta translator_mark "ToHex method body"
 push int32(2)
 dupn
-call @func_Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes
+call @func_Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes
 jump @ToHex_lvc
 meta translator_mark "ToHex local vars clearing"
 @ToHex_lvc:
@@ -69,37 +69,37 @@ meta translator_mark "ctor local vars clearing"
 pop
 meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "Com.Expload.StringUtils.ByteToHex_uint8 func"
-@func_Com.Expload.StringUtils.ByteToHex_uint8:
-meta translator_mark "Com.Expload.StringUtils.ByteToHex_uint8 local vars definition"
-meta translator_mark "Com.Expload.StringUtils.ByteToHex_uint8 func body"
+meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 func"
+@func_Expload.Pravda.StringUtils.ByteToHex_uint8:
+meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 local vars definition"
+meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 func body"
 push int32(2)
 dupn
 push int32(16)
 swap
 div
-call @func_Com.Expload.StringUtils.HexPart_int32
+call @func_Expload.Pravda.StringUtils.HexPart_int32
 push int32(3)
 dupn
 push int32(16)
 swap
 mod
-call @func_Com.Expload.StringUtils.HexPart_int32
+call @func_Expload.Pravda.StringUtils.HexPart_int32
 swap
 concat
-jump @Com.Expload.StringUtils.ByteToHex_uint8_lvc
-meta translator_mark "Com.Expload.StringUtils.ByteToHex_uint8 local vars clearing"
-@Com.Expload.StringUtils.ByteToHex_uint8_lvc:
+jump @Expload.Pravda.StringUtils.ByteToHex_uint8_lvc
+meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 local vars clearing"
+@Expload.Pravda.StringUtils.ByteToHex_uint8_lvc:
 swap
 pop
-meta translator_mark "end of Com.Expload.StringUtils.ByteToHex_uint8 func"
+meta translator_mark "end of Expload.Pravda.StringUtils.ByteToHex_uint8 func"
 ret
-meta translator_mark "Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes func"
-@func_Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes:
-meta translator_mark "Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes local vars definition"
+meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes func"
+@func_Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes:
+meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes local vars definition"
 push null
 push null
-meta translator_mark "Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes func body"
+meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes func body"
 push ""
 push int32(3)
 swapn
@@ -108,8 +108,8 @@ push int32(0)
 push int32(2)
 swapn
 pop
-jump @Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes_br33
-@Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes_br10:
+jump @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br33
+@Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br10:
 push int32(2)
 dupn
 push int32(5)
@@ -117,7 +117,7 @@ dupn
 push int32(3)
 dupn
 array_get
-call @func_Com.Expload.StringUtils.ByteToHex_uint8
+call @func_Expload.Pravda.StringUtils.ByteToHex_uint8
 swap
 concat
 push int32(3)
@@ -130,7 +130,7 @@ add
 push int32(2)
 swapn
 pop
-@Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes_br33:
+@Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br33:
 push int32(1)
 dupn
 push int32(5)
@@ -142,32 +142,32 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes_br10
+jumpi @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br10
 push int32(2)
 dupn
-jump @Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes_lvc
-meta translator_mark "Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes local vars clearing"
-@Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes_lvc:
+jump @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_lvc
+meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes local vars clearing"
+@Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_lvc:
 swap
 pop
 swap
 pop
 swap
 pop
-meta translator_mark "end of Com.Expload.StringUtils.BytesToHex_Com.Expload.Bytes func"
+meta translator_mark "end of Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes func"
 ret
-meta translator_mark "Com.Expload.StringUtils.HexPart_int32 func"
-@func_Com.Expload.StringUtils.HexPart_int32:
-meta translator_mark "Com.Expload.StringUtils.HexPart_int32 local vars definition"
-meta translator_mark "Com.Expload.StringUtils.HexPart_int32 func body"
+meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 func"
+@func_Expload.Pravda.StringUtils.HexPart_int32:
+meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 local vars definition"
+meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 func body"
 push int32(2)
 dupn
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br9
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br9
 push "0"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br9:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br9:
 push int32(2)
 dupn
 push int32(1)
@@ -181,10 +181,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br19
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br19
 push "1"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br19:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br19:
 push int32(2)
 dupn
 push int32(2)
@@ -198,10 +198,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br29
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br29
 push "2"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br29:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br29:
 push int32(2)
 dupn
 push int32(3)
@@ -215,10 +215,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br39
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br39
 push "3"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br39:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br39:
 push int32(2)
 dupn
 push int32(4)
@@ -232,10 +232,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br49
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br49
 push "4"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br49:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br49:
 push int32(2)
 dupn
 push int32(5)
@@ -249,10 +249,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br59
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br59
 push "5"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br59:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br59:
 push int32(2)
 dupn
 push int32(6)
@@ -266,10 +266,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br69
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br69
 push "6"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br69:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br69:
 push int32(2)
 dupn
 push int32(7)
@@ -283,10 +283,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br79
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br79
 push "7"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br79:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br79:
 push int32(2)
 dupn
 push int32(8)
@@ -300,10 +300,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br89
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br89
 push "8"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br89:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br89:
 push int32(2)
 dupn
 push int32(9)
@@ -317,10 +317,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br100
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br100
 push "9"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br100:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br100:
 push int32(2)
 dupn
 push int32(10)
@@ -334,10 +334,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br111
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br111
 push "A"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br111:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br111:
 push int32(2)
 dupn
 push int32(11)
@@ -351,10 +351,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br122
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br122
 push "B"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br122:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br122:
 push int32(2)
 dupn
 push int32(12)
@@ -368,10 +368,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br133
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br133
 push "C"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br133:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br133:
 push int32(2)
 dupn
 push int32(13)
@@ -385,10 +385,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br144
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br144
 push "D"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br144:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br144:
 push int32(2)
 dupn
 push int32(14)
@@ -402,10 +402,10 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br155
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br155
 push "E"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br155:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br155:
 push int32(2)
 dupn
 push int32(15)
@@ -419,17 +419,17 @@ push int8(3)
 cast
 push int32(1)
 eq
-jumpi @Com.Expload.StringUtils.HexPart_int32_br166
+jumpi @Expload.Pravda.StringUtils.HexPart_int32_br166
 push "F"
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-@Com.Expload.StringUtils.HexPart_int32_br166:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+@Expload.Pravda.StringUtils.HexPart_int32_br166:
 push ""
-jump @Com.Expload.StringUtils.HexPart_int32_lvc
-meta translator_mark "Com.Expload.StringUtils.HexPart_int32 local vars clearing"
-@Com.Expload.StringUtils.HexPart_int32_lvc:
+jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 local vars clearing"
+@Expload.Pravda.StringUtils.HexPart_int32_lvc:
 swap
 pop
-meta translator_mark "end of Com.Expload.StringUtils.HexPart_int32 func"
+meta translator_mark "end of Expload.Pravda.StringUtils.HexPart_int32 func"
 ret
 meta translator_mark "helper functions"
 @stop:

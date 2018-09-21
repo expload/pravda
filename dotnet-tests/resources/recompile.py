@@ -82,8 +82,7 @@ for filename in ["arithmetics",
 
 for filename in ["static_class"]:
     run_if_changed(f"{filename} compilation",
-                   [f"{filename}.cs", "expload.dll"], compile_exe_optimized, [f"{filename}.exe"])
-
+                   [f"{filename}.cs", in_dll_dir("Pravda.dll")], compile_exe_optimized, [f"{filename}.exe"])
 
 for filename in ["smart_program", "hello_world"]:
     run_if_changed(f"{filename} compilation",
