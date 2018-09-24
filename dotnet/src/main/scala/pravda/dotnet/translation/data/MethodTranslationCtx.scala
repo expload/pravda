@@ -19,8 +19,8 @@ package pravda.dotnet.translation.data
 
 import pravda.dotnet.data.TablesData
 import pravda.dotnet.data.TablesData.{MethodDebugInformationData, TypeDefData}
-import pravda.dotnet.parsers.CIL.CilData
-import pravda.dotnet.parsers.Signatures
+import pravda.dotnet.parser.CIL.CilData
+import pravda.dotnet.parser.Signatures
 
 final case class TranslationCtx(
     signatures: Map[Long, Signatures.Signature],

@@ -17,9 +17,9 @@
 
 package pravda.dotnet.data
 
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL.Op
-import pravda.dotnet.parsers.PE.Info._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL.Op
+import pravda.dotnet.parser.PE.Info._
 import pravda.dotnet.utils._
 
 final case class Method(opcodes: List[Op], maxStack: Int, localVarSigIdx: Option[Long])

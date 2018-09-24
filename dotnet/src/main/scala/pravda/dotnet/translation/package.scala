@@ -18,9 +18,9 @@
 package pravda.dotnet
 
 import pravda.dotnet.data.Method
-import pravda.dotnet.data.TablesData.{MethodDefData, TypeRefData}
-import pravda.dotnet.parsers.Signatures
-import pravda.dotnet.parsers.Signatures.{LocalVarSig, MethodRefDefSig, SigType, Tpe}
+import pravda.dotnet.data.TablesData._
+import pravda.dotnet.parser.Signatures
+import pravda.dotnet.parser.Signatures._
 
 package object translation {
 
@@ -53,17 +53,70 @@ package object translation {
           case _                  => List.empty
         }
     }
+    private def withMethodRefDef[T](sigFunc: Signature => T): (MethodRefDefData, Map[Long, Signature]) => Option[T] =
+      (method, signatures) => signatures.get(method.signatureIdx).map(sigFunc)
+    private def withMethodRefDefOpt[T](
+        sigFunc: Signature => Option[T]): (MethodRefDefData, Map[Long, Signature]) => Option[T] =
+      (m, s) => withMethodRefDef(sigFunc)(m, s).flatten
 
-    def returnTpe(m: MethodDefData, signatures: Map[Long, Signatures.Signature]): Option[SigType] =
-      m match {
-        case MethodDefData(_, _, _, _, sigIdx, _) =>
-          signatures.get(sigIdx) match {
-            case Some(MethodRefDefSig(_, _, _, _, _, Tpe(tpe, _), _)) => Some(tpe)
-            case _                                                    => None
-          }
+    def methodType(sig: Signature): Option[SigType] =
+      sig match {
+        case MethodRefDefSig(_, _, _, _, 0, Tpe(tpe, _), _) => Some(tpe)
+        case _                                              => None
       }
 
-    def isVoid(m: MethodDefData, signatures: Map[Long, Signatures.Signature]): Boolean =
-      returnTpe(m, signatures).contains(SigType.Void)
+    def methodType(m: MethodRefDefData, signatures: Map[Long, Signature]): Option[SigType] =
+      withMethodRefDefOpt(methodType)(m, signatures)
+
+    def methodParams(sig: Signature): Option[List[Tpe]] =
+      sig match {
+        case MethodRefDefSig(_, _, _, _, 0, _, params) => Some(params)
+        case _                                         => None
+      }
+
+    def methodParams(m: MethodRefDefData, signatures: Map[Long, Signature]): Option[List[Tpe]] =
+      withMethodRefDefOpt(methodParams)(m, signatures)
+
+    def methodParamsCount(sig: Signature): Int =
+      methodParams(sig).map(_.length).getOrElse(0)
+
+    def methodParamsCount(m: MethodRefDefData, signatures: Map[Long, Signature]): Int =
+      withMethodRefDef(methodParamsCount)(m, signatures).getOrElse(0)
+
+    def returnTpe(sig: Signature): Option[SigType] =
+      sig match {
+        case MethodRefDefSig(_, _, _, _, _, Tpe(tpe, _), _) => Some(tpe)
+        case _                                              => None
+      }
+
+    def returnTpe(m: MethodRefDefData, signatures: Map[Long, Signature]): Option[SigType] =
+      withMethodRefDefOpt(returnTpe)(m, signatures)
+
+    def isVoid(sig: Signature): Boolean =
+      returnTpe(sig).contains(SigType.Void)
+
+    def isVoid(m: MethodRefDefData, signatures: Map[Long, Signature]): Boolean =
+      withMethodRefDef(isVoid)(m, signatures).getOrElse(false)
+
+    def isCtor(m: MethodDefData): Boolean =
+      m.name == ".ctor" && (m.flags & 0x1800) != 0 // maybe the mask should be different (see 252-nd page in spec)
+
+    def isCctor(m: MethodDefData): Boolean =
+      m.name == ".cctor" && (m.flags & 0x1810) != 0 // maybe the mask should be different (see 252-nd page in spec)
+
+    def isMain(m: MethodDefData): Boolean =
+      m.name == "Main" && (m.flags & 0x10) != 0
+
+    def isPrivate(m: MethodDefData): Boolean =
+      (m.flags & 0x7) == 0x1
+
+    def isPublic(m: MethodDefData): Boolean =
+      (m.flags & 0x7) == 0x6
+
+    def isStatic(m: MethodDefData): Boolean =
+      (m.flags & 0x10) != 0
+
+    def isVirtual(m: MethodDefData): Boolean =
+      (m.flags & 0x40) != 0
   }
 }

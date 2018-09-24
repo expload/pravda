@@ -17,8 +17,8 @@
 
 package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data.{InternalError, MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.dotnet.translation.opcode.OpcodeTranslator.Taken
 import pravda.vm.asm.Operation

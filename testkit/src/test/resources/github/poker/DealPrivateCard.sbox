@@ -1,22 +1,18 @@
-preconditions:
-  watts-limit: 100000
-  stack:
-    int32(0), x1234, "DealPrivateCard"
-  heap:
-  storage:
-    x506C617965727300000000 = x01,
-    "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
-    "init" = null
-expectations:
-  watts-spent: 814
-  stack:
-  heap:
-  effects:
-    sget "init" null,
+---preconditions
+watts-limit: 100000
+stack:
+  int32(0), x1234, "DealPrivateCard"
+storage:
+  x506C617965727300000000 = x01,
+  "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
+  "init" = null
+---expectations
+watts-spent: 821
+effects
+  sget "init" null,
     sget x506C617965727300000000 x01,
     sget x506C617965727300000000 x01,
     sget x506C6179657243617264733101,
     sput x506C6179657243617264733101 x1234
-
----
-#dotnet poker.cs
+---dotnet-files
+poker.cs

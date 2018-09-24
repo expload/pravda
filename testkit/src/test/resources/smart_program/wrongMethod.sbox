@@ -1,21 +1,18 @@
-preconditions:
-  watts-limit: 10000
-  stack:
-    "boom"
-  heap:
-  storage:
-    "init" = null
-
-expectations:
-  watts-spent: 201
-  stack:
-    "boom"
-  heap:
-  effects:
-   sget "init" null
-  error:
-    |UserError(Wrong method name)
-    |program address: 0000000000000000000000000000000000000000000000000000000000000000
-    |  jump to methods
----
-#dotnet smart_program.cs
+---preconditions
+watts-limit: 10000
+stack:
+  "boom"
+storage:
+  "init" = null
+---expectations
+watts-spent: 201
+stack
+  "boom"
+effects
+  sget "init" null
+error
+  |UserError(Wrong method name)
+  |program address: 0000000000000000000000000000000000000000000000000000000000000000
+  |  jump to methods
+---dotnet-files
+smart_program.cs

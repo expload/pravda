@@ -20,7 +20,7 @@ package pravda.cli.languages
 package impl
 
 import com.google.protobuf.ByteString
-import pravda.dotnet.parsers.{FileParser => DotnetParser}
+import pravda.dotnet.parser.{FileParser => DotnetParser}
 import pravda.dotnet.translation.{Translator => DotnetTranslator, TranslationVisualizer => DotnetVisualizer}
 import pravda.vm.asm.PravdaAssembler
 

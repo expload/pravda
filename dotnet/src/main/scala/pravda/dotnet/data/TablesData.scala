@@ -17,8 +17,8 @@
 
 package pravda.dotnet.data
 
-import pravda.dotnet.parsers.PE.Info._
-import pravda.dotnet.parsers.TablesInfo._
+import pravda.dotnet.parser.PE.Info._
+import pravda.dotnet.parser.TablesInfo._
 
 import cats.instances.vector._
 import cats.instances.list._
@@ -61,6 +61,10 @@ final case class TablesData(
 object TablesData {
 
   sealed trait TableRowData
+  sealed trait MethodRefDefData extends TableRowData {
+    def name: String
+    def signatureIdx: Long
+  }
   final case class CustomAttributeData(parent: TableRowData, tpe: TableRowData /* value is ignored */ )
       extends TableRowData
   final case class MethodDefData(id: Int,
@@ -69,8 +73,8 @@ object TablesData {
                                  name: String,
                                  signatureIdx: Long,
                                  params: Vector[ParamData])
-      extends TableRowData
-  final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends TableRowData
+      extends MethodRefDefData
+  final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends MethodRefDefData
   final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
   final case class FieldRVAData(field: FieldData, rva: Long)                                   extends TableRowData
   final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData

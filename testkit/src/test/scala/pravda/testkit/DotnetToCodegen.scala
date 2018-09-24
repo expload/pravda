@@ -4,8 +4,8 @@ import java.io.File
 import java.nio.file.Files
 
 import pravda.codegen.dotnet.DotnetCodegen
-import pravda.common.DiffUtils
-import pravda.dotnet.parsers.FileParser
+import pravda.common.TestUtils
+import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.Translator
 import pravda.vm.asm.PravdaAssembler
 import utest._
@@ -21,7 +21,7 @@ object DotnetToCodegen extends TestSuite {
       val Right(asm) = Translator.translateAsm(methods, cilData, signatures)
       val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
 
-      DiffUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("smart_program.generated.cs").mkString))
+      TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("smart_program.generated.cs").mkString))
     }
   }
 }

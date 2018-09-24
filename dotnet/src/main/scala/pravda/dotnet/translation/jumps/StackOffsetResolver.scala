@@ -19,8 +19,8 @@ package pravda.dotnet.translation
 
 package jumps
 
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.opcode.{JumpsTranslation, OpcodeTranslator}
 
@@ -59,6 +59,7 @@ object StackOffsetResolver {
             Right((labelOffsets.updated(label, stackOffset + JumpsTranslation.jumpIStackOffset), Some(stackOffset)))
           case (_, offset @ _) => Right((labelOffsets, offset))
         }
+      case Ret   => Right((labelOffsets, None))
       case other => Right((labelOffsets, stackOffsetO))
     }
   }

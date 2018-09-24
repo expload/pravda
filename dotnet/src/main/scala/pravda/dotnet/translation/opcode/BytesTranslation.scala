@@ -18,8 +18,8 @@
 package pravda.dotnet.translation.opcode
 import com.google.protobuf.ByteString
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL
-import pravda.dotnet.parsers.CIL._
+import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}

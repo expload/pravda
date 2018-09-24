@@ -113,6 +113,7 @@ lazy val vm = (project in file("vm"))
   )
 	.dependsOn(`vm-api`, `vm-asm` % "compile->test")
   .dependsOn(common % "compile->compile;test->test")
+  .dependsOn(proverka % "compile->test")
 
 lazy val `vm-asm` = (project in file("vm-asm"))
   .settings(commonSettings: _*)
@@ -142,11 +143,13 @@ lazy val dotnet = (project in file("dotnet"))
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.0.1",
-      "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
+      "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
+      "com.lihaoyi" %% "pprint" % "0.5.3" % "test"
     )
   )
   .dependsOn(`vm-asm`)
   .dependsOn(common % "test->test")
+  .dependsOn(proverka % "compile->test")
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
@@ -299,3 +302,13 @@ lazy val testkit = (project in file("testkit"))
   .dependsOn(`vm-asm`)
   .dependsOn(dotnet)
   .dependsOn(codegen)
+
+lazy val proverka = (project in file("proverka"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "pprint" % "0.5.3",
+      "com.lihaoyi" %% "utest" % "0.6.3",
+      "com.lihaoyi" %% "fastparse" % "1.0.0"
+    )
+  )

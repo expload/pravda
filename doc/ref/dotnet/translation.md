@@ -53,6 +53,7 @@ For the moment it supports the following:
 - User defined classes (although you can't store them in the storage yet).
 - Calling other programs via `ProgramHelper.Program<...>` interface.
 See some examples ([pcall.cs](../../../dotnet-tests/resources/pcall.cs), [pcall_program.cs](../../../dotnet-tests/pcall_program.cs)).
+**Important note:** For being able to use `ProgramHelper.Program<...>` interface you should put called program to `Expload.Pravda.Programs` namespace.
 - Create events in your program via `Log.Event("name of event", <some_data>)`, see [event.cs](../../../dotnet-tests/resources/event.cs)
 
 Things that are *not* supported:

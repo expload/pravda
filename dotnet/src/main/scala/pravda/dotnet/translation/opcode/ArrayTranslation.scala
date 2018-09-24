@@ -17,9 +17,9 @@
 
 package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parsers.CIL._
-import pravda.dotnet.parsers.PE
-import pravda.dotnet.parsers.Signatures.{FieldSig, SigType}
+import pravda.dotnet.parser.CIL._
+import pravda.dotnet.parser.PE
+import pravda.dotnet.parser.Signatures.{FieldSig, SigType}
 import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationCtx, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation

@@ -1,16 +1,12 @@
-preconditions:
-  watts-limit: 1000
-  stack:
-    int32(2), int32(2)
-  heap:
-  storage:
-
-expectations:
-  watts-spent: 111
-  stack:
-    int32(4)
-  heap:
-  effects:
-
----------------------------------------
+---preconditions
+watts-limit: 1000
+stack:
+  int32(2), int32(2)
+heap:
+storage:
+---expectations
+watts-spent: 111
+stack
+  int32(4)
+---code
 add
