@@ -38,7 +38,6 @@ object StackOffsetResolver {
       case Label(label) =>
         (labelOffsets.get(label), stackOffsetO) match {
           case (Some(offset), Some(stackOffset)) if offset != stackOffset + JumpsTranslation.labelStackOffset =>
-            println(label)
             unstableStackError
           case (Some(offset), None)      => Right((labelOffsets, Some(offset)))
           case (None, Some(stackOffset)) => Right((labelOffsets.updated(label, stackOffset), Some(stackOffset)))
@@ -47,7 +46,6 @@ object StackOffsetResolver {
       case Jump(label) =>
         (labelOffsets.get(label), stackOffsetO) match {
           case (Some(offset), Some(stackOffset)) if offset != stackOffset + JumpsTranslation.jumpStackOffset =>
-            println(label)
             unstableStackError
           case (None, Some(stackOffset)) =>
             Right((labelOffsets.updated(label, stackOffset + JumpsTranslation.jumpStackOffset), None))
@@ -56,7 +54,6 @@ object StackOffsetResolver {
       case JumpI(label) =>
         (labelOffsets.get(label), stackOffsetO) match {
           case (Some(offset), Some(stackOffset)) if offset != stackOffset + JumpsTranslation.jumpIStackOffset =>
-            println(label)
             unstableStackError
           case (None, Some(stackOffset)) =>
             Right((labelOffsets.updated(label, stackOffset + JumpsTranslation.jumpIStackOffset), Some(stackOffset)))
