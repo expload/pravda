@@ -151,12 +151,6 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.DotNet))
               .children(
-                opt[Unit]("visualize")
-                  .text("Visualize translation. Prints asm commands along with source CIL opcodes.")
-                  .action {
-                    case ((), config: PravdaConfig.Compile) =>
-                      config.copy(compiler = PravdaConfig.CompileMode.DotNetVisualize)
-                  },
                 opt[File]("pdb")
                   .text("Pdb file with debug information obtained from .NET compilation.")
                   .action {

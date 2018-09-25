@@ -72,7 +72,7 @@ object PravdaConfig {
   }
 
   final case class Compile(compiler: CompileMode,
-                           input: Option[String] = None,
+                           input: List[String] = List.empty,
                            output: Option[String] = None,
                            pdb: Option[String] = None)
       extends PravdaConfig

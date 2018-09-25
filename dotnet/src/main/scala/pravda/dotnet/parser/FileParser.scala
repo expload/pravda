@@ -27,17 +27,32 @@ import cats.syntax.traverse._
 
 object FileParser {
 
-  def parsePe(bytes: Array[Byte]): Either[String, (Pe, CilData, List[Method], Map[Long, Signatures.Signature])] =
+  final case class ParsedPe(pe: Pe,
+                            cilData: CilData,
+                            methods: List[Method],
+                            signatures: Map[Long, Signatures.Signature])
+
+  final case class ParsedPdb(pdb: Pdb, tablesData: TablesData)
+
+  final case class ParsedDotnetFile(parsedPe: ParsedPe, parsedPdb: Option[ParsedPdb])
+
+  def parsePe(bytes: Array[Byte]): Either[String, ParsedPe] =
     for {
       pe <- PE.parseInfo(Bytes(bytes))
       cilData <- CIL.fromPeData(pe.peData)
       methods <- pe.methods.map(Method.parse(pe.peData, _)).sequence
       signatures <- Signatures.collectSignatures(cilData)
-    } yield (pe, cilData, methods, signatures)
+    } yield ParsedPe(pe, cilData, methods, signatures)
 
-  def parsePdb(bytes: Array[Byte]): Either[String, (Pdb, TablesData)] =
+  def parsePdb(bytes: Array[Byte]): Either[String, ParsedPdb] =
     for {
       pdb <- PE.parsePdb(Bytes(bytes))
       tables <- TablesData.fromInfo(pdb.pdbData)
-    } yield (pdb, tables)
+    } yield ParsedPdb(pdb, tables)
+
+  def parseDotnetFile(peBytes: Array[Byte], pdbBytes: Option[Array[Byte]]): Either[String, ParsedDotnetFile] =
+    for {
+      pe <- parsePe(peBytes)
+      pdb <- pdbBytes.map(bs => parsePdb(bs).map(Some(_))).getOrElse(Right(None))
+    } yield ParsedDotnetFile(pe, pdb)
 }

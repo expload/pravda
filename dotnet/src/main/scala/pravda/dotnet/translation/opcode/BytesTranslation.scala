@@ -26,51 +26,6 @@ import pravda.vm.{Data, Opcodes, asm}
 
 object BytesTranslation extends OneToManyTranslator {
 
-  override def additionalFunctionsOne(
-      op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
-    case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), ".ctor", signatureIdx)) =>
-      Right(
-        List(
-          OpcodeTranslator.HelperFunction(
-            "array_to_bytes",
-            List(
-              Operation(Opcodes.DUP),
-              Operation(Opcodes.LENGTH),
-              Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY)),
-              pushInt(0),
-              Operation.Label("array_to_bytes_loop"),
-              pushInt(4),
-              Operation(Opcodes.DUPN),
-              pushInt(2),
-              Operation(Opcodes.DUPN),
-              Operation(Opcodes.ARRAY_GET),
-              pushType(Data.Type.Bytes),
-              Operation(Opcodes.CAST),
-              pushInt(3),
-              Operation(Opcodes.DUPN),
-              Operation(Opcodes.CONCAT),
-              pushInt(3),
-              Operation(Opcodes.SWAPN),
-              Operation(Opcodes.POP),
-              pushInt(1),
-              Operation(Opcodes.ADD),
-              Operation(Opcodes.DUP),
-              pushInt(4),
-              Operation(Opcodes.DUPN),
-              Operation(Opcodes.GT),
-              Operation.JumpI(Some("array_to_bytes_loop")),
-              Operation(Opcodes.POP),
-              Operation(Opcodes.SWAP),
-              Operation(Opcodes.POP),
-              Operation(Opcodes.SWAP),
-              Operation(Opcodes.POP),
-              Operation(Opcodes.RET)
-            )
-          )))
-    case _ => Left(UnknownOpcode)
-  }
-
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = op match {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "EMPTY", _))            => Right(1)
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", _))     => Right(1)

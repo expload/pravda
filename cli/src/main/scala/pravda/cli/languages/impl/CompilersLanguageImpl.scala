@@ -21,12 +21,12 @@ package impl
 
 import com.google.protobuf.ByteString
 import pravda.dotnet.parser.{FileParser => DotnetParser}
-import pravda.dotnet.translation.{Translator => DotnetTranslator, TranslationVisualizer => DotnetVisualizer}
+import pravda.dotnet.translation.{Translator => DotnetTranslator}
 import pravda.vm.asm.PravdaAssembler
-
 import cats.instances.either._
 import cats.instances.option._
 import cats.syntax.traverse._
+import pravda.dotnet.parser.FileParser.ParsedDotnetFile
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,24 +44,17 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
     PravdaAssembler.render(PravdaAssembler.disassemble(source))
   }
 
-  def dotnet(source: ByteString, pdb: Option[ByteString]): Future[Either[String, ByteString]] = Future {
+  def dotnet(sources: Seq[(ByteString, Option[ByteString])],
+             mainClass: Option[String]): Future[Either[String, ByteString]] = Future {
     for {
-      pe <- DotnetParser.parsePe(source.toByteArray)
-      pdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray).map(_._2)).sequence
-      (_, cilData, methods, signatures) = pe
-      ops <- DotnetTranslator.translateAsm(methods, cilData, signatures, pdb).left.map(_.mkString)
+      files <- sources.map {
+        case (pe, pdb) =>
+          for {
+            parsedPe <- DotnetParser.parsePe(pe.toByteArray)
+            parsedPdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray)).sequence
+          } yield ParsedDotnetFile(parsedPe, parsedPdb)
+      }.sequence
+      ops <- DotnetTranslator.translateAsm(files, mainClass).left.map(_.mkString)
     } yield PravdaAssembler.assemble(ops, saveLabels = true)
   }
-
-  def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Future[Either[String, (ByteString, String)]] =
-    Future {
-      for {
-        pe <- DotnetParser.parsePe(source.toByteArray)
-        pdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray).map(_._2)).sequence
-        (_, cilData, methods, signatures) = pe
-        translation <- DotnetTranslator.translateVerbose(methods, cilData, signatures, pdb).left.map(_.mkString)
-        asm = DotnetTranslator.translationToAsm(translation)
-        code = PravdaAssembler.assemble(asm, saveLabels = true)
-      } yield (code, DotnetVisualizer.visualize(translation))
-    }
 }
