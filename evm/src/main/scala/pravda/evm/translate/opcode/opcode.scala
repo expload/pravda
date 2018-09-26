@@ -23,14 +23,15 @@ import pravda.vm.{Data, Opcodes, asm}
 //TODO merge with pravda.dotnet.translation.opcode.opcode
 package object opcode {
 
-
   def push[T](value: T, toPrimitive: T => Data.Primitive): asm.Operation =
     asm.Operation.Push(toPrimitive(value))
 
-  def sub: List[asm.Operation] = pushBigInt(BigInt(-1)) :: asm.Operation(Opcodes.MUL) :: asm.Operation(Opcodes.ADD) :: pushBigInt(BigInt(-1)) :: asm.Operation(Opcodes.MUL) :: Nil
+  def sub: List[asm.Operation] =
+    pushBigInt(BigInt(-1)) :: asm.Operation(Opcodes.MUL) :: asm.Operation(Opcodes.ADD) :: pushBigInt(BigInt(-1)) :: asm
+      .Operation(Opcodes.MUL) :: Nil
 
   def pushBigInt(value: scala.BigInt): asm.Operation =
-    push(value,Data.Primitive.BigInt)
+    push(value, Data.Primitive.BigInt)
 
   def pushInt(i: Int): asm.Operation =
     push(i, Data.Primitive.Int32)

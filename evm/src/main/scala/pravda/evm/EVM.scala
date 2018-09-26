@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.evm
 
 import fastparse.byte.all._
@@ -76,7 +93,7 @@ object EVM {
   case object Invalid                 extends Op
   case object SelfDestruct            extends Op
 
-   val singleOps: Map[Int, Op] = Map(
+  val singleOps: Map[Int, Op] = Map(
     0x00 -> Stop,
     0x01 -> Add,
     0x02 -> Mul,
@@ -151,11 +168,10 @@ object EVM {
     0xff -> SelfDestruct
   )
 
-   val rangeOps: List[(Range, Int => Op)] = List(
+  val rangeOps: List[(Range, Int => Op)] = List(
     (0x80 to 0x8f, i => Dup(i - 0x80 + 1)),
     (0x90 to 0x9f, i => Swap(i - 0x90 + 1)),
     (0xa0 to 0xa4, i => Log(i - 0xa0))
   )
-
 
 }
