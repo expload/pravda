@@ -20,15 +20,14 @@ object TranslationSuite extends Proverka {
       val parts = line.split("\\s+").toList
       val exe = parts.head
       val pdbE = if (parts.length > 1) {
-        parsePdbFile(parts(1)).map(p => Some(p._2))
+        parsePdbFile(parts(1)).map(Some(_))
       } else {
         Right(None)
       }
       for {
         pe <- parsePeFile(exe)
         pdb <- pdbE
-        (_, cilData, methods, signatures) = pe
-        asm <- Translator.translateAsm(methods, cilData, signatures, pdb).left.map(_.mkString)
+        asm <- Translator.translateAsm(pe, pdb).left.map(_.mkString)
       } yield (s: State) => s.copy(ops = asm)
     },
     textOutput("translation") { s =>

@@ -7,10 +7,10 @@ object TranslationErrorTests extends TestSuite {
 
   val tests = Tests {
     'error - {
-      val Right((_, cilData, methods, signatures)) = parsePeFile("error.exe")
-      val Right((_, pdbTables)) = parsePdbFile("error.pdb")
+      val Right(pe) = parsePeFile("error.exe")
+      val Right(pdb) = parsePdbFile("error.pdb")
 
-      Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).left.get.mkString ==>
+      Translator.translateAsm(pe, Some(pdb)).left.get.mkString ==>
         """|Call(MemberRefData(TypeRefData(6,Console,System),WriteLine,16)) is not supported
            |  error.cs:8,9-8,74""".stripMargin
     }

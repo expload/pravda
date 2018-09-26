@@ -23,11 +23,11 @@ import cats.syntax.traverse._
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
-import pravda.dotnet.parser.FileParser.ParsedDotnetFile
+import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
-import pravda.dotnet.translation.opcode.{CallsTranslation, FieldsTranslation, OpcodeTranslator}
+import pravda.dotnet.translation.opcode.{CallsTranslation, FieldsTranslation, OpcodeTranslator, StdlibAsm}
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Meta, Opcodes}
 
@@ -98,12 +98,16 @@ object Translator {
           case None => List.empty
       })
 
-      allNames(used ++ notUsed, notUsed)
+      if (notUsed.nonEmpty) {
+        allNames(used ++ notUsed, notUsed)
+      } else {
+        used
+      }
     }
 
     val init = (methods ++ funcs.filter(_.forceAdd)).map(_.label).toSet
     val all = allNames(init, init)
-    funcs.filter(f => all.contains(f.name))
+    funcs.filter(f => all.contains(f.label))
   }
 
   private def translateMethod(cil: List[CIL.Op],
@@ -549,13 +553,13 @@ object Translator {
     } yield {
       val methodsOps = ctorOps :: programMethodsOps
       val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
-      Translation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps))
+      Translation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
     }
   }
 
   def translationToAsm(t: Translation): List[Operation] = {
 
-    val jumpToMethods = t.methods
+    val jumpToMethods = t.methods.filter(_.name != "ctor")
       .sortBy(_.name)
       .flatMap(
         m =>
@@ -591,11 +595,16 @@ object Translator {
 
     prefix ++
       t.methods.sortBy(_.name).flatMap(m => Operation.Label(m.label) :: m.opcodes.flatMap(opcodeToAsm)) ++
-      t.funcs.sortBy(_.name).flatMap(f => Operation.Label(f.label) :: f.opcodes.flatMap(opcodeToAsm)) ++
+      t.funcs.sortBy(_.label).flatMap(f => Operation.Label(f.label) :: f.opcodes.flatMap(opcodeToAsm)) ++
       List(Operation.Label("stop"))
   }
 
   def translateAsm(parsedDotnetFiles: List[ParsedDotnetFile],
-                   mainClass: Option[String] = None): Either[TranslationError, List[Operation]] =
+                   mainClass: Option[String]): Either[TranslationError, List[Operation]] =
     translateVerbose(parsedDotnetFiles).map(translationToAsm)
+
+  def translateAsm(parsedPe: ParsedPe,
+                   parsedPdb: Option[ParsedPdb] = None,
+                   mainClass: Option[String] = None): Either[TranslationError, List[Operation]] =
+    translateAsm(List(ParsedDotnetFile(parsedPe, parsedPdb)), mainClass)
 }

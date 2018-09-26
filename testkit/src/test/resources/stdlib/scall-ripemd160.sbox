@@ -6,10 +6,10 @@ stack:
 storage:
   "init" = null
 ---expectations
-watts-spent: 346
-stack
+watts-spent: 343
+stack:
   x98C615784CCB5FE5936FBC0CBE9DFDB408D92F0F
-effects
+effects:
   sget "init" null
 ---dotnet-files
 stdlib.cs

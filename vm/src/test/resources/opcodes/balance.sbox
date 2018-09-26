@@ -4,9 +4,9 @@ balances:
 watts-limit: 1000
 ---expectations
 watts-spent: 122
-stack
+stack:
   bigint(42)
-effects
+effects:
   balance x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d 42
 ---code
 push x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d

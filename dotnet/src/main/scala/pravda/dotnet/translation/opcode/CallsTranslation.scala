@@ -241,7 +241,7 @@ case object CallsTranslation extends OneToManyTranslator {
                                                 Operation(Opcodes.CONCAT),
                                                 Operation(Opcodes.SGET)))
 
-              case "getDefault" => Right(List(Operation.Call(Some("storage_get_default"))))
+              case "getDefault" => Right(List(Operation.Call(Some("stdlib_storage_get_default"))))
               case "exists" =>
                 Right(
                   cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),

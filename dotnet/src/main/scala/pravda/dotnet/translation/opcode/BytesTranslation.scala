@@ -45,7 +45,7 @@ object BytesTranslation extends OneToManyTranslator {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", _)) =>
       Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.copyFrom(Array.fill[Byte](32)(0))))))
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), ".ctor", signatureIdx)) =>
-      Right(List(Operation.Call(Some("array_to_bytes"))))
+      Right(List(Operation.Call(Some("stdlib_array_to_bytes"))))
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "get_Item", _)) =>
       Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Slice", _)) =>

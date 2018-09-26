@@ -20,13 +20,10 @@ package pravda.cli.languages
 package impl
 
 import com.google.protobuf.ByteString
-import pravda.dotnet.parser.{FileParser => DotnetParser}
+import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.{Translator => DotnetTranslator}
 import pravda.vm.asm.PravdaAssembler
-import cats.instances.either._
-import cats.instances.option._
-import cats.syntax.traverse._
-import pravda.dotnet.parser.FileParser.ParsedDotnetFile
+import cats.implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,12 +45,8 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
              mainClass: Option[String]): Future[Either[String, ByteString]] = Future {
     for {
       files <- sources.map {
-        case (pe, pdb) =>
-          for {
-            parsedPe <- DotnetParser.parsePe(pe.toByteArray)
-            parsedPdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray)).sequence
-          } yield ParsedDotnetFile(parsedPe, parsedPdb)
-      }.sequence
+        case (pe, pdb) => FileParser.parseDotnetFile(pe.toByteArray, pdb.map(_.toByteArray))
+      }.toList.sequence
       ops <- DotnetTranslator.translateAsm(files, mainClass).left.map(_.mkString)
     } yield PravdaAssembler.assemble(ops, saveLabels = true)
   }

@@ -34,27 +34,67 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
   def apply(config: PravdaConfig.Compile): F[Unit] = {
     val errorOrResult: EitherT[F, String, ByteString] =
       for {
-        input <- useOption(config.input)(
-          io.readFromStdin(),
-          path => io.readFromFile(path).map(_.toRight(s"`$path` is not found."))
-        )
-        pdb <- EitherT.right(config.pdb.map(io.readFromFile).getOrElse(Monad[F].pure(None)))
+        input <- EitherT[F, String, List[ByteString]] {
+          config.input match {
+            case Nil => io.readFromStdin().map(s => Right(List(s)))
+            case nonEmpty =>
+              nonEmpty
+                .map(path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.")))
+                .sequence
+                .map(_.sequence)
+          }
+        }
         result <- EitherT[F, String, ByteString] {
           config.compiler match {
             case Asm =>
               config.input match {
-                case Some(fileName) => compilers.asm(fileName, input.toStringUtf8)
-                case None           => compilers.asm(input.toStringUtf8)
+                case List(path) => compilers.asm(path, input.head.toStringUtf8)
+                case Nil        => compilers.asm(input.head.toStringUtf8)
+                case _          => Monad[F].pure(Left("Asm compilation takes only one file."))
               }
-            case Disasm => compilers.disasm(input).map(s => Right(ByteString.copyFromUtf8(s)))
-            case DotNet => compilers.dotnet(input, pdb)
-            case DotNetVisualize =>
-              for {
-                dv <- compilers.dotnetVisualize(input, pdb)
-                code <- dv.map {
-                  case (code, visualization) => io.writeToStdout(ByteString.copyFromUtf8(visualization)).map(_ => code)
-                }.sequence
-              } yield code
+            case Disasm =>
+              config.input match {
+                case List(_) | Nil => compilers.disasm(input.head).map(s => Right(ByteString.copyFromUtf8(s)))
+                case _             => Monad[F].pure(Left("Disassembly takes only one file."))
+              }
+
+            case DotNet =>
+              config.input.find(p => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb")) match {
+                case Some(errPath) => Monad[F].pure(Left(s"Wrong file extension: $errPath"))
+                case None =>
+                  val sources = if (config.input.isEmpty) {
+                    List("stdin.exe").zip(input)
+                  } else {
+                    config.input.zip(input)
+                  }
+                  val dotnetFilesE: Either[String, List[(ByteString, Option[ByteString])]] =
+                    sources
+                      .groupBy { case (path, _) => path.dropRight(4) }
+                      .map {
+                        case (prefix, files) =>
+                          val exeO = files.find { case (path, _) => path == s"$prefix.exe" }
+                          val dllO = files.find { case (path, _) => path == s"$prefix.dll" }
+                          val pdbO = files.find { case (path, _) => path == s"$prefix.pdb" }
+
+                          (exeO, dllO) match {
+                            case (Some((exePath, _)), Some((dllPath, _))) =>
+                              Left(s".dll and .exe files have the same name: $exePath, $dllPath")
+                            case (None, None) =>
+                              Left(s".dll or .exe is not specified: $prefix")
+                            case (Some((exePath, exeContent)), None) =>
+                              Right((exeContent, pdbO.map(_._2)))
+                            case (None, Some((dllPath, dllContnet))) =>
+                              Right((dllContnet, pdbO.map(_._2)))
+                          }
+                      }
+                      .toList
+                      .sequence
+
+                  dotnetFilesE match {
+                    case Left(err)          => Monad[F].pure(Left(err))
+                    case Right(dotnetFiles) => compilers.dotnet(dotnetFiles, config.mainClass)
+                  }
+              }
             case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }

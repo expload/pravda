@@ -14,7 +14,7 @@ object StdlibAsm {
       List(
         OpCodeTranslation(
           List.empty,
-          Operation.Label(s"stdlib_$name") :: ops
+          ops
         )
       )
     )

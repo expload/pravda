@@ -40,10 +40,8 @@ object DotnetSandbox extends Proverka {
 
     for {
       pe <- FileParser.parsePe(Files.readAllBytes(exe.toPath))
-      (_, cilData, methods, signatures) = pe
       pdb <- FileParser.parsePdb(Files.readAllBytes(pdb.toPath))
-      (_, pdbTables) = pdb
-      asm <- Translator.translateAsm(methods, cilData, signatures, Some(pdbTables)).left.map(_.mkString)
+      asm <- Translator.translateAsm(pe, Some(pdb)).left.map(_.mkString)
     } yield asm
   }
 
