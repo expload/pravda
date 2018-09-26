@@ -1,11 +1,15 @@
 package pravda.cli.languages
 
+import java.nio.charset.StandardCharsets
+
 import cats.Id
 import com.google.protobuf.ByteString
 
 import scala.collection.mutable
 
-final class IoLanguageStub(stdin: Option[ByteString] = None, val files: mutable.Map[String, ByteString] = mutable.Map.empty) extends IoLanguage[Id] {
+final class IoLanguageStub(stdin: Option[ByteString] = None,
+                           val files: mutable.Map[String, ByteString] = mutable.Map.empty)
+    extends IoLanguage[Id] {
 
   import IoLanguageStub._
 
@@ -33,6 +37,9 @@ final class IoLanguageStub(stdin: Option[ByteString] = None, val files: mutable.
 
   def writeToFile(path: String, data: ByteString): Id[Unit] =
     files += (path -> data)
+
+  def writeToFile(path: String, data: String): Id[Unit] =
+    writeToFile(path, ByteString.copyFrom(data.getBytes(StandardCharsets.UTF_8)))
 
   def readFromStdin(): Id[ByteString] =
     stdin.getOrElse(ByteString.EMPTY)

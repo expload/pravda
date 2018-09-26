@@ -1,6 +1,24 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.data.serialization
 
 import com.google.protobuf.ByteString
+import pravda.vm.Data
 import reactivemongo.bson.{BSONDocument, BSONValue}
 import reactivemongo.bson.buffer.{ArrayBSONBuffer, ArrayReadableBuffer}
 import supertagged.{Tagged, lifterF}
@@ -39,6 +57,22 @@ trait BsonTranscoder {
 
   implicit def taggedWriterLifter[T: BsonWriter, U]: BsonWriter[Tagged[T, U]] =
     lifterF[BsonWriter].lift[T, U]
+
+  // Data
+
+  implicit def dataWriter(implicit arrayWriter: BsonWriter[Array[Byte]]): BsonWriter[Data] =
+    new BsonWriter[Data] {
+      override def write0: Data => BSONValue = { x =>
+        arrayWriter.write0(x.toByteString.toByteArray)
+      }
+    }
+
+  implicit def dataReader(implicit arrayReader: BsonReader[Array[Byte]]): BsonReader[Data] =
+    new BsonReader[Data] {
+      override def read0: PartialFunction[BSONValue, Data] = {
+        case x if arrayReader.read0.isDefinedAt(x) => Data.fromBytes(arrayReader.read0(x))
+      }
+    }
 
   // Protobuf
 

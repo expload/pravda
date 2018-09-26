@@ -5,8 +5,8 @@
 		Id="e257aa60-ffba-4f77-9aba-4bd8503ecd5b"
 		UpgradeCode="352b8593-b82c-4451-989c-cafb56e05bb9"
 		Name="Pravda SDK CLI"
-		Version="0.1.0"
-		Manufacturer="Mytc"
+		Version="$(env.NORMALIZED_PRAVDA_VERSION)"
+		Manufacturer="Expload"
 		Language="1033">
 
 		<Package
@@ -20,7 +20,7 @@
 
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFiles64Folder">
-				<Directory Id="INSTALLDIR" Name="mytc">
+				<Directory Id="INSTALLDIR" Name="expload">
 					<Directory Id="PravdaCLI" Name="pravda">
 					</Directory>
 				</Directory>

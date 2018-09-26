@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node
 
 package servers
@@ -11,16 +28,29 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain._
+import pravda.node
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.SignedTransaction
-import pravda.node.data.blockchain.TransactionData
+import pravda.node.data.blockchain.{ExecutionInfo, TransactionData}
+import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.{Bson, transcode}
+import pravda.node.db.DB
+import pravda.node.persistence.BlockChainStore._
+import pravda.node.persistence.Entry
+import pravda.node.servers.Abci.BlockDependentEnvironment
+import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
+import pravda.vm.{Data, ExecutionResult}
 
 import scala.concurrent.duration._
-import scala.util.Random
+import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
+import scala.language.postfixOps
+import scala.util.{Failure, Random, Success, Try}
 
-class ApiRoute(abciClient: AbciClient) {
+class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: ExecutionContext) {
+
+  val DryrunTimeout: FiniteDuration = 5 seconds
 
   import pravda.node.utils.AkkaHttpSpecials._
 
@@ -32,6 +62,8 @@ class ApiRoute(abciClient: AbciClient) {
 
   val intUnmarshaller: Unmarshaller[String, Int] =
     Unmarshaller.strict(s => s.toInt)
+
+  val balances: Entry[Address, NativeCoin] = balanceEntry(db)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -45,6 +77,17 @@ class ApiRoute(abciClient: AbciClient) {
     }
   }
 
+  def dryrun(from: Address, program: ByteString, currentBlockEnv: BlockDependentEnvironment): ExecutionResult = {
+    val tid = TransactionId @@ ByteString.EMPTY
+    val env = currentBlockEnv.transactionEnvironment(from, tid)
+    val vm = new VmImpl()
+    val execResultF: Future[ExecutionResult] = Future {
+      vm.spawn(program, env, MemoryImpl.empty, new WattCounterImpl(Long.MaxValue), from)
+    }
+    Await.result(execResultF, DryrunTimeout) // FIXME: make it in non-blocking way
+    // 5 seconds is very little amount of time
+  }
+
   val route: Route =
     pathPrefix("public") {
       post {
@@ -56,26 +99,107 @@ class ApiRoute(abciClient: AbciClient) {
                'nonce.as(intUnmarshaller).?,
                'wattLimit.as[Long],
                'wattPrice.as[Long],
-               'mode.?)) { (from, signature, maybeNonce, wattLimit, wattPrice, maybeMode) =>
-              extractStrictEntity(1.second) { body =>
-                val program = bodyToTransactionData(body)
-                val nonce = maybeNonce.getOrElse(Random.nextInt())
-                val tx =
-                  SignedTransaction(Address @@ from, program, signature, wattLimit, NativeCoin @@ wattPrice, nonce)
-                println(Show[SignedTransaction].show(tx))
-                val mode = maybeMode.getOrElse("commit")
-                val result = abciClient.broadcastTransaction(tx, mode)
+               'wattPayer.as(hexUnmarshaller).?,
+               'wattPayerSignature.as(hexUnmarshaller).?,
+               'mode.?)) {
+              (from, signature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature, maybeMode) =>
+                extractStrictEntity(1.second) { body =>
+                  val program = bodyToTransactionData(body)
+                  val nonce = maybeNonce.getOrElse(Random.nextInt())
+                  val tx = SignedTransaction(
+                    Address @@ from,
+                    program,
+                    signature,
+                    wattLimit,
+                    NativeCoin @@ wattPrice,
+                    wattPayer.map(Address @@ _),
+                    wattPayerSignature,
+                    nonce
+                  )
+                  println(Show[SignedTransaction].show(tx))
+                  val mode = maybeMode.getOrElse("commit")
+                  val result = abciClient.broadcastTransaction(tx, mode)
 
-                onSuccess(result) {
-                  case Right(info) => complete(info)
-                  case Left(error) => complete(error)
+                  onSuccess(result) {
+                    case Right(info) => complete(info)
+                    case Left(error) => complete(error)
+                  }
+                }
+            }
+          }
+        }
+      } ~
+        post {
+          withoutRequestTimeout {
+            pathPrefix("broadcast") {
+              path("dryRun") {
+                parameters(
+                  'from.as(hexUnmarshaller)
+                ) { from =>
+                  extractStrictEntity(1.second) { body =>
+                    val program = bodyToTransactionData(body)
+                    Try(dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))) match {
+                      case Success(result) => {
+                        complete(ExecutionInfo.from(result))
+                      }
+                      case Failure(err: TimeoutException) => {
+                        complete(ExecutionInfo(Some("Timeout"), 0, 0, 0, Nil, Nil))
+                      }
+                      case Failure(err) => {
+                        complete(ExecutionInfo(Some(err.getMessage), 0, 0, 0, Nil, Nil))
+                      }
+                    }
+                  }
                 }
               }
             }
           }
+        } ~
+        get {
+          path("balance") {
+            parameters('address.as(hexUnmarshaller)) { (address) =>
+              val f = balances
+                .get(Address @@ address)
+                .map(
+                  _.getOrElse(NativeCoin @@ 0L)
+                )
+              onSuccess(f) { res =>
+                complete(res)
+              }
+            }
+          }
+        } ~
+        get {
+          path("events") {
+            import pravda.node.data.serialization.bson._
+            parameters(
+              (
+                'address.as(hexUnmarshaller),
+                'name,
+                'offset.as(intUnmarshaller).?,
+                'count.as(intUnmarshaller).?
+              )) { (address, name, offsetO, countO) =>
+              val offset = offsetO.getOrElse(0)
+              val count = countO.map(c => math.min(c, ApiRoute.MaxEventCount)).getOrElse(ApiRoute.MaxEventCount)
+              val f = db
+                .startsWith(
+                  bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
+                  bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
+                  count.toLong
+                )
+                .map(_.map(r => transcode(Bson @@ r.bytes).to[Data]))
+
+              onSuccess(f) { res =>
+                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d.mkString()) })
+              }
+            }
+          }
         }
-      }
     }
 }
 
-object ApiRoute {}
+object ApiRoute {
+  final val MaxEventCount = 1000
+
+  final case class EventItem(offset: Int, data: String)
+}

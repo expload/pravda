@@ -23,7 +23,7 @@ import static org.whispersystems.curve25519.java.sc_reduce.sc_reduce;
 public final class ed25519 {
 
     /**
-     * GenerateKey generates a public/private key pair using randomness from rand.
+     * GenerateKey generates a public/private key pair
      *
      * @param publicKey empty byte array size 32
      * @param privateKey random byte array size 64

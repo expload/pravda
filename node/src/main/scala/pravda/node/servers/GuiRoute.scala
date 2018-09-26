@@ -1,33 +1,50 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.servers
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import pravda.node.db.DB
-import pravda.node.clients.AbciClient
-import pravda.node.data.common.TransactionId
-import pravda.common.domain.{Address, NativeCoin}
-
-import pravda.node.persistence.FileStore
-import pravda.node.{Config, utils}
-import pravda.common.{bytes => byteUtils}
+import cats.data.OptionT
+import cats.implicits._
+import com.google.protobuf.ByteString
 import korolev.Context
 import korolev.akkahttp._
 import korolev.execution._
 import korolev.server.{KorolevServiceConfig, ServerRouter}
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
-import pravda.node.data.serialization.bson._
-import pravda.node.data.serialization._
-import cats.data.OptionT
-import cats.implicits._
-import com.google.protobuf.ByteString
-import pravda.vm.asm.{Assembler, Op}
+import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.{bytes => byteUtils}
+import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
+import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
+import pravda.node.data.serialization._
+import pravda.node.data.serialization.bson._
+import pravda.node.db.DB
+import pravda.node.persistence.FileStore
 import pravda.node.servers.Abci.EnvironmentEffect
+import pravda.node.utils
+import pravda.vm.Data
+import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -50,24 +67,26 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private def showEffectName(effect: EnvironmentEffect) = effect match {
     case _: EnvironmentEffect.ProgramCreate => "Create program"
+    case _: EnvironmentEffect.ProgramSeal   => "Make program sealed"
     case _: EnvironmentEffect.StorageRemove => "Remove from storage"
     case _: EnvironmentEffect.ProgramUpdate => "Update program"
     case _: EnvironmentEffect.StorageRead   => "Read from storage"
     case _: EnvironmentEffect.StorageWrite  => "Write to storage"
-    case _: EnvironmentEffect.Withdraw      => "Withdraw NC"
-    case _: EnvironmentEffect.Accrue        => "Put NC"
+    case _: EnvironmentEffect.Transfer      => "Transfer NC"
     case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
   }
 
   private def mono(s: ByteString): Node =
     'span ('class /= "hash", byteUtils.byteString2hex(s))
 
-  private def mono(s: Array[Byte]): Node =
-    'span ('class /= "hash", byteUtils.bytes2hex(s))
+  private def mono(s: Data): Node =
+    'span ('class /= "hash", s.mkString(pretty = true))
 
   private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
-    def localKey(key: String) = key.substring(key.lastIndexOf(':') + 1)
-    def showOption(value: Option[Array[Byte]]): Node = value match {
+
+    def localKey(key: Data) = key.mkString(pretty = true)
+
+    def showOption(value: Option[Data]): Node = value match {
       case None    => 'span ('fontStyle @= "italic", "None")
       case Some(s) => mono(s)
     }
@@ -77,35 +96,38 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           "Generated address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
         )
+      case EnvironmentEffect.ProgramSeal(address) =>
+        Map(
+          "Program address" -> mono(address)
+        )
       case EnvironmentEffect.ProgramUpdate(address, program) =>
         Map(
           "Program address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
         )
-      case EnvironmentEffect.StorageRemove(key, value) =>
+      case EnvironmentEffect.StorageRemove(program, key, value) =>
         Map(
+          "Program" -> mono(program),
           "Key" -> localKey(key),
           "Removed value" -> showOption(value)
         )
-      case EnvironmentEffect.StorageWrite(key, prev, value) =>
+      case EnvironmentEffect.StorageWrite(program, key, prev, value) =>
         Map(
+          "Program" -> mono(program),
           "Key" -> localKey(key),
           "Written value" -> mono(value),
           "Previous value" -> showOption(prev)
         )
-      case EnvironmentEffect.StorageRead(key, value) =>
+      case EnvironmentEffect.StorageRead(program, key, value) =>
         Map(
+          "Program" -> mono(program),
           "Key" -> localKey(key),
           "Readen value" -> showOption(value)
         )
-      case EnvironmentEffect.Withdraw(from, amount) =>
+      case EnvironmentEffect.Transfer(from, to, amount) =>
         Map(
           "From" -> mono(from),
-          "Amount" -> 'span (amount.toString)
-        )
-      case EnvironmentEffect.Accrue(to, amount) =>
-        Map(
-          "To" -> mono(to),
+          "From" -> mono(to),
           "Amount" -> 'span (amount.toString)
         )
       case EnvironmentEffect.ShowBalance(address, amount) =>
@@ -127,15 +149,15 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           else (thisName, effect :: Nil) :: acc
       }
 
-  private def asmAstToAsm(asmAst: Seq[(Int, Op)]) = {
-    asmAst.map { case (no, op) => "%06X:\t%s".format(no, op.toAsm) }.mkString("\n")
+  private def asmAstToAsm(operations: Seq[Operation]) = {
+    PravdaAssembler.render(operations)
   }
 
-  private def programToAsm(program: Array[Byte]) =
-    asmAstToAsm(Assembler().decompile(program))
+  private def programToAsm(program: Data.Primitive.Bytes): String =
+    programToAsm(program.data)
 
-  private def programToAsm(program: ByteString) =
-    asmAstToAsm(Assembler().decompile(program))
+  private def programToAsm(program: ByteString): String =
+    asmAstToAsm(PravdaAssembler.disassemble(program))
 
   private val codeArea = elementId()
   private val wattLimitField = elementId()
@@ -250,21 +272,17 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                          'margin @= 10,
                          'height @= 400,
                          codeArea,
-                         'placeholder /= "Place your p-forth code here"),
+                         'placeholder /= "Place your pravda-asm code here"),
               'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
               'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1"),
-              'input ('class          /= "input",
-                      'margin         @= 10,
-                      addressField,
-                      'placeholder /= "Address",
-                      'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.address)),
+              'input ('class          /= "input", 'margin @= 10, addressField, 'placeholder /= "Address", 'value /= ""), //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
               'input (
                 'class  /= "input",
                 'margin @= 10,
                 pkField,
                 'placeholder /= "Private key",
                 'type        /= "password",
-                'value       /= byteUtils.byteString2hex(Config.timeChainConfig.paymentWallet.privateKey)
+                'value       /= "" //byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
               ),
               'div (
                 'button (
@@ -283,19 +301,26 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
-                          val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
-                          pravda.forth.Compiler().compile(hackCode) map { data =>
+                          val hackCode = code
+                            .replace("\\t", "\t")
+                            .replace("\\r", "\r")
+                            .replace("\\n", "\n")
+                            .replace("\\\"", "\"")
+                            .replace("\\\\", "\\") // FIXME HACK CODE
+                          PravdaAssembler.assemble(hackCode, saveLabels = true) map { data =>
                             val unsignedTx = UnsignedTransaction(Address.fromHex(address),
-                                                                 TransactionData @@ ByteString.copyFrom(data),
+                                                                 TransactionData @@ data,
                                                                  wattLimit.toLong,
                                                                  NativeCoin.amount(wattPrice),
+                                                                 None,
                                                                  Random.nextInt())
                             cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                           }
                         }
                       eventuallyErrorOrTransaction flatMap {
                         case Left(error) =>
-                          access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                          access.transition(_ =>
+                            SendTransactionScreen(inProgress = false, maybeResult = Some(error.mkString)))
                         case Right(tx) =>
                           for {
                             _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
@@ -303,7 +328,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(result.map(utils.showExecInfo).toString)
+                                maybeResult = Some(result.fold(_.toString, utils.showExecInfo))
                               )
                             }
                           } yield {
@@ -328,14 +353,20 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                           address <- access.valueOf(addressField)
                           pk <- access.valueOf(pkField)
                         } yield {
-                          val compiler = pravda.forth.Compiler()
-                          val hackCode = code.replace("\\n", " ").replace("\\", "") // FIXME HACK CODE
-                          compiler.compile(hackCode) flatMap { data =>
-                            compiler.compile(s"$$x${byteUtils.bytes2hex(data)} pcreate") map { data =>
+                          val hackCode = code
+                            .replace("\\t", "\t")
+                            .replace("\\r", "\r")
+                            .replace("\\n", "\n")
+                            .replace("\\\"", "\"")
+                            .replace("\\\\", "\\") // FIXME HACK CODE
+                          PravdaAssembler.assemble(hackCode, saveLabels = true) flatMap { data =>
+                            PravdaAssembler.assemble(s"push x${byteUtils.byteString2hex(data)} pcreate",
+                                                     saveLabels = false) map { data =>
                               val unsignedTx = UnsignedTransaction(Address.fromHex(address),
-                                                                   TransactionData @@ ByteString.copyFrom(data),
+                                                                   TransactionData @@ data,
                                                                    wattLimit.toLong,
                                                                    NativeCoin.amount(wattPrice),
+                                                                   None,
                                                                    Random.nextInt())
                               cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
                             }
@@ -343,7 +374,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                         }
                       eventuallyErrorOrTransaction flatMap {
                         case Left(error) =>
-                          access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = Some(error)))
+                          access.transition(_ =>
+                            SendTransactionScreen(inProgress = false, maybeResult = Some(error.mkString)))
                         case Right(tx) =>
                           for {
                             _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
@@ -351,7 +383,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(execInfo.map(utils.showExecInfo).toString)
+                                maybeResult = Some(execInfo.fold(_.toString, utils.showExecInfo))
                               )
                             }
                           } yield {

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.persistence
 
 import pravda.node.db.DB
@@ -35,8 +52,18 @@ class Entry[K, V](
   def put(id: K, value: V) =
     db.put(key(id), value)(keyWriter, valueWriter)
 
-  def startsWith[P](st: P)(implicit stKeyWriter: KeyWriter[String :: P :: HNil]): Future[List[V]] = {
-    db.startsWithAs[V](prefix :: st :: HNil)(stKeyWriter, valueReader)
+  def startsWith(id: K, offset: K, count: Long): Future[List[V]] = {
+    println(key(id))
+    println(key(offset))
+    db.startsWithAs[V](key(id), key(offset), count)(keyWriter, valueReader)
+  }
+
+  def startsWith(id: K, offset: K): Future[List[V]] = {
+    db.startsWithAs[V](key(id), key(offset))(keyWriter, valueReader)
+  }
+
+  def startsWith(id: K): Future[List[V]] = {
+    db.startsWithAs[V](key(id))(keyWriter, valueReader)
   }
 
   def all(implicit stKeyWriter: KeyWriter[String]): Future[List[V]] = {

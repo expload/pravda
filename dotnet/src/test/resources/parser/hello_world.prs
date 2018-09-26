@@ -1,0 +1,40 @@
+---exe
+hello_world.exe
+---methods
+List(
+  Method(
+    List(
+      Nop,
+      LdStr("Hello World!"),
+      Call(MemberRefData(TypeRefData(6L, "Console", "System"), "WriteLine", 16L)),
+      Nop,
+      Ret
+    ),
+    0,
+    None
+  ),
+  Method(
+    List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+    0,
+    None
+  )
+)
+---signatures
+List(
+  (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+  (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+  (
+    10L,
+    MethodRefDefSig(
+      true,
+      false,
+      false,
+      false,
+      0,
+      Tpe(Void, false),
+      List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+    )
+  ),
+  (16L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
+  (30L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+)

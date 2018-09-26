@@ -1,10 +1,26 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node
 
 package persistence
 
 import java.io.{File, PrintWriter}
 
-import pravda.node.data.TimechainConfig
 import pravda.node.data.common.ApplicationStateInfo
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
@@ -17,7 +33,7 @@ object FileStore {
 
   import Config._
 
-  private lazy val applicationStateInfoFile = new File(timeChainConfig.dataDirectory, "application-state-info.json")
+  private lazy val applicationStateInfoFile = new File(pravdaConfig.dataDirectory, "application-state-info.json")
 
   def readApplicationStateInfoAsync() = Future(readApplicationStateInfo())
 
@@ -38,11 +54,6 @@ object FileStore {
     } finally {
       pw.close()
     }
-  }
-
-  // From config
-  def readPaymentWalletAsync(): Future[TimechainConfig.PaymentWallet] = {
-    Future.successful(timeChainConfig.paymentWallet)
   }
 
 }

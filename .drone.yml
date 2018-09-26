@@ -8,16 +8,15 @@ workspace:
 pipeline:
   tests:
     image: gcr.io/time-coin/sbt:latest
+    pull: true
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
       - /var/lib/coursier-cache:/workdir/coursier
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - git clone https://github.com/mytimecoin/scala-abci-server.git scala-abci-server --depth 1
-      - cd /workdir/code/scala-abci-server && sbt $SBT_OPTS publishLocal
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 scalafmtCheck scalafixTest test
-  package:
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
+  package-zip:
     image: gcr.io/time-coin/sbt:latest
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
@@ -25,11 +24,10 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code/scala-abci-server && sbt $SBT_OPTS publishLocal
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage node/docker:stage
     when:
       event: tag
-  build-win-installer:
+  package-msi:
     image: gcr.io/time-coin/wix-builder:0.2
     environment:
       - PRAVDA_VERSION=${DRONE_TAG}
@@ -39,11 +37,31 @@ pipeline:
       - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
-  release:
+  package-publish-nuget:
+    image: microsoft/dotnet:2.1-sdk
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG##v}
+    commands:
+      - cd /workdir/code/PravdaDotNet
+      - dotnet pack -c Release
+      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json      
+    secrets: [ nuget_key ]
+    when:
+      event: tag
+  publish-github-releases:
     image: plugins/github-release
     files:
       - /workdir/code/win-installer/*.msi
       - /workdir/code/cli/target/universal/*.tgz
     secrets: [ GITHUB_RELEASE_API_KEY ]
+    when:
+      event: tag
+  publish-docker:
+    image: plugins/docker
+    repo: expload/pravda
+    context: /workdir/code/node/target/docker/stage/
+    dockerfile: /workdir/code/node/target/docker/stage/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    auto_tag: true
     when:
       event: tag

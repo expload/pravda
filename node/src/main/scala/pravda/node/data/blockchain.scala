@@ -1,9 +1,27 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.data
 
 import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.domain._
-import pravda.vm.state.{Data, ExecutionResult}
+import pravda.vm.Data
+import pravda.vm.ExecutionResult
 import supertagged.TaggedType
 
 object blockchain {
@@ -13,10 +31,11 @@ object blockchain {
     def program: TransactionData
     def wattLimit: Long
     def wattPrice: NativeCoin
+    def wattPayer: Option[Address]
     def nonce: Int
 
-    def forSignature: (Address, TransactionData, Long, NativeCoin, Int) =
-      (from, program, wattLimit, wattPrice, nonce)
+    def forSignature: (Address, TransactionData, Long, NativeCoin, Int, Option[Address]) =
+      (from, program, wattLimit, wattPrice, nonce, wattPayer)
   }
 
   object Transaction {
@@ -25,6 +44,7 @@ object blockchain {
                                          program: TransactionData,
                                          wattLimit: Long,
                                          wattPrice: NativeCoin,
+                                         wattPayer: Option[Address],
                                          nonce: Int)
         extends Transaction
 
@@ -33,6 +53,8 @@ object blockchain {
                                        signature: ByteString,
                                        wattLimit: Long,
                                        wattPrice: NativeCoin,
+                                       wattPayer: Option[Address],
+                                       wattPayerSignature: Option[ByteString],
                                        nonce: Int)
         extends Transaction
 
@@ -52,6 +74,8 @@ object blockchain {
                                            signature: ByteString,
                                            wattLimit: Long,
                                            wattPrice: NativeCoin,
+                                           wattPayer: Option[Address],
+                                           wattPayerSignature: Option[ByteString],
                                            nonce: Int)
         extends Transaction
   }
@@ -76,7 +100,7 @@ object blockchain {
 
     def from(executionResult: ExecutionResult): ExecutionInfo = {
       ExecutionInfo(
-        error = executionResult.error.map(_.error.toString),
+        error = executionResult.error.map(_.mkString),
         spentWatts = executionResult.wattCounter.spent,
         refundWatts = executionResult.wattCounter.refund,
         totalWatts = executionResult.wattCounter.total,

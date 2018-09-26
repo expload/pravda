@@ -1,0 +1,220 @@
+---exe
+smart_program.exe
+---translation
+meta translator_mark "jump to methods"
+dup
+push "ctor"
+eq
+jumpi @method_ctor
+push "init"
+sexist
+jumpi @methods
+push "Program was not initialized"
+throw
+@methods:
+dup
+push "balanceOf"
+eq
+jumpi @method_balanceOf
+dup
+push "transfer"
+eq
+jumpi @method_transfer
+push "Wrong method name"
+throw
+meta translator_mark "balanceOf method"
+meta method {
+"name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
+}
+@method_balanceOf:
+meta translator_mark "balanceOf local vars definition"
+push null
+meta translator_mark "balanceOf method body"
+push x62616C616E636573
+push int32(4)
+dupn
+push int32(0)
+call @storage_get_default
+push int32(2)
+swapn
+pop
+push int32(1)
+dupn
+jump @balanceOf_lvc
+meta translator_mark "balanceOf local vars clearing"
+@balanceOf_lvc:
+swap
+pop
+swap
+pop
+swap
+pop
+meta translator_mark "end of balanceOf method"
+jump @stop
+meta translator_mark "ctor method"
+meta method {
+"name":"ctor","returnTpe":int8(0)
+}
+@method_ctor:
+meta translator_mark "ctor check"
+from
+paddr
+owner
+eq
+jumpi @ctor_ok_1
+push "Only owner can call the constructor"
+throw
+@ctor_ok_1:
+push "init"
+sexist
+not
+jumpi @ctor_ok_2
+push "Program has been already initialized"
+throw
+@ctor_ok_2:
+push null
+push "init"
+sput
+meta translator_mark "ctor local vars definition"
+meta translator_mark "ctor method body"
+jump @ctor_lvc
+meta translator_mark "ctor local vars clearing"
+@ctor_lvc:
+pop
+meta translator_mark "end of ctor method"
+jump @stop
+meta translator_mark "transfer method"
+meta method {
+"name":"transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+}
+@method_transfer:
+meta translator_mark "transfer local vars definition"
+push null
+push null
+meta translator_mark "transfer method body"
+push int32(4)
+dupn
+push int32(0)
+swap
+gt
+push int8(3)
+cast
+push int32(3)
+swapn
+pop
+push int32(2)
+dupn
+push int8(9)
+cast
+not
+push int8(3)
+cast
+push int32(1)
+eq
+jumpi @transfer_br104
+push x62616C616E636573
+from
+push int32(0)
+call @storage_get_default
+push int32(5)
+dupn
+swap
+lt
+push int8(3)
+cast
+push int32(0)
+eq
+push int8(3)
+cast
+push int32(2)
+swapn
+pop
+push int32(1)
+dupn
+push int8(9)
+cast
+not
+push int8(3)
+cast
+push int32(1)
+eq
+jumpi @transfer_br103
+push x62616C616E636573
+from
+push x62616C616E636573
+from
+push int32(0)
+call @storage_get_default
+push int32(7)
+dupn
+push int32(-1)
+mul
+add
+push int32(2)
+dupn
+push int8(14)
+cast
+push int32(4)
+dupn
+concat
+sput
+pop
+pop
+push x62616C616E636573
+push int32(6)
+dupn
+push x62616C616E636573
+push int32(8)
+dupn
+push int32(0)
+call @storage_get_default
+push int32(7)
+dupn
+add
+push int32(2)
+dupn
+push int8(14)
+cast
+push int32(4)
+dupn
+concat
+sput
+pop
+pop
+@transfer_br103:
+@transfer_br104:
+jump @transfer_lvc
+meta translator_mark "transfer local vars clearing"
+@transfer_lvc:
+pop
+pop
+pop
+pop
+pop
+meta translator_mark "end of transfer method"
+jump @stop
+meta translator_mark "helper functions"
+@storage_get_default:
+push int32(2)
+dupn
+push int8(14)
+cast
+push int32(4)
+dupn
+concat
+sexist
+jumpi @get_default_if
+swap
+pop
+swap
+pop
+ret
+@get_default_if:
+pop
+push int8(14)
+cast
+swap
+concat
+sget
+ret
+@stop:

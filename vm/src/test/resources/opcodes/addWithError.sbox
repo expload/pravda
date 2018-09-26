@@ -1,0 +1,14 @@
+---preconditions
+watts-limit: 1000
+stack:
+  int32(2), null
+heap:
+storage:
+---expectations
+watts-spent: 11
+error
+  |WrongType
+  |program address: 0000000000000000000000000000000000000000000000000000000000000000
+  |  program:0
+---code
+add
