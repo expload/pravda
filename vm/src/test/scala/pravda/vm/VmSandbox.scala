@@ -1,7 +1,5 @@
 package pravda.vm
 
-import java.nio.ByteBuffer
-
 import com.google.protobuf.ByteString
 import fastparse.all._
 import pravda.common.domain.{Address, NativeCoin}
@@ -13,8 +11,7 @@ import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
-
+import scala.util.{Random, Try}
 import scala.language.higherKinds
 
 object VmSandbox {
@@ -264,26 +261,35 @@ object VmSandbox {
       }
     }
 
-    val res =
-      vm.spawn(ByteBuffer.wrap(asmProgram.toByteArray),
-               environment,
-               memory,
-               wattCounter,
-               Some(storage),
-               Some(Address.Void),
-               true)
+    val error = Try {
+      memory.enterProgram(Address.Void)
+      vm.runBytes(
+        asmProgram.asReadOnlyByteBuffer(),
+        environment,
+        memory,
+        wattCounter,
+        Some(storage),
+        Some(Address.Void),
+        pcallAllowed = true
+      )
+      memory.exitProgram()
+    }.fold({
+      case x: Data.DataException => Some(x.getMessage)
+      case x: ThrowableVmError   => Some(x.error)
+      case e: Throwable          => throw e
+    }, _ => None)
 
     Expectations(
-      res.wattCounter.spent,
+      wattCounter.spent,
       Memory(
-        res.memory.stack,
-        res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
+        memory.stack,
+        memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
       ),
       effects,
       events.flatMap {
         case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
       }.toSeq,
-      res.error.map(_.mkString)
+      error.map(_.toString)
     )
   }
 }

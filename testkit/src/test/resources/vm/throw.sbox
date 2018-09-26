@@ -12,7 +12,5 @@ effects:
   sget "init" null
 error:
   |UserError(Oops!)
-  |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  program:319 (vm_ops.cs:8,9-8,30)
 ---dotnet-files
 vm_ops.cs

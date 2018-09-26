@@ -20,7 +20,7 @@ package pravda.vm
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.vm.Data.Primitive._
-import pravda.vm.VmError.{InvalidAddress, InvalidCoinAmount, WrongType}
+import pravda.vm.Error.{InvalidAddress, InvalidCoinAmount, WrongType}
 
 package object operations {
 
@@ -39,7 +39,7 @@ package object operations {
 
   def ref(value: Data): Ref = value match {
     case x: Ref => x
-    case _      => throw VmErrorException(WrongType)
+    case _      => throw ThrowableVmError(WrongType)
   }
 
   def integer(value: Data.Primitive): Long = value match {
@@ -50,35 +50,35 @@ package object operations {
     case Uint16(x) => x.toLong
     case Uint32(x) => x.toLong
     case BigInt(x) => x.toLong
-    case _         => throw VmErrorException(WrongType)
+    case _         => throw ThrowableVmError(WrongType)
   }
 
   def boolean(value: Data.Primitive): Boolean = value match {
     case Bool.True  => true
     case Bool.False => false
-    case _          => throw VmErrorException(WrongType)
+    case _          => throw ThrowableVmError(WrongType)
   }
 
   def bytes(a: Data): ByteString = {
     a match {
       case Bytes(data) => data
-      case _           => throw VmErrorException(WrongType)
+      case _           => throw ThrowableVmError(WrongType)
     }
   }
 
   def utf8(a: Data): String = {
     a match {
       case Utf8(s) => s
-      case _       => throw VmErrorException(WrongType)
+      case _       => throw ThrowableVmError(WrongType)
     }
   }
 
   def bytes(a: ByteString): Bytes = Bytes(a)
 
   def coins(a: Data): NativeCoin = a match {
-    case BigInt(data) if data < Long.MinValue || data > Long.MaxValue => throw VmErrorException(InvalidCoinAmount)
+    case BigInt(data) if data < Long.MinValue || data > Long.MaxValue => throw ThrowableVmError(InvalidCoinAmount)
     case BigInt(data)                                                 => NativeCoin @@ data.toLong
-    case _                                                            => throw VmErrorException(WrongType)
+    case _                                                            => throw ThrowableVmError(WrongType)
   }
 
   def coins(a: NativeCoin): Data.Primitive =
@@ -87,14 +87,14 @@ package object operations {
   def address(a: Data): Address = {
     val bytes = a match {
       case Bytes(data) => data
-      case _           => throw VmErrorException(WrongType)
+      case _           => throw ThrowableVmError(WrongType)
     }
     if (bytes.size() == 32) Address @@ bytes
-    else throw VmErrorException(InvalidAddress)
+    else throw ThrowableVmError(InvalidAddress)
   }
 
   def address(bytes: Address): Data.Primitive = {
     if (bytes.size() == 32) Bytes(bytes)
-    else throw VmErrorException(InvalidAddress)
+    else throw ThrowableVmError(InvalidAddress)
   }
 }

@@ -15,29 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda
+package pravda.vm
 
-package vm
-
-import com.google.protobuf.ByteString
-import pravda.common.domain
-
-trait Vm {
-
-  /**
-    * New vm "from scratch". Clear memory.
-    * Initial program has no address.
-    * Storage operations is not allowed.
-    * PCall/LCall allowed.
-    */
-  def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult
-
-  /**
-    * Run a program inside spawned VM.
-    */
-  def run(programAddress: domain.Address,
-          environment: Environment,
-          memory: Memory,
-          wattCounter: WattCounter,
-          pcallAllowed: Boolean): Unit
-}
+final case class FinalState(
+    spentWatts: Long,
+    refundWatts: Long,
+    totalWatts: Long,
+    stack: Seq[Data],
+    heap: Seq[Data],
+    effects: Seq[Effect]
+)

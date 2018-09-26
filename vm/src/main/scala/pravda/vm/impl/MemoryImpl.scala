@@ -17,20 +17,54 @@
 
 package pravda.vm.impl
 
-import pravda.vm.VmError.{StackUnderflow, WrongHeapIndex, WrongStackIndex}
-import pravda.vm.{Data, Memory, VmErrorException}
+import pravda.common.domain.Address
+import pravda.vm.Error.{CallStackOverflow, CallStackUnderflow}
+import pravda.vm.{Data, Error, Memory, ThrowableVmError}
 
 import scala.collection.mutable.ArrayBuffer
 
 final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffer[Data]) extends Memory {
 
+  val callStack = new ArrayBuffer[(Option[Address], ArrayBuffer[Int])](1024)
+
   private val limits = new ArrayBuffer[Int](1024)
+
+  private def localCallStack = {
+    if (callStack.isEmpty) {
+      // Default (no saved program invoked) call stack.
+      callStack += (None -> new ArrayBuffer[Int](1024))
+    }
+    callStack(callStack.length - 1)._2
+  }
+
+  def enterProgram(address: Address): Unit =
+    callStack += (Some(address) -> new ArrayBuffer[Int](1024))
+
+  def exitProgram(): Address =
+    callStack.remove(callStack.length - 1) match {
+      case (Some(address), _) => address
+      case _                  => throw ThrowableVmError(Error.ExtCallStackUnderflow)
+    }
+
+  def popCall(): Int = {
+    if (localCallStack.isEmpty) {
+      throw ThrowableVmError(CallStackUnderflow)
+    }
+    localCallStack.remove(localCallStack.length - 1)
+  }
+
+  def pushCall(offset: Int): Unit = {
+    if (localCallStack.length >= 1024) {
+      throw ThrowableVmError(CallStackOverflow)
+    }
+    localCallStack += offset
+  }
 
   def limit(index: Int): Unit = {
     if (index < 0) {
       limits += currentLimit
     } else if (stack.length - currentLimit < index) {
-      throw VmErrorException(StackUnderflow)
+      throw ThrowableVmError(Error.StackUnderflow)
     } else {
       limits += (stack.length - index)
     }
@@ -44,21 +78,21 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   def pop(): Data.Primitive = {
     if (stack.size <= currentLimit) {
-      throw VmErrorException(StackUnderflow)
+      throw ThrowableVmError(Error.StackUnderflow)
     }
     stack.remove(stack.length - 1)
   }
 
   def top(): Data.Primitive = {
     if (stack.size <= currentLimit) {
-      throw VmErrorException(StackUnderflow)
+      throw ThrowableVmError(Error.StackUnderflow)
     }
     stack(stack.length - 1)
   }
 
   def top(n: Int): Seq[Data.Primitive] = {
     if (stack.size <= currentLimit - n) {
-      throw VmErrorException(StackUnderflow)
+      throw ThrowableVmError(Error.StackUnderflow)
     }
     stack.slice(stack.length - n, stack.length)
   }
@@ -69,7 +103,7 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   def get(i: Int): Data.Primitive = {
     if (i < currentLimit || i >= stack.length) {
-      throw VmErrorException(WrongStackIndex)
+      throw ThrowableVmError(Error.WrongStackIndex)
     }
     stack(i)
   }
@@ -84,7 +118,7 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   def swap(i: Int, j: Int): Unit = {
     if (i < currentLimit || j < currentLimit || i >= stack.length || j >= stack.length) {
-      throw VmErrorException(WrongStackIndex)
+      throw ThrowableVmError(Error.WrongStackIndex)
     }
     val f = stack(i)
     stack(i) = stack(j)
@@ -100,7 +134,7 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   def heapGet(idx: Int): Data = {
     if (idx >= heap.length || idx < 0) {
-      throw VmErrorException(WrongHeapIndex)
+      throw ThrowableVmError(Error.WrongHeapIndex)
     }
     heap(idx)
   }

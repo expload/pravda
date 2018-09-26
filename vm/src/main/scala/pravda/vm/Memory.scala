@@ -16,14 +16,20 @@
  */
 
 package pravda.vm
+import pravda.common.domain.Address
 
 trait Memory {
+  def enterProgram(address: Address): Unit
+  def exitProgram(): Address
+  def callStack: Seq[(Option[Address], Seq[Int])]
   def stack: Seq[Data.Primitive]
   def heap: Seq[Data]
   def limit(index: Int): Unit
   def dropLimit(): Unit
   def pop(): Data.Primitive
+  def popCall(): Int
   def push(x: Data.Primitive): Unit
+  def pushCall(offset: Int): Unit
   def get(i: Int): Data.Primitive
   def clear(): Unit
   def all: Seq[Data.Primitive]

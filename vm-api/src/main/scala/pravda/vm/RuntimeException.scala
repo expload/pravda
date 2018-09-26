@@ -17,28 +17,12 @@
 
 package pravda.vm
 
-import pravda.common.bytes
 import pravda.common.domain.Address
 import pravda.vm.Meta.{SourceMark, TranslatorMark}
 
-final case class VmErrorException(error: VmError) extends Exception
+final case class RuntimeException(error: Error, finalState: FinalState, callStack: Seq[(Option[Address], Seq[Int])])
 
-final case class VmErrorResult(error: VmError,
-                               callStack: Seq[Int],
-                               callMetaStack: Seq[List[Meta]],
-                               address: Option[Address]) {
-
-  def mkString: String = {
-    s"""|$error${address.fold("")(a => s"\nprogram address: ${bytes.byteString2hex(a)}")}
-        |  ${callMetaStack
-         .zip(callStack)
-         .map { case (pos, meta) => VmErrorResult.constructStackTraceLine(pos, meta) }
-         .mkString("\n  ")}
-        |""".stripMargin
-  }
-}
-
-object VmErrorResult {
+object RuntimeException {
 
   def constructStackTraceLine(metas: List[Meta], pos: Int): String = {
     val translatorMessage = metas.collectFirst { case TranslatorMark(mark) => mark }

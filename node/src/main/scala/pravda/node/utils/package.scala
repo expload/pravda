@@ -17,20 +17,27 @@
 
 package pravda.node
 
-import pravda.node.data.blockchain.ExecutionInfo
-import pravda.vm.Data
+import pravda.vm.{Data, ExecutionResult}
 
 import scala.concurrent.Future
 
 package object utils {
 
-  def showExecInfo(info: ExecutionInfo): String = {
-    s"""Status: ${info.status}
-       |Watts: total ${info.totalWatts}, spent ${info.spentWatts}, refund: ${info.refundWatts}
+  def showExecutionResult(result: ExecutionResult): String = {
+    val (info, status) = result match {
+      case Left(error)  => (error.finalState, error.error.toString)
+      case Right(state) => (state, "Ok")
+    }
+    s"""Status:
+       |  $status
        |Stack:
-       |${showStack(info.stack)}
+       |  ${showStack(info.stack)}
        |Heap:
-       |${showHeap(info.heap)}""".stripMargin
+       |  ${showHeap(info.heap)}
+       |Watts:
+       |  Total:  ${info.totalWatts}
+       |  Spent:  ${info.spentWatts}
+       |  Refund: ${info.refundWatts}""".stripMargin
   }
 
   def showHeap(heap: Seq[Data]): String =

@@ -20,7 +20,7 @@ package pravda.vm.operations
 import pravda.common.domain
 import pravda.common.domain.Address
 import pravda.vm.Opcodes._
-import pravda.vm.VmError.{OperationDenied, UserError}
+import pravda.vm.Error.{OperationDenied, UserError}
 import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
@@ -28,7 +28,7 @@ import pravda.vm.operations.annotation.OpcodeImplementation
 final class SystemOperations(memory: Memory,
                              currentStorage: Option[Storage],
                              wattCounter: WattCounter,
-                             environment: Environment,
+                             env: Environment,
                              maybeProgramAddress: Option[domain.Address],
                              standardLibrary: Map[Long, (Memory, WattCounter) => Unit],
                              vm: Vm) {
@@ -53,15 +53,9 @@ final class SystemOperations(memory: Memory,
     wattCounter.cpuUsage(CpuExtCall, CpuStorageUse)
     val argumentsCount = integer(memory.pop())
     val programAddress = address(memory.pop())
-    environment.getProgram(programAddress) match {
-      case None => throw VmErrorException(VmError.InvalidAddress)
-      case Some(ProgramContext(storage, code)) =>
-        memory.limit(argumentsCount.toInt)
-        vm.spawn(code, environment, memory, wattCounter, Some(storage), Some(programAddress), pcallAllowed = true)
-          .error
-          .foreach(e => throw VmErrorException(e.error))
-        memory.dropLimit()
-    }
+    memory.limit(argumentsCount.toInt)
+    vm.run(programAddress, env, memory, wattCounter, pcallAllowed = true)
+    memory.dropLimit()
   }
 
   @OpcodeImplementation(
@@ -76,16 +70,9 @@ final class SystemOperations(memory: Memory,
   def lcall(): Unit = {
     val argumentsCount = integer(memory.pop())
     val addr = address(memory.pop())
-    environment.getProgram(addr) match {
-      case None => throw VmErrorException(VmError.InvalidAddress)
-      case Some(ProgramContext(_, code)) =>
-        wattCounter.cpuUsage(CpuStorageUse)
-        memory.limit(argumentsCount.toInt)
-        vm.spawn(code, environment, memory, wattCounter, currentStorage, maybeProgramAddress, pcallAllowed = false)
-          .error
-          .foreach(e => throw VmErrorException(e.error))
-        memory.dropLimit()
-    }
+    memory.limit(argumentsCount.toInt)
+    vm.run(addr, env, memory, wattCounter, pcallAllowed = false)
+    memory.dropLimit()
   }
 
   @OpcodeImplementation(
@@ -96,7 +83,7 @@ final class SystemOperations(memory: Memory,
     val id = integer(memory.pop())
     wattCounter.cpuUsage(CpuStorageUse)
     standardLibrary.get(id) match {
-      case None           => throw VmErrorException(VmError.InvalidAddress)
+      case None           => throw ThrowableVmError(Error.InvalidAddress)
       case Some(function) => function(memory, wattCounter)
     }
   }
@@ -111,14 +98,14 @@ final class SystemOperations(memory: Memory,
     val programAddress = address(memory.pop())
     val code = bytes(memory.pop())
     wattCounter.cpuUsage(CpuStorageUse)
-    if (environment.getProgramOwner(programAddress).contains(environment.executor)) {
-      val oldProgram = environment.getProgram(programAddress)
+    if (env.getProgramOwner(programAddress).contains(env.executor)) {
+      val oldProgram = env.getProgram(programAddress)
       val oldProgramSize = oldProgram.fold(0L)(_.code.remaining.toLong)
       wattCounter.cpuUsage(CpuStorageUse)
       wattCounter.storageUsage(occupiedBytes = code.size().toLong, oldProgramSize)
-      environment.updateProgram(programAddress, code)
+      env.updateProgram(programAddress, code)
     } else {
-      throw VmErrorException(OperationDenied)
+      throw ThrowableVmError(OperationDenied)
     }
   }
 
@@ -129,7 +116,7 @@ final class SystemOperations(memory: Memory,
   )
   def pcreate(): Unit = {
     val code = bytes(memory.pop())
-    val programAddress = environment.createProgram(environment.executor, code)
+    val programAddress = env.createProgram(env.executor, code)
     val data = address(programAddress)
     wattCounter.cpuUsage(CpuStorageUse)
     wattCounter.storageUsage(occupiedBytes = code.size().toLong)
@@ -143,11 +130,11 @@ final class SystemOperations(memory: Memory,
   )
   def seal(): Unit = {
     val programAddress = address(memory.pop())
-    if (environment.getProgramOwner(programAddress).contains(environment.executor)) {
+    if (env.getProgramOwner(programAddress).contains(env.executor)) {
       wattCounter.cpuUsage(CpuStorageUse)
-      environment.sealProgram(programAddress)
+      env.sealProgram(programAddress)
     } else {
-      throw VmErrorException(OperationDenied)
+      throw ThrowableVmError(OperationDenied)
     }
   }
 
@@ -161,7 +148,7 @@ final class SystemOperations(memory: Memory,
         val data = address(programAddress)
         wattCounter.memoryUsage(data.volume.toLong)
         memory.push(data)
-      case None => throw VmErrorException(OperationDenied)
+      case None => throw ThrowableVmError(OperationDenied)
     }
   }
 
@@ -170,7 +157,7 @@ final class SystemOperations(memory: Memory,
     description = "Gives current executor address."
   )
   def from(): Unit = {
-    val datum = address(environment.executor)
+    val datum = address(env.executor)
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
   }
@@ -182,7 +169,7 @@ final class SystemOperations(memory: Memory,
   )
   def owner(): Unit = {
     val programAddress = address(memory.pop())
-    val datum = address(environment.getProgramOwner(programAddress).getOrElse(Address.Void))
+    val datum = address(env.getProgramOwner(programAddress).getOrElse(Address.Void))
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
   }
@@ -194,7 +181,7 @@ final class SystemOperations(memory: Memory,
   )
   def `throw`(): Unit = {
     val message = utf8(memory.pop())
-    throw VmErrorException(UserError(message))
+    throw ThrowableVmError(UserError(message))
   }
 
   @OpcodeImplementation(
@@ -205,8 +192,8 @@ final class SystemOperations(memory: Memory,
     val name = utf8(memory.pop())
     val data = memory.pop()
     maybeProgramAddress match {
-      case Some(addr) => environment.event(addr, name, data)
-      case None       => throw VmErrorException(OperationDenied)
+      case Some(addr) => env.event(addr, name, data)
+      case None       => throw ThrowableVmError(OperationDenied)
     }
   }
 }

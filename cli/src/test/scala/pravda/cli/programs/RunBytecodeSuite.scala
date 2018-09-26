@@ -4,8 +4,8 @@ import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.languages._
-import pravda.vm.impl.{MemoryImpl, WattCounterImpl}
-import pravda.vm.{Data, ExecutionResult}
+import pravda.vm.impl.MemoryImpl
+import pravda.vm.{Data, ExecutionResult, FinalState}
 import utest._
 
 import scala.collection.mutable
@@ -24,7 +24,8 @@ object RunBytecodeSuite extends TestSuite {
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
       |  "stack" : [ "int8(42)" ],
-      |  "heap" : [ ]
+      |  "heap" : [ ],
+      |  "effects" : [ ]
       |}""".stripMargin)
   final val ProgramFromFile = ByteString.copyFrom(Array[Byte](3))
   final val ProgramFromFileName = "a.out"
@@ -34,22 +35,19 @@ object RunBytecodeSuite extends TestSuite {
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
       |  "stack" : [ "int16(740)" ],
-      |  "heap" : [ ]
+      |  "heap" : [ ],
+      |  "effects" : [ ]
       |}""".stripMargin)
   final val ProgramFromFileError = ByteString.copyFromUtf8("`a.out` is not found.\n")
 
-  private def buildExecResult(memory: MemoryImpl): Either[String, ExecutionResult] = Right {
-    ExecutionResult(memory, None, new WattCounterImpl(0))
-  }
+  private def buildExecResult(memory: MemoryImpl): ExecutionResult =
+    Right(FinalState(0, 0, 0, memory.stack, memory.heap, Nil)) // TODO effects
 
   val tests = Tests {
     "run using default executor and stdin" - {
       val io = new IoLanguageStub(Some(ProgramFromStdIn))
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString,
-                executor: ByteString,
-                storagePath: String,
-                wattLimit: Long): Id[Either[String, ExecutionResult]] =
+        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
               buildExecResult(
@@ -72,10 +70,7 @@ object RunBytecodeSuite extends TestSuite {
         files = mutable.Map(ProgramFromFileName -> ProgramFromFile)
       )
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString,
-                executor: ByteString,
-                storagePath: String,
-                wattLimit: Long): Id[Either[String, ExecutionResult]] =
+        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
           (program, executor, storagePath) match {
             case (_, _, "/tmp/") =>
               buildExecResult(
@@ -95,10 +90,7 @@ object RunBytecodeSuite extends TestSuite {
     "check file not found error" - {
       val io = new IoLanguageStub()
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString,
-                executor: ByteString,
-                storagePath: String,
-                wattLimit: Long): Id[Either[String, ExecutionResult]] =
+        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
           buildExecResult(EmptyMemory)
       }
       val program = new RunBytecode[Id](io, vm)

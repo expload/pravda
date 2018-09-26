@@ -191,7 +191,7 @@ lazy val node = (project in file("node"))
       "com.expload" %% "scala-abci-server" % "0.9.2",
       "com.github.pureconfig" %% "pureconfig" % "0.9.1",
       // Marshalling
-      "com.tethys-json" %% "tethys" % "0.6.2",
+      "com.tethys-json" %% "tethys" % "0.7.0.2",
       "org.json4s" %% "json4s-ast" % "3.5.3",
       "io.suzaku" %% "boopickle" % "1.2.6",
       "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17",
