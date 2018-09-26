@@ -132,6 +132,16 @@ lazy val `vm-asm` = (project in file("vm-asm"))
   )
   .dependsOn(`vm-api` % "test->test;compile->compile")
 
+lazy val evm = (project in file("evm")).
+  dependsOn(`vm-asm`).
+  settings(normalizedName := "pravda-evm").
+  settings( commonSettings: _* ).
+  settings(
+    libraryDependencies ++= Seq (
+      "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
+    )
+  )
+
 lazy val dotnet = (project in file("dotnet"))
   .settings(commonSettings: _*)
   .settings(
