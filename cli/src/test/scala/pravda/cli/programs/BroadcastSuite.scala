@@ -2,7 +2,7 @@ package pravda.cli.programs
 
 import cats.Id
 import com.google.protobuf.ByteString
-import pravda.cli.Config
+import pravda.cli.PravdaConfig
 import pravda.cli.languages.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
 import utest._
 
@@ -22,13 +22,15 @@ object BroadcastSuite extends TestSuite {
       val api = new NodeLanguageStub(Right("[]"))
       val io = new IoLanguageStub(files = mutable.Map("w.json" -> Wallet))
       val compilers = new CompilersLanguage[Id] {
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
-        def forth(source: String): Id[Either[String, ByteString]] = Left("nope")
-        def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        def dotnet(sourse: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] = Left("nope")
+        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
+          Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
-      program(Config.Broadcast(mode = Config.Broadcast.Mode.Run, wallet = Some("w.json")))
+      program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
       assert(io.stdout.headOption.contains(ByteString.copyFromUtf8("[]\n")))
     }
 
@@ -37,12 +39,14 @@ object BroadcastSuite extends TestSuite {
       val io = new IoLanguageStub()
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
+        def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
-        def forth(source: String): Id[Either[String, ByteString]] = Left("nope")
-        def dotnet(sourse: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        def dotnet(sourse: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] = Left("nope")
+        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
+          Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
-      program(Config.Broadcast(mode = Config.Broadcast.Mode.Run))
+      program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run))
       assert(io.stderr.headOption.contains(ByteString.copyFromUtf8("Wallet file should be defined\n")))
     }
 

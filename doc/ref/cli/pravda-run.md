@@ -1,33 +1,15 @@
-## Name
-`pravda-run` - Run and debug pravda programs.
+<!--
+THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
+-->
 
-## Synopsys
-```
-pravda run
-```
+```pravda run --executor <string> --input <file> --storage <file>```
 
 ## Description
-By default reads from standard input.
-
-
+Run byte-code on Pravda VM
 ## Options
-#### -i, --input
-	input file
 
-#### -o, --output
-	output file
-
-
-## Examples
-
-
-
-## See also
-[pravda-compile-disasm](pravda-compile-disasm.md),
-[pravda-compile-forth](pravda-compile-forth.md),
-[pravda-compile-dotnet](pravda-compile-dotnet.md)
-
-
-## Pravda
-Part of the [Pravda](main.md) suite.
-
+|Option|Description|
+|----|----|
+|`-e`, `--executor`|Executor address HEX representation
+|`-i`, `--input`|Input file
+|`--storage`|Storage name

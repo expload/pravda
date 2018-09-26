@@ -1,0 +1,16 @@
+---preconditions
+watts-limit: 100000
+stack:
+  int32(9), "DealPublicCard"
+storage:
+  "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
+  "init" = null
+---expectations
+watts-spent: 762
+effects
+  sget "init" null,
+    sget x5461626C654361726473FFFFFFFF,
+    sput x5461626C65436172647300000000 int32(9),
+    sput x5461626C654361726473FFFFFFFF int32(1)
+---dotnet-files
+poker.cs

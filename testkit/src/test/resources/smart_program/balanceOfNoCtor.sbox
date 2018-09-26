@@ -1,0 +1,17 @@
+---preconditions
+watts-limit: 10000
+stack:
+  x0011, "balanceOf"
+storage:
+  "init" = null,
+  x62616C616E6365730011 = int32(10)
+---expectations
+watts-spent: 332
+stack
+  int32(10)
+effects
+  sget "init" null,
+    sget x62616C616E6365730011 int32(10),
+    sget x62616C616E6365730011 int32(10)
+---dotnet-files
+smart_program.cs

@@ -1,29 +1,54 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.db
 
 import java.io.File
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success, Try}
-import serialyzer._
-import hash.utils._
-import pravda.node.db.utils.ByteArray
 import org.iq80.leveldb._
 import org.iq80.leveldb.impl.Iq80DBFactory._
+import pravda.node.db.hash.utils._
+import pravda.node.db.serialyzer._
+import pravda.node.db.utils.ByteArray
 
 import scala.collection.concurrent.TrieMap
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 object DB {
 
   def apply(path: String, initialHash: Option[Array[Byte]]): DB = {
     new DB(path, initialHash)
   }
+
+  final case class Result(bytes: Array[Byte]) {
+    def as[V](implicit valueReader: ValueReader[V]): V = valueReader.fromBytes(bytes)
+  }
+
 }
 
 class DB(
     path: String,
     initialHash: Option[Array[Byte]]
 ) {
+
+  import DB._
 
   private val options = new Options
   options.createIfMissing(true)
@@ -190,10 +215,6 @@ class DB(
     // scalafix:on DisableSyntax.keywords.null
   }
 
-  final case class Result(bytes: Array[Byte]) {
-    def as[V](implicit valueReader: ValueReader[V]): V = valueReader.fromBytes(bytes)
-  }
-
   def get[K](key: K)(implicit keyWriter: KeyWriter[K]): Future[Option[Result]] = Future {
     Option(db.get(keyWriter.toBytes(key))).map(Result)
   }
@@ -227,26 +248,40 @@ class DB(
 
   class StartsConstructor[V] {
 
-    def apply[K](key: K)(implicit keyWriter: KeyWriter[K], valueReader: ValueReader[V]): Future[List[V]] =
-      startsWith[K](key)(keyWriter).map(_.map(_.as[V](valueReader)))
+    def apply[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K],
+                                                    valueReader: ValueReader[V]): Future[List[V]] =
+      startsWith[K](prefix, offset, count)(keyWriter).map(_.map(_.as[V](valueReader)))
+
+    def apply[K](prefix: K, offset: K)(implicit keyWriter: KeyWriter[K], valueReader: ValueReader[V]): Future[List[V]] =
+      startsWith[K](prefix, offset)(keyWriter).map(_.map(_.as[V](valueReader)))
+
+    def apply[K](prefix: K)(implicit keyWriter: KeyWriter[K], valueReader: ValueReader[V]): Future[List[V]] =
+      startsWith[K](prefix)(keyWriter).map(_.map(_.as[V](valueReader)))
   }
 
   def startsWithAs[V] = new StartsConstructor[V]
 
-  def startsWith[K](prefix: K)(implicit keyWriter: KeyWriter[K]) = Future {
-    val keyBytes = keyWriter.toBytes(prefix)
-    tryCloseable(db.iterator()) { it =>
-      val it = db.iterator()
-      it.seek(keyBytes)
-      var res = Vector.empty[Result]
-      while (it.hasNext && it.peekNext.getKey.startsWith(keyBytes)) {
-        val v = Result(it.peekNext.getValue)
-        res = res :+ v
-        it.next
+  def startsWith[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] =
+    Future {
+      val prefixBytes = keyWriter.toBytes(prefix)
+      val offsetBytes = keyWriter.toBytes(offset)
+      tryCloseable(db.iterator()) { it =>
+        val it = db.iterator()
+        it.seek(offsetBytes)
+        val res = ListBuffer.empty[Result]
+        while (res.length.toLong < count && it.hasNext && it.peekNext.getKey.startsWith(prefixBytes)) {
+          val v = Result(it.peekNext.getValue)
+          res += v
+          it.next
+        }
+        res.toList
       }
-      res.toList
     }
-  }
+
+  def startsWith[K](prefix: K, offset: K)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] =
+    startsWith(prefix, offset, Long.MaxValue)
+
+  def startsWith[K](prefix: K)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] = startsWith(prefix, prefix)
 
   def incDiff(key: Array[Byte], cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
     val prevValue = cache

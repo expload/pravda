@@ -1,1 +1,0 @@
-../../../../../dotnet/src/test/resources/smart_program.cs

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.clients
 
 import com.google.protobuf.{ByteString => PbByteString}
@@ -111,7 +128,7 @@ class AbciClient(port: Int)(implicit
                                   wattPrice: NativeCoin,
                                   mode: String = "commit"): Future[ErrorOrExecInfo] = {
 
-    val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, Random.nextInt())
+    val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, None, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
     val bytes = transcode(tx).to[Bson]
     broadcastBytes(bytes, mode)

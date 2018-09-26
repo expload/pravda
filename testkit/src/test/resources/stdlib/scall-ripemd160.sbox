@@ -1,0 +1,15 @@
+---preconditions
+watts-limit: 1000
+stack:
+  "hello world",
+  "Ripemd160"
+storage:
+  "init" = null
+---expectations
+watts-spent: 346
+stack
+  x98C615784CCB5FE5936FBC0CBE9DFDB408D92F0F
+effects
+  sget "init" null
+---dotnet-files
+stdlib.cs

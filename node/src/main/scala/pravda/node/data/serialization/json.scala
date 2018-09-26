@@ -1,10 +1,27 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.node.data.serialization
 
 import com.google.protobuf.ByteString
 import fastparse.utils.Base64
 import pravda.node.clients.AbciClient._
-import pravda.node.data.TimechainConfig
-import pravda.node.data.common.{ApplicationStateInfo, InitialDistributionMember}
+import pravda.node.data.PravdaConfig
+import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember}
 import pravda.common.bytes._
 import tethys._
 import tethys.derivation.builder._
@@ -14,6 +31,8 @@ import jackson.pretty.prettyJacksonTokenWriterProducer
 import org.json4s.JsonAST
 import org.json4s.JsonAST.JValue
 import pravda.node.data.blockchain.ExecutionInfo
+import pravda.node.servers.ApiRoute
+import pravda.vm.Data
 import tethys.readers.FieldName
 import tethys.readers.tokens.TokenIterator
 import tethys.writers.tokens.TokenWriter
@@ -30,6 +49,16 @@ object json {
 
   implicit def tethysReaderLifter[T: JsonReader, U]: JsonReader[Tagged[T, U]] =
     lifterF[JsonReader].lift[T, U]
+
+  //----------------------------------------------------------------------
+  // vm.Data support for tethys
+  //----------------------------------------------------------------------
+
+  implicit val dataReader: JsonReader[Data] =
+    JsonReader.stringReader.map(s => Data.parser.all.parse(s).get.value)
+
+  implicit val dataWriter: JsonWriter[Data] =
+    JsonWriter.stringWriter.contramap(_.mkString())
 
   //----------------------------------------------------------------------
   // Protobufs' ByteString support for tethys
@@ -106,10 +135,10 @@ object json {
   // Config RWs for tethys
   //----------------------------------------------------------------------
 
-  implicit val timechainConfigGenesisReader: JsonReader[TimechainConfig.Genesis] =
-    jsonReader[TimechainConfig.Genesis] {
+  implicit val pravdaConfigGenesisReader: JsonReader[PravdaConfig.Genesis] =
+    jsonReader[PravdaConfig.Genesis] {
       describe {
-        ReaderBuilder[TimechainConfig.Genesis]
+        ReaderBuilder[PravdaConfig.Genesis]
           .extract(_.time)
           .from("genesis_time".as[String])(identity)
           .extract(_.chainId)
@@ -119,10 +148,10 @@ object json {
       }
     }
 
-  implicit val timechainConfigGenesisWriter: JsonWriter[TimechainConfig.Genesis] =
-    jsonWriter[TimechainConfig.Genesis] {
+  implicit val pravdaConfigGenesisWriter: JsonWriter[PravdaConfig.Genesis] =
+    jsonWriter[PravdaConfig.Genesis] {
       describe {
-        WriterBuilder[TimechainConfig.Genesis]
+        WriterBuilder[PravdaConfig.Genesis]
           .remove(_.time)
           .add("genesis_time")(_.time)
           .remove(_.chainId)
@@ -132,47 +161,47 @@ object json {
       }
     }
 
-  implicit val timechainConfigGenesisValidatorReader: JsonReader[TimechainConfig.GenesisValidator] =
-    jsonReader[TimechainConfig.GenesisValidator] {
+  implicit val pravdaConfigGenesisValidatorReader: JsonReader[PravdaConfig.GenesisValidator] =
+    jsonReader[PravdaConfig.GenesisValidator] {
       describe {
-        ReaderBuilder[TimechainConfig.GenesisValidator]
+        ReaderBuilder[PravdaConfig.GenesisValidator]
           .extract(_.publicKey)
-          .from("pub_key".as[TimechainConfig.CryptoKey])(identity)
+          .from("pub_key".as[PravdaConfig.CryptoKey])(identity)
       }
     }
 
-  implicit val timechainConfigGenesisValidatorWriter: JsonWriter[TimechainConfig.GenesisValidator] =
-    jsonWriter[TimechainConfig.GenesisValidator] {
+  implicit val pravdaConfigGenesisValidatorWriter: JsonWriter[PravdaConfig.GenesisValidator] =
+    jsonWriter[PravdaConfig.GenesisValidator] {
       describe {
-        WriterBuilder[TimechainConfig.GenesisValidator]
+        WriterBuilder[PravdaConfig.GenesisValidator]
           .remove(_.publicKey)
           .add("pub_key")(_.publicKey)
       }
     }
 
-  implicit val timechainConfigCryptoKeyReader: JsonReader[TimechainConfig.CryptoKey] =
-    jsonReader[TimechainConfig.CryptoKey]
+  implicit val pravdaConfigCryptoKeyReader: JsonReader[PravdaConfig.CryptoKey] =
+    jsonReader[PravdaConfig.CryptoKey]
 
-  implicit val timechainConfigPaymentWalletReader: JsonReader[TimechainConfig.PaymentWallet] =
-    jsonReader[TimechainConfig.PaymentWallet]
+  implicit val pravdaConfigPaymentWalletReader: JsonReader[PravdaConfig.Validator] =
+    jsonReader[PravdaConfig.Validator]
 
-  implicit val timechainConfigApiConfigReader: JsonReader[TimechainConfig.ApiConfig] =
-    jsonReader[TimechainConfig.ApiConfig]
+  implicit val pravdaConfigApiConfigReader: JsonReader[PravdaConfig.HttpConfig] =
+    jsonReader[PravdaConfig.HttpConfig]
 
-  implicit val timechainConfigTendermintConfigReader: JsonReader[TimechainConfig.TendermintConfig] =
-    jsonReader[TimechainConfig.TendermintConfig]
+  implicit val pravdaConfigTendermintConfigReader: JsonReader[PravdaConfig.TendermintConfig] =
+    jsonReader[PravdaConfig.TendermintConfig]
 
-  implicit val timechainConfigCryptoKeyWriter: JsonWriter[TimechainConfig.CryptoKey] =
-    jsonWriter[TimechainConfig.CryptoKey]
+  implicit val pravdaConfigCryptoKeyWriter: JsonWriter[PravdaConfig.CryptoKey] =
+    jsonWriter[PravdaConfig.CryptoKey]
 
-  implicit val timechainConfigPaymentWalletWriter: JsonWriter[TimechainConfig.PaymentWallet] =
-    jsonWriter[TimechainConfig.PaymentWallet]
+  implicit val pravdaConfigPaymentWalletWriter: JsonWriter[PravdaConfig.Validator] =
+    jsonWriter[PravdaConfig.Validator]
 
-  implicit val timechainConfigApiConfigWriter: JsonWriter[TimechainConfig.ApiConfig] =
-    jsonWriter[TimechainConfig.ApiConfig]
+  implicit val pravdaConfigApiConfigWriter: JsonWriter[PravdaConfig.HttpConfig] =
+    jsonWriter[PravdaConfig.HttpConfig]
 
-  implicit val timechainConfigTendermintConfigWriter: JsonWriter[TimechainConfig.TendermintConfig] =
-    jsonWriter[TimechainConfig.TendermintConfig]
+  implicit val pravdaConfigTendermintConfigWriter: JsonWriter[PravdaConfig.TendermintConfig] =
+    jsonWriter[PravdaConfig.TendermintConfig]
 
   //---------------------------------------------------------------------------
   // VM RWs for tethys
@@ -197,11 +226,17 @@ object json {
   implicit val domainNodeSettingsWriter: JsonWriter[ApplicationStateInfo] =
     jsonWriter[ApplicationStateInfo]
 
-  implicit val initialDistributionReader: JsonReader[InitialDistributionMember] =
-    jsonReader[InitialDistributionMember]
+  implicit val initialDistributionReader: JsonReader[CoinDistributionMember] =
+    jsonReader[CoinDistributionMember]
 
-  implicit val initialDistributionWriter: JsonWriter[InitialDistributionMember] =
-    jsonWriter[InitialDistributionMember]
+  implicit val initialDistributionWriter: JsonWriter[CoinDistributionMember] =
+    jsonWriter[CoinDistributionMember]
+
+  implicit val eventItemReader: JsonReader[ApiRoute.EventItem] =
+    jsonReader[ApiRoute.EventItem]
+
+  implicit val eventItemWriter: JsonWriter[ApiRoute.EventItem] =
+    jsonWriter[ApiRoute.EventItem]
 
   //---------------------------------------------------------------------------
   // ABCI

@@ -1,38 +1,67 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.cli.languages
 
 package impl
 
 import com.google.protobuf.ByteString
-import pravda.forth.{Compiler => ForthCompiler}
-import pravda.vm.asm.Assembler
-import pravda.dotnet.{Translator => DotnetTranslator, FileParser => DotnetParser}
+import pravda.dotnet.parser.{FileParser => DotnetParser}
+import pravda.dotnet.translation.{Translator => DotnetTranslator, TranslationVisualizer => DotnetVisualizer}
+import pravda.vm.asm.PravdaAssembler
+
+import cats.instances.either._
+import cats.instances.option._
+import cats.syntax.traverse._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) extends CompilersLanguage[Future] {
 
+  def asm(fileName: String, source: String): Future[Either[String, ByteString]] = Future {
+    PravdaAssembler.assemble(source, saveLabels = true).left.map(s => s"$fileName:${s.mkString}")
+  }
+
   def asm(source: String): Future[Either[String, ByteString]] = Future {
-    Assembler()
-      .compile(source)
-      .map(a => ByteString.copyFrom(a))
+    PravdaAssembler.assemble(source, saveLabels = true).left.map(_.mkString)
   }
 
   def disasm(source: ByteString): Future[String] = Future {
-    Assembler()
-      .decompile(source)
-      .map { case (no, op) => "%06X:\t%s".format(no, op.toAsm) }
-      .mkString("\n")
+    PravdaAssembler.render(PravdaAssembler.disassemble(source))
   }
 
-  def forth(source: String): Future[Either[String, ByteString]] = Future {
-    ForthCompiler().compileToByteString(source)
+  def dotnet(source: ByteString, pdb: Option[ByteString]): Future[Either[String, ByteString]] = Future {
+    for {
+      pe <- DotnetParser.parsePe(source.toByteArray)
+      pdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray).map(_._2)).sequence
+      (_, cilData, methods, signatures) = pe
+      ops <- DotnetTranslator.translateAsm(methods, cilData, signatures, pdb).left.map(_.mkString)
+    } yield PravdaAssembler.assemble(ops, saveLabels = true)
   }
 
-  def dotnet(source: ByteString): Future[Either[String, ByteString]] = Future {
-    DotnetParser.parsePe(source.toByteArray).map {
-      case (_, cilData, methods, signatures) =>
-        val ops = DotnetTranslator.translate(methods, cilData, signatures)
-        ByteString.copyFrom(Assembler().compile(ops))
+  def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Future[Either[String, (ByteString, String)]] =
+    Future {
+      for {
+        pe <- DotnetParser.parsePe(source.toByteArray)
+        pdb <- pdb.map(p => DotnetParser.parsePdb(p.toByteArray).map(_._2)).sequence
+        (_, cilData, methods, signatures) = pe
+        translation <- DotnetTranslator.translateVerbose(methods, cilData, signatures, pdb).left.map(_.mkString)
+        asm = DotnetTranslator.translationToAsm(translation)
+        code = PravdaAssembler.assemble(asm, saveLabels = true)
+      } yield (code, DotnetVisualizer.visualize(translation))
     }
-  }
 }
