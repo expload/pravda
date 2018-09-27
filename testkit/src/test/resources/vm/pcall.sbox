@@ -15,3 +15,4 @@ effects:
   sget "init" null
 ---dotnet-files
 pcall.cs pcall_program.dll
+Expload.Pravda.Programs.MyProgram

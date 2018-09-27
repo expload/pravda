@@ -3,7 +3,7 @@ package pravda
 import java.nio.file.{Files, Paths}
 
 import pravda.dotnet.parser.FileParser
-import pravda.dotnet.parser.FileParser.{ParsedPdb, ParsedPe}
+import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 
 package object dotnet {
 
@@ -19,4 +19,7 @@ package object dotnet {
     val fileBytes = readResourceBytes(file)
     FileParser.parsePdb(fileBytes)
   }
+
+  def parseDotnetFile(exeFile: String, pdbFile: Option[String]): Either[String, ParsedDotnetFile] =
+    FileParser.parseDotnetFile(readResourceBytes(exeFile), pdbFile.map(readResourceBytes))
 }

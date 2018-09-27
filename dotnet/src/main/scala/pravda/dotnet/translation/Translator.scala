@@ -221,7 +221,7 @@ object Translator {
   }
 
   def translateVerbose(files: List[ParsedDotnetFile],
-                       mainClass: Option[String] = None): Either[TranslationError, Translation] = {
+                       mainClass: Option[String]): Either[TranslationError, Translation] = {
     val filesToProgramClasses = files.flatMap(f =>
       f.parsedPe.cilData.tables.customAttributeTable.collect {
         case CustomAttributeData(td: TypeDefData,
@@ -325,12 +325,10 @@ object Translator {
         InternalError("Constructor mustn't take any arguments. Static constructors are forbidden")
       )
       ctor <- {
-        if (ctors.length != 1) {
-          Left(
-            TranslationError(InternalError("It's forbidden to have more than one or zero program's constructors"),
-                             None))
+        if (ctors.length > 1) {
+          Left(TranslationError(InternalError("It's forbidden to have more than one program's constructors"), None))
         } else {
-          Right(ctors.head)
+          Right(ctors.headOption)
         }
       }
     } yield ctor
@@ -344,10 +342,10 @@ object Translator {
     val structCtorsE = structEntitiesE.map(_.filter(i => isCtor(i)))
     //val structCctorsE = structEntitiesE.map(_.filter(i => isCctor(i)))
 
-    val ctorOpsE: Either[TranslationError, MethodTranslation] = for {
+    val ctorOpsE: Either[TranslationError, List[MethodTranslation]] = for {
       ctor <- programCtorE
       ops <- ctor match {
-        case i =>
+        case Some(i) =>
           val method = methods(i)
           val prefix = List(
             Operation(Opcodes.FROM),
@@ -385,7 +383,10 @@ object Translator {
             tctx.pdbTables.map(_.methodDebugInformationTable(i)),
             tctx
           ).map(res =>
-            res.copy(opcodes = res.opcodes.head :: OpCodeTranslation(List.empty, prefix) :: res.opcodes.tail))
+              res.copy(opcodes = res.opcodes.head :: OpCodeTranslation(List.empty, prefix) :: res.opcodes.tail))
+            .map(List(_))
+        case None =>
+          Right(List.empty)
       }
     } yield ops
 
@@ -551,7 +552,7 @@ object Translator {
       strucStaticFuncsOps <- structStaticFuncOpsE
       structCtorsOps <- structCtorsOpsE
     } yield {
-      val methodsOps = ctorOps :: programMethodsOps
+      val methodsOps = ctorOps ++ programMethodsOps
       val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
       Translation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
     }
@@ -559,7 +560,8 @@ object Translator {
 
   def translationToAsm(t: Translation): List[Operation] = {
 
-    val jumpToMethods = t.methods.filter(_.name != "ctor")
+    val jumpToMethods = t.methods
+      .filter(_.name != "ctor")
       .sortBy(_.name)
       .flatMap(
         m =>
@@ -601,7 +603,7 @@ object Translator {
 
   def translateAsm(parsedDotnetFiles: List[ParsedDotnetFile],
                    mainClass: Option[String]): Either[TranslationError, List[Operation]] =
-    translateVerbose(parsedDotnetFiles).map(translationToAsm)
+    translateVerbose(parsedDotnetFiles, mainClass).map(translationToAsm)
 
   def translateAsm(parsedPe: ParsedPe,
                    parsedPdb: Option[ParsedPdb] = None,

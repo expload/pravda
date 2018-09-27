@@ -6,6 +6,10 @@ import pravda.proverka.{Proverka, input, textOutput}
 import pravda.vm.asm
 import pravda.vm.asm.PravdaAssembler
 
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
+
 object TranslationSuite extends Proverka {
   lazy val dir = new File("dotnet/src/test/resources/translation")
   override lazy val ext = "trs"
@@ -16,18 +20,34 @@ object TranslationSuite extends Proverka {
   lazy val initState = Translation()
 
   lazy val scheme = Seq(
-    input("exe") { line =>
-      val parts = line.split("\\s+").toList
-      val exe = parts.head
-      val pdbE = if (parts.length > 1) {
-        parsePdbFile(parts(1)).map(Some(_))
-      } else {
-        Right(None)
-      }
+    input("exe") { txt =>
+      val lines = txt.lines.toList
+      val parts = lines.head.split("\\s+").toList
+      val mainClass = lines.tail.headOption
+      val filesE = parts
+        .groupBy(_.dropRight(4))
+        .map {
+          case (prefix, files) =>
+            val exeO = files.find(_ == s"$prefix.exe")
+            val dllO = files.find(_ == s"$prefix.dll")
+            val pdbO = files.find(_ == s"$prefix.pdb")
+
+            (exeO, dllO) match {
+              case (Some(exe), Some(dll)) =>
+                Left(s".dll and .exe files have the same name: $exe, $dll")
+              case (None, None) =>
+                Left(s".dll or .exe is not specified: $prefix")
+              case (Some(exe), None) =>
+                parseDotnetFile(exe, pdbO)
+              case (None, Some(dll)) =>
+                parseDotnetFile(dll, pdbO)
+            }
+        }
+        .toList.sequence
+
       for {
-        pe <- parsePeFile(exe)
-        pdb <- pdbE
-        asm <- Translator.translateAsm(pe, pdb).left.map(_.mkString)
+        files <- filesE
+        asm <- Translator.translateAsm(files, mainClass).left.map(_.mkString)
       } yield (s: State) => s.copy(ops = asm)
     },
     textOutput("translation") { s =>

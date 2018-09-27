@@ -1,5 +1,6 @@
 ---exe
-pcall.exe
+pcall.exe pcall_program.dll
+Expload.Pravda.Programs.MyProgram
 ---translation
 dup
 push "ctor"

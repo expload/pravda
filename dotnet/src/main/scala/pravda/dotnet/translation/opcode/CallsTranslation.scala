@@ -49,12 +49,15 @@ case object CallsTranslation extends OneToManyTranslator {
     }
   }
 
-  def fullTypeDefName(typeDefData: TypeDefData): String =
-    if (typeDefData.namespace.nonEmpty) {
-      s"${typeDefData.namespace}.${typeDefData.name}"
+  def fullTypeName(namespace: String, name: String): String =
+    if (namespace.nonEmpty) {
+      s"$namespace.$name"
     } else {
-      typeDefData.name
+      name
     }
+
+  def fullTypeDefName(typeDefData: TypeDefData): String =
+    fullTypeName(typeDefData.namespace, typeDefData.name)
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
     def callMethodDef(m: MethodDefData): Int = {
@@ -75,7 +78,8 @@ case object CallsTranslation extends OneToManyTranslator {
       case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
       case NewObj(m: MethodDefData)   => Right(callMethodDef(m) + 2)
 
-      case CallVirt(MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), _, signatureIdx)) =>
+      case CallVirt(m @ MemberRefData(TypeRefData(_, name, namespace), methodName, signatureIdx))
+          if ctx.tctx.programClasses.exists(cls => fullTypeDefName(cls) == fullTypeName(namespace, name)) =>
         Right(callMethodRef(signatureIdx))
 
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
@@ -199,7 +203,8 @@ case object CallsTranslation extends OneToManyTranslator {
 
           case None => Left(UnknownOpcode)
         }
-      case CallVirt(m @ MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), methodName, signatureIdx)) =>
+      case CallVirt(m @ MemberRefData(TypeRefData(_, name, namespace), methodName, _))
+          if ctx.tctx.programClasses.exists(cls => fullTypeDefName(cls) == fullTypeName(namespace, name)) =>
         val paramsLen = MethodExtractors.methodParamsCount(m, ctx.tctx.signatures)
         val swapAddress = (2 to (paramsLen + 1))
           .flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
