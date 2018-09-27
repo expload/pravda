@@ -43,7 +43,8 @@ object TranslationSuite extends Proverka {
                 parseDotnetFile(dll, pdbO)
             }
         }
-        .toList.sequence
+        .toList
+        .sequence
 
       for {
         files <- filesE

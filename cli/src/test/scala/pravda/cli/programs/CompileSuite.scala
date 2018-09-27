@@ -66,9 +66,9 @@ object CompileSuite extends TestSuite {
           UnexpectedStringOutput
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = {
-                     if (sources.headOption.map(_._1).contains(BinarySource)) Right(ExpectedBinaryOutput)
-                     else Right(UnexpectedBinaryOutput)
-                   }
+          if (sources.headOption.map(_._1).contains(BinarySource)) Right(ExpectedBinaryOutput)
+          else Right(UnexpectedBinaryOutput)
+        }
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(DotNet))

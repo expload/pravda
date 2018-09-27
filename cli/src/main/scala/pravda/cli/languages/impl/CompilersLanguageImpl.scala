@@ -44,9 +44,12 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
   def dotnet(sources: Seq[(ByteString, Option[ByteString])],
              mainClass: Option[String]): Future[Either[String, ByteString]] = Future {
     for {
-      files <- sources.map {
-        case (pe, pdb) => FileParser.parseDotnetFile(pe.toByteArray, pdb.map(_.toByteArray))
-      }.toList.sequence
+      files <- sources
+        .map {
+          case (pe, pdb) => FileParser.parseDotnetFile(pe.toByteArray, pdb.map(_.toByteArray))
+        }
+        .toList
+        .sequence
       ops <- DotnetTranslator.translateAsm(files, mainClass).left.map(_.mkString)
     } yield PravdaAssembler.assemble(ops, saveLabels = true)
   }

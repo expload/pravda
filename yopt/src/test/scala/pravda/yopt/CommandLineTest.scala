@@ -207,9 +207,9 @@ object CommandLineTest extends TestSuite {
 
   def otherTypesParser[T](expectedValue: T, args: String*)(slice: Config => T): Unit = {
     otherTypesParser.parse(args.toList, Config()) match {
-      case Ok(r) => slice(r) ==> expectedValue
-      case ParseError(msg)     => Predef.assert(false, msg)
-      case _ => assert(false)
+      case Ok(r)           => slice(r) ==> expectedValue
+      case ParseError(msg) => Predef.assert(false, msg)
+      case _               => assert(false)
     }
   }
 
