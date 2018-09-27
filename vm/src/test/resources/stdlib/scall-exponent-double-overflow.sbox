@@ -3,9 +3,9 @@ watts-limit: 1000
 ---expectations
 watts-spent: 134
 stack
-  uint8(4)
+  number(Infinity)
 ---code
-push 0x02
-push 0x02
+push number(1000000000000000.0)
+push number(546.0)
 push 0x03
 scall
