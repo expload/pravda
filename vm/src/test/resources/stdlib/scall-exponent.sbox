@@ -3,7 +3,7 @@ watts-limit: 1000
 ---expectations
 watts-spent: 144
 stack
-    uint8(4)
+  uint8(4)
 ---code
 push 0x02
 push 0x02
