@@ -24,9 +24,9 @@ import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 
 object ExponentialFunction extends FunctionDefinition {
-  val id: Long = 0x03L
+  val id = 0x03L
 
-  val description: String =
+  val description =
     "Takes two items from the stack, raises the second number to a power of first number and pushes the result to the stack."
 
   val args: Seq[(String, Seq[Type])] = Seq(
@@ -67,7 +67,7 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint32(rhs) =>
             receivePayment(Int32(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Int32(lhs ** rhs.doubleValue()))
+            receivePayment(Int32(lhs ** rhs.intValue()))
           case Number(rhs) =>
             receivePayment(Int32(lhs ** rhs))
           case _ => throw VmErrorException(WrongType)
@@ -83,13 +83,13 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint8(rhs) =>
             receivePayment(Int16(lhs ** rhs))
           case Uint16(rhs) =>
-            receivePayment(Int16((lhs ** rhs.toDouble).toShort))
+            receivePayment(Int16(lhs ** rhs))
           case Uint32(rhs) =>
-            receivePayment(Int16((lhs ** rhs.toDouble).toShort))
+            receivePayment(Int16(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Int16((lhs ** rhs.toDouble).toShort))
+            receivePayment(Int16(lhs ** rhs.intValue()))
           case Number(rhs) =>
-            receivePayment(Int16((lhs ** rhs).toShort))
+            receivePayment(Int16(lhs ** rhs))
           case _ => throw VmErrorException(WrongType)
         }
       case Int8(lhs) =>
@@ -107,9 +107,10 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint32(rhs) =>
             receivePayment(Int32(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Int32(lhs ** rhs.doubleValue()))
-          case Number(rhs) => receivePayment(Number((lhs ** rhs).toDouble))
-          case _           => throw VmErrorException(WrongType)
+            receivePayment(Int32(lhs ** rhs.intValue()))
+          case Number(rhs) =>
+            receivePayment(Number((lhs ** rhs).toDouble))
+          case _ => throw VmErrorException(WrongType)
         }
       case Uint8(lhs) =>
         b match {
@@ -126,7 +127,7 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint32(rhs) =>
             receivePayment(Uint8(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Uint8(lhs ** rhs.doubleValue()))
+            receivePayment(Uint8(lhs ** rhs.byteValue()))
           case Number(rhs) =>
             receivePayment(Uint8(lhs ** rhs))
           case _ => throw VmErrorException(WrongType)
@@ -146,7 +147,7 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint32(rhs) =>
             receivePayment(Uint16(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Uint16(lhs ** rhs.doubleValue()))
+            receivePayment(Uint16(lhs ** rhs.intValue()))
           case Number(rhs) =>
             receivePayment(Uint16(lhs ** rhs))
           case _ => throw VmErrorException(WrongType)
@@ -166,7 +167,7 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint32(rhs) =>
             receivePayment(Uint32(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Uint32(lhs ** rhs.doubleValue()))
+            receivePayment(Uint32(lhs ** rhs.intValue()))
           case Number(rhs) =>
             receivePayment(Uint32(lhs ** rhs))
           case _ => throw VmErrorException(WrongType)
@@ -186,7 +187,7 @@ object ExponentialFunction extends FunctionDefinition {
           case Uint32(rhs) =>
             receivePayment(Number(lhs ** rhs))
           case BigInt(rhs) =>
-            receivePayment(Number(lhs ** rhs.intValue().toDouble))
+            receivePayment(Number(lhs ** rhs.longValue()))
           case Number(rhs) =>
             receivePayment(Number(lhs ** rhs))
           case _ => throw VmErrorException(WrongType)

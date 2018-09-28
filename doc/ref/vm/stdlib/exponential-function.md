@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Calculate exponential operation first two items in the stack and push result into
+Takes two items from the stack, raises the second number to a power of first number and pushes the result to the stack.
