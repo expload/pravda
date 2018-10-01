@@ -36,16 +36,43 @@ object ExponentialFunction extends FunctionDefinition {
 
   val returns = Seq(Data.Type.Number)
 
-  def apply(memory: Memory, wattCounter: WattCounter): Unit = {
-    import PowerfulImplicits._
+  //TODO ask about overloading
+  def pow(x: Double,y: Double): Double = math.pow(x, y)
+  def pow(x: Double,y: Byte): Double = math.pow(x, y.toDouble)
+  def pow(x: Double,y: Int): Double = math.pow(x, y.toDouble)
+  def pow(x: Double,y: Long): Double = math.pow(x, y.toDouble)
+  def pow(x: Double,y: Short): Double = math.pow(x, y.toDouble)
+  def pow(x: Long,y: Double): Long = math.pow(x.toDouble, y).toLong
+  def pow(x: Long,y: Byte): Long = math.pow(x.toDouble, y.toDouble).toLong
+  def pow(x: Long,y: Int): Long = math.pow(x.toDouble, y.toDouble).toLong
+  def pow(x: Long,y: Long): Long = math.pow(x.toDouble, y.toDouble).toLong
+  def pow(x: Long,y: Short): Long = math.pow(x.toDouble, y.toDouble).toLong
+  def pow(x: Int,y: Double): Int = math.pow(x.toDouble, y).toInt
+  def pow(x: Int,y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Int,y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Int,y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Int,y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Short,y: Double): Short = math.pow(x.toDouble, y).toShort
+  def pow(x: Short,y: Byte): Short = math.pow(x.toDouble, y.toDouble).toShort
+  def pow(x: Short,y: Int): Short = math.pow(x.toDouble, y.toDouble).toShort
+  def pow(x: Short,y: Long): Short = math.pow(x.toDouble, y.toDouble).toShort
+  def pow(x: Short,y: Short): Short = math.pow(x.toDouble, y.toDouble).toShort
+  def pow(x: Byte,y: Double): Int = math.pow(x.toDouble, y).toInt
+  def pow(x: Byte,y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Byte,y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Byte,y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
+  def pow(x: Byte,y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
 
-    def receivePayment(primitive: Data.Primitive): Data.Primitive = {
+  def apply(memory: Memory, wattCounter: WattCounter): Unit = {
+
+
+    def calculateWatts(primitive: Data.Primitive): Data.Primitive = {
       wattCounter.memoryUsage(primitive.volume.toLong)
       primitive
     }
 
-    def getBigIntCost(x: scala.BigInt, y: Int): Long = { //FIXME overflow
-      (x.bitLength * y.abs / 8.0).toLong + 1
+    def calculateWattsForBigInt(x: scala.BigInt, y: Int): Long = {
+      (scala.BigInt(x.bitLength) * y.abs / 8 + 1).toLong //FIXME overflow
     }
     wattCounter.cpuUsage(CpuArithmetic)
     val a = memory.pop()
@@ -55,168 +82,168 @@ object ExponentialFunction extends FunctionDefinition {
       case Int32(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Int32(lhs ** rhs.intValue()))
+            calculateWatts(Int32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case _ => throw VmErrorException(WrongType)
         }
       case Int16(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Int16(lhs ** rhs.intValue()))
+            calculateWatts(Int16(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            receivePayment(Int16(lhs ** rhs))
+            calculateWatts(Int16(pow(lhs, rhs)))
           case _ => throw VmErrorException(WrongType)
         }
       case Int8(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Int32(lhs ** rhs))
+            calculateWatts(Int32(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Int32(lhs ** rhs.intValue()))
+            calculateWatts(Int32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            receivePayment(Number((lhs ** rhs).toDouble))
+            calculateWatts(Number(pow(lhs, rhs).toDouble))
           case _ => throw VmErrorException(WrongType)
         }
       case Uint8(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Uint8(lhs ** rhs.byteValue()))
+            calculateWatts(Uint8(pow(lhs, rhs.byteValue())))
           case Number(rhs) =>
-            receivePayment(Uint8(lhs ** rhs))
+            calculateWatts(Uint8(pow(lhs, rhs)))
           case _ => throw VmErrorException(WrongType)
         }
       case Uint16(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Uint16(lhs ** rhs.intValue()))
+            calculateWatts(Uint16(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            receivePayment(Uint16(lhs ** rhs))
+            calculateWatts(Uint16(pow(lhs, rhs)))
           case _ => throw VmErrorException(WrongType)
         }
       case Uint32(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Uint32(lhs ** rhs.intValue()))
+            calculateWatts(Uint32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            receivePayment(Uint32(lhs ** rhs))
+            calculateWatts(Uint32(pow(lhs, rhs)))
           case _ => throw VmErrorException(WrongType)
         }
       case Number(lhs) =>
         b match {
           case Int8(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case Int16(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case Int32(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case Uint8(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case Uint16(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case Uint32(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case BigInt(rhs) =>
-            receivePayment(Number(lhs ** rhs.longValue()))
+            calculateWatts(Number(pow(lhs, rhs.longValue())))
           case Number(rhs) =>
-            receivePayment(Number(lhs ** rhs))
+            calculateWatts(Number(pow(lhs, rhs)))
           case _ => throw VmErrorException(WrongType)
         }
       case BigInt(lhs) =>
         b match {
           case Int8(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue()))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue()))
             BigInt(lhs.pow(rhs.toInt))
           case Int16(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs.toInt))
           case Int32(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs))
           case Uint8(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs))
           case Uint16(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs))
           case Uint32(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs.toInt))
           case BigInt(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue()))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue()))
             BigInt(lhs.pow(rhs.intValue()))
           case Number(rhs) =>
-            wattCounter.memoryUsage(getBigIntCost(lhs, rhs.intValue))
+            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs.toInt))
           case _ => throw VmErrorException(WrongType)
         }
@@ -227,40 +254,4 @@ object ExponentialFunction extends FunctionDefinition {
   }
 }
 
-private object PowerfulImplicits {
-  implicit class DoubleExp(val x: Double) extends AnyVal {
-    def **(y: Double): Double = math.pow(x, y)
-    def **(y: Byte): Double = math.pow(x, y.toDouble)
-    def **(y: Int): Double = math.pow(x, y.toDouble)
-    def **(y: Long): Double = math.pow(x, y.toDouble)
-    def **(y: Short): Double = math.pow(x, y.toDouble)
-  }
-  implicit class LongExp(val x: Long) extends AnyVal {
-    def **(y: Double): Long = math.pow(x.toDouble, y).toLong
-    def **(y: Byte): Long = math.pow(x.toDouble, y.toDouble).toLong
-    def **(y: Int): Long = math.pow(x.toDouble, y.toDouble).toLong
-    def **(y: Long): Long = math.pow(x.toDouble, y.toDouble).toLong
-    def **(y: Short): Long = math.pow(x.toDouble, y.toDouble).toLong
-  }
-  implicit class IntExp(val x: Int) extends AnyVal {
-    def **(y: Double): Int = math.pow(x.toDouble, y).toInt
-    def **(y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
-    def **(y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
-    def **(y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
-    def **(y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
-  }
-  implicit class ShortExp(val x: Short) extends AnyVal {
-    def **(y: Double): Short = math.pow(x.toDouble, y).toShort
-    def **(y: Byte): Short = math.pow(x.toDouble, y.toDouble).toShort
-    def **(y: Int): Short = math.pow(x.toDouble, y.toDouble).toShort
-    def **(y: Long): Short = math.pow(x.toDouble, y.toDouble).toShort
-    def **(y: Short): Short = math.pow(x.toDouble, y.toDouble).toShort
-  }
-  implicit class ByteExp(val x: Byte) extends AnyVal {
-    def **(y: Double): Int = math.pow(x.toDouble, y).toInt
-    def **(y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
-    def **(y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
-    def **(y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
-    def **(y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
-  }
-}
+
