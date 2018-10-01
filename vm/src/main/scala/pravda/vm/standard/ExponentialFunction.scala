@@ -37,34 +37,33 @@ object ExponentialFunction extends FunctionDefinition {
   val returns = Seq(Data.Type.Number)
 
   //TODO ask about overloading
-  def pow(x: Double,y: Double): Double = math.pow(x, y)
-  def pow(x: Double,y: Byte): Double = math.pow(x, y.toDouble)
-  def pow(x: Double,y: Int): Double = math.pow(x, y.toDouble)
-  def pow(x: Double,y: Long): Double = math.pow(x, y.toDouble)
-  def pow(x: Double,y: Short): Double = math.pow(x, y.toDouble)
-  def pow(x: Long,y: Double): Long = math.pow(x.toDouble, y).toLong
-  def pow(x: Long,y: Byte): Long = math.pow(x.toDouble, y.toDouble).toLong
-  def pow(x: Long,y: Int): Long = math.pow(x.toDouble, y.toDouble).toLong
-  def pow(x: Long,y: Long): Long = math.pow(x.toDouble, y.toDouble).toLong
-  def pow(x: Long,y: Short): Long = math.pow(x.toDouble, y.toDouble).toLong
-  def pow(x: Int,y: Double): Int = math.pow(x.toDouble, y).toInt
-  def pow(x: Int,y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Int,y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Int,y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Int,y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Short,y: Double): Short = math.pow(x.toDouble, y).toShort
-  def pow(x: Short,y: Byte): Short = math.pow(x.toDouble, y.toDouble).toShort
-  def pow(x: Short,y: Int): Short = math.pow(x.toDouble, y.toDouble).toShort
-  def pow(x: Short,y: Long): Short = math.pow(x.toDouble, y.toDouble).toShort
-  def pow(x: Short,y: Short): Short = math.pow(x.toDouble, y.toDouble).toShort
-  def pow(x: Byte,y: Double): Int = math.pow(x.toDouble, y).toInt
-  def pow(x: Byte,y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Byte,y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Byte,y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
-  def pow(x: Byte,y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Double, y: Double): Double = math.pow(x, y)
+  private def pow(x: Double, y: Byte): Double = math.pow(x, y.toDouble)
+  private def pow(x: Double, y: Int): Double = math.pow(x, y.toDouble)
+  private def pow(x: Double, y: Long): Double = math.pow(x, y.toDouble)
+  private def pow(x: Double, y: Short): Double = math.pow(x, y.toDouble)
+  private def pow(x: Long, y: Double): Long = math.pow(x.toDouble, y).toLong
+  private def pow(x: Long, y: Byte): Long = math.pow(x.toDouble, y.toDouble).toLong
+  private def pow(x: Long, y: Int): Long = math.pow(x.toDouble, y.toDouble).toLong
+  private def pow(x: Long, y: Long): Long = math.pow(x.toDouble, y.toDouble).toLong
+  private def pow(x: Long, y: Short): Long = math.pow(x.toDouble, y.toDouble).toLong
+  private def pow(x: Int, y: Double): Int = math.pow(x.toDouble, y).toInt
+  private def pow(x: Int, y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Int, y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Int, y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Int, y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Short, y: Double): Short = math.pow(x.toDouble, y).toShort
+  private def pow(x: Short, y: Byte): Short = math.pow(x.toDouble, y.toDouble).toShort
+  private def pow(x: Short, y: Int): Short = math.pow(x.toDouble, y.toDouble).toShort
+  private def pow(x: Short, y: Long): Short = math.pow(x.toDouble, y.toDouble).toShort
+  private def pow(x: Short, y: Short): Short = math.pow(x.toDouble, y.toDouble).toShort
+  private def pow(x: Byte, y: Double): Int = math.pow(x.toDouble, y).toInt
+  private def pow(x: Byte, y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Byte, y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Byte, y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Byte, y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
 
   def apply(memory: Memory, wattCounter: WattCounter): Unit = {
-
 
     def calculateWatts(primitive: Data.Primitive): Data.Primitive = {
       wattCounter.memoryUsage(primitive.volume.toLong)
@@ -253,5 +252,3 @@ object ExponentialFunction extends FunctionDefinition {
     memory.push(res)
   }
 }
-
-
