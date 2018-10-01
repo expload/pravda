@@ -32,42 +32,38 @@ object SimpleTranslation {
 
     case Pop => codeToOps(Opcodes.POP)
 
-    case Add    => codeToOps(Opcodes.ADD)
-    case Mul    => codeToOps(Opcodes.ADD)
-    case Div    => codeToOps(Opcodes.DIV) //FIXME 0 if stack[1] == 0 othervise s[0] / s[1]
-    case Mod    => codeToOps(Opcodes.MOD) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
-    case Sub    => sub
-    case AddMod => codeToOps(Opcodes.ADD, Opcodes.MOD)
-    case MulMod => codeToOps(Opcodes.MUL, Opcodes.MOD)
+    case Add => codeToOps(Opcodes.ADD)
+    case Mul => codeToOps(Opcodes.MUL)
+    case Div => codeToOps(Opcodes.DIV) //FIXME 0 if stack[1] == 0 othervise s[0] / s[1]
+    case Mod => codeToOps(Opcodes.MOD) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
+    case Sub => sub
+    case AddMod =>
+      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) ::: codeToOps(Opcodes.SWAP,
+                                                                                               Opcodes.MOD,
+                                                                                               Opcodes.ADD,
+                                                                                               Opcodes.MOD)
+    case MulMod =>
+      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) ::: codeToOps(Opcodes.SWAP,
+                                                                                               Opcodes.MOD,
+                                                                                               Opcodes.MUL,
+                                                                                               Opcodes.MOD)
 
     //  case Not => codeToOps(Opcodes.NOT)
     case And => codeToOps(Opcodes.AND)
     case Or  => codeToOps(Opcodes.OR)
     case Xor => codeToOps(Opcodes.XOR)
 
-    //FIXME need exp function
     case Byte =>
       List(
         pushBigInt(31) :: Nil,
         sub,
         pushBigInt(8) :: Nil,
         codeToOps(Opcodes.MUL),
-        codeToOps(Opcodes.DUP),
-        pushBigInt(8) :: Nil,
-        codeToOps(Opcodes.SWAP),
-        sub,
         pushBigInt(2) :: Nil,
-        //exp here
-        pushBigInt(1) :: Nil,
+        callExp,
         codeToOps(Opcodes.SWAP),
-        sub,
-        codeToOps(Opcodes.SWAP),
-        pushBigInt(2) :: Nil,
-        //exp here
-        pushBigInt(1) :: Nil,
-        codeToOps(Opcodes.SWAP),
-        sub,
-        codeToOps(Opcodes.XOR),
+        codeToOps(Opcodes.DIV),
+        pushInt(0xff) :: Nil,
         codeToOps(Opcodes.AND)
       ).flatten
 
