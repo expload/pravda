@@ -2,10 +2,10 @@ package pravda.vm
 
 import java.io.File
 
-import pravda.proverka._
+import pravda.plaintest._
 import fastparse.all._
 
-object VmSuite extends Proverka {
+object VmSuite extends Plaintest {
   lazy val dir = new File("vm/src/test/resources")
   override lazy val ext = "sbox"
 

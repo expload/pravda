@@ -6,12 +6,12 @@ import java.nio.file.Files
 import fastparse.all._
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.Translator
-import pravda.proverka._
+import pravda.plaintest._
 import pravda.vm.{VmSandbox, asm}
 
 import scala.sys.process._
 
-object DotnetSandbox extends Proverka {
+object DotnetSandbox extends Plaintest {
 
   private def dotnetToAsm(filename: String, dlls: List[String]): Either[String, List[asm.Operation]] = {
     val exploadDll = new File("PravdaDotNet/Pravda.dll")

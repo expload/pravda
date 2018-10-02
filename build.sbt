@@ -315,7 +315,6 @@ lazy val plaintest = (project in file("plaintest"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "pprint" % "0.5.3",
       "com.lihaoyi" %% "utest" % "0.6.3"
     )
   )
