@@ -28,14 +28,9 @@ import tethys.derivation.builder._
 import tethys.derivation.semiauto._
 import jackson.jacksonTokenIteratorProducer
 import jackson.pretty.prettyJacksonTokenWriterProducer
-import org.json4s.JsonAST
-import org.json4s.JsonAST.JValue
 import pravda.node.data.blockchain.ExecutionInfo
 import pravda.node.servers.ApiRoute
 import pravda.vm.Data
-import tethys.readers.FieldName
-import tethys.readers.tokens.TokenIterator
-import tethys.writers.tokens.TokenWriter
 import supertagged.{Tagged, lifterF}
 
 object json {
@@ -69,67 +64,6 @@ object json {
 
   implicit val protobufByteStringWriter: JsonWriter[ByteString] =
     JsonWriter.stringWriter.contramap(byteString2hex)
-
-  //---------------------------------------------------------------------------
-  // Json4s AST support
-  //---------------------------------------------------------------------------
-
-  implicit val fieldReader: JsonReader[JsonAST.JField] = jsonReader[JsonAST.JField]
-
-  lazy val objReader: JsonReader[JsonAST.JObject] = jsonReader[JsonAST.JObject]
-
-  implicit val json4sReader: JsonReader[JValue] = new JsonReader[JValue] {
-
-    def read(it: TokenIterator)(implicit fieldName: FieldName): JValue = {
-      val token = it.currentToken()
-      if (token.isNullValue) {
-        it.skipExpression()
-        JsonAST.JNull
-      } else if (token.isArrayStart) {
-        var ar = Vector.empty[JValue]
-        while (!token.isArrayEnd) {
-          ar = ar :+ json4sReader.read(it)
-        }
-        it.skipExpression()
-        JsonAST.JArray(
-          ar.toList
-        )
-      } else if (token.isObjectStart) objReader.read(it)
-      else if (token.isStringValue) JsonAST.JString(JsonReader.stringReader.read(it))
-      else if (token.isNumberValue) JsonAST.JDecimal(JsonReader.bigDecimalReader.read(it))
-      else if (token.isBooleanValue) JsonAST.JBool(JsonReader.booleanReader.read(it))
-      else throw new Exception(s"Unable to read JSON. Unexpected token $token")
-    }
-  }
-
-  implicit val json4sWriter: JsonWriter[JValue] = new JsonWriter[JValue] {
-
-    def write(value: JValue, tokenWriter: TokenWriter): Unit = value match {
-      case JsonAST.JNothing      => tokenWriter.writeNull()
-      case JsonAST.JNull         => tokenWriter.writeNull()
-      case JsonAST.JBool(bool)   => tokenWriter.writeBoolean(bool)
-      case JsonAST.JDecimal(num) => tokenWriter.writeNumber(num)
-      case JsonAST.JDouble(num)  => tokenWriter.writeNumber(num)
-      case JsonAST.JInt(num)     => tokenWriter.writeNumber(num)
-      case JsonAST.JLong(num)    => tokenWriter.writeNumber(num)
-      case JsonAST.JString(s)    => tokenWriter.writeString(s)
-      case JsonAST.JObject(xs) =>
-        tokenWriter.writeObjectStart()
-        for ((k, v) <- xs) {
-          tokenWriter.writeFieldName(k)
-          write(v, tokenWriter)
-        }
-        tokenWriter.writeObjectEnd()
-      case JsonAST.JArray(xs) =>
-        tokenWriter.writeArrayStart()
-        for (x <- xs) write(x, tokenWriter)
-        tokenWriter.writeArrayEnd()
-      case JsonAST.JSet(xs) =>
-        tokenWriter.writeArrayStart()
-        for (x <- xs) write(x, tokenWriter)
-        tokenWriter.writeArrayEnd()
-    }
-  }
 
   //----------------------------------------------------------------------
   // Config RWs for tethys
@@ -287,16 +221,4 @@ object json {
 
   implicit def tethysJsonDecoder[T: JsonReader]: Transcoder[Json, T] =
     _.jsonAs[T].fold(throw _, identity)
-  //  implicit val zdtPushkaWriter = new Writer[ZonedDateTime] {
-//    def write(value: ZonedDateTime): Ast =
-//      Ast.Str(value.format(PushkaDateTimeFormatter))
-//  }
-//
-//  implicit val zdtPushkaReader = new Reader[ZonedDateTime] {
-//    def read(value: Ast): ZonedDateTime = value match {
-//      case Ast.Str(s) => ZonedDateTime.parse(s, PushkaDateTimeFormatter)
-//    }
-//  }
-//
-//  private val PushkaDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss Z")
 }

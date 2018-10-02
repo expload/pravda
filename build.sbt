@@ -52,11 +52,12 @@ val commonSettings = Seq(
     "-unchecked",
     "-Xmacro-settings:materialize-derivations",
     "-Ypartial-unification",
-    "-Ypatmat-exhaust-depth", "40"
+    "-Ypatmat-exhaust-depth",
+    "40"
   ),
   resolvers += "jitpack" at "https://jitpack.io",
   resolvers += Resolver.bintrayRepo("expload", "oss")
-)// ++ scalafixSettings
+) // ++ scalafixSettings
 
 val dotnetTests = file("dotnet-tests/resources")
 
@@ -77,13 +78,13 @@ lazy val common = (project in file("common"))
   )
 
 lazy val `vm-api` = (project in file("vm-api"))
-  .settings( commonSettings: _* )
+  .settings(commonSettings: _*)
   .settings(
     name := "pravda-vm-api",
     normalizedName := "pravda-vm-api",
     description := "Pravda VM API"
   )
-  .settings(scalacheckOps:_*)
+  .settings(scalacheckOps: _*)
   .settings(
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
@@ -107,13 +108,10 @@ lazy val vm = (project in file("vm"))
   .settings(
     sources in doc := Seq.empty,
     publishArtifact in packageDoc := false,
-    libraryDependencies ++= Seq(
-      "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"
-    )
   )
-	.dependsOn(`vm-api`, `vm-asm` % "compile->test")
+  .dependsOn(`vm-api`, `vm-asm` % "compile->test")
   .dependsOn(common % "compile->compile;test->test")
-  .dependsOn(proverka % "compile->test")
+  .dependsOn(plaintest % "compile->test")
 
 lazy val `vm-asm` = (project in file("vm-asm"))
   .settings(commonSettings: _*)
@@ -122,7 +120,7 @@ lazy val `vm-asm` = (project in file("vm-asm"))
     normalizedName := "pravda-vm-asm",
     description := "Pravda Virtual Machine Assembly language"
   )
-  .settings(scalacheckOps:_*)
+  .settings(scalacheckOps: _*)
   .settings(
     testOptions in Test ++= Seq(
       // Reduce size because PravdaAssemblerSpecification
@@ -149,7 +147,7 @@ lazy val dotnet = (project in file("dotnet"))
   )
   .dependsOn(`vm-asm`)
   .dependsOn(common % "test->test")
-  .dependsOn(proverka % "compile->test")
+  .dependsOn(plaintest % "compile->test")
 
 lazy val `node-db` = (project in file("node-db"))
   .disablePlugins(RevolverPlugin)
@@ -229,8 +227,8 @@ lazy val node = (project in file("node"))
     outputStrategy in run := Some(OutputStrategy.StdoutOutput)
   )
   .dependsOn(common)
-	.dependsOn(`node-db`)
-	.dependsOn(vm)
+  .dependsOn(`node-db`)
+  .dependsOn(vm)
   .dependsOn(`vm-asm`)
 
 lazy val yopt = (project in file("yopt"))
@@ -303,12 +301,21 @@ lazy val testkit = (project in file("testkit"))
   .dependsOn(dotnet)
   .dependsOn(codegen)
 
-lazy val proverka = (project in file("proverka"))
+lazy val yaml4s = (project in file("yaml4s"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.yaml" % "snakeyaml" % "1.23",
+      "org.json4s" %% "json4s-native" % "3.6.1"
+    )
+  )
+
+lazy val plaintest = (project in file("plaintest"))
+  .dependsOn(yaml4s)
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       "com.lihaoyi" %% "pprint" % "0.5.3",
-      "com.lihaoyi" %% "utest" % "0.6.3",
-      "com.lihaoyi" %% "fastparse" % "1.0.0"
+      "com.lihaoyi" %% "utest" % "0.6.3"
     )
   )
