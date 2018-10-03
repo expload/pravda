@@ -1,4 +1,112 @@
-{exe: event.exe}
-
+exe: event.exe
 ---
-null
+methods: |-
+  List(
+    Method(
+      List(
+        Nop,
+        LdStr("my_event"),
+        LdcI4(1234),
+        Call(
+          MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 24L)
+        ),
+        Nop,
+        LdStr("my_event"),
+        LdStr("my_string"),
+        Call(
+          MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 28L)
+        ),
+        Nop,
+        LdStr("my_event"),
+        LdcR8(2.0),
+        Call(
+          MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 32L)
+        ),
+        Nop,
+        LdStr("my_event"),
+        LdcI44,
+        NewArr(TypeRefData(6L, "Byte", "System")),
+        Dup,
+        LdToken(FieldData(307, "12DADA1FFF4D4787ADE3333147202C3B443E376F", 64L)),
+        Call(
+          MemberRefData(
+            TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
+            "InitializeArray",
+            36L
+          )
+        ),
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 44L)),
+        Call(
+          MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 50L)
+        ),
+        Nop,
+        Ret
+      ),
+      4,
+      None
+    ),
+    Method(List(Nop, Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        1,
+        Tpe(Void, false),
+        List(Tpe(String, false), Tpe(MVar(0), false))
+      )
+    ),
+    (
+      36L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(
+          Tpe(Cls(TypeRefData(6L, "Array", "System")), false),
+          Tpe(ValueTpe(TypeRefData(6L, "RuntimeFieldHandle", "System")), false)
+        )
+      )
+    ),
+    (
+      44L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false))
+      )
+    ),
+    (64L, FieldSig(I4)),
+    (67L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

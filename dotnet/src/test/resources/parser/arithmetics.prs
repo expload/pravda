@@ -1,7 +1,6 @@
-{exe: arithmetics.exe}
-
+exe: arithmetics.exe
 ---
-methods: |
+methods: |-
   List(
     Method(
       List(
@@ -46,7 +45,7 @@ methods: |
     ),
     Method(List(LdcI4S(10), StSFld(FieldData(22, "x", 33L)), Ret), 0, None)
   )
-signatures: |
+signatures: |-
   List(
     (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
     (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),

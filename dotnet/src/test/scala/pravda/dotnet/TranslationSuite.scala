@@ -1,39 +1,37 @@
 package pravda.dotnet
 
-object TranslationSuite
-//import java.io.File
-//
-//import pravda.dotnet.translation.Translator
-//import pravda.vm.asm
-//import pravda.vm.asm.PravdaAssembler
+object TranslationSuiteData {
+  final case class Input(exe: String)
+  final case class Output(translation: String)
+}
 
-//object TranslationSuite extends Plaintest {
-//  lazy val dir = new File("dotnet/src/test/resources/translation")
-//  override lazy val ext = "trs"
-//
-//  final case class Translation(ops: List[asm.Operation] = List.empty)
-//
-//  type State = Translation
-//  lazy val initState = Translation()
-//
-//  lazy val scheme = Seq(
-//    input("exe") { line =>
-//      val parts = line.split("\\s+").toList
-//      val exe = parts.head
-//      val pdbE = if (parts.length > 1) {
-//        parsePdbFile(parts(1)).map(p => Some(p._2))
-//      } else {
-//        Right(None)
-//      }
-//      for {
-//        pe <- parsePeFile(exe)
-//        pdb <- pdbE
-//        (_, cilData, methods, signatures) = pe
-//        asm <- Translator.translateAsm(methods, cilData, signatures, pdb).left.map(_.mkString)
-//      } yield (s: State) => s.copy(ops = asm)
-//    },
-//    textOutput("translation") { s =>
-//      Right(PravdaAssembler.render(s.ops))
-//    }
-//  )
-//}
+import java.io.File
+
+import pravda.plaintest.Plaintest
+import TranslationSuiteData._
+import pravda.dotnet.translation.Translator
+import pravda.vm.asm.PravdaAssembler
+
+object TranslationSuite extends Plaintest[Input, Output] {
+
+  lazy val dir = new File("dotnet/src/test/resources/translation")
+  override lazy val ext = "trs"
+  override lazy val allowOverwrite = true
+
+  def produce(input: Input): Either[String, Output] = {
+    val parts = input.exe.split("\\s+").toList
+    val exe = parts.head
+    val pdbE = if (parts.length > 1) {
+      parsePdbFile(parts(1)).map(p => Some(p._2))
+    } else {
+      Right(None)
+    }
+
+    for {
+      pe <- parsePeFile(exe)
+      pdb <- pdbE
+      (_, cilData, methods, signatures) = pe
+      asm <- Translator.translateAsm(methods, cilData, signatures, pdb).left.map(_.mkString)
+    } yield Output(PravdaAssembler.render(asm))
+  }
+}

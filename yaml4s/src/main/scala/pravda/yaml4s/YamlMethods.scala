@@ -3,14 +3,18 @@ package pravda.yaml4s
 import java.io.{FileReader, InputStreamReader}
 
 import org.json4s._
-import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.{DumperOptions, Yaml}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 object YamlMethods {
 
-  private val yaml = new Yaml()
+  private val yaml = {
+    val doptions = new DumperOptions()
+    doptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+    new Yaml(doptions)
+  }
 
   private def jvalue2java(node: JValue): AnyRef = {
     node match {

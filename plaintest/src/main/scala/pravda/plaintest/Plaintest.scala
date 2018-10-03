@@ -63,18 +63,23 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
               case Right((input, output)) =>
                 if (overwrite) {
                   if (allowOverwrite) {
-                    val pw = new PrintWriter(f)
-                    pw.write(yaml4s.renderYaml(Extraction.decompose(input)(DefaultFormats)))
-                    pw.write("\n---\n")
-                    pw.write(yaml4s.renderYaml(Extraction.decompose(output)(DefaultFormats)))
-                    pw.close()
+                    produce(input) match {
+                      case Right(correct) =>
+                        val pw = new PrintWriter(f)
+                        pw.write(yaml4s.renderYaml(Extraction.decompose(input)(DefaultFormats)))
+                        pw.write("---\n")
+                        pw.write(yaml4s.renderYaml(Extraction.decompose(correct)(DefaultFormats)))
+                        pw.close()
+                      case Left(err) =>
+                        Predef.assert(false, s"${f.getName}: $err")
+                    }
                   } else {
                     Predef.assert(false, s"${f.getName}: Overwriting is not allowed")
                   }
                 } else {
                   produce(input) match {
                     case Right(res) => res ==> output
-                    case Left(err) => Predef.assert(false, s"${f.getName}: $err")
+                    case Left(err)  => Predef.assert(false, s"${f.getName}: $err")
                   }
                 }
               case Left(err) => Predef.assert(false, s"${f.getName}: $err")
