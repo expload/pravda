@@ -80,7 +80,7 @@ object CommandLineTest extends TestSuite {
 
     "sequence parser should parse" - {
       otherTypesParser(Seq(1), "--seq", "1")(_.seqInts)
-      otherTypesParser(Seq(1, 2, 3), "--seq", "1", "2", "3")(_.seqInts)
+      otherTypesParser(Seq(1, 2, 3), "--seq", "1,2,3")(_.seqInts)
     }
 
     "tuple parser should parse" - {
@@ -90,12 +90,12 @@ object CommandLineTest extends TestSuite {
 
     "map parser should parse" - {
       otherTypesParser(Map("a" -> true), "--map", "a->true")(_.mapStringToBool)
-      otherTypesParser(Map("a" -> true, "b" -> false), "--map", "a->true", "b->false")(_.mapStringToBool)
+      otherTypesParser(Map("a" -> true, "b" -> false), "--map", "a->true,b->false")(_.mapStringToBool)
     }
 
     "seq of tuple should parse" - {
       otherTypesParser(Seq(("a", "b")), "--seqtuple", "a->b")(_.seqTupleStringString)
-      otherTypesParser(Seq(("a", "b"), ("c", "d")), "--seqtuple", "a->b", "c->d")(_.seqTupleStringString)
+      otherTypesParser(Seq(("a", "b"), ("c", "d")), "--seqtuple", "a->b,c->d")(_.seqTupleStringString)
     }
 
     "char parser should parse" - {
@@ -207,9 +207,8 @@ object CommandLineTest extends TestSuite {
 
   def otherTypesParser[T](expectedValue: T, args: String*)(slice: Config => T): Unit = {
     otherTypesParser.parse(args.toList, Config()) match {
-      case Ok(r)           => slice(r) ==> expectedValue
-      case ParseError(msg) => Predef.assert(false, msg)
-      case _               => assert(false)
+      case Ok(r) => slice(r) ==> expectedValue
+      case _     => assert(false)
     }
   }
 

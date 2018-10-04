@@ -20,6 +20,10 @@ package pravda.yopt
 import java.io.File
 import java.net.URI
 
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
+
 import scala.concurrent.duration.Duration
 import scala.util.Try
 
@@ -112,7 +116,7 @@ object CmdDecoder {
             Try(BigDecimal(item)).fold(
               _ => Left(BigDecimalDecodeError(item).toString),
               v => Right((v, line.tail))
-          ))
+            ))
         .getOrElse(noValueError)
     override def optInfo = Some("<bigdecimal>")
   }
@@ -125,7 +129,7 @@ object CmdDecoder {
             Try(item.toDouble).fold(
               _ => Left(DoubleDecodeError(item).toString),
               v => Right((v, line.tail))
-          ))
+            ))
         .getOrElse(noValueError)
     override def optInfo = Some("<double>")
   }
@@ -138,7 +142,7 @@ object CmdDecoder {
             Try(new URI(item)).fold(
               _ => Left(UriDecodeError(item).toString),
               v => Right((v, line.tail))
-          ))
+            ))
         .getOrElse(noValueError)
     override def optInfo = Some("<uri>")
   }
@@ -151,7 +155,7 @@ object CmdDecoder {
             Try(Duration(item)).fold(
               _ => Left(DurationDecodeError(item).toString),
               v => Right((v, line.tail))
-          ))
+            ))
         .getOrElse(noValueError)
     override def optInfo = Some("<duration>")
   }
@@ -177,20 +181,19 @@ object CmdDecoder {
     override val optInfo: Option[String] = Some("<char>")
   }
 
+  // Sample values: 1 OR 1,2,3
   implicit def seqReader[A: CmdDecoder]: CmdDecoder[Seq[A]] = new CmdDecoder[Seq[A]] {
-    override def decode(line: Line): Either[String, (Seq[A], Line)] = {
-      val decoder = implicitly[CmdDecoder[A]]
-      def aux(line: Line): (Seq[A], Line) =
-        decoder.decode(line) match {
-          case Right((a, tail)) =>
-            val (res, finalTail) = aux(tail)
-            (a +: res, finalTail)
-          case Left(err) =>
-            (List.empty, line)
-        }
+    override def decode(line: Line): Either[String, (Seq[A], Line)] =
+      line.headOption
+        .map { item =>
+          val list: List[Either[String, A]] = item
+            .split(',')
+            .map(a => implicitly[CmdDecoder[A]].decode(List(a)).map(_._1))
+            .toList
 
-      Right(aux(line))
-    }
+          list.sequence.map((_, line.tail))
+        }
+        .getOrElse(noValueError)
 
     override val optInfo: Option[String] = Some("<sequence>")
   }
@@ -218,10 +221,16 @@ object CmdDecoder {
       override val optInfo: Option[String] = Some("<tuple2>")
     }
 
-  implicit def mapReader[K: CmdDecoder, V: CmdDecoder]: CmdDecoder[Map[K, V]] =
+  // Sample values: a->true OR a->true,b->false
+  implicit def mapReader[K: CmdDecoder, V: CmdDecoder] =
     new CmdDecoder[Map[K, V]] {
-      override def decode(line: Line): Either[String, (Map[K, V], Line)] =
-        implicitly[CmdDecoder[Seq[(K, V)]]].decode(line).map { case (res, tail) => (res.toMap, tail) }
+      override def decode(line: Line): Either[String, (Map[K, V], Line)] = {
+        line.headOption
+          .map { item =>
+            implicitly[CmdDecoder[Seq[(K, V)]]].decode(List(item)).map(x => (x._1.toMap, line.tail))
+          }
+          .getOrElse(noValueError)
+      }
 
       override def optInfo = Some("<map>")
     }
