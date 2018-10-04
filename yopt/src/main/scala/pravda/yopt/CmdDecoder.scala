@@ -116,7 +116,7 @@ object CmdDecoder {
             Try(BigDecimal(item)).fold(
               _ => Left(BigDecimalDecodeError(item).toString),
               v => Right((v, line.tail))
-            ))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<bigdecimal>")
   }
@@ -129,7 +129,7 @@ object CmdDecoder {
             Try(item.toDouble).fold(
               _ => Left(DoubleDecodeError(item).toString),
               v => Right((v, line.tail))
-            ))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<double>")
   }
@@ -142,7 +142,7 @@ object CmdDecoder {
             Try(new URI(item)).fold(
               _ => Left(UriDecodeError(item).toString),
               v => Right((v, line.tail))
-            ))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<uri>")
   }
@@ -155,7 +155,7 @@ object CmdDecoder {
             Try(Duration(item)).fold(
               _ => Left(DurationDecodeError(item).toString),
               v => Right((v, line.tail))
-            ))
+          ))
         .getOrElse(noValueError)
     override def optInfo = Some("<duration>")
   }
