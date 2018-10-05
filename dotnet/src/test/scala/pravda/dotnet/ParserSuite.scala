@@ -19,8 +19,7 @@ object ParserSuite extends Proverka {
     input("exe") { exe =>
       for {
         pe <- parsePeFile(exe)
-        (_, cilData, ms, ss) = pe
-      } yield (s: State) => s.copy(methods = ms, signatures = ss.toList.sortBy(_._1))
+      } yield (s: State) => s.copy(methods = pe.methods, signatures = pe.signatures.toList.sortBy(_._1))
     },
     output("methods") { s =>
       Right(s.methods)

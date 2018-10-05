@@ -11,10 +11,10 @@ object SmartProgramTests extends TestSuite {
 
   val tests = Tests {
     'smartProgramParse - {
-      val Right((_, cilData, methods, signatures)) = parsePeFile("smart_program.exe")
+      val Right(pe) = parsePeFile("smart_program.exe")
 
       TestUtils.assertEqual(
-        cilData.tables.customAttributeTable,
+        pe.cilData.tables.customAttributeTable,
         Vector(
           CustomAttributeData(Ignored,
                               MemberRefData(TypeRefData(6,
@@ -52,11 +52,11 @@ object SmartProgramTests extends TestSuite {
     }
 
     'smartProgramPdbParse - {
-      val Right((pdb, tables)) = parsePdbFile("smart_program.pdb")
+      val Right(pdb) = parsePdbFile("smart_program.pdb")
       val src = "/tmp/pravda/smart_program.cs"
 
       TestUtils.assertEqual(
-        tables.methodDebugInformationTable,
+        pdb.tablesData.methodDebugInformationTable,
         Vector(
           MethodDebugInformationData(Some(src),
                                      List(SequencePoint(0, 8, 44, 8, 45),

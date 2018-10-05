@@ -115,11 +115,11 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
           .text("Compile Pravda programs.")
           .action(_ => PravdaConfig.Compile(CompileMode.Nope))
           .children(
-            opt[File]('i', "input")
+            opt[Seq[File]]('i', "input")
               .text("Input file")
               .action {
-                case (file, config: PravdaConfig.Compile) =>
-                  config.copy(input = Some(file.getAbsolutePath))
+                case (files, config: PravdaConfig.Compile) =>
+                  config.copy(input = files.map(_.getAbsolutePath).toList)
                 case (_, otherwise) => otherwise
               },
             opt[File]('o', "output")
@@ -151,17 +151,11 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.DotNet))
               .children(
-                opt[Unit]("visualize")
-                  .text("Visualize translation. Prints asm commands along with source CIL opcodes.")
+                opt[String]("main-class")
+                  .text("Full name of class that should be compile to Pravda program")
                   .action {
-                    case ((), config: PravdaConfig.Compile) =>
-                      config.copy(compiler = PravdaConfig.CompileMode.DotNetVisualize)
-                  },
-                opt[File]("pdb")
-                  .text("Pdb file with debug information obtained from .NET compilation.")
-                  .action {
-                    case (file, config: PravdaConfig.Compile) =>
-                      config.copy(pdb = Some(file.getAbsolutePath))
+                    case (s, config: PravdaConfig.Compile) =>
+                      config.copy(mainClass = Some(s))
                     case (_, otherwise) => otherwise
                   }
               )

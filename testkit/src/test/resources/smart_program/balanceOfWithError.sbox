@@ -6,15 +6,15 @@ storage:
   "init" = null,
   x62616C616E6365730011 = int32(10)
 ---expectations
-watts-spent: 199
-stack
+watts-spent: 197
+stack:
   null, "balanceOf", null, x62616C616E636573, null, int32(0)
-effects
+effects:
   sget "init" null
-error
+error:
   |Unexpected type: Null
   |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  balanceOf method body (smart_program.cs:9,9-9,51)
-  |  balanceOf method body (smart_program.cs:9,9-9,51)
+  |  program:441 (smart_program.cs:9,9-9,51)
+  |  program:1963 (smart_program.cs:9,9-9,51)
 ---dotnet-files
 smart_program.cs

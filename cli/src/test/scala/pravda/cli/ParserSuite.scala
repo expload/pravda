@@ -51,7 +51,7 @@ object ParserSuite extends TestSuite {
     }
     "compile" - {
       "-i program.forth -o a.out" - assert {
-        PravdaArgsParser.parse(List("compile", "asm", "-i", "program.forth", "-o", "a.out"), PravdaConfig.Nope) match {
+        PravdaArgsParser.parse(List("compile", "asm", "-o", "a.out", "-i", "program.forth"), PravdaConfig.Nope) match {
           case Ok(config: Compile) =>
             config.input.exists(_.endsWith("program.forth")) &&
               config.output.exists(_.endsWith("a.out"))

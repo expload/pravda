@@ -1,7 +1,6 @@
 ---exe
 objects.exe
 ---translation
-meta translator_mark "jump to methods"
 dup
 push "ctor"
 eq
@@ -18,17 +17,14 @@ eq
 jumpi @method_Func
 push "Wrong method name"
 throw
-meta translator_mark "Func method"
+@method_Func:
 meta method {
 "name":"Func","returnTpe":int8(3)
 }
-@method_Func:
-meta translator_mark "Func local vars definition"
 push null
 push null
 push null
 push null
-meta translator_mark "Func method body"
 push int32(100)
 new {}
 call @vtable_A
@@ -69,7 +65,6 @@ pop
 push int32(1)
 dupn
 jump @Func_lvc
-meta translator_mark "Func local vars clearing"
 @Func_lvc:
 swap
 pop
@@ -81,14 +76,11 @@ swap
 pop
 swap
 pop
-meta translator_mark "end of Func method"
 jump @stop
-meta translator_mark "ctor method"
+@method_ctor:
 meta method {
 "name":"ctor","returnTpe":int8(0)
 }
-@method_ctor:
-meta translator_mark "ctor check"
 from
 paddr
 owner
@@ -107,19 +99,12 @@ throw
 push null
 push "init"
 sput
-meta translator_mark "ctor local vars definition"
-meta translator_mark "ctor method body"
 jump @ctor_lvc
-meta translator_mark "ctor local vars clearing"
 @ctor_lvc:
 pop
-meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "A.AnswerA func"
 @func_A.AnswerA:
-meta translator_mark "A.AnswerA local vars definition"
 push null
-meta translator_mark "A.AnswerA func body"
 push int32(2)
 dupn
 struct_get "AVal"
@@ -131,16 +116,11 @@ pop
 push int32(1)
 dupn
 jump @A.AnswerA_lvc
-meta translator_mark "A.AnswerA local vars clearing"
 @A.AnswerA_lvc:
 swap
 pop
-meta translator_mark "end of A.AnswerA func"
 ret
-meta translator_mark "A.ctor_int32 func"
 @func_A.ctor_int32:
-meta translator_mark "A.ctor_int32 local vars definition"
-meta translator_mark "A.ctor_int32 func body"
 push int32(2)
 dupn
 pop
@@ -150,16 +130,11 @@ push int32(2)
 dupn
 struct_mut "AVal"
 jump @A.ctor_int32_lvc
-meta translator_mark "A.ctor_int32 local vars clearing"
 @A.ctor_int32_lvc:
 pop
-meta translator_mark "end of A.ctor_int32 func"
 ret
-meta translator_mark "B.AnswerB func"
 @func_B.AnswerB:
-meta translator_mark "B.AnswerB local vars definition"
 push null
-meta translator_mark "B.AnswerB func body"
 push int32(2)
 dupn
 struct_get "BVal"
@@ -171,16 +146,11 @@ pop
 push int32(1)
 dupn
 jump @B.AnswerB_lvc
-meta translator_mark "B.AnswerB local vars clearing"
 @B.AnswerB_lvc:
 swap
 pop
-meta translator_mark "end of B.AnswerB func"
 ret
-meta translator_mark "B.ctor_int32 func"
 @func_B.ctor_int32:
-meta translator_mark "B.ctor_int32 local vars definition"
-meta translator_mark "B.ctor_int32 func body"
 push int32(2)
 dupn
 pop
@@ -190,16 +160,11 @@ push int32(2)
 dupn
 struct_mut "BVal"
 jump @B.ctor_int32_lvc
-meta translator_mark "B.ctor_int32 local vars clearing"
 @B.ctor_int32_lvc:
 pop
-meta translator_mark "end of B.ctor_int32 func"
 ret
-meta translator_mark "A vtable initialization"
 @vtable_A:
 ret
-meta translator_mark "B vtable initialization"
 @vtable_B:
 ret
-meta translator_mark "helper functions"
 @stop:

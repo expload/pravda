@@ -1,7 +1,6 @@
 ---exe
 static_class.exe
 ---translation
-meta translator_mark "jump to methods"
 dup
 push "ctor"
 eq
@@ -18,31 +17,24 @@ eq
 jumpi @method_ToHex
 push "Wrong method name"
 throw
-meta translator_mark "ToHex method"
+@method_ToHex:
 meta method {
 "name":"ToHex",int32(0):int8(14),"returnTpe":int8(11)
 }
-@method_ToHex:
-meta translator_mark "ToHex local vars definition"
-meta translator_mark "ToHex method body"
 push int32(2)
 dupn
 call @func_Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes
 jump @ToHex_lvc
-meta translator_mark "ToHex local vars clearing"
 @ToHex_lvc:
 swap
 pop
 swap
 pop
-meta translator_mark "end of ToHex method"
 jump @stop
-meta translator_mark "ctor method"
+@method_ctor:
 meta method {
 "name":"ctor","returnTpe":int8(0)
 }
-@method_ctor:
-meta translator_mark "ctor check"
 from
 paddr
 owner
@@ -61,18 +53,11 @@ throw
 push null
 push "init"
 sput
-meta translator_mark "ctor local vars definition"
-meta translator_mark "ctor method body"
 jump @ctor_lvc
-meta translator_mark "ctor local vars clearing"
 @ctor_lvc:
 pop
-meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 func"
 @func_Expload.Pravda.StringUtils.ByteToHex_uint8:
-meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 local vars definition"
-meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 func body"
 push int32(2)
 dupn
 push int32(16)
@@ -88,18 +73,13 @@ call @func_Expload.Pravda.StringUtils.HexPart_int32
 swap
 concat
 jump @Expload.Pravda.StringUtils.ByteToHex_uint8_lvc
-meta translator_mark "Expload.Pravda.StringUtils.ByteToHex_uint8 local vars clearing"
 @Expload.Pravda.StringUtils.ByteToHex_uint8_lvc:
 swap
 pop
-meta translator_mark "end of Expload.Pravda.StringUtils.ByteToHex_uint8 func"
 ret
-meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes func"
 @func_Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes:
-meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes local vars definition"
 push null
 push null
-meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes func body"
 push ""
 push int32(3)
 swapn
@@ -146,7 +126,6 @@ jumpi @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br10
 push int32(2)
 dupn
 jump @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_lvc
-meta translator_mark "Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes local vars clearing"
 @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_lvc:
 swap
 pop
@@ -154,12 +133,8 @@ swap
 pop
 swap
 pop
-meta translator_mark "end of Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes func"
 ret
-meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 func"
 @func_Expload.Pravda.StringUtils.HexPart_int32:
-meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 local vars definition"
-meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 func body"
 push int32(2)
 dupn
 push int32(1)
@@ -425,11 +400,8 @@ jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
 @Expload.Pravda.StringUtils.HexPart_int32_br166:
 push ""
 jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
-meta translator_mark "Expload.Pravda.StringUtils.HexPart_int32 local vars clearing"
 @Expload.Pravda.StringUtils.HexPart_int32_lvc:
 swap
 pop
-meta translator_mark "end of Expload.Pravda.StringUtils.HexPart_int32 func"
 ret
-meta translator_mark "helper functions"
 @stop:

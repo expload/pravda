@@ -32,7 +32,7 @@ object MappingInitializationTranslation extends OpcodeTranslatorOnlyAsm {
         val res = for {
           parentSig <- ctx.tctx.signatures.get(signIdx)
         } yield {
-          if (CallsTransation.detectMapping(parentSig)) {
+          if (CallsTranslation.detectMapping(parentSig)) {
             Right(
               (2, List.empty)
             )

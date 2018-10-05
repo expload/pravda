@@ -1,7 +1,6 @@
 ---exe
 event.exe
 ---translation
-meta translator_mark "jump to methods"
 dup
 push "ctor"
 eq
@@ -18,13 +17,10 @@ eq
 jumpi @method_MakeEvent
 push "Wrong method name"
 throw
-meta translator_mark "MakeEvent method"
+@method_MakeEvent:
 meta method {
 "name":"MakeEvent","returnTpe":int8(0)
 }
-@method_MakeEvent:
-meta translator_mark "MakeEvent local vars definition"
-meta translator_mark "MakeEvent method body"
 push "my_event"
 push int32(1234)
 swap
@@ -39,21 +35,17 @@ swap
 event
 push "my_event"
 new int8[1, 2, 3, 4]
-call @array_to_bytes
+call @stdlib_array_to_bytes
 swap
 event
 jump @MakeEvent_lvc
-meta translator_mark "MakeEvent local vars clearing"
 @MakeEvent_lvc:
 pop
-meta translator_mark "end of MakeEvent method"
 jump @stop
-meta translator_mark "ctor method"
+@method_ctor:
 meta method {
 "name":"ctor","returnTpe":int8(0)
 }
-@method_ctor:
-meta translator_mark "ctor check"
 from
 paddr
 owner
@@ -72,16 +64,11 @@ throw
 push null
 push "init"
 sput
-meta translator_mark "ctor local vars definition"
-meta translator_mark "ctor method body"
 jump @ctor_lvc
-meta translator_mark "ctor local vars clearing"
 @ctor_lvc:
 pop
-meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "helper functions"
-@array_to_bytes:
+@stdlib_array_to_bytes:
 dup
 length
 push x

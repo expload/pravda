@@ -6,7 +6,7 @@ heap:
 storage:
 ---expectations
 watts-spent: 11
-error
+error:
   |WrongType
   |program address: 0000000000000000000000000000000000000000000000000000000000000000
   |  program:0

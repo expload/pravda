@@ -28,11 +28,10 @@ object PravdaConfig {
   sealed trait CompileMode
 
   object CompileMode {
-    case object Nope            extends CompileMode
-    case object Asm             extends CompileMode
-    case object Disasm          extends CompileMode
-    case object DotNet          extends CompileMode
-    case object DotNetVisualize extends CompileMode
+    case object Nope   extends CompileMode
+    case object Asm    extends CompileMode
+    case object Disasm extends CompileMode
+    case object DotNet extends CompileMode
   }
 
   case object Nope extends PravdaConfig
@@ -72,9 +71,9 @@ object PravdaConfig {
   }
 
   final case class Compile(compiler: CompileMode,
-                           input: Option[String] = None,
+                           input: List[String] = List.empty,
                            output: Option[String] = None,
-                           pdb: Option[String] = None)
+                           mainClass: Option[String] = None)
       extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,

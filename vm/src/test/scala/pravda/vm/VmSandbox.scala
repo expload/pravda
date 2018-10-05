@@ -105,7 +105,7 @@ object VmSandbox {
   }
 
   def printExpectations(e: Expectations): String = {
-    def printData(d: Data) = d.mkString(pretty = true).replace('\n', ' ')
+    def printData(d: Data) = d.mkString(pretty = true).replace("\n", "")
 
     def printEffect(effect: EnvironmentEffect) = effect match {
       case StoragePut(key, value)                 => s"sput ${printData(key)} ${printData(value)}"
@@ -131,7 +131,7 @@ object VmSandbox {
         .flatMap { op =>
           for {
             text <- op._2
-          } yield s"""|${op._1}
+          } yield s"""|${op._1}:
               ${text.split('\n').map("|  " + _).mkString("\n")}""".stripMargin
         }
         .mkString("\n")
@@ -148,9 +148,9 @@ object VmSandbox {
         Seq(
           "stack" -> nonEmptyReduce(e.memory.stack)(_.map(printData).mkString(", ")),
           "heap" -> nonEmptyReduce(e.memory.heap.toSeq)(_.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }
-            .mkString(",\n  ")),
-          "effects" -> nonEmptyReduce(e.effects)(_.map(printEffect).mkString(",\n  ")),
-          "events" -> nonEmptyReduce(e.events)(_.map(printEvent).mkString(",\n  ")),
+            .mkString(",\n")),
+          "effects" -> nonEmptyReduce(e.effects)(_.map(printEffect).mkString(",\n")),
+          "events" -> nonEmptyReduce(e.events)(_.map(printEvent).mkString(",\n")),
           "error" -> nonEmptyReduce(e.error.toList)(_.head.split('\n').map("|" + _).mkString("\n"))
         ))
   }
