@@ -140,79 +140,84 @@ object PravdaAssembler {
     * Disassembles bytecode to sequence of operations.
     * Use render() to build text from sequence of operations.
     */
-  def disassemble(bytecode: ByteString): Seq[Operation] = {
+  def disassemble(bytecode: ByteString): Seq[(Int, Operation)] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
-    val operations = mutable.Buffer.empty[Operation]
+    val operations = mutable.Buffer.empty[(Int, Operation)]
     var label = Option.empty[String]
 
     while (buffer.hasRemaining) {
+      val offset = buffer.position()
       val opcode = buffer.get & 0xff
 
       (opcode: @switch) match {
         case Opcodes.META =>
           Metadata.readFromByteBuffer(buffer) match {
             case Metadata.LabelDef(name) =>
-              operations += Operation.Label(name)
+              operations += (offset -> Operation.Label(name))
             case Metadata.LabelUse(name) =>
               label = Some(name)
             case metadata =>
-              operations += Operation.Meta(metadata)
+              operations += (offset -> Operation.Meta(metadata))
           }
         case Opcodes.STRUCT_GET_STATIC =>
           val offset = buffer.position()
           Data.readFromByteBuffer(buffer) match {
-            case key: Primitive => operations += StructGet(Some(key))
+            case key: Primitive => operations += (offset -> StructGet(Some(key)))
             case data           => throw UnexpectedTypeException(data, Some(offset))
           }
         case Opcodes.STRUCT_MUT_STATIC =>
           val offset = buffer.position()
           Data.readFromByteBuffer(buffer) match {
-            case key: Primitive => operations += StructMut(Some(key))
+            case key: Primitive => operations += (offset -> StructMut(Some(key)))
             case data           => throw UnexpectedTypeException(data, Some(offset))
           }
         case Opcodes.PUSHX if label.nonEmpty =>
           Data.readFromByteBuffer(buffer)
-          operations += Operation.PushRef(label.get)
+          operations += (offset -> Operation.PushRef(label.get))
           label = None
         case Opcodes.PUSHX =>
           val offset = buffer.position()
           Data.readFromByteBuffer(buffer) match {
-            case p: Primitive => operations += Operation.Push(p)
+            case p: Primitive => operations += (offset -> Operation.Push(p))
             case data         => throw UnexpectedTypeException(data, Some(offset))
           }
         case Opcodes.JUMP =>
           operations.last match {
-            case Operation.PushRef(l) =>
+            case (_, Operation.PushRef(l)) =>
               operations.remove(operations.length - 1)
-              operations += Operation.Jump(Some(l))
+              operations += (offset -> Operation.Jump(Some(l)))
             case _ =>
-              operations += Operation.Jump(None)
+              operations += (offset -> Operation.Jump(None))
           }
         case Opcodes.JUMPI =>
           operations.last match {
-            case Operation.PushRef(l) =>
+            case (_, Operation.PushRef(l)) =>
               operations.remove(operations.length - 1)
-              operations += Operation.JumpI(Some(l))
+              operations += (offset -> Operation.JumpI(Some(l)))
             case _ =>
-              operations += Operation.JumpI(None)
+              operations += (offset -> Operation.JumpI(None))
           }
         case Opcodes.CALL =>
           operations.last match {
-            case Operation.PushRef(l) =>
+            case (_, Operation.PushRef(l)) =>
               operations.remove(operations.length - 1)
-              operations += Operation.Call(Some(l))
+              operations += (offset -> Operation.Call(Some(l)))
             case _ =>
-              operations += Operation.Call(None)
+              operations += (offset -> Operation.Call(None))
           }
 
-        case Opcodes.NEW                                    => operations += Operation.New(Data.readFromByteBuffer(buffer))
-        case Opcodes.STRUCT_GET                             => operations += Operation.StructGet(None)
-        case Opcodes.STRUCT_MUT                             => operations += Operation.StructMut(None)
-        case op if Operation.operationByOpcode.contains(op) => operations += Operation.operationByOpcode(op)
+        case Opcodes.NEW                                    =>
+          operations += (offset -> Operation.New(Data.readFromByteBuffer(buffer)))
+        case Opcodes.STRUCT_GET                             =>
+          operations += (offset -> Operation.StructGet(None))
+        case Opcodes.STRUCT_MUT                             =>
+          operations += (offset -> Operation.StructMut(None))
+        case op if Operation.operationByOpcode.contains(op) =>
+          operations += (offset -> Operation.operationByOpcode(op))
       }
     }
 
-    operations.filter(_ != Nop)
+    operations.filter(_._2 != Nop)
   }
 
   /**

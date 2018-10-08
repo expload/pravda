@@ -114,7 +114,7 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
                     wattPayerSignature,
                     nonce
                   )
-                  println(Show[SignedTransaction].show(tx))
+
                   val mode = maybeMode.getOrElse("commit")
                   val result = abciClient.broadcastTransaction(tx, mode)
 

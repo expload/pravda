@@ -156,8 +156,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           else (thisName, effect :: Nil) :: acc
       }
 
-  private def asmAstToAsm(operations: Seq[Operation]) = {
-    PravdaAssembler.render(operations)
+  private def asmAstToAsm(operations: Seq[(Int, Operation)]) = {
+    PravdaAssembler.render(operations.map(_._2))
   }
 
   private def programToAsm(program: Data.Primitive.Bytes): String =

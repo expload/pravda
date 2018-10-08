@@ -26,7 +26,8 @@ object VmSandbox {
                                  watts: Long = 0,
                                  memory: Memory = Memory(),
                                  storage: Map[Primitive, Data] = Map.empty,
-                                 programs: Map[Address, Primitive.Bytes] = Map.empty)
+                                 programs: Map[Address, Primitive.Bytes] = Map.empty,
+                                 executor: Option[Address])
 
   final case class Memory(stack: Seq[Data.Primitive] = Nil, heap: Map[Data.Primitive.Ref, Data] = Map.empty)
 
@@ -79,19 +80,21 @@ object VmSandbox {
     val address = P(bytes).map(Address @@ _.data)
 
     val preconditions = {
+      val executor = P("executor:" ~/ space ~ address)
       val watts = P("watts-limit:" ~/ space ~ uint)
-      val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
+      val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep(sep = `,`))
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
       val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
-      P(space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
+      P(space ~ executor.? ~ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
         .map {
-          case (b, w, m, s, ps) =>
+          case (e, b, w, m, s, ps) =>
             Preconditions(
               balances = b.getOrElse(Nil).toMap,
               watts = w.toLong,
               memory = m.getOrElse(Memory()),
               storage = s.getOrElse(Nil).toMap,
-              programs = ps.getOrElse(Nil).toMap
+              programs = ps.getOrElse(Nil).toMap,
+              executor = e
             )
         }
     }
@@ -114,7 +117,8 @@ object VmSandbox {
       case BalanceGet(address, coins)             => s"balance x${byteUtils.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
-      case BalanceTransfer(from, to, coins)       => ???
+      case BalanceTransfer(from, to, coins)       =>
+        s"transfer x${byteUtils.byteString2hex(from)} x${byteUtils.byteString2hex(to)} $coins"
       // TODO implement printing of all other effects
     }
 
@@ -171,7 +175,9 @@ object VmSandbox {
     val effects = mutable.Buffer[EnvironmentEffect]()
     val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
 
-    val pExecutor = Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
+    val pExecutor = pre.executor.getOrElse {
+      Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
+    }
 
     val environment: Environment = new Environment {
       val balances = mutable.Map(pre.balances.toSeq: _*)

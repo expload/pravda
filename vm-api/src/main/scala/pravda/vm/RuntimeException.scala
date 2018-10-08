@@ -20,7 +20,9 @@ package pravda.vm
 import pravda.common.domain.Address
 import pravda.vm.Meta.{SourceMark, TranslatorMark}
 
-final case class RuntimeException(error: Error, finalState: FinalState, callStack: Seq[(Option[Address], Seq[Int])])
+final case class RuntimeException(error: Error,
+                                  finalState: FinalState,
+                                  callStack: Seq[(Option[Address], Seq[Int])])
 
 object RuntimeException {
 
