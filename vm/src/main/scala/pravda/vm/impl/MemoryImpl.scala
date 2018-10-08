@@ -18,7 +18,7 @@
 package pravda.vm.impl
 
 import pravda.common.domain.Address
-import pravda.vm.Error.{CallStackOverflow, CallStackUnderflow}
+import pravda.vm.Error._
 import pravda.vm.{Data, Error, Memory, ThrowableVmError}
 
 import scala.collection.mutable.ArrayBuffer
@@ -26,38 +26,61 @@ import scala.collection.mutable.ArrayBuffer
 final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffer[Data]) extends Memory {
 
   val callStack = new ArrayBuffer[(Option[Address], ArrayBuffer[Int])](1024)
+  val pcallStack = new ArrayBuffer[Int](1024)
+
+  private var offset = 0
 
   private val limits = new ArrayBuffer[Int](1024)
+
+  def updateOffset(newOffset: Int): Unit = {
+    offset = newOffset
+  }
+
+  def currentOffset: Int = offset
 
   private def localCallStack = {
     if (callStack.isEmpty) {
       // Default (no saved program invoked) call stack.
       callStack += (None -> new ArrayBuffer[Int](1024))
     }
-    callStack(callStack.length - 1)._2
+    callStack.last._2
   }
 
-  def enterProgram(address: Address): Unit =
+  def enterProgram(address: Address): Unit = {
+    if (pcallStack.length >= 1024 || callStack.length >= 1024) {
+      throw ThrowableVmError(ExtCallStackOverflow)
+    }
+    pcallStack += currentOffset
     callStack += (Some(address) -> new ArrayBuffer[Int](1024))
+    updateOffset(0)
+  }
 
-  def exitProgram(): Address =
-    callStack.remove(callStack.length - 1) match {
-      case (Some(address), _) => address
-      case _                  => throw ThrowableVmError(Error.ExtCallStackUnderflow)
+  def exitProgram(): Unit = {
+    val lastOffset = if (pcallStack.nonEmpty) {
+      pcallStack.remove(pcallStack.length - 1)
+    } else {
+      throw ThrowableVmError(ExtCallStackUnderflow)
     }
 
-  def popCall(): Int = {
+    callStack.remove(callStack.length - 1) match {
+      case (Some(_), _) => updateOffset(lastOffset)
+      case _            => throw ThrowableVmError(ExtCallStackUnderflow)
+    }
+  }
+
+  def makeRet(): Unit = {
     if (localCallStack.isEmpty) {
       throw ThrowableVmError(CallStackUnderflow)
     }
-    localCallStack.remove(localCallStack.length - 1)
+    updateOffset(localCallStack.remove(localCallStack.length - 1))
   }
 
-  def pushCall(offset: Int): Unit = {
+  def makeCall(newOffset: Int): Unit = {
     if (localCallStack.length >= 1024) {
       throw ThrowableVmError(CallStackOverflow)
     }
-    localCallStack += offset
+    localCallStack += currentOffset
+    updateOffset(newOffset)
   }
 
   def limit(index: Int): Unit = {

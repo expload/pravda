@@ -34,7 +34,7 @@ class VmImpl extends Vm {
   import Opcodes._
 
   private def makeFinalState(memory: Memory, wattCounter: WattCounter) =
-    FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap, Nil)
+    FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap)
 
   /**
     * New vm "from scratch". Clear memory.
@@ -58,9 +58,9 @@ class VmImpl extends Vm {
       Right(makeFinalState(mem, counter))
     } catch {
       case e: Data.DataException =>
-        Left(RuntimeException(DataError(e.getMessage), makeFinalState(mem, counter), mem.callStack))
+        Left(RuntimeException(DataError(e.getMessage), makeFinalState(mem, counter), mem.callStack, mem.currentOffset))
       case ThrowableVmError(e) =>
-        Left(RuntimeException(e, makeFinalState(mem, counter), mem.callStack))
+        Left(RuntimeException(e, makeFinalState(mem, counter), mem.callStack, mem.currentOffset))
     }
   }
 
@@ -76,7 +76,6 @@ class VmImpl extends Vm {
     environment.getProgram(programAddress) match {
       case Some(program) =>
         program.code.rewind()
-        memory.enterProgram(programAddress)
         runBytes(program.code,
                  environment,
                  memory,
@@ -84,7 +83,6 @@ class VmImpl extends Vm {
                  Some(program.storage),
                  Some(programAddress),
                  pcallAllowed)
-        memory.exitProgram()
       case None =>
         throw ThrowableVmError(NoSuchProgram)
     }
@@ -105,13 +103,14 @@ class VmImpl extends Vm {
     val stackOperations = new StackOperations(mem, program, counter)
     val controlOperations = new ControlOperations(program, mem, counter)
     val nativeCoinOperations = new NativeCoinOperations(mem, env, counter, maybePA)
-    val systemOperations = new SystemOperations(mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
+    val systemOperations = new SystemOperations(program, mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
     val dataOperations = new DataOperations(mem, counter)
 
     var continue = true
     while (continue && program.hasRemaining) {
       counter.cpuUsage(CpuBasic)
       val op = program.get() & 0xff
+      mem.updateOffset(program.position())
       (op: @switch) match {
         // Control operations
         case CALL  => controlOperations.call()

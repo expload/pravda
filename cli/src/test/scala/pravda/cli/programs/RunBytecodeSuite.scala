@@ -24,9 +24,9 @@ object RunBytecodeSuite extends TestSuite {
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
       |  "stack" : [ "int8(42)" ],
-      |  "heap" : [ ],
-      |  "effects" : [ ]
-      |}""".stripMargin)
+      |  "heap" : [ ]
+      |}
+      |""".stripMargin)
   final val ProgramFromFile = ByteString.copyFrom(Array[Byte](3))
   final val ProgramFromFileName = "a.out"
   final val ProgramFromFileResult = Data.Primitive.Int16(740)
@@ -35,13 +35,13 @@ object RunBytecodeSuite extends TestSuite {
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
       |  "stack" : [ "int16(740)" ],
-      |  "heap" : [ ],
-      |  "effects" : [ ]
-      |}""".stripMargin)
+      |  "heap" : [ ]
+      |}
+      |""".stripMargin)
   final val ProgramFromFileError = ByteString.copyFromUtf8("`a.out` is not found.\n")
 
   private def buildExecResult(memory: MemoryImpl): ExecutionResult =
-    Right(FinalState(0, 0, 0, memory.stack, memory.heap, Nil)) // TODO effects
+    Right(FinalState(0, 0, 0, memory.stack, memory.heap))
 
   val tests = Tests {
     "run using default executor and stdin" - {

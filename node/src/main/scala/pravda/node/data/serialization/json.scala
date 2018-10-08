@@ -25,7 +25,7 @@ import pravda.common.bytes._
 import pravda.node.clients.AbciClient._
 import pravda.node.data.PravdaConfig
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember}
-import pravda.node.servers.ApiRoute
+import pravda.node.servers.{Abci, ApiRoute}
 import pravda.vm
 import supertagged.{Tagged, lifterF}
 import tethys._
@@ -50,8 +50,16 @@ object json {
         it.nextToken()
         if (it.currentToken().isFieldName) {
           it.fieldName() match {
-            case "error"  => Left(JsonReader[L].read(it))
-            case "result" => Right(JsonReader[R].read(it))
+            case "error"  =>
+              it.nextToken()
+              val res = Left(JsonReader[L].read(it))
+              it.nextToken()
+              res
+            case "result" =>
+              it.nextToken()
+              val res = Right(JsonReader[R].read(it))
+              it.nextToken()
+              res
           }
         } else throwUtrj(it.currentToken())
       } else throwUtrj(it.currentToken())
@@ -330,10 +338,10 @@ object json {
   implicit val effectWriter: JsonWriter[vm.Effect] =
     JsonWriter.obj[vm.Effect].addField[String]("eventType")(_.getClass.getSimpleName) ++ jsonWriter[vm.Effect]
 
-  implicit val execResultReader: JsonReader[vm.FinalState] =
+  implicit val finalStateReader: JsonReader[vm.FinalState] =
     jsonReader[vm.FinalState]
 
-  implicit val execResultWriter: JsonWriter[vm.FinalState] =
+  implicit val finalStateWriter: JsonWriter[vm.FinalState] =
     jsonWriter[vm.FinalState]
 
   implicit val runtimeExceptionReader: JsonReader[vm.RuntimeException] =
@@ -345,6 +353,12 @@ object json {
   //---------------------------------------------------------------------------
   // Domain RWs for tethys
   //---------------------------------------------------------------------------
+
+  implicit val execResultReader: JsonReader[Abci.TransactionResult] =
+    jsonReader[Abci.TransactionResult]
+
+  implicit val execResultWriter: JsonWriter[Abci.TransactionResult] =
+    jsonWriter[Abci.TransactionResult]
 
   //---------------------------------------------------------------------------
   // Misc RWs
@@ -417,6 +431,7 @@ object json {
 
   implicit def tethysJsonDecoder[T: JsonReader]: Transcoder[Json, T] =
     _.jsonAs[T].fold(throw _, identity)
+
   //  implicit val zdtPushkaWriter = new Writer[ZonedDateTime] {
 //    def write(value: ZonedDateTime): Ast =
 //      Ast.Str(value.format(PushkaDateTimeFormatter))

@@ -25,7 +25,6 @@ import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-import cats.Show
 import com.google.protobuf.ByteString
 import pravda.common.bytes
 import pravda.common.domain._

@@ -335,7 +335,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(result.fold(_.toString, utils.showExecutionResult))
+                                maybeResult = Some(result.fold(_.toString, utils.showTransactionResult))
                               )
                             }
                           } yield {
@@ -390,7 +390,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(execInfo.fold(_.toString, utils.showExecutionResult))
+                                maybeResult = Some(execInfo.fold(_.toString, utils.showTransactionResult))
                               )
                             }
                           } yield {

@@ -124,7 +124,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       execResult <- Try(vm.spawn(authTx.program, env, authTx.wattLimit))
     } yield {
       val total = execResult match {
-        case Left(RuntimeException(_, state, _)) => state.totalWatts
+        case Left(RuntimeException(_, state, _, _)) => state.totalWatts
         case Right(state) =>
           env.commitTransaction()
           state.totalWatts
@@ -132,7 +132,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       val remaining = authTx.wattLimit - total
       environmentProvider.accrue(wattPayer, NativeCoin(authTx.wattPrice * remaining))
       environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
-      execResult
+      TransactionResult(execResult, env.collectEffects)
     }
 
     Future.successful {
@@ -188,6 +188,11 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
 object Abci {
 
+  final case class TransactionResult(
+      executionResult: ExecutionResult,
+      effects: Seq[Effect]
+  )
+
   final case class TransactionUnauthorizedException()   extends Exception("Transaction signature is invalid")
   final case class ProgramNotFoundException()           extends Exception("Program not found")
   final case class ProgramIsSealedException()           extends Exception("Program is sealed")
@@ -228,7 +233,6 @@ object Abci {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
       private val transactionEffects = mutable.Buffer.empty[Effect]
-      private val transactionEvents = mutable.Buffer.empty[Effect.Event]
       private val transactionCache = mutable.Map.empty[String, Option[Array[Byte]]]
 
       private lazy val transactionProgramsPath =
@@ -240,7 +244,7 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
-        events ++= transactionEvents
+        events ++= transactionEffects.collect { case ev: Effect.Event => ev }
       }
 
       import Effect._
@@ -297,7 +301,7 @@ object Abci {
       }
 
       def event(address: Address, name: String, data: Data): Unit = {
-        transactionEvents += Event(address, name, data)
+        transactionEffects += Event(address, name, data)
       }
 
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
@@ -337,6 +341,8 @@ object Abci {
           val storage = new WsProgramStorage(address, newPath)
           ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
         }
+
+      def collectEffects: Seq[Effect] = transactionEffects
     }
 
     def appendFee(coins: NativeCoin): Unit = {

@@ -17,6 +17,8 @@
 
 package pravda.vm.operations
 
+import java.nio.ByteBuffer
+
 import pravda.common.domain
 import pravda.common.domain.Address
 import pravda.vm.Opcodes._
@@ -25,7 +27,8 @@ import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
-final class SystemOperations(memory: Memory,
+final class SystemOperations(program: ByteBuffer,
+                             memory: Memory,
                              currentStorage: Option[Storage],
                              wattCounter: WattCounter,
                              env: Environment,
@@ -54,8 +57,11 @@ final class SystemOperations(memory: Memory,
     val argumentsCount = integer(memory.pop())
     val programAddress = address(memory.pop())
     memory.limit(argumentsCount.toInt)
+    memory.enterProgram(programAddress)
     vm.run(programAddress, env, memory, wattCounter, pcallAllowed = true)
+    memory.exitProgram()
     memory.dropLimit()
+    program.position(memory.currentOffset)
   }
 
   @OpcodeImplementation(
@@ -71,8 +77,11 @@ final class SystemOperations(memory: Memory,
     val argumentsCount = integer(memory.pop())
     val addr = address(memory.pop())
     memory.limit(argumentsCount.toInt)
-    vm.run(addr, env, memory, wattCounter, pcallAllowed = false)
+    memory.enterProgram(addr)
+    vm.run(addr, env, memory, wattCounter, pcallAllowed = false) // TODO disallow to change storage
+    memory.exitProgram()
     memory.dropLimit()
+    program.position(memory.currentOffset)
   }
 
   @OpcodeImplementation(

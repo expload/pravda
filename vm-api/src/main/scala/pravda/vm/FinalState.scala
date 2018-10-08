@@ -22,6 +22,5 @@ final case class FinalState(
     refundWatts: Long,
     totalWatts: Long,
     stack: Seq[Data],
-    heap: Seq[Data],
-    effects: Seq[Effect]
+    heap: Seq[Data]
 )

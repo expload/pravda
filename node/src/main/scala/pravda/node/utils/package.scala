@@ -17,14 +17,15 @@
 
 package pravda.node
 
-import pravda.vm.{Data, ExecutionResult}
+import pravda.node.servers.Abci.TransactionResult
+import pravda.vm.Data
 
 import scala.concurrent.Future
 
 package object utils {
 
-  def showExecutionResult(result: ExecutionResult): String = {
-    val (info, status) = result match {
+  def showTransactionResult(result: TransactionResult): String = {
+    val (info, status) = result.executionResult match {
       case Left(error)  => (error.finalState, error.error.toString)
       case Right(state) => (state, "Ok")
     }
@@ -37,7 +38,7 @@ package object utils {
        |Watts:
        |  Total:  ${info.totalWatts}
        |  Spent:  ${info.spentWatts}
-       |  Refund: ${info.refundWatts}""".stripMargin
+       |  Refund: ${info.refundWatts}""".stripMargin // TODO print effects
   }
 
   def showHeap(heap: Seq[Data]): String =

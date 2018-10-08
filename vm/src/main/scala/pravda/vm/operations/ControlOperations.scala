@@ -35,7 +35,8 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
     val offset = ref(memory.pop())
     val condition = boolean(memory.pop())
     if (condition) {
-      program.position(offset.data)
+      memory.updateOffset(offset.data)
+      program.position(memory.currentOffset)
     }
   }
 
@@ -45,7 +46,9 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
   )
   def jump(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    program.position(ref(memory.pop()).data)
+    val offset = ref(memory.pop())
+    memory.updateOffset(offset.data)
+    program.position(memory.currentOffset)
   }
 
   @OpcodeImplementation(
@@ -56,10 +59,9 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
   )
   def call(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    val currentOffset = program.position()
     val callOffset = ref(memory.pop())
-    memory.pushCall(currentOffset)
-    program.position(callOffset.data)
+    memory.makeCall(callOffset.data)
+    program.position(memory.currentOffset)
   }
 
   @OpcodeImplementation(
@@ -68,7 +70,7 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
       "value of the first item of the call stack (see CALL opcode)."
   )
   def ret(): Unit = {
-    val offset = memory.popCall()
-    program.position(offset)
+    memory.makeRet()
+    program.position(memory.currentOffset)
   }
 }

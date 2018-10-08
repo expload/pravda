@@ -33,7 +33,7 @@ import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.vm.ExecutionResult
+import pravda.node.servers.Abci.TransactionResult
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
@@ -53,7 +53,7 @@ class AbciClient(port: Int)(implicit
 //      throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
 //  }
 
-  type ErrorOrExecInfo = Either[RpcError, ExecutionResult]
+  type ErrorOrExecInfo = Either[RpcError, TransactionResult]
 
   private def handleResponse(response: HttpResponse, mode: String): Future[ErrorOrExecInfo] = {
     response match {
@@ -66,7 +66,7 @@ class AbciClient(port: Int)(implicit
               response.result
                 .map { result =>
                   result.deliver_tx.log match {
-                    case Some(log) => Right(transcode(Json @@ log).to[ExecutionResult])
+                    case Some(log) => Right(transcode(Json @@ log).to[TransactionResult])
                     case None      => Left(result.check_tx.log.map(s => RpcError(-1, s, "")).getOrElse(UnknownError))
                   }
                 }
