@@ -14,5 +14,6 @@ effects:
   sput x5461626C654361726473FFFFFFFF int32(0)
 error:
   |WrongStackIndex
+  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/poker.cs:21
 ---dotnet-files
 poker.cs

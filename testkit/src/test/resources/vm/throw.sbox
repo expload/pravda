@@ -12,5 +12,6 @@ effects:
   sget "init" null
 error:
   |UserError(Oops!)
+  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/vm_ops.cs:9
 ---dotnet-files
 vm_ops.cs

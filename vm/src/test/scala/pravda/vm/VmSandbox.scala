@@ -5,8 +5,9 @@ import fastparse.all._
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes => byteUtils}
 import pravda.vm.Data.Primitive
+import pravda.vm.Error.DataError
 import pravda.vm.VmSandbox.EnvironmentEffect._
-import pravda.vm.asm.{Operation, PravdaAssembler}
+import pravda.vm.asm.{Operation, PravdaAssembler, SourceMap}
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
@@ -117,7 +118,7 @@ object VmSandbox {
       case BalanceGet(address, coins)             => s"balance x${byteUtils.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
-      case BalanceTransfer(from, to, coins)       =>
+      case BalanceTransfer(from, to, coins) =>
         s"transfer x${byteUtils.byteString2hex(from)} x${byteUtils.byteString2hex(to)} $coins"
       // TODO implement printing of all other effects
     }
@@ -279,11 +280,26 @@ object VmSandbox {
         pcallAllowed = true
       )
       memory.exitProgram()
-    }.fold({
-      case x: Data.DataException => Some(x.getMessage)
-      case x: ThrowableVmError   => Some(x.error)
-      case e: Throwable          => throw e
-    }, _ => None)
+    }.fold(
+      {
+        case e: Data.DataException =>
+          Some(
+            RuntimeException(
+              DataError(e.getMessage),
+              FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
+              memory.callStack,
+              memory.currentOffset
+            ))
+        case ThrowableVmError(e) =>
+          Some(
+            RuntimeException(
+              e,
+              FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
+              memory.callStack,
+              memory.currentOffset))
+      },
+      _ => None
+    )
 
     Expectations(
       wattCounter.spent,
@@ -295,7 +311,10 @@ object VmSandbox {
       events.flatMap {
         case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
       }.toSeq,
-      error.map(_.toString)
+      error.map { e =>
+        s"""|${e.error}
+            |${SourceMap.renderStackTrace(SourceMap.stackTrace(asmProgram, e))}""".stripMargin
+      }
     )
   }
 }

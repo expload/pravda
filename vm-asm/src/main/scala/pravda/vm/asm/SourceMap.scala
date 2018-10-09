@@ -36,6 +36,7 @@ object SourceMap {
     }
     for ((ma, st) <- cs.reverse; pos <- st.reverse)
       yield StackTraceElement(ma, findNearestMark(metas, pos))
+    // TODO take into the account the other programs called with pcall
   }
 
   def renderStackTrace(st: Seq[StackTraceElement], indent: Int = 0): String = st
@@ -44,7 +45,7 @@ object SourceMap {
         val address = maybeAddress
           .map(bytes.byteString2hex)
           .getOrElse(" " * 51 + "(transaction)")
-        s"${" " * indent}$address.${mark.source}:${mark.startLine}"
+        s"${" " * indent}$address:${mark.source}:${mark.startLine}"
     }
     .mkString("\n")
 }
