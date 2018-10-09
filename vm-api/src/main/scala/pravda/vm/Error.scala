@@ -29,8 +29,11 @@ object Error {
   case object InvalidCoinAmount extends Error(105)
   case object InvalidAddress    extends Error(106)
 
-  case object OperationDenied       extends Error(200)
-  case object PcallDenied           extends Error(201)
+  case object OperationDenied           extends Error(200)
+  case object PcallDenied               extends Error(201)
+  case object NotEnoughMoney            extends Error(202)
+  case object AmountShouldNotBeNegative extends Error(203)
+
   case object NoSuchProgram         extends Error(300)
   case object NoSuchMethod          extends Error(302)
   case object NoSuchElement         extends Error(400)

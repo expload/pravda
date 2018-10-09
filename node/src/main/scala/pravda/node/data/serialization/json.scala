@@ -283,6 +283,8 @@ object json {
             case 106 => vm.Error.InvalidAddress
             case 200 => vm.Error.OperationDenied
             case 201 => vm.Error.PcallDenied
+            case 202 => vm.Error.NotEnoughMoney
+            case 203 => vm.Error.AmountShouldNotBeNegative
             case 300 => vm.Error.NoSuchProgram
             case 302 => vm.Error.NoSuchMethod
             case 400 => vm.Error.NoSuchElement

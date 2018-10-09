@@ -175,7 +175,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (hex,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(to = Some(hex)))
                     case (_, otherwise) => otherwise
                   },
@@ -183,7 +183,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (amount,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(amount = Some(amount)))
                     case (_, otherwise) => otherwise
                   }
@@ -229,6 +229,13 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(wallet = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[File]("watt-payer-wallet")
+              .text("File with watt payer wallet. Format same as for wallet.")
+              .action {
+                case (file, config: PravdaConfig.Broadcast) =>
+                  config.copy(wattPayerWallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[Long]('l', "limit")

@@ -49,6 +49,7 @@ object PravdaConfig {
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
+                             wattPayerWallet: Option[String] = None,
                              input: Option[String] = None,
                              dryRun: Boolean = false,
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
