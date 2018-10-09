@@ -50,7 +50,7 @@ object json {
         it.nextToken()
         if (it.currentToken().isFieldName) {
           it.fieldName() match {
-            case "error"  =>
+            case "error" =>
               it.nextToken()
               val res = Left(JsonReader[L].read(it))
               it.nextToken()

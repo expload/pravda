@@ -206,11 +206,11 @@ object PravdaAssembler {
               operations += (offset -> Operation.Call(None))
           }
 
-        case Opcodes.NEW                                    =>
+        case Opcodes.NEW =>
           operations += (offset -> Operation.New(Data.readFromByteBuffer(buffer)))
-        case Opcodes.STRUCT_GET                             =>
+        case Opcodes.STRUCT_GET =>
           operations += (offset -> Operation.StructGet(None))
-        case Opcodes.STRUCT_MUT                             =>
+        case Opcodes.STRUCT_MUT =>
           operations += (offset -> Operation.StructMut(None))
         case op if Operation.operationByOpcode.contains(op) =>
           operations += (offset -> Operation.operationByOpcode(op))

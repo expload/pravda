@@ -103,7 +103,8 @@ class VmImpl extends Vm {
     val stackOperations = new StackOperations(mem, program, counter)
     val controlOperations = new ControlOperations(program, mem, counter)
     val nativeCoinOperations = new NativeCoinOperations(mem, env, counter, maybePA)
-    val systemOperations = new SystemOperations(program, mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
+    val systemOperations =
+      new SystemOperations(program, mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
     val dataOperations = new DataOperations(mem, counter)
 
     var continue = true

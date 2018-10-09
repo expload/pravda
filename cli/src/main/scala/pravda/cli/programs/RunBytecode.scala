@@ -46,7 +46,7 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F], vm: VmLanguage[F]) {
         transcode(memory).to[Json] + "\n"
       }
     errorOrMemory.value flatMap {
-      case Left(out) => io.writeStringToStderrAndExit(out)
+      case Left(out)  => io.writeStringToStderrAndExit(out)
       case Right(out) => io.writeStringToStdout(out)
     }
   }
