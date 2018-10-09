@@ -32,11 +32,11 @@ object SimpleTranslation {
 
     case Pop => codeToOps(Opcodes.POP)
 
-    case Add => codeToOps(Opcodes.ADD)
+    case Add => codeToOps(Opcodes.ADD) //FIXME result % 2^256
     case Mul => codeToOps(Opcodes.MUL)
     case Div => codeToOps(Opcodes.DIV) //FIXME 0 if stack[1] == 0 othervise s[0] / s[1]
     case Mod => codeToOps(Opcodes.MOD) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
-    case Sub => sub
+    case Sub => sub //FIXME result & (2^256 - 1)
     case AddMod =>
       dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) ::: codeToOps(Opcodes.SWAP,
                                                                                                Opcodes.MOD,
@@ -48,7 +48,7 @@ object SimpleTranslation {
                                                                                                Opcodes.MUL,
                                                                                                Opcodes.MOD)
 
-    //  case Not => codeToOps(Opcodes.NOT)
+    //  case Not => codeToOps(Opcodes.NOT) //TODO (2^256 - 1) - s[0]
     case And => codeToOps(Opcodes.AND)
     case Or  => codeToOps(Opcodes.OR)
     case Xor => codeToOps(Opcodes.XOR)
@@ -77,7 +77,7 @@ object SimpleTranslation {
     case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
-    case Swap(n) => if (n > 1) swapn(n) else codeToOps(Opcodes.SWAP)
+    case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
 
     case Balance => codeToOps(Opcodes.BALANCE)
     case Address => codeToOps(Opcodes.PADDR)

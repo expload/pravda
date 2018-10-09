@@ -9,8 +9,9 @@ import utest._
 object TranslateTests extends TestSuite {
 
   val tests = Tests {
+
     import SimpleTranslation._
-    "Push" - {
+    "PUSH" - {
       evmOpToOps(Push(hex"0x80")) ==> Right(List(pushBigInt(BigInt(128))))
     }
 
@@ -21,7 +22,7 @@ object TranslateTests extends TestSuite {
 
     "SWAP" - {
       evmOpToOps(Swap(1)) ==> Right(List(Operation(Opcodes.SWAP)))
-      evmOpToOps(Swap(2)) ==> Right(List(pushInt(2), Operation(Opcodes.SWAPN)))
+      evmOpToOps(Swap(2)) ==> Right(List(pushInt(3), Operation(Opcodes.SWAPN)))
     }
   }
 

@@ -24,5 +24,4 @@ object VmSuite extends Proverka {
       res.toRight("preconditions or program is missing")
     }
   )
-
 }
