@@ -18,7 +18,7 @@
 package pravda.cli.languages
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.NativeCoin
+import pravda.common.domain.{Address, NativeCoin}
 
 import scala.language.higherKinds
 
@@ -29,8 +29,10 @@ trait NodeLanguage[F[_]] {
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,
                                   privateKey: ByteString,
+                                  wattPayerPrivateKey: Option[ByteString],
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
+                                  wattPayer: Option[Address],
                                   dryRun: Boolean,
                                   data: ByteString): F[Either[String, String]]
 }

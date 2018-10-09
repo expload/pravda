@@ -306,17 +306,18 @@ object Abci {
 
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
         if (amount < 0)
-          throw AmountShouldNotBeNegativeException()
+          throw ThrowableVmError(Error.AmountShouldNotBeNegative)
 
-        val current = balance(from)
+        val currentFrom = balance(from)
+        val currentTo = balance(to)
 
-        if (current < amount)
-          throw NotEnoughMoneyException()
+        if (currentFrom < amount)
+          throw ThrowableVmError(Error.NotEnoughMoney)
 
-        transactionBalancesPath.put(byteUtils.byteString2hex(from), current - amount)
-        transactionBalancesPath.put(byteUtils.byteString2hex(to), current + amount)
+        // TODO consider to add `to` balance overflow
+        transactionBalancesPath.put(byteUtils.byteString2hex(from), currentFrom - amount)
+        transactionBalancesPath.put(byteUtils.byteString2hex(to), currentTo + amount)
         transactionEffects += Effect.Transfer(from, to, amount)
-
       }
 
       def balance(address: Address): NativeCoin = {
