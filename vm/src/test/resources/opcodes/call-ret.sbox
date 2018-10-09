@@ -2,7 +2,7 @@
 watts-limit: 1000
 ---expectations
 watts-spent: 130
-stack
+stack:
   int32(5)
 ---code
 jump @main

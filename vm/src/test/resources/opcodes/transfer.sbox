@@ -6,11 +6,11 @@ balances:
 watts-limit: 1000
 ---expectations
 watts-spent: 145
-stack
+stack:
   bigint(101199)
-effects
+effects:
   transfer x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b 100000,
-    balance xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b 101199
+  balance xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b 101199
 ---code
 push xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
 push bigint(100000)
