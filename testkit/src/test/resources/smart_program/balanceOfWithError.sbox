@@ -12,9 +12,8 @@ stack:
 effects:
   sget "init" null
 error:
-  |Unexpected type: Null
-  |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  program:441 (smart_program.cs:9,9-9,51)
-  |  program:1963 (smart_program.cs:9,9-9,51)
+  |DataError(Unexpected type: Null)
+  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/smart_program.cs:17
+  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/smart_program.cs:9
 ---dotnet-files
 smart_program.cs

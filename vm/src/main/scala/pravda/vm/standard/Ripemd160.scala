@@ -40,7 +40,7 @@ object Ripemd160 extends FunctionDefinition {
     val message = memory.pop() match {
       case Data.Primitive.Bytes(data) => data.toByteArray
       case Data.Primitive.Utf8(data)  => data.getBytes(StandardCharsets.UTF_8)
-      case _                          => throw VmErrorException(VmError.WrongType)
+      case _                          => throw ThrowableVmError(Error.WrongType)
     }
     val result = ripemd160.getHash(message)
     wattCounter.cpuUsage(message.length * WattCounter.CpuArithmetic)

@@ -12,7 +12,5 @@ effects:
   sget "init" null
 error:
   |UserError(Wrong method name)
-  |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  program:199
 ---dotnet-files
 smart_program.cs

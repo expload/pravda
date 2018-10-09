@@ -17,27 +17,7 @@
 
 package pravda
 
-package vm
-
-import com.google.protobuf.ByteString
-import pravda.common.domain
-
-trait Vm {
-
-  /**
-    * New vm "from scratch". Clear memory.
-    * Initial program has no address.
-    * Storage operations is not allowed.
-    * PCall/LCall allowed.
-    */
-  def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult
-
-  /**
-    * Run a program inside spawned VM.
-    */
-  def run(programAddress: domain.Address,
-          environment: Environment,
-          memory: Memory,
-          wattCounter: WattCounter,
-          pcallAllowed: Boolean): Unit
+package object vm {
+  // Result of program execution
+  type ExecutionResult = Either[RuntimeException, FinalState]
 }

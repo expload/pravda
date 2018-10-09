@@ -18,10 +18,10 @@
 package pravda.vm.operations
 
 import pravda.vm.Data.Primitive.{BigInt, Int16, Int32, Int8, Number, Uint16, Uint32, Uint8}
-import pravda.vm.VmError.WrongType
+import pravda.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Memory, Opcodes, VmErrorException, WattCounter}
+import pravda.vm.{Memory, Opcodes, ThrowableVmError, WattCounter}
 
 /**
   * Pravda VM arithmetic opcodes implementation.
@@ -48,7 +48,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int32((lhs % rhs).toInt)
             case BigInt(rhs) => Int32((lhs % rhs).toInt)
             case Number(rhs) => Int32((lhs % rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int16(lhs) =>
           b match {
@@ -60,7 +60,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int16((lhs % rhs).toShort)
             case BigInt(rhs) => Int16((lhs.toInt % rhs).toShort)
             case Number(rhs) => Int16((lhs % rhs).toShort)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int8(lhs) =>
           b match {
@@ -72,7 +72,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs % rhs)
             case BigInt(rhs) => BigInt(lhs.toInt % rhs)
             case Number(rhs) => Number(lhs % rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint8(lhs) =>
           b match {
@@ -84,7 +84,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint8((lhs % rhs).toInt)
             case BigInt(rhs) => Uint8((lhs % rhs).toInt)
             case Number(rhs) => Uint8((lhs % rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint16(lhs) =>
           b match {
@@ -96,7 +96,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint16((lhs % rhs).toInt)
             case BigInt(rhs) => Uint16((lhs % rhs).toInt)
             case Number(rhs) => Uint16((lhs % rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint32(lhs) =>
           b match {
@@ -108,7 +108,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint32(lhs % rhs)
             case BigInt(rhs) => Uint32((lhs % rhs).toLong)
             case Number(rhs) => Uint32((lhs % rhs).toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Number(lhs) =>
           b match {
@@ -120,7 +120,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Number(lhs % rhs)
             case BigInt(rhs) => Number((lhs % BigDecimal(rhs)).toDouble)
             case Number(rhs) => Number(lhs % rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case BigInt(lhs) =>
           b match {
@@ -132,9 +132,9 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs % rhs)
             case BigInt(rhs) => BigInt(lhs % rhs)
             case Number(rhs) => BigInt(lhs % rhs.toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
-        case _ => throw VmErrorException(WrongType)
+        case _ => throw ThrowableVmError(WrongType)
       }
     }
   }
@@ -157,7 +157,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int32((lhs + rhs).toInt)
             case BigInt(rhs) => Int32((lhs + rhs).toInt)
             case Number(rhs) => Int32((lhs + rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int16(lhs) =>
           b match {
@@ -169,7 +169,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int16((lhs + rhs).toShort)
             case BigInt(rhs) => Int16((lhs.toInt + rhs).toShort)
             case Number(rhs) => Int16((lhs + rhs).toShort)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int8(lhs) =>
           b match {
@@ -181,7 +181,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs + rhs)
             case BigInt(rhs) => BigInt(lhs.toInt + rhs)
             case Number(rhs) => Number(lhs + rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint8(lhs) =>
           b match {
@@ -193,7 +193,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint8((lhs + rhs).toInt)
             case BigInt(rhs) => Uint8((lhs + rhs).toInt)
             case Number(rhs) => Uint8((lhs + rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint16(lhs) =>
           b match {
@@ -205,7 +205,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint16((lhs + rhs).toInt)
             case BigInt(rhs) => Uint16((lhs + rhs).toInt)
             case Number(rhs) => Uint16((lhs + rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint32(lhs) =>
           b match {
@@ -217,7 +217,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint32(lhs + rhs)
             case BigInt(rhs) => Uint32((lhs + rhs).toLong)
             case Number(rhs) => Uint32((lhs + rhs).toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Number(lhs) =>
           b match {
@@ -229,7 +229,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Number(lhs + rhs)
             case BigInt(rhs) => Number((lhs + BigDecimal(rhs)).toDouble)
             case Number(rhs) => Number(lhs + rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case BigInt(lhs) =>
           b match {
@@ -241,9 +241,9 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs + rhs)
             case BigInt(rhs) => BigInt(lhs + rhs)
             case Number(rhs) => BigInt(lhs + rhs.toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
-        case _ => throw VmErrorException(WrongType)
+        case _ => throw ThrowableVmError(WrongType)
       }
     }
   }
@@ -266,7 +266,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int32((lhs / rhs).toInt)
             case BigInt(rhs) => Int32((lhs / rhs).toInt)
             case Number(rhs) => Int32((lhs / rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int16(lhs) =>
           b match {
@@ -278,7 +278,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int16((lhs / rhs).toShort)
             case BigInt(rhs) => Int16((lhs.toInt / rhs).toShort)
             case Number(rhs) => Int16((lhs / rhs).toShort)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int8(lhs) =>
           b match {
@@ -290,7 +290,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs / rhs)
             case BigInt(rhs) => BigInt(lhs.toInt / rhs)
             case Number(rhs) => Number(lhs / rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint8(lhs) =>
           b match {
@@ -302,7 +302,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint8((lhs / rhs).toInt)
             case BigInt(rhs) => Uint8((lhs / rhs).toInt)
             case Number(rhs) => Uint8((lhs / rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint16(lhs) =>
           b match {
@@ -314,7 +314,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint16((lhs / rhs).toInt)
             case BigInt(rhs) => Uint16((lhs / rhs).toInt)
             case Number(rhs) => Uint16((lhs / rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint32(lhs) =>
           b match {
@@ -326,7 +326,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint32(lhs / rhs)
             case BigInt(rhs) => Uint32((lhs / rhs).toLong)
             case Number(rhs) => Uint32((lhs / rhs).toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Number(lhs) =>
           b match {
@@ -338,7 +338,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Number(lhs / rhs)
             case BigInt(rhs) => Number((lhs / BigDecimal(rhs)).toDouble)
             case Number(rhs) => Number(lhs / rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case BigInt(lhs) =>
           b match {
@@ -350,9 +350,9 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs / rhs)
             case BigInt(rhs) => BigInt(lhs / rhs)
             case Number(rhs) => BigInt(lhs / rhs.toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
-        case _ => throw VmErrorException(WrongType)
+        case _ => throw ThrowableVmError(WrongType)
       }
     }
   }
@@ -375,7 +375,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int32((lhs * rhs).toInt)
             case BigInt(rhs) => Int32((lhs * rhs).toInt)
             case Number(rhs) => Int32((lhs * rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int16(lhs) =>
           b match {
@@ -387,7 +387,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Int16((lhs * rhs).toShort)
             case BigInt(rhs) => Int16((lhs.toInt * rhs).toShort)
             case Number(rhs) => Int16((lhs * rhs).toShort)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Int8(lhs) =>
           b match {
@@ -399,7 +399,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs * rhs)
             case BigInt(rhs) => BigInt(lhs.toInt * rhs)
             case Number(rhs) => Number(lhs * rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint8(lhs) =>
           b match {
@@ -411,7 +411,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint8((lhs * rhs).toInt)
             case BigInt(rhs) => Uint8((lhs * rhs).toInt)
             case Number(rhs) => Uint8((lhs * rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint16(lhs) =>
           b match {
@@ -423,7 +423,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint16((lhs * rhs).toInt)
             case BigInt(rhs) => Uint16((lhs * rhs).toInt)
             case Number(rhs) => Uint16((lhs * rhs).toInt)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Uint32(lhs) =>
           b match {
@@ -435,7 +435,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Uint32(lhs * rhs)
             case BigInt(rhs) => Uint32((lhs * rhs).toLong)
             case Number(rhs) => Uint32((lhs * rhs).toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case Number(lhs) =>
           b match {
@@ -447,7 +447,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => Number(lhs * rhs)
             case BigInt(rhs) => Number((lhs * BigDecimal(rhs)).toDouble)
             case Number(rhs) => Number(lhs * rhs)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
         case BigInt(lhs) =>
           b match {
@@ -459,9 +459,9 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
             case Uint32(rhs) => BigInt(lhs * rhs)
             case BigInt(rhs) => BigInt(lhs * rhs)
             case Number(rhs) => BigInt(lhs * rhs.toLong)
-            case _           => throw VmErrorException(WrongType)
+            case _           => throw ThrowableVmError(WrongType)
           }
-        case _ => throw VmErrorException(WrongType)
+        case _ => throw ThrowableVmError(WrongType)
       }
     }
   }

@@ -8,7 +8,5 @@ storage:
 watts-spent: 11
 error:
   |WrongType
-  |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  program:0
 ---code
 add

@@ -22,188 +22,168 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import pravda.common.domain
 import pravda.common.domain.Address
-import pravda.vm.Meta.{GlobalMeta, SegmentMeta}
-import pravda.vm.VmError.{NoSuchProgram, PcallDenied, UnexpectedError}
+import pravda.vm.Error.{DataError, NoSuchProgram, PcallDenied}
 import pravda.vm.WattCounter.{CpuBasic, CpuStorageUse}
 import pravda.vm._
 import pravda.vm.operations._
 
 import scala.annotation.switch
-import scala.collection.mutable.ArrayBuffer
 
 class VmImpl extends Vm {
 
   import Opcodes._
 
-  def spawn(program: ByteString,
-            environment: Environment,
-            memory: Memory,
-            wattCounter: WattCounter,
-            executor: Address): ExecutionResult =
-    spawn(
-      program = ByteBuffer.wrap(program.toByteArray),
-      environment = environment,
-      memory = memory,
-      counter = wattCounter,
-      maybeStorage = None,
-      maybeProgramAddress = None,
-      pcallAllowed = true
-    )
+  private def makeFinalState(memory: Memory, wattCounter: WattCounter) =
+    FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap)
 
-  def spawn(programAddress: domain.Address,
-            environment: Environment,
-            memory: Memory,
-            wattCounter: WattCounter,
-            pcallAllowed: Boolean): ExecutionResult = {
-    wattCounter.cpuUsage(CpuStorageUse)
-    environment.getProgram(programAddress) match {
-      case None => ExecutionResult(memory, Some(VmErrorResult(NoSuchProgram, Seq.empty, Seq.empty, None)), wattCounter)
-      case Some(program) =>
-        program.code.rewind()
-        spawn(program.code, environment, memory, wattCounter, Some(program.storage), Some(programAddress), pcallAllowed)
+  /**
+    * New vm "from scratch". Clear memory.
+    * Initial program has no address.
+    * Storage operations is not allowed.
+    * PCall/LCall allowed.
+    */
+  def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult = {
+    val mem = MemoryImpl.empty
+    val counter = new WattCounterImpl(wattLimit)
+    try {
+      runBytes(
+        program = initialProgram.asReadOnlyByteBuffer(),
+        env = environment,
+        mem = mem,
+        counter = counter,
+        maybeStorage = None,
+        maybePA = None,
+        pcallAllowed = true
+      )
+      Right(makeFinalState(mem, counter))
+    } catch {
+      case e: Data.DataException =>
+        Left(RuntimeException(DataError(e.getMessage), makeFinalState(mem, counter), mem.callStack, mem.currentOffset))
+      case ThrowableVmError(e) =>
+        Left(RuntimeException(e, makeFinalState(mem, counter), mem.callStack, mem.currentOffset))
     }
   }
 
-  def spawn(program: ByteBuffer,
-            environment: Environment,
-            memory: Memory,
-            counter: WattCounter,
-            maybeStorage: Option[Storage],
-            maybeProgramAddress: Option[domain.Address],
-            pcallAllowed: Boolean): ExecutionResult = {
-
-    val callStack = new ArrayBuffer[Int](1024)
-    val callMetaStack = new ArrayBuffer[List[Meta]](1024)
-    val curMetas = new ArrayBuffer[Meta](1024)
-
-    def filterMetas(pred: Meta => Boolean) = {
-      val newMetas = curMetas.filter(pred)
-      curMetas.clear()
-      curMetas ++= newMetas
+  /**
+    * Run a program inside spawned VM.
+    */
+  override def run(programAddress: Address,
+                   environment: Environment,
+                   memory: Memory,
+                   wattCounter: WattCounter,
+                   pcallAllowed: Boolean): Unit = {
+    wattCounter.cpuUsage(CpuStorageUse)
+    environment.getProgram(programAddress) match {
+      case Some(program) =>
+        program.code.rewind()
+        runBytes(program.code,
+                 environment,
+                 memory,
+                 wattCounter,
+                 Some(program.storage),
+                 Some(programAddress),
+                 pcallAllowed)
+      case None =>
+        throw ThrowableVmError(NoSuchProgram)
     }
+  }
 
-    val logicalOperations = new LogicalOperations(memory, counter)
-    val arithmeticOperations = new ArithmeticOperations(memory, counter)
-    val storageOperations = new StorageOperations(memory, maybeStorage, counter)
-    val heapOperations = new HeapOperations(memory, program, counter)
-    val stackOperations = new StackOperations(memory, program, counter)
-    val controlOperations = new ControlOperations(program, callStack, curMetas, callMetaStack, memory, counter)
-    val nativeCoinOperations = new NativeCoinOperations(memory, environment, counter, maybeProgramAddress)
+  def runBytes(program: ByteBuffer,
+               env: Environment,
+               mem: Memory,
+               counter: WattCounter,
+               maybeStorage: Option[Storage],
+               maybePA: Option[domain.Address],
+               pcallAllowed: Boolean): Unit = {
+
+    val logicalOperations = new LogicalOperations(mem, counter)
+    val arithmeticOperations = new ArithmeticOperations(mem, counter)
+    val storageOperations = new StorageOperations(mem, maybeStorage, counter)
+    val heapOperations = new HeapOperations(mem, program, counter)
+    val stackOperations = new StackOperations(mem, program, counter)
+    val controlOperations = new ControlOperations(program, mem, counter)
+    val nativeCoinOperations = new NativeCoinOperations(mem, env, counter, maybePA)
     val systemOperations =
-      new SystemOperations(memory, maybeStorage, counter, environment, maybeProgramAddress, StandardLibrary.Index, this)
-    val dataOperations = new DataOperations(memory, counter)
+      new SystemOperations(program, mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
+    val dataOperations = new DataOperations(mem, counter)
 
-    var lastOpcodePosition: Int = -1
-
-    try {
-      var continue = true
-      while (continue && program.hasRemaining) {
-        lastOpcodePosition = program.position()
-        counter.cpuUsage(CpuBasic)
-        val op = program.get() & 0xff
-        (op: @switch) match {
-          // Control operations
-          case CALL  => controlOperations.call()
-          case RET   => controlOperations.ret()
-          case JUMP  => controlOperations.jump()
-          case JUMPI => controlOperations.jumpi()
-          // Native coin operations
-          case TRANSFER  => nativeCoinOperations.transfer()
-          case PTRANSFER => nativeCoinOperations.ptransfer()
-          case BALANCE   => nativeCoinOperations.balance()
-          // Stack operations
-          case POP   => stackOperations.pop()
-          case PUSHX => stackOperations.push()
-          case DUP   => stackOperations.dup()
-          case DUPN  => stackOperations.dupN()
-          case SWAP  => stackOperations.swap()
-          case SWAPN => stackOperations.swapN()
-          // Heap operations
-          case NEW               => heapOperations.`new`()
-          case ARRAY_GET         => heapOperations.arrayGet()
-          case STRUCT_GET        => heapOperations.structGet()
-          case STRUCT_GET_STATIC => heapOperations.structGetStatic()
-          case ARRAY_MUT         => heapOperations.arrayMut()
-          case STRUCT_MUT        => heapOperations.structMut()
-          case STRUCT_MUT_STATIC => heapOperations.structMutStatic()
-          case PRIMITIVE_PUT     => heapOperations.primitivePut()
-          case PRIMITIVE_GET     => heapOperations.primitiveGet()
-          case NEW_ARRAY         => heapOperations.newArray()
-          case LENGTH            => heapOperations.length()
-          // Storage operations
-          case SPUT   => storageOperations.put()
-          case SGET   => storageOperations.get()
-          case SDROP  => storageOperations.drop()
-          case SEXIST => storageOperations.exists()
-          // Arithmetic operations
-          case ADD => arithmeticOperations.add()
-          case MUL => arithmeticOperations.mul()
-          case DIV => arithmeticOperations.div()
-          case MOD => arithmeticOperations.mod()
-          // Logical operations
-          case NOT => logicalOperations.not()
-          case AND => logicalOperations.and()
-          case OR  => logicalOperations.or()
-          case XOR => logicalOperations.xor()
-          case EQ  => logicalOperations.eq()
-          case LT  => logicalOperations.lt()
-          case GT  => logicalOperations.gt()
-          // Data operations
-          case CAST   => dataOperations.cast()
-          case CONCAT => dataOperations.concat()
-          case SLICE  => dataOperations.slice()
-          // System operations
-          case STOP    => continue = false
-          case FROM    => systemOperations.from()
-          case OWNER   => systemOperations.owner()
-          case LCALL   => systemOperations.lcall()
-          case SCALL   => systemOperations.scall()
-          case PCREATE => systemOperations.pcreate()
-          case SEAL    => systemOperations.seal()
-          case PUPDATE => systemOperations.pupdate()
-          case PADDR   => systemOperations.paddr()
-          case PCALL =>
-            if (pcallAllowed) {
-              systemOperations.pcall()
-            } else {
-              throw VmErrorException(PcallDenied)
-            }
-          case THROW => systemOperations.`throw`()
-          case EVENT => systemOperations.event()
-          case _     =>
-        }
-
-        op match {
-          case META =>
-            val newMeta = Meta.readFromByteBuffer(program)
-            if (newMeta.isInstanceOf[Meta.SegmentMeta]) {
-              filterMetas(_.getClass != newMeta.getClass)
-            }
-            curMetas += newMeta
-          case _ =>
-            filterMetas(m => m.isInstanceOf[GlobalMeta] || m.isInstanceOf[SegmentMeta])
-        }
+    var continue = true
+    while (continue && program.hasRemaining) {
+      counter.cpuUsage(CpuBasic)
+      val op = program.get() & 0xff
+      mem.updateOffset(program.position())
+      (op: @switch) match {
+        // Control operations
+        case CALL  => controlOperations.call()
+        case RET   => controlOperations.ret()
+        case JUMP  => controlOperations.jump()
+        case JUMPI => controlOperations.jumpi()
+        // Native coin operations
+        case TRANSFER  => nativeCoinOperations.transfer()
+        case PTRANSFER => nativeCoinOperations.ptransfer()
+        case BALANCE   => nativeCoinOperations.balance()
+        // Stack operations
+        case POP   => stackOperations.pop()
+        case PUSHX => stackOperations.push()
+        case DUP   => stackOperations.dup()
+        case DUPN  => stackOperations.dupN()
+        case SWAP  => stackOperations.swap()
+        case SWAPN => stackOperations.swapN()
+        // Heap operations
+        case NEW               => heapOperations.`new`()
+        case ARRAY_GET         => heapOperations.arrayGet()
+        case STRUCT_GET        => heapOperations.structGet()
+        case STRUCT_GET_STATIC => heapOperations.structGetStatic()
+        case ARRAY_MUT         => heapOperations.arrayMut()
+        case STRUCT_MUT        => heapOperations.structMut()
+        case STRUCT_MUT_STATIC => heapOperations.structMutStatic()
+        case PRIMITIVE_PUT     => heapOperations.primitivePut()
+        case PRIMITIVE_GET     => heapOperations.primitiveGet()
+        case NEW_ARRAY         => heapOperations.newArray()
+        case LENGTH            => heapOperations.length()
+        // Storage operations
+        case SPUT   => storageOperations.put()
+        case SGET   => storageOperations.get()
+        case SDROP  => storageOperations.drop()
+        case SEXIST => storageOperations.exists()
+        // Arithmetic operations
+        case ADD => arithmeticOperations.add()
+        case MUL => arithmeticOperations.mul()
+        case DIV => arithmeticOperations.div()
+        case MOD => arithmeticOperations.mod()
+        // Logical operations
+        case NOT => logicalOperations.not()
+        case AND => logicalOperations.and()
+        case OR  => logicalOperations.or()
+        case XOR => logicalOperations.xor()
+        case EQ  => logicalOperations.eq()
+        case LT  => logicalOperations.lt()
+        case GT  => logicalOperations.gt()
+        // Data operations
+        case CAST   => dataOperations.cast()
+        case CONCAT => dataOperations.concat()
+        case SLICE  => dataOperations.slice()
+        // System operations
+        case STOP    => continue = false
+        case FROM    => systemOperations.from()
+        case OWNER   => systemOperations.owner()
+        case LCALL   => systemOperations.lcall()
+        case SCALL   => systemOperations.scall()
+        case PCREATE => systemOperations.pcreate()
+        case SEAL    => systemOperations.seal()
+        case PUPDATE => systemOperations.pupdate()
+        case PADDR   => systemOperations.paddr()
+        case PCALL =>
+          if (pcallAllowed) {
+            systemOperations.pcall()
+          } else {
+            throw ThrowableVmError(PcallDenied)
+          }
+        case THROW => systemOperations.`throw`()
+        case EVENT => systemOperations.event()
+        case META  => Meta.readFromByteBuffer(program)
+        case _     =>
       }
-      ExecutionResult(memory, None, counter)
-    } catch {
-      case err: Throwable =>
-        callStack += lastOpcodePosition
-        callMetaStack += curMetas.toList
-
-        err match {
-          case VmErrorException(e) =>
-            ExecutionResult(
-              memory,
-              Some(VmErrorResult(e, callStack :+ lastOpcodePosition, callMetaStack, maybeProgramAddress)),
-              counter
-            )
-          case cause: Throwable =>
-            ExecutionResult(
-              memory,
-              Some(VmErrorResult(UnexpectedError(cause), callStack, callMetaStack, maybeProgramAddress)),
-              counter
-            )
-        }
     }
   }
 }

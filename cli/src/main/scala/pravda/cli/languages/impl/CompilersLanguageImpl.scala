@@ -38,7 +38,7 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
   }
 
   def disasm(source: ByteString): Future[String] = Future {
-    PravdaAssembler.render(PravdaAssembler.disassemble(source))
+    PravdaAssembler.render(PravdaAssembler.disassemble(source).map(_._2))
   }
 
   def dotnet(sources: Seq[(ByteString, Option[ByteString])],

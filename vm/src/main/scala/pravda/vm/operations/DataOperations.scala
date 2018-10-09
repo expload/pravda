@@ -18,9 +18,9 @@
 package pravda.vm.operations
 
 import pravda.vm.Data._
-import pravda.vm.VmError.WrongType
+import pravda.vm.Error.WrongType
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Memory, Opcodes, VmErrorException, WattCounter}
+import pravda.vm.{Memory, Opcodes, ThrowableVmError, WattCounter}
 
 final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 
@@ -49,7 +49,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
     val sliced = memory.pop() match {
       case Utf8(data)  => Utf8(data.substring(from, until))
       case Bytes(data) => Bytes(data.substring(from, until))
-      case _           => throw VmErrorException(WrongType)
+      case _           => throw ThrowableVmError(WrongType)
     }
     wattCounter.cpuUsage(WattCounter.CpuArithmetic)
     wattCounter.memoryUsage(sliced.volume.toLong)
@@ -64,7 +64,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
     val data = (memory.pop(), memory.pop()) match {
       case (Utf8(a), Utf8(b))   => Utf8(a + b)
       case (Bytes(a), Bytes(b)) => Bytes(a.concat(b))
-      case _                    => throw VmErrorException(WrongType)
+      case _                    => throw ThrowableVmError(WrongType)
     }
     wattCounter.cpuUsage(WattCounter.CpuArithmetic)
     wattCounter.memoryUsage(data.volume.toLong)

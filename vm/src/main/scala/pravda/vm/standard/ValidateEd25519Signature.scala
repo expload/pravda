@@ -40,7 +40,7 @@ object ValidateEd25519Signature extends FunctionDefinition {
     val message = memory.pop() match {
       case Data.Primitive.Bytes(data) => data.toByteArray
       case Data.Primitive.Utf8(data)  => data.getBytes(StandardCharsets.UTF_8)
-      case _                          => throw VmErrorException(VmError.WrongType)
+      case _                          => throw ThrowableVmError(Error.WrongType)
     }
     val pubKey = operations.bytes(memory.pop())
     val result = ed25519.verify(pubKey.toByteArray, message, signature.toByteArray)

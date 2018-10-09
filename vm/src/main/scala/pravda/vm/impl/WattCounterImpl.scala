@@ -17,8 +17,8 @@
 
 package pravda.vm.impl
 
-import pravda.vm.VmError.OutOfWatts
-import pravda.vm.{VmErrorException, WattCounter}
+import pravda.vm.Error.OutOfWatts
+import pravda.vm.{ThrowableVmError, WattCounter}
 
 final class WattCounterImpl(val limit: Long) extends WattCounter {
 
@@ -65,7 +65,7 @@ final class WattCounterImpl(val limit: Long) extends WattCounter {
   }
 
   def check(): Unit = {
-    if (spent > limit) throw VmErrorException(OutOfWatts)
+    if (spent > limit) throw ThrowableVmError(OutOfWatts)
   }
 
   def total: Long = {
