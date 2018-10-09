@@ -55,15 +55,15 @@ push null
 push null
 push null
 push null
-push "zapupu"
+push "zauser1"
 push int32(9)
 swapn
 pop
-push "lu"
+push "us"
 push int32(8)
 swapn
 pop
-push "pa"
+push "er2"
 push int32(7)
 swapn
 pop
@@ -92,7 +92,7 @@ sput
 pop
 pop
 push x737472696E6773
-push "lupa"
+push "user1"
 push int8(14)
 cast
 swap
@@ -114,7 +114,7 @@ push int32(1)
 eq
 jumpi @distributeSalary_br87
 push x737472696E6773
-push "pupa"
+push "user2"
 push ""
 push int32(2)
 dupn
