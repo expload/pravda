@@ -31,6 +31,8 @@ object common {
     */
   object TransactionId extends TaggedType[ByteString] {
 
+    final val Empty = forEncodedTransaction(ByteString.EMPTY)
+
     def forEncodedTransaction(tx: ByteString): TransactionId = {
       // go-wire encoding
       val buffer = ByteBuffer

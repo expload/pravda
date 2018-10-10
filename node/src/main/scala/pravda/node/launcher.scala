@@ -64,7 +64,7 @@ object launcher extends App {
   )
 
   val httpServer = {
-    val apiRoute = new ApiRoute(abciClient, applicationStateDb)
+    val apiRoute = new ApiRoute(abciClient, applicationStateDb, abci)
     val guiRoute = new GuiRoute(abciClient, applicationStateDb)
     HttpServer.start(pravdaConfig.http, apiRoute.route, guiRoute.route)
   }

@@ -105,16 +105,15 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     }
   }
 
-  def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: BlockDependentEnvironment)(
-      result: (Int, String) => R): Future[R] = {
-    val `try` = for {
-      tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+  def verifyTx(tx: SignedTransaction,
+               id: TransactionId,
+               environmentProvider: BlockDependentEnvironment): Try[TransactionResult] = {
+    for {
       authTx <- cryptography
         .checkTransactionSignature(tx)
         .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
       _ <- checkTransaction(authTx)
-      tid = TransactionId.forEncodedTransaction(encodedTransaction)
-      env = environmentProvider.transactionEnvironment(authTx.from, tid)
+      env = environmentProvider.transactionEnvironment(authTx.from, id)
       // Select watt payer. if watt payer is defined use them,
       // else use transaction sender (from).
       // Signature is checked above in `checkTransaction` function.
@@ -134,6 +133,15 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
       TransactionResult(execResult, env.collectEffects)
     }
+  }
+
+  def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: BlockDependentEnvironment)(
+      result: (Int, String) => R): Future[R] = {
+    val `try` = for {
+      tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+      tid = TransactionId.forEncodedTransaction(encodedTransaction)
+      res <- verifyTx(tx, tid, environmentProvider)
+    } yield res
 
     Future.successful {
       `try` match {
