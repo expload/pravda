@@ -57,13 +57,7 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
                                   data: ByteString): Future[Either[String, String]] = {
 
     val fromHex = bytes.byteString2hex(address)
-    val request = if (dryRun) {
-      HttpRequest(
-        method = HttpMethods.POST,
-        uri = s"$uriPrefix/dryRun?from=$fromHex",
-        entity = HttpEntity(data.toByteArray)
-      )
-    } else {
+    val request = {
       val tx = UnsignedTransaction(
         from = Address @@ address,
         program = TransactionData @@ data,
@@ -81,6 +75,10 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
         }
       }
 
+      val dryRunParam =
+        if (dryRun) "&mode=dry-run"
+        else ""
+
       HttpRequest(
         method = HttpMethods.POST,
         uri = uriPrefix +
@@ -89,6 +87,7 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
           s"&nonce=${tx.nonce}" +
           s"&wattLimit=${tx.wattLimit}" +
           s"&wattPrice=${tx.wattPrice}" +
+          dryRunParam +
           wattPayer.fold("")(wp => s"&wattPayer=${bytes.byteString2hex(wp)}") +
           stx.wattPayerSignature.fold("")(s => s"&wattPayerSignature=${bytes.byteString2hex(s)}"),
         entity = HttpEntity(data.toByteArray)

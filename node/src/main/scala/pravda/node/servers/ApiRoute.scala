@@ -106,7 +106,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
 
                   // Commit is default mode
                   val eventuallyResult = maybeMode.getOrElse("commit").toLowerCase match {
-                    case "dryrun" =>
+                    case "dryrun" | "dry-run" =>
                       val env = new node.servers.Abci.BlockDependentEnvironment(db)
                       Future
                         .fromTry(abci.verifyTx(tx, TransactionId.Empty, env))
