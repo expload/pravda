@@ -29,6 +29,7 @@ import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember}
 import pravda.node.servers.{Abci, ApiRoute}
 import pravda.vm
 import pravda.vm.Data
+import pravda.vm.MarshalledData
 import supertagged.{Tagged, lifterF}
 import tethys._
 import tethys.commons.Token
@@ -47,44 +48,37 @@ object json {
   private def throwUtrj(token: Token) =
     throw new Exception(s"Unable to read JSON. Unexpected token $token")
 
-  implicit def eitherReader[L: JsonReader, R: JsonReader]: JsonReader[Either[L, R]] = new JsonReader[Either[L, R]] {
-
-    def read(it: TokenIterator)(implicit fieldName: FieldName): Either[L, R] = {
+  private def sealedTraitReader[T](f: FieldName => PartialFunction[(TokenIterator, String), T]): JsonReader[T] = new JsonReader[T] {
+    def read(it: TokenIterator)(implicit fieldName: FieldName): T = {
       if (it.currentToken().isObjectStart) {
         it.nextToken()
         if (it.currentToken().isFieldName) {
-          it.fieldName() match {
-            case "error" =>
-              it.nextToken()
-              val res = Left(JsonReader[L].read(it))
-              it.nextToken()
-              res
-            case "result" =>
-              it.nextToken()
-              val res = Right(JsonReader[R].read(it))
-              it.nextToken()
-              res
-          }
+          val n = it.fieldName()
+          it.nextToken()
+          val res = f(fieldName).applyOrElse((it, n), throwUtrj(it.currentToken()))
+          it.nextToken()
+          res
         } else throwUtrj(it.currentToken())
       } else throwUtrj(it.currentToken())
     }
   }
 
-  implicit def eitherWriter[L: JsonWriter, R: JsonWriter]: JsonWriter[Either[L, R]] = new JsonWriter[Either[L, R]] {
+  implicit def eitherReader[L: JsonReader, R: JsonReader]: JsonReader[Either[L, R]] =
+    sealedTraitReader { implicit fieldName => {
+        case (it, "error") => Left(JsonReader[L].read(it))
+        case (it, "result") => Right(JsonReader[R].read(it))
+      }
+    }
 
-    def write(value: Either[L, R], tw: TokenWriter): Unit = {
+  implicit def eitherWriter[L: JsonWriter, R: JsonWriter]: JsonWriter[Either[L, R]] =
+    (value: Either[L, R], tw: TokenWriter) => {
       tw.writeObjectStart()
       value match {
-        case Left(l) =>
-          tw.writeFieldName("error")
-          JsonWriter[L].write(l, tw)
-        case Right(r) =>
-          tw.writeFieldName("result")
-          JsonWriter[R].write(r, tw)
+        case Left(l)  => JsonWriter[L].write("error", l, tw)
+        case Right(r) => JsonWriter[R].write("result", r, tw)
       }
       tw.writeObjectEnd()
     }
-  }
 
   implicit def tuple2Reader[T1: JsonReader, T2: JsonReader]: JsonReader[(T1, T2)] =
     jsonReader[Tuple2[T1, T2]]
@@ -205,40 +199,37 @@ object json {
     writePrimitive(value, w.writeString)
   }
 
-  implicit val dataWriter: JsonWriter[Data] = new JsonWriter[Data] {
+  implicit val dataWriter: JsonWriter[Data] = (value: Data, w: TokenWriter) => {
 
-    def write(value: Data, w: TokenWriter): Unit = {
+    def writeArray[T](xs: Seq[T], t: String)(f: T => Unit) = {
+      w.writeArrayStart()
+      w.writeString(t)
+      xs.foreach(f(_))
+      w.writeArrayEnd()
+    }
 
-      def writeArray[T](xs: Seq[T], t: String)(f: T => Unit) = {
-        w.writeArrayStart()
-        w.writeString(t)
-        xs.foreach(f(_))
-        w.writeArrayEnd()
-      }
-
-      value match {
-        case p: Data.Primitive          => dataPrimitiveWriter.write(p, w)
-        case Data.Array.Int8Array(xs)   => writeArray(xs, "int8")(x => w.writeString(x.toString))
-        case Data.Array.Int16Array(xs)  => writeArray(xs, "int16")(x => w.writeString(x.toString))
-        case Data.Array.Int32Array(xs)  => writeArray(xs, "int32")(x => w.writeString(x.toString))
-        case Data.Array.Uint8Array(xs)  => writeArray(xs, "uint8")(x => w.writeString(x.toString))
-        case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeString(x.toString))
-        case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeString(x.toString))
-        case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeString(x.toString))
-        case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeString(x.toString))
-        case Data.Array.RefArray(xs)    => writeArray(xs, "ref")(x => w.writeString(x.toString))
-        case Data.Array.BoolArray(xs)   => writeArray(xs, "bool")(x => w.writeString(x.toString))
-        case Data.Array.Utf8Array(xs)   => writeArray(xs, "utf8")(x => w.writeString(x))
-        case Data.Array.BytesArray(xs)  => writeArray(xs, "bytes")(x => w.writeString(bytes.byteString2hex(x)))
-        case Data.Struct(xs) =>
-          w.writeObjectStart()
-          xs.foreach {
-            case (k, v) =>
-              writePrimitive(k, w.writeFieldName(_))
-              dataPrimitiveWriter.write(v, w)
-          }
-          w.writeObjectEnd()
-      }
+    value match {
+      case p: Data.Primitive          => dataPrimitiveWriter.write(p, w)
+      case Data.Array.Int8Array(xs)   => writeArray(xs, "int8")(x => w.writeString(x.toString))
+      case Data.Array.Int16Array(xs)  => writeArray(xs, "int16")(x => w.writeString(x.toString))
+      case Data.Array.Int32Array(xs)  => writeArray(xs, "int32")(x => w.writeString(x.toString))
+      case Data.Array.Uint8Array(xs)  => writeArray(xs, "uint8")(x => w.writeString(x.toString))
+      case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeString(x.toString))
+      case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeString(x.toString))
+      case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeString(x.toString))
+      case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeString(x.toString))
+      case Data.Array.RefArray(xs)    => writeArray(xs, "ref")(x => w.writeString(x.toString))
+      case Data.Array.BoolArray(xs)   => writeArray(xs, "bool")(x => w.writeString(x.toString))
+      case Data.Array.Utf8Array(xs)   => writeArray(xs, "utf8")(x => w.writeString(x))
+      case Data.Array.BytesArray(xs)  => writeArray(xs, "bytes")(x => w.writeString(bytes.byteString2hex(x)))
+      case Data.Struct(xs) =>
+        w.writeObjectStart()
+        xs.foreach {
+          case (k, v) =>
+            writePrimitive(k, w.writeFieldName(_))
+            dataPrimitiveWriter.write(v, w)
+        }
+        w.writeObjectEnd()
     }
   }
 
@@ -247,6 +238,41 @@ object json {
 
   implicit val dataBytesWriter: JsonWriter[vm.Data.Primitive.Bytes] =
     JsonWriter.stringWriter.contramap(s => s"bytes:${bytes.byteString2hex(s.data)}")
+
+  implicit val dataRefReader: JsonReader[vm.Data.Primitive.Ref] =
+    JsonReader.stringReader.map(s => Data.Primitive.Ref(s.substring(s.indexOf(':') + 1).toInt))
+
+  implicit val dataRefWriter: JsonWriter[vm.Data.Primitive.Ref] =
+    JsonWriter.stringWriter.contramap(s => s"ref:${s.data}")
+
+  implicit val marshalledDataSimpleReader: JsonReader[MarshalledData.Simple] =
+    jsonReader[MarshalledData.Simple]
+
+  implicit val marshalledDataComplexReader: JsonReader[MarshalledData.Complex] =
+    jsonReader[MarshalledData.Complex]
+
+  implicit val marshalledDataSimpleWriter: JsonObjectWriter[MarshalledData.Simple] =
+    jsonWriter[MarshalledData.Simple]
+
+  implicit val marshalledDataComplexWriter: JsonObjectWriter[MarshalledData.Complex] =
+    jsonWriter[MarshalledData.Complex]
+
+  implicit val marshalledDataReader: JsonReader[MarshalledData] =
+    sealedTraitReader { implicit fieldName => {
+      case (it, "simple") => marshalledDataSimpleReader.read(it)
+      case (it, "complex") => marshalledDataComplexReader.read(it)
+    }
+  }
+
+  implicit val marshalledDataWriter: JsonWriter[MarshalledData] =
+    (value: MarshalledData, tw: TokenWriter) => {
+      tw.writeObjectStart()
+      value match {
+        case simple: MarshalledData.Simple => marshalledDataSimpleWriter.write("simple", simple, tw)
+        case complex: MarshalledData.Complex => marshalledDataComplexWriter.write("complex", complex, tw)
+      }
+      tw.writeObjectEnd()
+    }
 
   //----------------------------------------------------------------------
   // Protobufs' ByteString support for tethys

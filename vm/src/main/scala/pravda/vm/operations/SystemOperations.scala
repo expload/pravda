@@ -27,6 +27,8 @@ import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
+import scala.collection.mutable
+
 final class SystemOperations(program: ByteBuffer,
                              memory: Memory,
                              currentStorage: Option[Storage],
@@ -198,8 +200,43 @@ final class SystemOperations(program: ByteBuffer,
     description =
       "Takes string and arbitrary data from stack, create new event with name as given string and with given data.")
   def event(): Unit = {
+
+    def marshalData(data: Data) = {
+      // (Original -> (UpdatedData, AssignedRef))
+      val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
+      def extract(ref: Data.Primitive.Ref) =
+        pHeap.getOrElseUpdate(ref, Data.Primitive.Ref(pHeap.size) -> aux(memory.heapGet(ref.data)))
+      def aux(data: Data): Data = data match {
+        // TODO drop private fields by convention
+        case struct: Data.Struct =>
+          val updated = struct.data collect {
+            case (_: Data.Primitive.Ref, _) =>
+              // Using ref as key is not allowed for marshalling
+              throw ThrowableVmError(Error.WrongType)
+            case (k, orig: Data.Primitive.Ref) =>
+              val (ref, _) = extract(orig)
+              (k, ref)
+            case tpl => tpl
+          }
+          Data.Struct(updated)
+        case Data.Array.RefArray(xs) =>
+          val updated = xs.map(x => extract(Data.Primitive.Ref(x))._1.data)
+          Data.Array.RefArray(updated)
+        case _ => data
+      }
+      (aux(data), pHeap.values.toList)
+    }
+
     val name = utf8(memory.pop())
-    val data = memory.pop()
+    val data = memory.pop() match {
+      case ref: Data.Primitive.Ref =>
+        marshalData(memory.heapGet(ref.data)) match {
+          case (d, ph) if ph.isEmpty => MarshalledData.Simple(d)
+          case (d, ph)               => MarshalledData.Complex(d, ph)
+        }
+      case value => MarshalledData.Simple(value)
+    }
+
     maybeProgramAddress match {
       case Some(addr) => env.event(addr, name, data)
       case None       => throw ThrowableVmError(OperationDenied)

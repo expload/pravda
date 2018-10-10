@@ -47,7 +47,7 @@ object VmSandbox {
     final case class BalanceTransfer(from: Address, to: Address, coins: NativeCoin)       extends EnvironmentEffect
   }
 
-  final case class EnviromentEvent(address: Address, name: String, data: Data)
+  final case class EnviromentEvent(address: Address, name: String, data: MarshalledData)
 
   final case class Expectations(watts: Long,
                                 memory: Memory,
@@ -174,7 +174,7 @@ object VmSandbox {
     val wattCounter = new WattCounterImpl(pre.watts)
 
     val effects = mutable.Buffer[EnvironmentEffect]()
-    val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
+    val events = mutable.Map[(Address, String), mutable.Buffer[MarshalledData]]()
 
     val pExecutor = pre.executor.getOrElse {
       Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
@@ -237,7 +237,7 @@ object VmSandbox {
         balances(to) = Data.Primitive.BigInt(toBalance + amount)
         effects += EnvironmentEffect.BalanceTransfer(from, to, amount)
       }
-      override def event(address: Address, name: String, data: Data): Unit = {
+      override def event(address: Address, name: String, data: MarshalledData): Unit = {
         val key = (address, name)
         if (!events.contains(key)) {
           events(key) = mutable.Buffer.empty
@@ -309,7 +309,7 @@ object VmSandbox {
       ),
       effects,
       events.flatMap {
-        case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
+        case ((address, name), datas) => datas.map(data => EnviromentEvent(address, name, data))
       }.toSeq,
       error.map { e =>
         s"""|${e.error}

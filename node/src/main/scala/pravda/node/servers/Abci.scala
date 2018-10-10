@@ -318,7 +318,7 @@ object Abci {
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
       }
 
-      def event(address: Address, name: String, data: Data): Unit = {
+      def event(address: Address, name: String, data: MarshalledData): Unit = {
         transactionEffects += Event(address, name, data)
       }
 
@@ -421,7 +421,7 @@ object Abci {
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
               case (Effect.Event(_, _, data), i) =>
-                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data)
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
         }
