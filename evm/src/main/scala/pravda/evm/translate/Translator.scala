@@ -22,12 +22,21 @@ import pravda.vm.asm
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
+import pravda.evm.EVM.{CodeCopy, Push}
 import pravda.evm.translate.opcode.SimpleTranslation
 
 object Translator {
 
   def apply(ops: List[EVM.Op]): Either[String, List[asm.Operation]] = {
     ops.map(SimpleTranslation.evmOpToOps).sequence.map(_.flatten)
+  }
+
+  def translateActualContract(ops: List[(Int,EVM.Op)]): Either[String, List[asm.Operation]] = {
+    val offset = ops.takeWhile({case (_,CodeCopy) => false case _ => true}).reverse.tail.headOption match {
+      case Some((_,Push(address))) => BigInt(1,address.toArray).intValue()
+      case _ => throw new Exception("Parse error")
+    }
+    ops.flatMap({case(ind,op) => if (ind - offset < 0) None else Some((ind - offset,op)) })
   }
 
 }

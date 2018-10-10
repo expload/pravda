@@ -11,6 +11,8 @@ object EvmTests extends TestSuite {
     'SimpleStorage - {
       val bytes = evm.readSolidityBinFile("SimpleStorage.bin")
 
+      Parser.opsWithIndices.parse(bytes).get.value.foreach(println)
+
       Parser(bytes) ==>
         Right(
           List(
