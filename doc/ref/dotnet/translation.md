@@ -4,14 +4,14 @@ Pravda project allows you to write _programs_ in subset of C\# language.
 Pravda Translator translates [CIL](https://en.wikipedia.org/wiki/Common_Intermediate_Language) to Pravda bytecode.
 
 ## How to compile program
-Pravda provides special `expload.dll` file with auxiliary methods for translation from CIL to Pravda bytecode. 
+Pravda provides special `Pravda.dll` file with auxiliary methods for translation from CIL to Pravda bytecode.
 
 This dll file serves **only as meta info** for translator, 
 it __doesn't__ provide any meaningful implementation for these methods.
 Translator just looks at calls of these methods and generates necessary Pravda bytecode.
  
-You can download `expload.dll` [here](../../../dotnet-tests/resources/expload.dll).
-Source of this dll can be found [here](../../../dotnet-tests/resources/expload.cs).
+You can download `Pravda.dll` [here](../../../PravdaDotNet/Pravda.dll).
+Source of this dll can be found [here](../../../PravdaDotNet/Pravda.cs).
 
 For full support of all translation features you need also to compile your program with `/debug:portable` option.
 This options will trigger the creation of `your_program.pdb` file that contains various auxiliary information about C# source.
@@ -20,7 +20,7 @@ _Portable_ pdb files are quite new, so you need up-to-date `csc` compiler to gen
 
 To compile your C# program with [`expload.dll`](../../../dotnet-tests/resources/expload.dll):
 ```bash
-csc your_program.cs /reference:expload.dll /debug:portable
+csc your_program.cs /reference:Pravda.dll /debug:portable
 ```
 
 ## How to run translation

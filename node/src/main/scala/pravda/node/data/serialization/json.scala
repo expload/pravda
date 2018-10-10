@@ -272,7 +272,7 @@ object json {
     new JsonReader[vm.Error] {
       override def read(it: TokenIterator)(implicit fieldName: FieldName): vm.Error = {
         val token = it.currentToken()
-        if (token.isNumberValue) {
+        val res = if (token.isNumberValue) {
           it.int() match {
             case 100 => vm.Error.StackOverflow
             case 101 => vm.Error.StackUnderflow
@@ -297,6 +297,8 @@ object json {
         } else {
           throw new Exception(s"Unable to read JSON. Unexpected token $token")
         }
+        it.nextToken()
+        res
       }
     }
 
