@@ -218,19 +218,24 @@ or with error
 {
   "executionResult" : {
     "error" : {
-      "error" : "oops",
+      "error" : <error-code-or-string>,
       "finalState" : {
-        "spentWatts" : 102,
-        "refundWatts" : 0,
-        "totalWatts" : 102,
-        "stack" : [ ],
-        "heap" : [ ]
+        "spentWatts" : <spent-watts>,
+        "refundWatts" : <refunded-watts>,
+        "totalWatts" : <total-watts>,
+        "stack" : [<stack-data>],
+        "heap" : [<heap-data>]
       },
-      "callStack" : [ ],
-      "lastPosition" : 8
+      "callStack" : [<call-stack-data>],
+      "lastPosition" : <last-position>
     }
   },
-  "effects" : [ ]
+  "effects" : [ {
+    "eventType" : "<effect-type>",
+    ...
+    <event-dependent-fields>
+    ...
+  }, ...]
 }
 ```
 
@@ -244,7 +249,6 @@ On the other hand, if the current user allows to sign the data,
 the data should be signed with the current user private key and returned back.
 
 If there is no current user, an implemenation of the Standard should return `NoKeys` error.
-
 
 
 ### Request
