@@ -33,6 +33,7 @@ object Error {
   case object PcallDenied               extends Error(201)
   case object NotEnoughMoney            extends Error(202)
   case object AmountShouldNotBeNegative extends Error(203)
+  case object ProgramIsSealed           extends Error(204)
 
   case object NoSuchProgram         extends Error(300)
   case object NoSuchMethod          extends Error(302)

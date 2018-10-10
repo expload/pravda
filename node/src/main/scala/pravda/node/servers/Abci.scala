@@ -36,6 +36,7 @@ import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
 import pravda.node.persistence.{FileStore, _}
+import pravda.vm
 import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
 
@@ -201,13 +202,16 @@ object Abci {
       effects: Seq[Effect]
   )
 
-  final case class TransactionUnauthorizedException()   extends Exception("Transaction signature is invalid")
-  final case class ProgramNotFoundException()           extends Exception("Program not found")
-  final case class ProgramIsSealedException()           extends Exception("Program is sealed")
-  final case class NotEnoughMoneyException()            extends Exception("Not enough money")
-  final case class WrongWattPriceException()            extends Exception("Bad transaction parameter: wattPrice")
-  final case class WrongWattLimitException()            extends Exception("Bad transaction parameter: wattLimit")
-  final case class AmountShouldNotBeNegativeException() extends Exception("Amount should not be negative")
+  sealed abstract class TransactionValidationException(message: String) extends Exception(message)
+
+  final case class TransactionUnauthorizedException()
+      extends TransactionValidationException("Transaction signature is invalid")
+
+  final case class WrongWattPriceException()
+      extends TransactionValidationException("Bad transaction parameter: wattPrice")
+
+  final case class WrongWattLimitException()
+      extends TransactionValidationException("Bad transaction parameter: wattLimit")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -294,15 +298,15 @@ object Abci {
       }
 
       def sealProgram(address: Address): Unit = {
-        val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
+        val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
         val sp = oldSb.copy(`sealed` = true)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramSeal(address)
       }
 
       def updateProgram(address: Address, code: ByteString): Unit = {
-        val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
-        if (oldSb.`sealed`) throw ProgramIsSealedException()
+        val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
+        if (oldSb.`sealed`) throw vm.ThrowableVmError(Error.ProgramIsSealed)
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
@@ -368,20 +372,23 @@ object Abci {
     }
 
     def withdraw(address: Address, amount: NativeCoin): Unit = {
-      if (amount < 0) throw AmountShouldNotBeNegativeException()
+      if (amount < 0)
+        throw vm.ThrowableVmError(Error.AmountShouldNotBeNegative)
+
       val current = blockBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
-      if (current < amount) throw NotEnoughMoneyException()
+
+      if (current < amount)
+        throw vm.ThrowableVmError(Error.NotEnoughMoney)
 
       blockBalancesPath.put(byteUtils.byteString2hex(address), current - amount)
-
     }
 
     def accrue(address: Address, amount: NativeCoin): Unit = {
-      if (amount < 0) throw AmountShouldNotBeNegativeException()
+      if (amount < 0)
+        throw vm.ThrowableVmError(Error.ProgramIsSealed)
 
       val current = blockBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
       blockBalancesPath.put(byteUtils.byteString2hex(address), current + amount)
-
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {

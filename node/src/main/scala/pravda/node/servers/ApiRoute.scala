@@ -30,6 +30,7 @@ import pravda.common.bytes
 import pravda.common.domain._
 import pravda.node
 import pravda.node.clients.AbciClient
+import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
@@ -38,12 +39,12 @@ import pravda.node.data.serialization.{Bson, transcode}
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
-import pravda.vm.Data
+import pravda.vm.{Data, ThrowableVmError}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.util.Random
+import scala.util.{Failure, Random, Success}
 
 /**
   * @param abci Direct access to transaction processing. Required by dry-run
@@ -108,11 +109,17 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                   val eventuallyResult = maybeMode.getOrElse("commit").toLowerCase match {
                     case "dryrun" | "dry-run" =>
                       val env = new node.servers.Abci.BlockDependentEnvironment(db)
-                      Future
-                        .fromTry(abci.verifyTx(tx, TransactionId.Empty, env))
-                        .map(Right(_))
-                    case mode =>
-                      abciClient.broadcastTransaction(tx, mode)
+                      abci.verifyTx(tx, TransactionId.Empty, env) match {
+                        case Success(x) =>
+                          Future.successful(Right(x))
+                        case Failure(e: ThrowableVmError) =>
+                          Future.successful(Left(RpcError(-1, e.error.toString, "")))
+                        case Failure(e: Abci.TransactionValidationException) =>
+                          Future.successful(Left(RpcError(-1, e.getMessage, "")))
+                        case Failure(e) =>
+                          Future.failed(e)
+                      }
+                    case mode => abciClient.broadcastTransaction(tx, mode)
                   }
 
                   onSuccess(eventuallyResult) { result =>
