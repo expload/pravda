@@ -120,6 +120,7 @@ class IoLanguageImpl(implicit executionContext: ExecutionContext) extends IoLang
       List.empty
     }
   }
+
   def absolutePath(path: String): Future[Option[String]] = Future {
     val file = new File(path)
     if (file.exists()) Some(file.getAbsolutePath)

@@ -70,7 +70,9 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               }
 
             case DotNet =>
-              inputs.find { case (p, f) => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb") && p != "stdin"} match {
+              inputs.find {
+                case (p, f) => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb") && p != "stdin"
+              } match {
                 case Some((p, f)) => Monad[F].pure(Left(s"Wrong file extension: $p"))
                 case None =>
                   val dotnetFilesE: Either[String, List[(ByteString, Option[ByteString])]] =
@@ -78,7 +80,7 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
                       .groupBy { case (p, _) => p.dropRight(4) }
                       .map {
                         case (prefix, files) =>
-                          val exeO = files.find { case (path, _) => path == s"$prefix.exe" || path == "stdin"}
+                          val exeO = files.find { case (path, _) => path == s"$prefix.exe" || path == "stdin" }
                           val dllO = files.find { case (path, _) => path == s"$prefix.dll" }
                           val pdbO = files.find { case (path, _) => path == s"$prefix.pdb" }
 
