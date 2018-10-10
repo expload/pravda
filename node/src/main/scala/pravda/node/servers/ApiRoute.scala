@@ -30,6 +30,7 @@ import pravda.common.bytes
 import pravda.common.domain._
 import pravda.node
 import pravda.node.clients.AbciClient
+import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
@@ -38,16 +39,17 @@ import pravda.node.data.serialization.{Bson, transcode}
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
-import pravda.node.servers.Abci.BlockDependentEnvironment
-import pravda.vm.impl.VmImpl
-import pravda.vm.{Data, ExecutionResult}
+import pravda.vm.{Data, ThrowableVmError}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.util.Random
+import scala.util.{Failure, Random, Success}
 
-class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: ExecutionContext) {
+/**
+  * @param abci Direct access to transaction processing. Required by dry-run
+  */
+class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
 
@@ -71,17 +73,6 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
         TransactionData @@ ByteString.copyFrom(bytes)
       case mediaType =>
         throw new IllegalArgumentException(s"Unsupported Content-Type: $mediaType")
-    }
-  }
-
-  def dryrun(from: Address,
-             program: ByteString,
-             currentBlockEnv: BlockDependentEnvironment): Future[ExecutionResult] = {
-    val tid = TransactionId @@ ByteString.EMPTY
-    val env = currentBlockEnv.transactionEnvironment(from, tid)
-    Future {
-      val vm = new VmImpl()
-      vm.spawn(program, env, Long.MaxValue)
     }
   }
 
@@ -114,40 +105,34 @@ class ApiRoute(abciClient: AbciClient, db: DB)(implicit executionContext: Execut
                     nonce
                   )
 
-                  val mode = maybeMode.getOrElse("commit")
-                  val result = abciClient.broadcastTransaction(tx, mode)
+                  // Commit is default mode
+                  val eventuallyResult = maybeMode.getOrElse("commit").toLowerCase match {
+                    case "dryrun" | "dry-run" =>
+                      val env = new node.servers.Abci.BlockDependentEnvironment(db)
+                      abci.verifyTx(tx, TransactionId.Empty, env) match {
+                        case Success(x) =>
+                          Future.successful(Right(x))
+                        case Failure(e: ThrowableVmError) =>
+                          Future.successful(Left(RpcError(-1, e.error.toString, "")))
+                        case Failure(e: Abci.TransactionValidationException) =>
+                          Future.successful(Left(RpcError(-1, e.getMessage, "")))
+                        case Failure(e) =>
+                          Future.failed(e)
+                      }
+                    case mode => abciClient.broadcastTransaction(tx, mode)
+                  }
 
-                  onSuccess(result) {
-                    case Right(info) => complete(info)
-                    case Left(error) => complete(error)
+                  onSuccess(eventuallyResult) { result =>
+                    complete(result)
                   }
                 }
             }
           }
         }
       } ~
-        post {
-          withoutRequestTimeout {
-            pathPrefix("broadcast") {
-              path("dryRun") {
-                parameters(
-                  'from.as(hexUnmarshaller)
-                ) { from =>
-                  extractStrictEntity(1.second) { body =>
-                    val program = bodyToTransactionData(body)
-                    onSuccess(dryrun(Address @@ from, program, new node.servers.Abci.BlockDependentEnvironment(db))) {
-                      er =>
-                        complete(er)
-                    }
-                  }
-                }
-              }
-            }
-          }
-        } ~
         get {
           path("balance") {
-            parameters('address.as(hexUnmarshaller)) { (address) =>
+            parameters('address.as(hexUnmarshaller)) { address =>
               val f = balances
                 .get(Address @@ address)
                 .map(
