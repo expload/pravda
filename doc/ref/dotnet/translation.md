@@ -18,7 +18,7 @@ This options will trigger the creation of `your_program.pdb` file that contains 
  
 _Portable_ pdb files are quite new, so you need up-to-date `csc` compiler to generate them. See more [here](https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md).
 
-To compile your C# program with [`expload.dll`](../../../dotnet-tests/resources/expload.dll):
+To compile your C# program with [`Pravda.dll`](../../../dotnet-tests/resources/expload.dll):
 ```bash
 csc your_program.cs /reference:Pravda.dll /debug:portable
 ```
