@@ -91,14 +91,15 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
         }
         result <- EitherT {
           api.singAndBroadcastTransaction(
-            uriPrefix = config.endpoint,
+            uriPrefix =
+              if (config.dryRun) s"${config.endpoint}/dryRun"
+              else s"${config.endpoint}/broadcast",
             address = wallet.address,
             wattPayerPrivateKey = wattPayerWallet.map(_.privateKey),
             privateKey = wallet.privateKey,
             wattPrice = config.wattPrice,
             wattLimit = config.wattLimit,
             wattPayer = wattPayerWallet.map(Address @@ _.address),
-            dryRun = config.dryRun,
             data = program
           )
         }

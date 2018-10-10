@@ -31,7 +31,7 @@ import pravda.common.domain._
 import pravda.node
 import pravda.node.clients.AbciClient
 import pravda.node.clients.AbciClient.RpcError
-import pravda.node.data.blockchain.Transaction.SignedTransaction
+import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
@@ -39,10 +39,11 @@ import pravda.node.data.serialization.{Bson, transcode}
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
+import pravda.node.servers.Abci.TransactionResult
 import pravda.vm.{Data, ThrowableVmError}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Random, Success}
 
@@ -79,57 +80,98 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
   val route: Route =
     pathPrefix("public") {
       post {
-        withoutRequestTimeout {
-          path("broadcast") {
-            parameters(
-              ('from.as(hexUnmarshaller),
-               'signature.as(hexUnmarshaller),
-               'nonce.as(intUnmarshaller).?,
-               'wattLimit.as[Long],
-               'wattPrice.as[Long],
-               'wattPayer.as(hexUnmarshaller).?,
-               'wattPayerSignature.as(hexUnmarshaller).?,
-               'mode.?)) {
-              (from, signature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature, maybeMode) =>
-                extractStrictEntity(1.second) { body =>
-                  val program = bodyToTransactionData(body)
-                  val nonce = maybeNonce.getOrElse(Random.nextInt())
-                  val tx = SignedTransaction(
-                    Address @@ from,
-                    program,
-                    signature,
-                    wattLimit,
-                    NativeCoin @@ wattPrice,
-                    wattPayer.map(Address @@ _),
-                    wattPayerSignature,
-                    nonce
-                  )
-
-                  // Commit is default mode
-                  val eventuallyResult = maybeMode.getOrElse("commit").toLowerCase match {
-                    case "dryrun" | "dry-run" =>
-                      val env = new node.servers.Abci.BlockDependentEnvironment(db)
-                      abci.verifyTx(tx, TransactionId.Empty, env) match {
-                        case Success(x) =>
-                          Future.successful(Right(x))
-                        case Failure(e: ThrowableVmError) =>
-                          Future.successful(Left(RpcError(-1, e.error.toString, "")))
-                        case Failure(e: Abci.TransactionValidationException) =>
-                          Future.successful(Left(RpcError(-1, e.getMessage, "")))
-                        case Failure(e) =>
-                          Future.failed(e)
-                      }
-                    case mode => abciClient.broadcastTransaction(tx, mode)
-                  }
-
-                  onSuccess(eventuallyResult) { result =>
-                    complete(result)
-                  }
+        path("dryRun") {
+          parameters(
+            ('from.as(hexUnmarshaller),
+             'signature.as(hexUnmarshaller).?,
+             'nonce.as(intUnmarshaller).?,
+             'wattLimit.as[Long],
+             'wattPrice.as[Long],
+             'wattPayer.as(hexUnmarshaller).?,
+             'wattPayerSignature.as(hexUnmarshaller).?)) {
+            (from, maybeSignature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature) =>
+              extractStrictEntity(1.second) { body =>
+                val env = new node.servers.Abci.BlockDependentEnvironment(db)
+                val program = bodyToTransactionData(body)
+                val nonce = maybeNonce.getOrElse(Random.nextInt())
+                val verificationResult = maybeSignature match {
+                  case Some(signature) =>
+                    val tx = SignedTransaction(
+                      Address @@ from,
+                      program,
+                      signature,
+                      wattLimit,
+                      NativeCoin @@ wattPrice,
+                      wattPayer.map(Address @@ _),
+                      wattPayerSignature,
+                      nonce
+                    )
+                    abci.verifySignedTx(tx, TransactionId.Empty, env)
+                  case None =>
+                    val tx = UnsignedTransaction(
+                      Address @@ from,
+                      program,
+                      wattLimit,
+                      NativeCoin @@ wattPrice,
+                      wattPayer.map(Address @@ _),
+                      nonce
+                    )
+                    abci.verifyTx(tx, TransactionId.Empty, env)
                 }
-            }
+
+                type R = Either[RpcError, TransactionResult]
+
+                verificationResult match {
+                  case Success(x) =>
+                    complete(Right(x): R)
+                  case Failure(e: ThrowableVmError) =>
+                    complete(Left(RpcError(-1, e.error.toString, "")): R)
+                  case Failure(e: Abci.TransactionValidationException) =>
+                    complete(Left(RpcError(-1, e.getMessage, "")): R)
+                  case Failure(e) =>
+                    failWith(e)
+                }
+              }
           }
         }
       } ~
+        post {
+          withoutRequestTimeout {
+            path("broadcast") {
+              parameters(
+                ('from.as(hexUnmarshaller),
+                 'signature.as(hexUnmarshaller),
+                 'nonce.as(intUnmarshaller).?,
+                 'wattLimit.as[Long],
+                 'wattPrice.as[Long],
+                 'wattPayer.as(hexUnmarshaller).?,
+                 'wattPayerSignature.as(hexUnmarshaller).?,
+                 'mode.?)) {
+                (from, signature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature, maybeMode) =>
+                  extractStrictEntity(1.second) { body =>
+                    val program = bodyToTransactionData(body)
+                    val nonce = maybeNonce.getOrElse(Random.nextInt())
+                    val tx = SignedTransaction(
+                      Address @@ from,
+                      program,
+                      signature,
+                      wattLimit,
+                      NativeCoin @@ wattPrice,
+                      wattPayer.map(Address @@ _),
+                      wattPayerSignature,
+                      nonce
+                    )
+
+                    val mode = maybeMode.getOrElse("commit")
+
+                    onSuccess(abciClient.broadcastTransaction(tx, mode)) { result =>
+                      complete(result)
+                    }
+                  }
+              }
+            }
+          }
+        } ~
         get {
           path("balance") {
             parameters('address.as(hexUnmarshaller)) { address =>

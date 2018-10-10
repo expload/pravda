@@ -33,6 +33,5 @@ trait NodeLanguage[F[_]] {
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
                                   wattPayer: Option[Address],
-                                  dryRun: Boolean,
                                   data: ByteString): F[Either[String, String]]
 }
