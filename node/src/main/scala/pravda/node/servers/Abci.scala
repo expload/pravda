@@ -27,6 +27,7 @@ import com.tendermint.abci._
 import pravda.common.domain._
 import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
+import pravda.node.data.blockchain.Transaction
 import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTransaction}
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
@@ -96,7 +97,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       .map(_ => ResponseBeginBlock())
   }
 
-  def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
+  private def checkTxWatts(tx: Transaction): Try[Unit] = {
     if (tx.wattPrice <= NativeCoin.zero) {
       Failure(WrongWattPriceException())
     } else if (tx.wattLimit <= 0) {
@@ -106,22 +107,19 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     }
   }
 
-  def verifyTx(tx: SignedTransaction,
-               id: TransactionId,
-               environmentProvider: BlockDependentEnvironment): Try[TransactionResult] = {
+  def verifyTx(tx: Transaction, id: TransactionId, ep: BlockDependentEnvironment): Try[TransactionResult] = {
+
+    val vm = new VmImpl()
+    val env = ep.transactionEnvironment(tx.from, id)
+    val wattPayer = tx.wattPayer.fold(tx.from)(identity)
+
     for {
-      authTx <- cryptography
-        .checkTransactionSignature(tx)
-        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
-      _ <- checkTransaction(authTx)
-      env = environmentProvider.transactionEnvironment(authTx.from, id)
+      _ <- checkTxWatts(tx)
       // Select watt payer. if watt payer is defined use them,
       // else use transaction sender (from).
       // Signature is checked above in `checkTransaction` function.
-      wattPayer = authTx.wattPayer.fold(authTx.from)(identity)
-      _ <- Try(environmentProvider.withdraw(wattPayer, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
-      vm = new VmImpl()
-      execResult <- Try(vm.spawn(authTx.program, env, authTx.wattLimit))
+      _ <- Try(ep.withdraw(wattPayer, NativeCoin(tx.wattPrice * tx.wattLimit)))
+      execResult <- Try(vm.spawn(tx.program, env, tx.wattLimit))
     } yield {
       val total = execResult match {
         case Left(RuntimeException(_, state, _, _)) => state.totalWatts
@@ -129,20 +127,28 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
           env.commitTransaction()
           state.totalWatts
       }
-      val remaining = authTx.wattLimit - total
-      environmentProvider.accrue(wattPayer, NativeCoin(authTx.wattPrice * remaining))
-      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
+      val remaining = tx.wattLimit - total
+      ep.accrue(wattPayer, NativeCoin(tx.wattPrice * remaining))
+      ep.appendFee(NativeCoin(tx.wattPrice * total))
       TransactionResult(execResult, env.collectEffects)
     }
   }
 
+  def verifySignedTx(tx: SignedTransaction,
+                     id: TransactionId,
+                     ep: BlockDependentEnvironment): Try[TransactionResult] = {
+    cryptography
+      .checkTransactionSignature(tx)
+      .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
+      .flatMap(verifyTx(_, id, ep))
+  }
+
   def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: BlockDependentEnvironment)(
       result: (Int, String) => R): Future[R] = {
-    val `try` = for {
-      tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
-      tid = TransactionId.forEncodedTransaction(encodedTransaction)
-      res <- verifyTx(tx, tid, environmentProvider)
-    } yield res
+
+    val tid = TransactionId.forEncodedTransaction(encodedTransaction)
+    val `try` = Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+      .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
       `try` match {

@@ -14,6 +14,5 @@ class NodeLanguageStub(result: Either[String, String]) extends NodeLanguage[Id] 
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
                                   wattPayer: Option[Address],
-                                  dryRun: Boolean,
                                   data: ByteString): Id[Either[String, String]] = result
 }

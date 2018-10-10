@@ -41,7 +41,7 @@ object PravdaConfig {
     object Broadcast {
       val WATT_LIMIT = 300L
       val WATT_PRICE = NativeCoin.amount(1)
-      val ENDPOINT = "http://localhost:8080/api/public/broadcast"
+      val ENDPOINT = "http://localhost:8080/api/public"
     }
   }
 
