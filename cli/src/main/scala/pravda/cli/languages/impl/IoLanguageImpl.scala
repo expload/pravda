@@ -46,6 +46,12 @@ class IoLanguageImpl(implicit executionContext: ExecutionContext) extends IoLang
     else None
   }
 
+  def isFile(path: String): Future[Option[Boolean]] = Future {
+    val file = new File(path)
+    if (file.exists()) Some(file.isFile)
+    else None
+  }
+
   def concatPath(parent: String, child: String): Future[String] = Future {
     new File(new File(parent), child).getAbsolutePath
   }
@@ -95,5 +101,28 @@ class IoLanguageImpl(implicit executionContext: ExecutionContext) extends IoLang
 
   def exit(code: Int): Future[Unit] = Future {
     sys.exit(code)
+  }
+
+  def listFiles(dir: String): Future[List[String]] = Future {
+    val file = new File(dir)
+    if (file.exists && file.isDirectory) {
+      file.listFiles().toList.filter(_.isFile).map(_.getAbsolutePath)
+    } else {
+      List.empty
+    }
+  }
+
+  def listDirs(dir: String): Future[List[String]] = Future {
+    val file = new File(dir)
+    if (file.exists && file.isDirectory) {
+      file.listFiles().toList.filter(_.isDirectory).map(_.getAbsolutePath)
+    } else {
+      List.empty
+    }
+  }
+  def absolutePath(path: String): Future[Option[String]] = Future {
+    val file = new File(path)
+    if (file.exists()) Some(file.getAbsolutePath)
+    else None
   }
 }

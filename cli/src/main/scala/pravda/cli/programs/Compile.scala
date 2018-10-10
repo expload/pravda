@@ -34,45 +34,51 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
   def apply(config: PravdaConfig.Compile): F[Unit] = {
     val errorOrResult: EitherT[F, String, ByteString] =
       for {
-        input <- EitherT[F, String, List[ByteString]] {
+        inputs <- EitherT[F, String, List[(String, ByteString)]] {
           config.input match {
-            case Nil => io.readFromStdin().map(s => Right(List(s)))
+            case Nil => io.readFromStdin().map(s => Right(List("stdin" -> s)))
             case nonEmpty =>
-              nonEmpty
-                .map(path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.")))
-                .sequence
-                .map(_.sequence)
+              for {
+                paths <- nonEmpty
+                  .map(path =>
+                    for {
+                      isf <- io.isFile(path).map(_.getOrElse(false))
+                      paths <- if (isf) Monad[F].pure(List(path)) else io.listFiles(path)
+                    } yield paths)
+                  .flatSequence
+                inputs <- paths
+                  .map(path =>
+                    for {
+                      file <- io.readFromFile(path)
+                    } yield file.map(f => path -> f).toRight(s"`$path` is not found."))
+                  .sequence
+              } yield inputs.sequence
           }
         }
         result <- EitherT[F, String, ByteString] {
           config.compiler match {
             case Asm =>
-              config.input match {
-                case List(path) => compilers.asm(path, input.head.toStringUtf8)
-                case Nil        => compilers.asm(input.head.toStringUtf8)
-                case _          => Monad[F].pure(Left("Asm compilation takes only one file."))
+              inputs match {
+                case List(("stdin", f)) => compilers.asm(f.toStringUtf8)
+                case List((path, f))    => compilers.asm(path, f.toStringUtf8)
+                case _                  => Monad[F].pure(Left("Asm compilation takes only one file."))
               }
             case Disasm =>
-              config.input match {
-                case List(_) | Nil => compilers.disasm(input.head).map(s => Right(ByteString.copyFromUtf8(s)))
-                case _             => Monad[F].pure(Left("Disassembly takes only one file."))
+              inputs match {
+                case List((path, f)) => compilers.disasm(f).map(s => Right(ByteString.copyFromUtf8(s)))
+                case _               => Monad[F].pure(Left("Disassembly takes only one file."))
               }
 
             case DotNet =>
-              config.input.find(p => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb")) match {
-                case Some(errPath) => Monad[F].pure(Left(s"Wrong file extension: $errPath"))
+              inputs.find { case (p, f) => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb") && p != "stdin"} match {
+                case Some((p, f)) => Monad[F].pure(Left(s"Wrong file extension: $p"))
                 case None =>
-                  val sources = if (config.input.isEmpty) {
-                    List("stdin.exe").zip(input)
-                  } else {
-                    config.input.zip(input)
-                  }
                   val dotnetFilesE: Either[String, List[(ByteString, Option[ByteString])]] =
-                    sources
-                      .groupBy { case (path, _) => path.dropRight(4) }
+                    inputs
+                      .groupBy { case (p, _) => p.dropRight(4) }
                       .map {
                         case (prefix, files) =>
-                          val exeO = files.find { case (path, _) => path == s"$prefix.exe" }
+                          val exeO = files.find { case (path, _) => path == s"$prefix.exe" || path == "stdin"}
                           val dllO = files.find { case (path, _) => path == s"$prefix.dll" }
                           val pdbO = files.find { case (path, _) => path == s"$prefix.pdb" }
 

@@ -59,6 +59,19 @@ final class IoLanguageStub(stdin: Option[ByteString] = None,
 
   override def concatPath(parent: String, child: String): Id[String] =
     s"$parent/$child"
+
+  def isFile(path: String): Id[Option[Boolean]] = files.get(path).map(_ != dir)
+
+  def listFiles(dir: String): Id[List[String]] =
+    if (isDirectory(dir).getOrElse(false)) {
+      files.filterKeys(k => isFile(k).getOrElse(false)).keys.toList
+    } else {
+      List.empty
+    }
+
+  def listDirs(dir: String): Id[List[String]] = List.empty
+
+  def absolutePath(path: String): Id[Option[String]] = Some(path)
 }
 
 object IoLanguageStub {
