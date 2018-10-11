@@ -24,7 +24,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.blockchain.Transaction.SignedTransaction
-import pravda.node.data.blockchain.{ExecutionInfo, Transaction, TransactionData}
+import pravda.node.data.blockchain.{Transaction, TransactionData}
 import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
@@ -33,6 +33,7 @@ import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.servers.Abci.TransactionResult
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
@@ -52,7 +53,7 @@ class AbciClient(port: Int)(implicit
 //      throw new RuntimeException(s"${prefix} error: ${res.code}:${res.log}")
 //  }
 
-  type ErrorOrExecInfo = Either[RpcError, ExecutionInfo]
+  type ErrorOrExecInfo = Either[RpcError, TransactionResult]
 
   private def handleResponse(response: HttpResponse, mode: String): Future[ErrorOrExecInfo] = {
     response match {
@@ -65,7 +66,7 @@ class AbciClient(port: Int)(implicit
               response.result
                 .map { result =>
                   result.deliver_tx.log match {
-                    case Some(log) => Right(transcode(Json @@ log).to[ExecutionInfo])
+                    case Some(log) => Right(transcode(Json @@ log).to[TransactionResult])
                     case None      => Left(result.check_tx.log.map(s => RpcError(-1, s, "")).getOrElse(UnknownError))
                   }
                 }

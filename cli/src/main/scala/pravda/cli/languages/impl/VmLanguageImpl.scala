@@ -25,27 +25,21 @@ import pravda.node.data.common.TransactionId
 import pravda.node.db.DB
 import pravda.node.servers
 import pravda.vm.ExecutionResult
-import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
+import pravda.vm.impl.VmImpl
 
 import scala.concurrent.{ExecutionContext, Future}
 
 final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends VmLanguage[Future] {
 
-  def run(program: ByteString,
-          executor: ByteString,
-          storagePath: String,
-          wattLimit: Long): Future[Either[String, ExecutionResult]] = Future {
+  def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Future[ExecutionResult] =
+    Future {
 
-    val executorAddress = Address @@ executor
-    val envProvider = new servers.Abci.BlockDependentEnvironment(DB(storagePath, None))
-    val env = envProvider.transactionEnvironment(executorAddress, TransactionId.forEncodedTransaction(program))
-    val vm = new VmImpl()
-    val memory = MemoryImpl.empty
-    val wattCounter = new WattCounterImpl(wattLimit)
-    val result = vm.spawn(program, env, memory, wattCounter, executorAddress)
-    envProvider.commit(0, Vector(executorAddress)) // TODO retrieve block height from db
-    result.error
-      .map(_.mkString)
-      .toLeft(result)
-  }
+      val executorAddress = Address @@ executor
+      val envProvider = new servers.Abci.BlockDependentEnvironment(DB(storagePath, None))
+      val env = envProvider.transactionEnvironment(executorAddress, TransactionId.forEncodedTransaction(program))
+      val vm = new VmImpl()
+      val result = vm.spawn(program, env, wattLimit)
+      envProvider.commit(0, Vector(executorAddress)) // TODO retrieve block height from db
+      result
+    }
 }

@@ -157,11 +157,11 @@ object DotnetCodegen {
     val ops = asm.PravdaAssembler.disassemble(bytecode)
 
     val programName = ops.collectFirst {
-      case asm.Operation.Meta(ProgramName(name)) => name
+      case (_, asm.Operation.Meta(ProgramName(name))) => name
     }
 
     val methods = ops.collect {
-      case asm.Operation.Meta(m: Meta.MethodSignature) => m
+      case (_, asm.Operation.Meta(m: Meta.MethodSignature)) => m
     }
 
     (programName.getOrElse("Program"), methods.toList)

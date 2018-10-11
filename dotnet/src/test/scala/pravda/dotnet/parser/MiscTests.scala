@@ -12,9 +12,9 @@ object MiscTests extends TestSuite {
 
   val tests = Tests {
     'helloWorldParse - {
-      val Right((pdb, tables)) = parsePdbFile("hello_world.pdb")
+      val Right(pdb) = parsePdbFile("hello_world.pdb")
 
-      tables.methodDebugInformationTable ==> Vector(
+      pdb.tablesData.methodDebugInformationTable ==> Vector(
         MethodDebugInformationData(Some("/tmp/pravda/hello_world.cs"),
                                    List(SequencePoint(0, 6, 5, 6, 6),
                                         SequencePoint(1, 7, 9, 7, 43),

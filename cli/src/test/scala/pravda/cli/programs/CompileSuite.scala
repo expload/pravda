@@ -30,10 +30,8 @@ object CompileSuite extends TestSuite {
           Left("nope")
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
-          Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
+        def dotnet(sources: Seq[(ByteString, Option[ByteString])],
+                   mainClass: Option[String]): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Asm))
@@ -49,10 +47,8 @@ object CompileSuite extends TestSuite {
         def disasm(source: ByteString): Id[String] =
           if (source == BinarySource) ExpectedStringOutput
           else UnexpectedStringOutput
-        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
-          Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
+        def dotnet(sources: Seq[(ByteString, Option[ByteString])],
+                   mainClass: Option[String]): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Disasm))
@@ -68,39 +64,15 @@ object CompileSuite extends TestSuite {
           Right(UnexpectedBinaryOutput)
         def disasm(source: ByteString): Id[String] =
           UnexpectedStringOutput
-        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
-          if (source == BinarySource) Right(ExpectedBinaryOutput)
+        def dotnet(sources: Seq[(ByteString, Option[ByteString])],
+                   mainClass: Option[String]): Id[Either[String, ByteString]] = {
+          if (sources.headOption.map(_._1).contains(BinarySource)) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
-          Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
+        }
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
-    }
-
-    "dotnet_visualize" - {
-      val io = new IoLanguageStub(Some(BinarySource))
-      val compilers = new CompilersLanguage[Id] {
-        def asm(fileName: String, source: String): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def asm(source: String): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def disasm(source: ByteString): Id[String] =
-          UnexpectedStringOutput
-        def dotnet(source: ByteString, pdb: Option[ByteString]): Id[Either[String, ByteString]] =
-          Right(UnexpectedBinaryOutput)
-        def dotnetVisualize(source: ByteString, pdb: Option[ByteString]): Id[Either[String, (ByteString, String)]] =
-          if (source == BinarySource) {
-            Right((ExpectedBinaryOutput, ExpectedStringOutput))
-          } else {
-            Right((UnexpectedBinaryOutput, UnexpectedStringOutput))
-          }
-      }
-      val compile = new Compile[Id](io, compilers)
-      compile(PravdaConfig.Compile(DotNetVisualize))
-      assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
-      assert(io.stdout.lift(1).contains(ExpectedBinaryOutput))
     }
   }
 }

@@ -1,7 +1,7 @@
 ---exe
-pcall.exe
+pcall.exe pcall_program.dll
+Expload.Pravda.Programs.MyProgram
 ---translation
-meta translator_mark "jump to methods"
 dup
 push "ctor"
 eq
@@ -18,12 +18,10 @@ eq
 jumpi @method_pcall
 push "Wrong method name"
 throw
-meta translator_mark "ctor method"
+@method_ctor:
 meta method {
 "name":"ctor","returnTpe":int8(0)
 }
-@method_ctor:
-meta translator_mark "ctor check"
 from
 paddr
 owner
@@ -42,23 +40,16 @@ throw
 push null
 push "init"
 sput
-meta translator_mark "ctor local vars definition"
-meta translator_mark "ctor method body"
 jump @ctor_lvc
-meta translator_mark "ctor local vars clearing"
 @ctor_lvc:
 pop
-meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "pcall method"
+@method_pcall:
 meta method {
 "name":"pcall","returnTpe":int8(3)
 }
-@method_pcall:
-meta translator_mark "pcall local vars definition"
 push null
 push null
-meta translator_mark "pcall method body"
 push x0000000000000000000000000000000000000000000000000000000000000000
 push int32(10)
 push int32(20)
@@ -81,7 +72,6 @@ pop
 push int32(2)
 dupn
 jump @pcall_lvc
-meta translator_mark "pcall local vars clearing"
 @pcall_lvc:
 swap
 pop
@@ -89,7 +79,5 @@ swap
 pop
 swap
 pop
-meta translator_mark "end of pcall method"
 jump @stop
-meta translator_mark "helper functions"
 @stop:

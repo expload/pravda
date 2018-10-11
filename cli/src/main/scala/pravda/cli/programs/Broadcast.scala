@@ -24,6 +24,7 @@ import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.languages.{CompilersLanguage, IoLanguage, NodeLanguage}
 import pravda.common.bytes
+import pravda.common.domain.Address
 import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader
 import pravda.node.data.serialization._
@@ -48,7 +49,14 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
         walletJson <- EitherT(
           config.wallet
             .fold[F[Either[String, ByteString]]](Monad[F].pure(Left("Wallet file should be defined")))(readFromFile))
+        wattPayerWalletJson <- EitherT(
+          config.wattPayerWallet
+            .map(readFromFile)
+            .sequence
+            .map(_.fold(Right(None): Either[String, Option[ByteString]])(_.map(Some(_))))
+        )
         wallet = transcode(Json @@ walletJson.toStringUtf8).to[Wallet]
+        wattPayerWallet = wattPayerWalletJson.map(json => transcode(Json @@ json.toStringUtf8).to[Wallet])
         program <- config.mode match {
           case Mode.Run =>
             useOption(config.input)(io.readFromStdin(), readFromFile)
@@ -83,12 +91,15 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
         }
         result <- EitherT {
           api.singAndBroadcastTransaction(
-            uriPrefix = config.endpoint,
+            uriPrefix =
+              if (config.dryRun) s"${config.endpoint}/dryRun"
+              else s"${config.endpoint}/broadcast",
             address = wallet.address,
+            wattPayerPrivateKey = wattPayerWallet.map(_.privateKey),
             privateKey = wallet.privateKey,
             wattPrice = config.wattPrice,
             wattLimit = config.wattLimit,
-            dryRun = config.dryRun,
+            wattPayer = wattPayerWallet.map(Address @@ _.address),
             data = program
           )
         }

@@ -19,19 +19,11 @@ package pravda.vm.operations
 
 import java.nio.ByteBuffer
 
-import pravda.vm.VmError.{CallStackOverflow, CallStackUnderflow}
 import pravda.vm.WattCounter.{CpuProgControl, CpuSimpleArithmetic}
-import pravda.vm.operations.annotation.OpcodeImplementation
 import pravda.vm._
+import pravda.vm.operations.annotation.OpcodeImplementation
 
-import scala.collection.mutable
-
-final class ControlOperations(program: ByteBuffer,
-                              callStack: mutable.Buffer[Int],
-                              metas: mutable.Buffer[Meta],
-                              callMetaStack: mutable.Buffer[List[Meta]],
-                              memory: Memory,
-                              wattCounter: WattCounter) {
+final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = Opcodes.JUMPI,
@@ -43,7 +35,8 @@ final class ControlOperations(program: ByteBuffer,
     val offset = ref(memory.pop())
     val condition = boolean(memory.pop())
     if (condition) {
-      program.position(offset.data)
+      memory.updateOffset(offset.data)
+      program.position(memory.currentOffset)
     }
   }
 
@@ -53,7 +46,9 @@ final class ControlOperations(program: ByteBuffer,
   )
   def jump(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    program.position(ref(memory.pop()).data)
+    val offset = ref(memory.pop())
+    memory.updateOffset(offset.data)
+    program.position(memory.currentOffset)
   }
 
   @OpcodeImplementation(
@@ -64,14 +59,9 @@ final class ControlOperations(program: ByteBuffer,
   )
   def call(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    val currentOffset = program.position()
     val callOffset = ref(memory.pop())
-    callStack += currentOffset
-    callMetaStack += metas.toList
-    if (callStack.size > 1024 || callMetaStack.size > 1024) {
-      throw VmErrorException(CallStackOverflow)
-    }
-    program.position(callOffset.data)
+    memory.makeCall(callOffset.data)
+    program.position(memory.currentOffset)
   }
 
   @OpcodeImplementation(
@@ -80,11 +70,7 @@ final class ControlOperations(program: ByteBuffer,
       "value of the first item of the call stack (see CALL opcode)."
   )
   def ret(): Unit = {
-    if (callStack.isEmpty || callMetaStack.isEmpty) {
-      throw VmErrorException(CallStackUnderflow)
-    }
-    val offset = callStack.remove(callStack.length - 1)
-    callMetaStack.remove(callMetaStack.length - 1)
-    program.position(offset)
+    memory.makeRet()
+    program.position(memory.currentOffset)
   }
 }

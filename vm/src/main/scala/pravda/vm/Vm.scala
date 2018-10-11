@@ -19,17 +19,25 @@ package pravda
 
 package vm
 
-import java.nio.ByteBuffer
-
+import com.google.protobuf.ByteString
 import pravda.common.domain
 
 trait Vm {
 
-  def spawn(program: ByteBuffer,
-            environment: Environment,
-            memory: Memory,
-            wattCounter: WattCounter,
-            maybeStorage: Option[Storage],
-            programAddress: Option[domain.Address],
-            pcallAllowed: Boolean): ExecutionResult
+  /**
+    * New vm "from scratch". Clear memory.
+    * Initial program has no address.
+    * Storage operations is not allowed.
+    * PCall/LCall allowed.
+    */
+  def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult
+
+  /**
+    * Run a program inside spawned VM.
+    */
+  def run(programAddress: domain.Address,
+          environment: Environment,
+          memory: Memory,
+          wattCounter: WattCounter,
+          pcallAllowed: Boolean): Unit
 }

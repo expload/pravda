@@ -1,7 +1,6 @@
 ---exe
 loop.exe
 ---translation
-meta translator_mark "jump to methods"
 dup
 push "ctor"
 eq
@@ -18,12 +17,10 @@ eq
 jumpi @method_loops
 push "Wrong method name"
 throw
-meta translator_mark "ctor method"
+@method_ctor:
 meta method {
 "name":"ctor","returnTpe":int8(0)
 }
-@method_ctor:
-meta translator_mark "ctor check"
 from
 paddr
 owner
@@ -42,25 +39,18 @@ throw
 push null
 push "init"
 sput
-meta translator_mark "ctor local vars definition"
-meta translator_mark "ctor method body"
 jump @ctor_lvc
-meta translator_mark "ctor local vars clearing"
 @ctor_lvc:
 pop
-meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "loops method"
+@method_loops:
 meta method {
 "name":"loops","returnTpe":int8(0)
 }
-@method_loops:
-meta translator_mark "loops local vars definition"
 push null
 push null
 push null
 push null
-meta translator_mark "loops method body"
 push int32(0)
 push int32(5)
 swapn
@@ -127,14 +117,11 @@ push int32(1)
 eq
 jumpi @loops_br28
 jump @loops_lvc
-meta translator_mark "loops local vars clearing"
 @loops_lvc:
 pop
 pop
 pop
 pop
 pop
-meta translator_mark "end of loops method"
 jump @stop
-meta translator_mark "helper functions"
 @stop:

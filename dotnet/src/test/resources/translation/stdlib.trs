@@ -1,7 +1,6 @@
 ---exe
 stdlib.exe
 ---translation
-meta translator_mark "jump to methods"
 dup
 push "ctor"
 eq
@@ -22,14 +21,11 @@ eq
 jumpi @method_ValidateEd25519Signature
 push "Wrong method name"
 throw
-meta translator_mark "Ripemd160 method"
+@method_Ripemd160:
 meta method {
 "name":"Ripemd160",int32(0):int8(11),"returnTpe":int8(14)
 }
-@method_Ripemd160:
-meta translator_mark "Ripemd160 local vars definition"
 push null
-meta translator_mark "Ripemd160 method body"
 push int32(3)
 dupn
 push int32(2)
@@ -40,7 +36,6 @@ pop
 push int32(1)
 dupn
 jump @Ripemd160_lvc
-meta translator_mark "Ripemd160 local vars clearing"
 @Ripemd160_lvc:
 swap
 pop
@@ -48,16 +43,12 @@ swap
 pop
 swap
 pop
-meta translator_mark "end of Ripemd160 method"
 jump @stop
-meta translator_mark "ValidateEd25519Signature method"
+@method_ValidateEd25519Signature:
 meta method {
 "name":"ValidateEd25519Signature",int32(1):int8(11),int32(0):int8(14),"returnTpe":int8(9),int32(2):int8(14)
 }
-@method_ValidateEd25519Signature:
-meta translator_mark "ValidateEd25519Signature local vars definition"
 push null
-meta translator_mark "ValidateEd25519Signature method body"
 push int32(5)
 dupn
 push int32(5)
@@ -72,7 +63,6 @@ pop
 push int32(1)
 dupn
 jump @ValidateEd25519Signature_lvc
-meta translator_mark "ValidateEd25519Signature local vars clearing"
 @ValidateEd25519Signature_lvc:
 swap
 pop
@@ -84,14 +74,11 @@ swap
 pop
 swap
 pop
-meta translator_mark "end of ValidateEd25519Signature method"
 jump @stop
-meta translator_mark "ctor method"
+@method_ctor:
 meta method {
 "name":"ctor","returnTpe":int8(0)
 }
-@method_ctor:
-meta translator_mark "ctor check"
 from
 paddr
 owner
@@ -110,13 +97,8 @@ throw
 push null
 push "init"
 sput
-meta translator_mark "ctor local vars definition"
-meta translator_mark "ctor method body"
 jump @ctor_lvc
-meta translator_mark "ctor local vars clearing"
 @ctor_lvc:
 pop
-meta translator_mark "end of ctor method"
 jump @stop
-meta translator_mark "helper functions"
 @stop:

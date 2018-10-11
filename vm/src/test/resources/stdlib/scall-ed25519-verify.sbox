@@ -7,7 +7,7 @@ stack:
   0x01
 ---expectations
 watts-spent: 1091
-stack
+stack:
   true
 ---code
 scall

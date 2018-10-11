@@ -17,7 +17,7 @@
 
 package pravda.vm.operations
 
-import pravda.vm.VmError.OperationDenied
+import pravda.vm.Error.OperationDenied
 import pravda.vm.WattCounter._
 import pravda.vm.Data.Primitive
 import pravda.vm._
@@ -92,7 +92,7 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   }
 
   private def ifStorage(f: Storage => Unit): Unit = maybeStorage match {
-    case None          => throw VmErrorException(OperationDenied)
+    case None          => throw ThrowableVmError(OperationDenied)
     case Some(storage) => f(storage)
   }
 

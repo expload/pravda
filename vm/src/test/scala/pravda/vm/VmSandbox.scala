@@ -1,20 +1,18 @@
 package pravda.vm
 
-import java.nio.ByteBuffer
-
 import com.google.protobuf.ByteString
 import fastparse.all._
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes => byteUtils}
 import pravda.vm.Data.Primitive
+import pravda.vm.Error.DataError
 import pravda.vm.VmSandbox.EnvironmentEffect._
-import pravda.vm.asm.{Operation, PravdaAssembler}
+import pravda.vm.asm.{Operation, PravdaAssembler, SourceMap}
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
-
+import scala.util.{Random, Try}
 import scala.language.higherKinds
 
 object VmSandbox {
@@ -29,7 +27,8 @@ object VmSandbox {
                                  watts: Long = 0,
                                  memory: Memory = Memory(),
                                  storage: Map[Primitive, Data] = Map.empty,
-                                 programs: Map[Address, Primitive.Bytes] = Map.empty)
+                                 programs: Map[Address, Primitive.Bytes] = Map.empty,
+                                 executor: Option[Address])
 
   final case class Memory(stack: Seq[Data.Primitive] = Nil, heap: Map[Data.Primitive.Ref, Data] = Map.empty)
 
@@ -82,19 +81,21 @@ object VmSandbox {
     val address = P(bytes).map(Address @@ _.data)
 
     val preconditions = {
+      val executor = P("executor:" ~/ space ~ address)
       val watts = P("watts-limit:" ~/ space ~ uint)
-      val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep)
+      val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep(sep = `,`))
       val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
       val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
-      P(space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
+      P(space ~ executor.? ~ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
         .map {
-          case (b, w, m, s, ps) =>
+          case (e, b, w, m, s, ps) =>
             Preconditions(
               balances = b.getOrElse(Nil).toMap,
               watts = w.toLong,
               memory = m.getOrElse(Memory()),
               storage = s.getOrElse(Nil).toMap,
-              programs = ps.getOrElse(Nil).toMap
+              programs = ps.getOrElse(Nil).toMap,
+              executor = e
             )
         }
     }
@@ -105,7 +106,7 @@ object VmSandbox {
   }
 
   def printExpectations(e: Expectations): String = {
-    def printData(d: Data) = d.mkString(pretty = true).replace('\n', ' ')
+    def printData(d: Data) = d.mkString(pretty = true).replace("\n", "")
 
     def printEffect(effect: EnvironmentEffect) = effect match {
       case StoragePut(key, value)                 => s"sput ${printData(key)} ${printData(value)}"
@@ -117,7 +118,8 @@ object VmSandbox {
       case BalanceGet(address, coins)             => s"balance x${byteUtils.byteString2hex(address)} $coins"
       case BalanceAccrue(address, coins)          => ???
       case BalanceWithdraw(address, coins)        => ???
-      case BalanceTransfer(from, to, coins)       => ???
+      case BalanceTransfer(from, to, coins) =>
+        s"transfer x${byteUtils.byteString2hex(from)} x${byteUtils.byteString2hex(to)} $coins"
       // TODO implement printing of all other effects
     }
 
@@ -131,7 +133,7 @@ object VmSandbox {
         .flatMap { op =>
           for {
             text <- op._2
-          } yield s"""|${op._1}
+          } yield s"""|${op._1}:
               ${text.split('\n').map("|  " + _).mkString("\n")}""".stripMargin
         }
         .mkString("\n")
@@ -148,9 +150,9 @@ object VmSandbox {
         Seq(
           "stack" -> nonEmptyReduce(e.memory.stack)(_.map(printData).mkString(", ")),
           "heap" -> nonEmptyReduce(e.memory.heap.toSeq)(_.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }
-            .mkString(",\n  ")),
-          "effects" -> nonEmptyReduce(e.effects)(_.map(printEffect).mkString(",\n  ")),
-          "events" -> nonEmptyReduce(e.events)(_.map(printEvent).mkString(",\n  ")),
+            .mkString(",\n")),
+          "effects" -> nonEmptyReduce(e.effects)(_.map(printEffect).mkString(",\n")),
+          "events" -> nonEmptyReduce(e.events)(_.map(printEvent).mkString(",\n")),
           "error" -> nonEmptyReduce(e.error.toList)(_.head.split('\n').map("|" + _).mkString("\n"))
         ))
   }
@@ -174,7 +176,9 @@ object VmSandbox {
     val effects = mutable.Buffer[EnvironmentEffect]()
     val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
 
-    val pExecutor = Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
+    val pExecutor = pre.executor.getOrElse {
+      Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
+    }
 
     val environment: Environment = new Environment {
       val balances = mutable.Map(pre.balances.toSeq: _*)
@@ -264,26 +268,53 @@ object VmSandbox {
       }
     }
 
-    val res =
-      vm.spawn(ByteBuffer.wrap(asmProgram.toByteArray),
-               environment,
-               memory,
-               wattCounter,
-               Some(storage),
-               Some(Address.Void),
-               true)
+    val error = Try {
+      memory.enterProgram(Address.Void)
+      vm.runBytes(
+        asmProgram.asReadOnlyByteBuffer(),
+        environment,
+        memory,
+        wattCounter,
+        Some(storage),
+        Some(Address.Void),
+        pcallAllowed = true
+      )
+      memory.exitProgram()
+    }.fold(
+      {
+        case e: Data.DataException =>
+          Some(
+            RuntimeException(
+              DataError(e.getMessage),
+              FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
+              memory.callStack,
+              memory.currentOffset
+            ))
+        case ThrowableVmError(e) =>
+          Some(
+            RuntimeException(
+              e,
+              FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
+              memory.callStack,
+              memory.currentOffset))
+      },
+      _ => None
+    )
 
     Expectations(
-      res.wattCounter.spent,
+      wattCounter.spent,
       Memory(
-        res.memory.stack,
-        res.memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
+        memory.stack,
+        memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
       ),
       effects,
       events.flatMap {
         case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
       }.toSeq,
-      res.error.map(_.mkString)
+      error.map { e =>
+        s"""|${e.error}
+            |${SourceMap.renderStackTrace(SourceMap.stackTrace(asmProgram, e))}""".stripMargin
+      }
     )
   }
 }

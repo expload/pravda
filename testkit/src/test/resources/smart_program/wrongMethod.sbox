@@ -5,14 +5,12 @@ stack:
 storage:
   "init" = null
 ---expectations
-watts-spent: 201
-stack
+watts-spent: 200
+stack:
   "boom"
-effects
+effects:
   sget "init" null
-error
+error:
   |UserError(Wrong method name)
-  |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  jump to methods
 ---dotnet-files
 smart_program.cs

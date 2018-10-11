@@ -68,7 +68,7 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
   property("assemble(saveLabels = true) -> disassemble") = forAll(operationsGenerator(false)) { ops =>
     val assembled = PravdaAssembler.assemble(ops, saveLabels = true)
     val disassembled = PravdaAssembler.disassemble(assembled).toList
-    disassembled == ops
+    disassembled.map(_._2) == ops
   }
 
   property("render -> parser") = forAll(operationsGenerator(true)) { ops =>

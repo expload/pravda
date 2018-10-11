@@ -6,10 +6,10 @@ storage:
   "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
   "init" = null
 ---expectations
-watts-spent: 4498
-stack
+watts-spent: 4417
+stack:
   int32(50)
-effects
+effects:
   sget "init" null
 ---dotnet-files
 poker.cs
