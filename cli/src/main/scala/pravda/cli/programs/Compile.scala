@@ -104,7 +104,8 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
 
               for {
                 _ <- if (other.nonEmpty) {
-                  io.writeStringToStdout(other.map(o => s"Warning: ${o._1} has wrong file extension").mkString("", "\n", "\n"))
+                  io.writeStringToStdout(
+                    other.map(o => s"Warning: ${o._1} has wrong file extension").mkString("", "\n", "\n"))
                 } else {
                   Monad[F].pure(())
                 }
