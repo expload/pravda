@@ -32,11 +32,15 @@ object Translator {
   }
 
   def translateActualContract(ops: List[(Int,EVM.Op)]): Either[String, List[asm.Operation]] = {
-    val offset = ops.takeWhile({case (_,CodeCopy) => false case _ => true}).reverse.tail.headOption match {
-      case Some((_,Push(address))) => BigInt(1,address.toArray).intValue()
-      case _ => throw new Exception("Parse error")
+    val offsetEither = ops.takeWhile({case (_,CodeCopy) => false case _ => true}).reverse.tail.headOption match {
+      case Some((_,Push(address))) => Right(BigInt(1,address.toArray).intValue())
+      case _ => Left("Parse error")
     }
-    ops.flatMap({case(ind,op) => if (ind - offset < 0) None else Some((ind - offset,op)) })
+
+    offsetEither.flatMap({offset =>
+      val filteredOps = ops.map({ case (ind, op) => ind - offset -> op }).filterNot(_._1 < 0).map(_._2)
+      Translator(filteredOps)
+    })
   }
 
 }
