@@ -36,7 +36,6 @@ object ExponentialFunction extends FunctionDefinition {
 
   val returns = Seq(Data.Type.Number)
 
-  //TODO ask about overloading
   private def pow(x: Double, y: Double): Double = math.pow(x, y)
   private def pow(x: Double, y: Byte): Double = math.pow(x, y.toDouble)
   private def pow(x: Double, y: Int): Double = math.pow(x, y.toDouble)
