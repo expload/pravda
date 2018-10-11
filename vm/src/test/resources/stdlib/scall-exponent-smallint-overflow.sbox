@@ -2,7 +2,7 @@
 watts-limit: 1000
 ---expectations
 watts-spent: 310
-stack
+stack:
   uint8(32), int32(1024), int32(2147483647), true, int16(-1)
 ---code
 push bigint(1000000000005)

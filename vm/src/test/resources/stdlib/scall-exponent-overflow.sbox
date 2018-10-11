@@ -2,7 +2,7 @@
 watts-limit: 1000
 ---expectations
 watts-spent: 202
-stack
+stack:
   number(Infinity), int32(2147483647), bigint(1000000000000000000000000000000)
 ---code
 push number(1000000000000000.0)

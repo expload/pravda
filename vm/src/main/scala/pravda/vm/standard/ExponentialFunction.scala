@@ -19,7 +19,7 @@ package pravda.vm.standard
 
 import pravda.vm.Data.Primitive._
 import pravda.vm.Data.Type
-import pravda.vm.VmError.WrongType
+import pravda.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 
@@ -95,7 +95,7 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Int32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
             calculateWatts(Int32(pow(lhs, rhs)))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
         }
       case Int16(lhs) =>
         b match {
@@ -115,7 +115,8 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Int16(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
             calculateWatts(Int16(pow(lhs, rhs)))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
       case Int8(lhs) =>
         b match {
@@ -135,7 +136,8 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Int32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
             calculateWatts(Number(pow(lhs, rhs).toDouble))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
       case Uint8(lhs) =>
         b match {
@@ -155,7 +157,8 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Uint8(pow(lhs, rhs.byteValue())))
           case Number(rhs) =>
             calculateWatts(Uint8(pow(lhs, rhs)))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
       case Uint16(lhs) =>
         b match {
@@ -175,7 +178,8 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Uint16(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
             calculateWatts(Uint16(pow(lhs, rhs)))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
       case Uint32(lhs) =>
         b match {
@@ -195,7 +199,8 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Uint32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
             calculateWatts(Uint32(pow(lhs, rhs)))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
       case Number(lhs) =>
         b match {
@@ -215,7 +220,8 @@ object ExponentialFunction extends FunctionDefinition {
             calculateWatts(Number(pow(lhs, rhs.longValue())))
           case Number(rhs) =>
             calculateWatts(Number(pow(lhs, rhs)))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
       case BigInt(lhs) =>
         b match {
@@ -243,9 +249,11 @@ object ExponentialFunction extends FunctionDefinition {
           case Number(rhs) =>
             wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
             BigInt(lhs.pow(rhs.toInt))
-          case _ => throw VmErrorException(WrongType)
+          case _ => throw ThrowableVmError(WrongType)
+
         }
-      case _ => throw VmErrorException(WrongType)
+      case _ => throw ThrowableVmError(WrongType)
+
     }
 
     memory.push(res)
