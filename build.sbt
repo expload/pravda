@@ -38,7 +38,8 @@ val commonSettings = Seq(
     // Tests
     "org.typelevel" %% "cats-core" % "1.0.1",
     "org.rudogma" %% "supertagged" % "1.4",
-    "com.lihaoyi" %% "utest" % "0.6.3" % "test"
+    "com.lihaoyi" %% "utest" % "0.6.3" % "test",
+    "com.tethys-json" %% "tethys" % "0.7.0.2"
   ),
   testFrameworks += new TestFramework("utest.runner.Framework"),
   scalacOptions ++= Seq(
@@ -91,7 +92,8 @@ lazy val `vm-api` = (project in file("vm-api"))
     ),
     libraryDependencies ++= Seq(
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "com.lihaoyi" %% "fastparse" % "1.0.0"
+      "com.lihaoyi" %% "fastparse" % "1.0.0",
+      "com.tethys-json" %% "tethys" % "0.7.0.2"
     )
   )
   .dependsOn(common)
