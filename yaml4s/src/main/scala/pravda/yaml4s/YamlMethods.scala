@@ -55,8 +55,7 @@ object YamlMethods {
     case null      => JNull
     case s: String => JString(s)
     case l: java.util.List[_] =>
-      JArray(l.asScala.toList.map { v =>
-        java2jvalue(v.asInstanceOf[AnyRef], ubdfd)
+      JArray(l.asScala.toList.map { v => java2jvalue(v.asInstanceOf[AnyRef], ubdfd)
       })
     case m: java.util.Map[_, _] =>
       val pairs = m.asScala.map {
@@ -80,30 +79,36 @@ object YamlMethods {
     // Yaml.load(InputStream stream) detects the encoding by checking the BOM (byte order mark) sequence at the beginning of the stream.
     // If no BOM is present, the utf-8 encoding is assumed.
 
-    val tree = in match {
-      case StringInput(s)      => yaml.load(s)
-      case ReaderInput(rdr)    => yaml.load(rdr)
-      case StreamInput(stream) => yaml.load(new InputStreamReader(stream))
-      case FileInput(file)     => yaml.load(new FileReader(file))
+    val tree = yaml.synchronized {
+      in match {
+        case StringInput(s)      => yaml.load(s)
+        case ReaderInput(rdr)    => yaml.load(rdr)
+        case StreamInput(stream) => yaml.load(new InputStreamReader(stream))
+        case FileInput(file)     => yaml.load(new FileReader(file))
+      }
     }
 
     java2jvalue(tree, useBigDecimalForDouble)
   }
 
   private def parseAllUnsafe(in: JsonInput, useBigDecimalForDouble: Boolean): List[JValue] = {
-    val trees = in match {
-      case StringInput(s)      => yaml.loadAll(s)
-      case ReaderInput(rdr)    => yaml.loadAll(rdr)
-      case StreamInput(stream) => yaml.loadAll(new InputStreamReader(stream))
-      case FileInput(file)     => yaml.loadAll(new FileReader(file))
+    val trees = yaml.synchronized {
+      (in match {
+        case StringInput(s)      => yaml.loadAll(s)
+        case ReaderInput(rdr)    => yaml.loadAll(rdr)
+        case StreamInput(stream) => yaml.loadAll(new InputStreamReader(stream))
+        case FileInput(file)     => yaml.loadAll(new FileReader(file))
+      }).asScala.toList
     }
 
-    trees.asScala.toList.map(t => java2jvalue(t, useBigDecimalForDouble))
+    trees.map(t => java2jvalue(t, useBigDecimalForDouble))
   }
 
   def render(node: JValue): String = {
     val javaObj = jvalue2java(node)
-    yaml.dump(javaObj)
+    yaml.synchronized {
+      yaml.dump(javaObj)
+    }
   }
 
   def parseOpt(in: JsonInput, useBigDecimalForDouble: Boolean): Option[JValue] =
