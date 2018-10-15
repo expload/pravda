@@ -31,19 +31,35 @@ object Translator {
     ops.map(SimpleTranslation.evmOpToOps).sequence.map(_.flatten)
   }
 
-  def translateActualContract(ops: List[(Int,EVM.Op)]): Either[String, List[asm.Operation]] = {
-    val offsetEither = ops.takeWhile({case (_,CodeCopy) => false case _ => true}).reverse.tail.headOption match {
-      case Some((_,Push(address))) => Right(BigInt(1,address.toArray).intValue())
-      case _ => Left("Parse error")
+  def translateActualContract(ops: List[(Int, EVM.Op)]): Either[String, List[asm.Operation]] = {
+    val offsetEither = ops
+      .takeWhile({
+        case (_, CodeCopy) => false
+        case _             => true
+      })
+      .reverse
+      .tail
+      .headOption match {
+      case Some((_, Push(address))) => Right(BigInt(1, address.toArray).intValue())
+      case _                        => Left("Parse error")
     }
 
-    offsetEither.flatMap({offset =>
-      val filteredOps = ops.map({ case (ind, op) => ind - offset -> op }).filterNot(_._1 < 0).map({
-        case (ind,JumpDest) => JumpDest(ind)
-        case (_,op) => op
+    offsetEither.flatMap({ offset =>
+      val filteredOps = ops
+        .map({ case (ind, op) => ind - offset -> op })
+        .filterNot(_._1 < 0)
+        .map({
+          case (ind, JumpDest) => JumpDest(ind)
+          case (_, op)         => op
+        })
+      val jumpDests = filteredOps.filter({
+        case JumpDest(_) => true
+        case _           => false
       })
-      val jumpDests = filteredOps.filter({case JumpDest(_) => true case _ => false})
-      jumpDests.map(JumpDestinationPrepare.evmOpToOps).sequence.map(_.flatten)
+      jumpDests
+        .map(JumpDestinationPrepare.evmOpToOps)
+        .sequence
+        .map(_.flatten)
         .flatMap(prepare => Translator(filteredOps).map(opcodes => prepare ++ opcodes))
     })
   }

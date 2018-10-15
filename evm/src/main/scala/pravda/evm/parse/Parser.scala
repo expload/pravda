@@ -60,6 +60,6 @@ object Parser {
 
   private val ops: P[Either[String, List[Op]]] = P(Start ~ op.rep ~ End).map(ops => sequence(ops.toList))
 
-  val opsWithIndices = P(Start  ~ (Index ~ op).rep ~ End)
+  val opsWithIndices = P(Start ~ (Index ~ op).rep ~ End)
 
 }

@@ -64,7 +64,7 @@ object SimpleTranslation {
         callExp,
         codeToOps(Opcodes.SWAP),
         codeToOps(Opcodes.DIV),
-        pushInt(0xff) :: Nil,
+        pushBigInt(0xff) :: Nil,
         codeToOps(Opcodes.AND)
       ).flatten
 
@@ -73,8 +73,10 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case Jump => codeToOps(Opcodes.SGET) ::: Operation.Jump(None) :: Nil
-    case JumpI => codeToOps(Opcodes.SGET,Opcodes.SWAP) ::: cast(Data.Type.Boolean) :::  codeToOps(Opcodes.SWAP)  ::: Operation.JumpI(None) :: Nil
+    case Jump => pushBigInt(BigInt(-1)) :: codeToOps(Opcodes.MUL, Opcodes.SGET) ::: Operation.Jump(None) :: Nil
+    case JumpI =>
+      pushBigInt(BigInt(-1)) :: codeToOps(Opcodes.MUL, Opcodes.SGET, Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: codeToOps(
+        Opcodes.SWAP) ::: Operation.JumpI(None) :: Nil
     case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
@@ -84,6 +86,9 @@ object SimpleTranslation {
     case Address => codeToOps(Opcodes.PADDR)
 
     case JumpDest(address) => asm.Operation.Label(getNameByAddress(address)) :: Nil
+
+    case SStore => codeToOps(Opcodes.SPUT)
+    case SLoad  => codeToOps(Opcodes.SGET)
   }
 
   def evmOpToOps(op: EVM.Op): Either[String, List[asm.Operation]] =
