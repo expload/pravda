@@ -22,8 +22,8 @@ import pravda.vm.asm
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
-import pravda.evm.EVM.{CodeCopy, Push}
-import pravda.evm.translate.opcode.SimpleTranslation
+import pravda.evm.EVM.{CodeCopy, JumpDest, Push}
+import pravda.evm.translate.opcode.{JumpDestinationPrepare, SimpleTranslation}
 
 object Translator {
 
@@ -38,8 +38,13 @@ object Translator {
     }
 
     offsetEither.flatMap({offset =>
-      val filteredOps = ops.map({ case (ind, op) => ind - offset -> op }).filterNot(_._1 < 0).map(_._2)
-      Translator(filteredOps)
+      val filteredOps = ops.map({ case (ind, op) => ind - offset -> op }).filterNot(_._1 < 0).map({
+        case (ind,JumpDest) => JumpDest(ind)
+        case (_,op) => op
+      })
+      val jumpDests = filteredOps.filter({case JumpDest(_) => true case _ => false})
+      jumpDests.map(JumpDestinationPrepare.evmOpToOps).sequence.map(_.flatten)
+        .flatMap(prepare => Translator(filteredOps).map(opcodes => prepare ++ opcodes))
     })
   }
 

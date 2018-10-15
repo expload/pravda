@@ -23,6 +23,8 @@ import pravda.vm.{Data, Opcodes, asm}
 //TODO merge with pravda.dotnet.translation.opcode.opcode
 package object opcode {
 
+  def getNameByAddress(n: Int): String = s"_lbl_$n"
+
   def push[T](value: T, toPrimitive: T => Data.Primitive): asm.Operation =
     asm.Operation.Push(toPrimitive(value))
 

@@ -155,6 +155,53 @@ object EvaluateTests extends TestSuite {
       run(Translator(List(Push(x), Push(x), Eq)), precondition) ==>
         Right(expectations(120L, stack = ArrayBuffer(BigInt(scala.BigInt(1)))))
     }
+
+    "JUMPDEST" - {
+      val `0` = hex"0x0"
+      val `1` = hex"0x1"
+      val `3` = hex"0x3"
+      val `4` = hex"0x4"
+
+      run(
+        Translator.translateActualContract(
+          List(
+            0 -> Push(`4`),
+            2 -> Push(`0`),
+            3 -> CodeCopy,
+            4 -> Push(`4`),
+            4 -> Push(`3`),
+            5 -> Jump,
+            5 -> Push(`4`),
+            6 -> Push(`4`),
+            7 -> Push(`4`),
+            7 -> JumpDest,
+          ))
+        ,precondition).foreach({expect =>
+          expect.watts ==> 217L
+          expect.memory.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
+      })
+
+      run(
+        Translator.translateActualContract(
+          List(
+            0 -> Push(`4`),
+            2 -> Push(`0`),
+            3 -> CodeCopy,
+            4 -> Push(`4`),
+            5 -> Push(`1`),
+            6 -> Push(`3`),
+            5 -> JumpI,
+            5 -> Push(`4`),
+            6 -> Push(`4`),
+            7 -> Push(`4`),
+            7 -> JumpDest,
+          ))
+        ,precondition).foreach({expect =>
+        expect.watts ==> 237L
+        expect.memory.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
+      })
+
+    }
   }
 
 }

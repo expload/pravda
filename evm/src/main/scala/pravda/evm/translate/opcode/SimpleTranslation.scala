@@ -20,6 +20,7 @@ package pravda.evm.translate.opcode
 import pravda.evm.EVM
 import pravda.vm.asm
 import pravda.vm._
+import pravda.vm.asm.Operation
 
 object SimpleTranslation {
 
@@ -72,8 +73,8 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    //case Jump => codeToOps(Opcodes.JUMP)
-    //case JumpI => codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: codeToOps(Opcodes.JUMP)
+    case Jump => codeToOps(Opcodes.SGET) ::: Operation.Jump(None) :: Nil
+    case JumpI => codeToOps(Opcodes.SGET,Opcodes.SWAP) ::: cast(Data.Type.Boolean) :::  codeToOps(Opcodes.SWAP)  ::: Operation.JumpI(None) :: Nil
     case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
@@ -81,6 +82,8 @@ object SimpleTranslation {
 
     case Balance => codeToOps(Opcodes.BALANCE)
     case Address => codeToOps(Opcodes.PADDR)
+
+    case JumpDest(address) => asm.Operation.Label(getNameByAddress(address)) :: Nil
   }
 
   def evmOpToOps(op: EVM.Op): Either[String, List[asm.Operation]] =

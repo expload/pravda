@@ -83,6 +83,7 @@ object EVM {
   final case class Dup(n: Int)        extends Op
   final case class Swap(n: Int)       extends Op
   final case class Log(n: Int)        extends Op
+  final case class JumpDest(n: Int)   extends Op
   case object Create                  extends Op
   case object Call                    extends Op
   case object CallCode                extends Op
