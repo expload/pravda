@@ -38,8 +38,7 @@ val commonSettings = Seq(
     // Tests
     "org.typelevel" %% "cats-core" % "1.0.1",
     "org.rudogma" %% "supertagged" % "1.4",
-    "com.lihaoyi" %% "utest" % "0.6.3" % "test",
-    "com.tethys-json" %% "tethys" % "0.7.0.2"
+    "com.lihaoyi" %% "utest" % "0.6.3" % "test"
   ),
   testFrameworks += new TestFramework("utest.runner.Framework"),
   scalacOptions ++= Seq(
@@ -74,7 +73,10 @@ lazy val common = (project in file("common"))
       "com.google.protobuf" % "protobuf-java" % "3.5.0",
       "com.propensive" %% "contextual" % "1.1.0",
       "org.whispersystems" % "curve25519-java" % "0.4.1",
-      "org.rudogma" %% "supertagged" % "1.4"
+      "org.rudogma" %% "supertagged" % "1.4",
+      "com.tethys-json" %% "tethys" % "0.7.0.2",
+      "com.tethys-json" %% "tethys-json4s" % "0.7.0.2",
+      "org.json4s" %% "json4s-ast" % "3.6.1"
     )
   )
 
@@ -192,7 +194,6 @@ lazy val node = (project in file("node"))
       "com.github.pureconfig" %% "pureconfig" % "0.9.1",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.7.0.2",
-      "org.json4s" %% "json4s-ast" % "3.5.3",
       "io.suzaku" %% "boopickle" % "1.2.6",
       "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17",
       "name.pellet.jp" %% "bsonpickle" % "0.4.4.2",

@@ -30,6 +30,7 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
   def dir: File
   def ext: String = "yaml"
   def allowOverwrite: Boolean = false
+  def formats: Formats = DefaultFormats
 
   def produce(input: Input): Either[String, Output]
 
@@ -40,10 +41,9 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
       case Some(io) =>
         io match {
           case List(input, output) =>
-            implicit val formats = DefaultFormats
             for {
-              i <- Try { input.extract[Input] }.toEither.left.map(_.toString)
-              o <- Try { output.extract[Output] }.toEither.left.map(_.toString)
+              i <- Try { input.extract[Input](formats, Manifest[Input]) }.toEither.left.map(_.toString)
+              o <- Try { output.extract[Output](formats, Manifest[Output]) }.toEither.left.map(_.toString)
             } yield (i, o)
           case _ => Left("File must contain exactly two yaml documents")
         }
@@ -66,9 +66,9 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
                     produce(input) match {
                       case Right(correct) =>
                         val pw = new PrintWriter(f)
-                        pw.write(yaml4s.renderYaml(Extraction.decompose(input)(DefaultFormats)))
+                        pw.write(yaml4s.renderYaml(Extraction.decompose(input)(formats)))
                         pw.write("---\n")
-                        pw.write(yaml4s.renderYaml(Extraction.decompose(correct)(DefaultFormats)))
+                        pw.write(yaml4s.renderYaml(Extraction.decompose(correct)(formats)))
                         pw.close()
                       case Left(err) =>
                         Predef.assert(false, s"${f.getName}: $err")

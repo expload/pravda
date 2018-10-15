@@ -1,4 +1,5 @@
 package pravda.common.tethys
+
 import com.google.protobuf.ByteString
 import pravda.common.bytes.{byteString2hex, hex2byteString}
 import supertagged.{Tagged, lifterF}
