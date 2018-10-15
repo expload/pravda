@@ -20,8 +20,7 @@ object ParserSuite extends Plaintest[Input, Output] {
   def produce(input: Input): Either[String, Output] =
     for {
       pe <- parsePeFile(input.exe)
-      (_, cilData, ms, ss) = pe
     } yield
-      Output(pprint.apply(ms, height = Int.MaxValue).plainText,
-             pprint.apply(ss.toList.sortBy(_._1), height = Int.MaxValue).plainText)
+      Output(pprint.apply(pe.methods, height = Int.MaxValue).plainText,
+             pprint.apply(pe.signatures.toList.sortBy(_._1), height = Int.MaxValue).plainText)
 }

@@ -10,10 +10,10 @@ object ObjectsTests extends TestSuite {
 
   val tests = Tests {
     'objectsParse - {
-      val Right((_, cilData, methods, signatures)) = parsePeFile("objects.exe")
+      val Right(pe) = parsePeFile("objects.exe")
 
       TestUtils.assertEqual(
-        cilData.tables.typeDefTable,
+        pe.cilData.tables.typeDefTable,
         Vector(
           TypeDefData(0, 0, "<Module>", "", Ignored, Vector(), Vector()),
           TypeDefData(
@@ -51,7 +51,7 @@ object ObjectsTests extends TestSuite {
       )
 
       TestUtils.assertEqual(
-        cilData.tables.methodDefTable,
+        pe.cilData.tables.methodDefTable,
         Vector(
           MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
           MethodDefData(1, 0, 134, "AnswerA", 41, Vector()),

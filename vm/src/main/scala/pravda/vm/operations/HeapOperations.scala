@@ -24,7 +24,7 @@ import pravda.vm.Data.Array._
 import pravda.vm.Data.Primitive.{Bool, _}
 import pravda.vm.Data.{Primitive, Struct, Type}
 import pravda.vm.Opcodes._
-import pravda.vm.VmError.WrongType
+import pravda.vm.Error.WrongType
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
@@ -57,7 +57,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val i = ref(memory.pop())
     memory.heapGet(i.data) match {
       case primitive: Data.Primitive => memory.push(primitive)
-      case _                         => throw VmErrorException(VmError.WrongType)
+      case _                         => throw ThrowableVmError(Error.WrongType)
     }
   }
 
@@ -98,7 +98,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case Type.Boolean => Data.Array.BoolArray(ArrayBuffer.fill(num.toInt)(Data.Primitive.Bool.False))
       case Type.Utf8    => Data.Array.Utf8Array(ArrayBuffer.fill(num.toInt)(""))
       case Type.Bytes   => Data.Array.BytesArray(ArrayBuffer.fill(num.toInt)(ByteString.EMPTY))
-      case _            => throw VmErrorException(WrongType)
+      case _            => throw ThrowableVmError(WrongType)
     }
 
     memory.push(Data.Primitive.Ref(memory.heapPut(arr)))
@@ -127,7 +127,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
           case BoolArray(data)   => data(index)
           case Utf8Array(data)   => Utf8(data(index))
           case BytesArray(data)  => Bytes(data(index))
-          case _                 => throw VmErrorException(WrongType)
+          case _                 => throw ThrowableVmError(WrongType)
         }
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
@@ -139,7 +139,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
         val datum = Uint8(data.byteAt(index) & 0xFF)
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
-      case _ => throw VmErrorException(WrongType)
+      case _ => throw ThrowableVmError(WrongType)
     }
   }
 
@@ -165,7 +165,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case (value: Bool, BoolArray(data))     => data(index) = value
       case (Utf8(value), Utf8Array(data))     => data(index) = value
       case (Bytes(value), BytesArray(data))   => data(index) = value
-      case _                                  => throw VmErrorException(WrongType)
+      case _                                  => throw ThrowableVmError(WrongType)
     }
   }
 
@@ -190,11 +190,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
           case BoolArray(data)   => data.length
           case Utf8Array(data)   => data.length
           case BytesArray(data)  => data.length
-          case _                 => throw VmErrorException(WrongType)
+          case _                 => throw ThrowableVmError(WrongType)
         }
       case Bytes(data) => data.size
       case Utf8(data)  => data.length
-      case _           => throw VmErrorException(WrongType)
+      case _           => throw ThrowableVmError(WrongType)
     }
 
     memory.push(Data.Primitive.Uint32(len.toLong))
@@ -212,7 +212,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val datum = struct match {
       case Struct(data) =>
         data(key)
-      case _ => throw VmErrorException(WrongType)
+      case _ => throw ThrowableVmError(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
@@ -230,7 +230,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val datum = (struct, key) match {
       case (Struct(data), k: Primitive) =>
         data(k)
-      case _ => throw VmErrorException(WrongType)
+      case _ => throw ThrowableVmError(WrongType)
     }
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
@@ -249,7 +249,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     struct match {
       case Struct(data) =>
         data(key) = value
-      case _ => throw VmErrorException(WrongType)
+      case _ => throw ThrowableVmError(WrongType)
     }
   }
 
@@ -267,7 +267,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     (struct, key) match {
       case (Struct(data), k: Primitive) =>
         data(k) = value
-      case _ => throw VmErrorException(WrongType)
+      case _ => throw ThrowableVmError(WrongType)
     }
   }
 }

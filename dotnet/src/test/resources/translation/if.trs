@@ -1,7 +1,6 @@
 exe: if.exe
 ---
 translation: |-
-  meta translator_mark "jump to methods"
   dup
   push "ctor"
   eq
@@ -18,12 +17,10 @@ translation: |-
   jumpi @method_ifs
   push "Wrong method name"
   throw
-  meta translator_mark "ctor method"
+  @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
   }
-  @method_ctor:
-  meta translator_mark "ctor check"
   from
   paddr
   owner
@@ -42,20 +39,14 @@ translation: |-
   push null
   push "init"
   sput
-  meta translator_mark "ctor local vars definition"
-  meta translator_mark "ctor method body"
   jump @ctor_lvc
-  meta translator_mark "ctor local vars clearing"
   @ctor_lvc:
   pop
-  meta translator_mark "end of ctor method"
   jump @stop
-  meta translator_mark "ifs method"
+  @method_ifs:
   meta method {
   "name":"ifs","returnTpe":int8(0)
   }
-  @method_ifs:
-  meta translator_mark "ifs local vars definition"
   push null
   push null
   push null
@@ -64,7 +55,6 @@ translation: |-
   push null
   push null
   push null
-  meta translator_mark "ifs method body"
   push int32(10)
   push int32(9)
   swapn
@@ -328,7 +318,6 @@ translation: |-
   pop
   @ifs_br145:
   jump @ifs_lvc
-  meta translator_mark "ifs local vars clearing"
   @ifs_lvc:
   pop
   pop
@@ -339,7 +328,5 @@ translation: |-
   pop
   pop
   pop
-  meta translator_mark "end of ifs method"
   jump @stop
-  meta translator_mark "helper functions"
   @stop:

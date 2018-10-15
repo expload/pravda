@@ -46,7 +46,7 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
       case data: Data.Primitive =>
         wattCounter.memoryUsage(data.volume.toLong)
         memory.push(data)
-      case _ => throw VmErrorException(VmError.WrongType)
+      case _ => throw ThrowableVmError(Error.WrongType)
     }
   }
 

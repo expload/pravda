@@ -28,11 +28,10 @@ object PravdaConfig {
   sealed trait CompileMode
 
   object CompileMode {
-    case object Nope            extends CompileMode
-    case object Asm             extends CompileMode
-    case object Disasm          extends CompileMode
-    case object DotNet          extends CompileMode
-    case object DotNetVisualize extends CompileMode
+    case object Nope   extends CompileMode
+    case object Asm    extends CompileMode
+    case object Disasm extends CompileMode
+    case object DotNet extends CompileMode
   }
 
   case object Nope extends PravdaConfig
@@ -42,7 +41,7 @@ object PravdaConfig {
     object Broadcast {
       val WATT_LIMIT = 300L
       val WATT_PRICE = NativeCoin.amount(1)
-      val ENDPOINT = "http://localhost:8080/api/public/broadcast"
+      val ENDPOINT = "http://localhost:8080/api/public"
     }
   }
 
@@ -50,6 +49,7 @@ object PravdaConfig {
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
+                             wattPayerWallet: Option[String] = None,
                              input: Option[String] = None,
                              dryRun: Boolean = false,
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
@@ -72,9 +72,9 @@ object PravdaConfig {
   }
 
   final case class Compile(compiler: CompileMode,
-                           input: Option[String] = None,
+                           input: List[String] = List.empty,
                            output: Option[String] = None,
-                           pdb: Option[String] = None)
+                           mainClass: Option[String] = None)
       extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,

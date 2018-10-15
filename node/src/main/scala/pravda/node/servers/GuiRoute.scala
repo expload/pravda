@@ -41,8 +41,8 @@ import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.db.DB
 import pravda.node.persistence.FileStore
-import pravda.node.servers.Abci.EnvironmentEffect
 import pravda.node.utils
+import pravda.vm
 import pravda.vm.Data
 import pravda.vm.asm.{Operation, PravdaAssembler}
 
@@ -65,15 +65,16 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
             ))
   }
 
-  private def showEffectName(effect: EnvironmentEffect) = effect match {
-    case _: EnvironmentEffect.ProgramCreate => "Create program"
-    case _: EnvironmentEffect.ProgramSeal   => "Make program sealed"
-    case _: EnvironmentEffect.StorageRemove => "Remove from storage"
-    case _: EnvironmentEffect.ProgramUpdate => "Update program"
-    case _: EnvironmentEffect.StorageRead   => "Read from storage"
-    case _: EnvironmentEffect.StorageWrite  => "Write to storage"
-    case _: EnvironmentEffect.Transfer      => "Transfer NC"
-    case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
+  private def showEffectName(effect: vm.Effect) = effect match {
+    case _: vm.Effect.Event         => "Event"
+    case _: vm.Effect.ProgramCreate => "Create program"
+    case _: vm.Effect.ProgramSeal   => "Make program sealed"
+    case _: vm.Effect.StorageRemove => "Remove from storage"
+    case _: vm.Effect.ProgramUpdate => "Update program"
+    case _: vm.Effect.StorageRead   => "Read from storage"
+    case _: vm.Effect.StorageWrite  => "Write to storage"
+    case _: vm.Effect.Transfer      => "Transfer NC"
+    case _: vm.Effect.ShowBalance   => "Read NC balance"
   }
 
   private def mono(s: ByteString): Node =
@@ -82,7 +83,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   private def mono(s: Data): Node =
     'span ('class /= "hash", s.mkString(pretty = true))
 
-  private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
+  private def effectToTableElement(effect: vm.Effect): Map[String, Node] = {
 
     def localKey(key: Data) = key.mkString(pretty = true)
 
@@ -91,46 +92,52 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
       case Some(s) => mono(s)
     }
     effect match {
-      case EnvironmentEffect.ProgramCreate(address, program) =>
+      case vm.Effect.Event(address, name, data) =>
+        Map(
+          "Program" -> mono(address),
+          "Event name" -> name,
+          "Event data" -> mono(data)
+        )
+      case vm.Effect.ProgramCreate(address, program) =>
         Map(
           "Generated address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
         )
-      case EnvironmentEffect.ProgramSeal(address) =>
+      case vm.Effect.ProgramSeal(address) =>
         Map(
           "Program address" -> mono(address)
         )
-      case EnvironmentEffect.ProgramUpdate(address, program) =>
+      case vm.Effect.ProgramUpdate(address, program) =>
         Map(
           "Program address" -> mono(address),
           "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
         )
-      case EnvironmentEffect.StorageRemove(program, key, value) =>
+      case vm.Effect.StorageRemove(program, key, value) =>
         Map(
           "Program" -> mono(program),
           "Key" -> localKey(key),
           "Removed value" -> showOption(value)
         )
-      case EnvironmentEffect.StorageWrite(program, key, prev, value) =>
+      case vm.Effect.StorageWrite(program, key, prev, value) =>
         Map(
           "Program" -> mono(program),
           "Key" -> localKey(key),
           "Written value" -> mono(value),
           "Previous value" -> showOption(prev)
         )
-      case EnvironmentEffect.StorageRead(program, key, value) =>
+      case vm.Effect.StorageRead(program, key, value) =>
         Map(
           "Program" -> mono(program),
           "Key" -> localKey(key),
           "Readen value" -> showOption(value)
         )
-      case EnvironmentEffect.Transfer(from, to, amount) =>
+      case vm.Effect.Transfer(from, to, amount) =>
         Map(
           "From" -> mono(from),
           "From" -> mono(to),
           "Amount" -> 'span (amount.toString)
         )
-      case EnvironmentEffect.ShowBalance(address, amount) =>
+      case vm.Effect.ShowBalance(address, amount) =>
         Map(
           "Address" -> mono(address),
           "Amount" -> 'span (amount.toString)
@@ -139,9 +146,9 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     }
   }
 
-  private def groupEffects(effects: List[EnvironmentEffect]) =
+  private def groupEffects(effects: List[vm.Effect]) =
     effects.reverse
-      .foldLeft(List.empty[(String, List[EnvironmentEffect])]) {
+      .foldLeft(List.empty[(String, List[vm.Effect])]) {
         case (Nil, effect) => (showEffectName(effect), effect :: Nil) :: Nil
         case ((acc @ ((lastName, lastGroup) :: xs)), effect) =>
           val thisName = showEffectName(effect)
@@ -149,8 +156,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
           else (thisName, effect :: Nil) :: acc
       }
 
-  private def asmAstToAsm(operations: Seq[Operation]) = {
-    PravdaAssembler.render(operations)
+  private def asmAstToAsm(operations: Seq[(Int, Operation)]) = {
+    PravdaAssembler.render(operations.map(_._2))
   }
 
   private def programToAsm(program: Data.Primitive.Bytes): String =
@@ -328,7 +335,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(result.fold(_.toString, utils.showExecInfo))
+                                maybeResult = Some(result.fold(_.toString, utils.showTransactionResult))
                               )
                             }
                           } yield {
@@ -383,7 +390,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
                             _ <- access.transition { _ =>
                               SendTransactionScreen(
                                 inProgress = false,
-                                maybeResult = Some(execInfo.fold(_.toString, utils.showExecInfo))
+                                maybeResult = Some(execInfo.fold(_.toString, utils.showTransactionResult))
                               )
                             }
                           } yield {
@@ -404,7 +411,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
     for {
       blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
-        transcode(Bson @@ r.bytes).to[Map[TransactionId, Seq[EnvironmentEffect]]])
+        transcode(Bson @@ r.bytes).to[Map[TransactionId, Seq[vm.Effect]]])
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {
@@ -476,10 +483,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
 object GuiRoute {
 
-  final case class Transaction(id: TransactionId,
-                               from: Address,
-                               effects: List[EnvironmentEffect],
-                               disassembledProgram: String)
+  final case class Transaction(id: TransactionId, from: Address, effects: List[vm.Effect], disassembledProgram: String)
 
   final case class Block(height: Long, transactions: List[Transaction])
 

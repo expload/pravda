@@ -5,14 +5,13 @@ stack:
 storage:
   "init" = null
 ---expectations
-watts-spent: 184
-stack
+watts-spent: 182
+stack:
   "Throw"
-effects
+effects:
   sget "init" null
-error
+error:
   |UserError(Oops!)
-  |program address: 0000000000000000000000000000000000000000000000000000000000000000
-  |  Throw method body (vm_ops.cs:8,9-8,30)
+  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/vm_ops.cs:9
 ---dotnet-files
 vm_ops.cs

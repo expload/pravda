@@ -28,7 +28,7 @@ import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes}
 
-case object CallsTransation extends OneToManyTranslator {
+case object CallsTranslation extends OneToManyTranslator {
 
   private val mappingsMethods = Set("get", "getDefault", "exists", "put")
 
@@ -49,64 +49,20 @@ case object CallsTransation extends OneToManyTranslator {
     }
   }
 
-  def fullTypeDefName(typeDefData: TypeDefData): String =
-    if (typeDefData.namespace.nonEmpty) {
-      s"${typeDefData.namespace}.${typeDefData.name}"
+  def fullTypeName(namespace: String, name: String): String =
+    if (namespace.nonEmpty) {
+      s"$namespace.$name"
     } else {
-      typeDefData.name
+      name
     }
 
-  private lazy val getDefaultFunction =
-    dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
-      List(
-        Operation.Orphan(Opcodes.CONCAT),
-        Operation.Orphan(Opcodes.SEXIST),
-        Operation.JumpI(Some("get_default_if")),
-        Operation.Orphan(Opcodes.SWAP),
-        Operation.Orphan(Opcodes.POP),
-        Operation.Orphan(Opcodes.SWAP),
-        Operation.Orphan(Opcodes.POP),
-        Operation.Orphan(Opcodes.RET),
-        Operation.Label("get_default_if"),
-        Operation.Orphan(Opcodes.POP)
-      ) ++
-      cast(Data.Type.Bytes) ++
-      List(
-        Operation.Orphan(Opcodes.SWAP),
-        Operation.Orphan(Opcodes.CONCAT),
-        Operation.Orphan(Opcodes.SGET),
-        Operation.Orphan(Opcodes.RET)
-      )
-
-  override def additionalFunctionsOne(
-      op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] = op match {
-    case CallVirt(MemberRefData(TypeSpecData(parentSigIdx), name, methodSigIdx)) =>
-      val res = for {
-        parentSig <- ctx.tctx.signatures.get(parentSigIdx)
-      } yield {
-        if (detectMapping(parentSig)) {
-          name match {
-            case "getDefault" =>
-              Right(
-                List(
-                  OpcodeTranslator.HelperFunction("storage_get_default", getDefaultFunction)
-                ))
-            case _ => Left(UnknownOpcode)
-          }
-        } else {
-          Left(UnknownOpcode)
-        }
-      }
-
-      res.getOrElse(Left(InternalError("Invalid signatures")))
-    case _ => Left(UnknownOpcode)
-  }
+  def fullTypeDefName(typeDefData: TypeDefData): String =
+    fullTypeName(typeDefData.namespace, typeDefData.name)
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
     def callMethodDef(m: MethodDefData): Int = {
       val void = MethodExtractors.isVoid(m, ctx.tctx.signatures)
-      val program = ctx.tctx.isProgramMethod(m)
+      val program = ctx.tctx.isMainProgramMethod(m)
       -m.params.length + (if (void) 0 else 1) + (if (program || ctx.static) 0 else -1)
     }
 
@@ -122,7 +78,8 @@ case object CallsTransation extends OneToManyTranslator {
       case CallVirt(m: MethodDefData) => Right(callMethodDef(m))
       case NewObj(m: MethodDefData)   => Right(callMethodDef(m) + 2)
 
-      case CallVirt(MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), _, signatureIdx)) =>
+      case CallVirt(m @ MemberRefData(TypeRefData(_, name, namespace), methodName, signatureIdx))
+          if ctx.tctx.programClasses.exists(cls => fullTypeDefName(cls) == fullTypeName(namespace, name)) =>
         Right(callMethodRef(signatureIdx))
 
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
@@ -177,7 +134,7 @@ case object CallsTransation extends OneToManyTranslator {
     }
 
     def callFunc(m: MethodDefData): Either[InnerTranslationError, List[Operation]] =
-      if (ctx.tctx.isProgramMethod(m)) {
+      if (ctx.tctx.isMainProgramMethod(m)) {
         Right(List(Operation.Call(Some(s"func_${m.name}"))))
       } else {
         val tpeO = ctx.tctx.tpeByMethodDef(m)
@@ -197,7 +154,7 @@ case object CallsTransation extends OneToManyTranslator {
     op match {
       case Call(m: MethodDefData) => callFunc(m)
       case CallVirt(m: MethodDefData) =>
-        if (!ctx.tctx.isProgramMethod(m) && MethodExtractors.isVirtual(m)) {
+        if (!ctx.tctx.isMainProgramMethod(m) && MethodExtractors.isVirtual(m)) {
           val res = for {
             sig <- ctx.tctx.signatures.get(m.signatureIdx).collect {
               case m: MethodRefDefSig => m
@@ -246,7 +203,8 @@ case object CallsTransation extends OneToManyTranslator {
 
           case None => Left(UnknownOpcode)
         }
-      case CallVirt(m @ MemberRefData(TypeRefData(_, _, "Expload.Pravda.Programs"), methodName, signatureIdx)) =>
+      case CallVirt(m @ MemberRefData(TypeRefData(_, name, namespace), methodName, _))
+          if ctx.tctx.programClasses.exists(cls => fullTypeDefName(cls) == fullTypeName(namespace, name)) =>
         val paramsLen = MethodExtractors.methodParamsCount(m, ctx.tctx.signatures)
         val swapAddress = (2 to (paramsLen + 1))
           .flatMap(i => List(Operation.Push(Data.Primitive.Int32(i)), Operation(Opcodes.SWAPN)))
@@ -288,7 +246,7 @@ case object CallsTransation extends OneToManyTranslator {
                                                 Operation(Opcodes.CONCAT),
                                                 Operation(Opcodes.SGET)))
 
-              case "getDefault" => Right(List(Operation.Call(Some("storage_get_default"))))
+              case "getDefault" => Right(List(Operation.Call(Some("stdlib_storage_get_default"))))
               case "exists" =>
                 Right(
                   cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),

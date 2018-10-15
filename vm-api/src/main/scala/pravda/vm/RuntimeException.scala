@@ -17,6 +17,18 @@
 
 package pravda.vm
 
-final case class ExecutionResult(memory: Memory, error: Option[VmErrorResult], wattCounter: WattCounter) {
-  def isSuccess: Boolean = error.isEmpty
-}
+import pravda.common.domain.Address
+
+final case class RuntimeException(error: Error,
+                                  finalState: FinalState,
+                                  callStack: Seq[(Option[Address], Seq[Int])],
+                                  lastPosition: Int)
+
+//object RuntimeException {
+//
+//  def constructStackTraceLine(metas: List[Meta], pos: Int): String = {
+//    val translatorMessage = metas.collectFirst { case TranslatorMark(mark) => mark }
+//    val sources = metas.collectFirst { case s: SourceMark                  => s.markString }
+//    s"${translatorMessage.getOrElse(s"program:$pos")}${sources.map(s => s" ($s)").getOrElse("")}"
+//  }
+//}

@@ -1,7 +1,6 @@
 exe: smart_program.exe smart_program.pdb
 ---
 translation: |-
-  meta translator_mark "jump to methods"
   dup
   push "ctor"
   eq
@@ -22,14 +21,11 @@ translation: |-
   jumpi @method_transfer
   push "Wrong method name"
   throw
-  meta translator_mark "balanceOf method"
+  @method_balanceOf:
   meta method {
   "name":"balanceOf",int32(0):int8(14),"returnTpe":int8(3)
   }
-  @method_balanceOf:
-  meta translator_mark "balanceOf local vars definition"
   push null
-  meta translator_mark "balanceOf method body"
   meta source_mark {
   "sl":int32(8),"sc":int32(44),"el":int32(8),"src":"/tmp/pravda/smart_program.cs","ec":int32(45)
   }
@@ -40,7 +36,7 @@ translation: |-
   push int32(4)
   dupn
   push int32(0)
-  call @storage_get_default
+  call @stdlib_storage_get_default
   push int32(2)
   swapn
   pop
@@ -50,7 +46,6 @@ translation: |-
   "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/smart_program.cs","ec":int32(6)
   }
   jump @balanceOf_lvc
-  meta translator_mark "balanceOf local vars clearing"
   @balanceOf_lvc:
   swap
   pop
@@ -58,14 +53,11 @@ translation: |-
   pop
   swap
   pop
-  meta translator_mark "end of balanceOf method"
   jump @stop
-  meta translator_mark "ctor method"
+  @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
   }
-  @method_ctor:
-  meta translator_mark "ctor check"
   from
   paddr
   owner
@@ -84,26 +76,19 @@ translation: |-
   push null
   push "init"
   sput
-  meta translator_mark "ctor local vars definition"
-  meta translator_mark "ctor method body"
   meta source_mark {
   "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"/tmp/pravda/smart_program.cs","ec":int32(62)
   }
   jump @ctor_lvc
-  meta translator_mark "ctor local vars clearing"
   @ctor_lvc:
   pop
-  meta translator_mark "end of ctor method"
   jump @stop
-  meta translator_mark "transfer method"
+  @method_transfer:
   meta method {
   "name":"transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
   }
-  @method_transfer:
-  meta translator_mark "transfer local vars definition"
   push null
   push null
-  meta translator_mark "transfer method body"
   meta source_mark {
   "sl":int32(12),"sc":int32(48),"el":int32(12),"src":"/tmp/pravda/smart_program.cs","ec":int32(49)
   }
@@ -139,7 +124,7 @@ translation: |-
   push x62616C616E636573
   from
   push int32(0)
-  call @storage_get_default
+  call @stdlib_storage_get_default
   push int32(5)
   dupn
   swap
@@ -174,7 +159,7 @@ translation: |-
   push x62616C616E636573
   from
   push int32(0)
-  call @storage_get_default
+  call @stdlib_storage_get_default
   push int32(7)
   dupn
   push int32(-1)
@@ -200,7 +185,7 @@ translation: |-
   push int32(8)
   dupn
   push int32(0)
-  call @storage_get_default
+  call @stdlib_storage_get_default
   push int32(7)
   dupn
   add
@@ -220,17 +205,14 @@ translation: |-
   "sl":int32(17),"sc":int32(13),"el":int32(17),"src":"/tmp/pravda/smart_program.cs","ec":int32(14)
   }
   jump @transfer_lvc
-  meta translator_mark "transfer local vars clearing"
   @transfer_lvc:
   pop
   pop
   pop
   pop
   pop
-  meta translator_mark "end of transfer method"
   jump @stop
-  meta translator_mark "helper functions"
-  @storage_get_default:
+  @stdlib_storage_get_default:
   push int32(2)
   dupn
   push int8(14)

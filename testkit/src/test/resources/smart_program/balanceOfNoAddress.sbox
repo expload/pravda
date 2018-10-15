@@ -5,11 +5,11 @@ stack:
 storage:
   "init" = null
 ---expectations
-watts-spent: 290
-stack
+watts-spent: 287
+stack:
   int32(0)
-effects
+effects:
   sget "init" null,
-    sget x62616C616E6365730011
+  sget x62616C616E6365730011
 ---dotnet-files
 smart_program.cs

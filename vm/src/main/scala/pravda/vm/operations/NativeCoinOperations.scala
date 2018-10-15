@@ -18,10 +18,10 @@
 package pravda.vm.operations
 
 import pravda.common.domain
-import pravda.vm.VmError.OperationDenied
+import pravda.vm.Error.OperationDenied
 import pravda.vm.WattCounter._
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Environment, Memory, VmErrorException, WattCounter}
+import pravda.vm.{Environment, Memory, ThrowableVmError, WattCounter}
 import pravda.vm.Opcodes._
 final class NativeCoinOperations(memory: Memory,
                                  environment: Environment,
@@ -46,7 +46,7 @@ final class NativeCoinOperations(memory: Memory,
       "the current program account to the account `a`"
   )
   def ptransfer(): Unit = maybeProgramAddress match {
-    case None => throw VmErrorException(OperationDenied)
+    case None => throw ThrowableVmError(OperationDenied)
     case Some(programAddress) =>
       val amount = coins(memory.pop())
       val to = address(memory.pop())

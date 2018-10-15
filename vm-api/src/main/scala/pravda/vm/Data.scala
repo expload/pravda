@@ -953,19 +953,18 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     }
   }
 
+  sealed abstract class DataException(message: String) extends Exception(message)
+
   final case class UnknownTypeException(typeTag: Type, offset: Option[Int] = None)
-      extends Exception(s"Unknown type: $typeTag${offset.map(o => s" at $o").getOrElse("")}")
+      extends DataException(s"Unknown type: $typeTag${offset.map(o => s" at $o").getOrElse("")}")
 
   final case class UnexpectedTypeException(data: Data, offset: Option[Int] = None)
-      extends Exception(s"Unexpected type: ${data.typeString}${offset.map(o => s" at $o").getOrElse("")}")
+      extends DataException(s"Unexpected type: ${data.typeString}${offset.map(o => s" at $o").getOrElse("")}")
 
   final case class UnexpectedLengthException(expected: String, given: Int, offset: Int)
-      extends Exception(s"Unexpected length: $expected expected but $given given at $offset")
+      extends DataException(s"Unexpected length: $expected expected but $given given at $offset")
 
-  final case class UnknownMeta(meta: Meta, offset: Option[Int] = None)
-      extends Exception(s"Unexpected meta: ${meta.mkString}${offset.map(o => s" at $o").getOrElse("")}")
-
-  final case class InvalidData(data: Data) extends Exception(s"Invalid data: ${data.mkString()}")
+  final case class InvalidData(data: Data) extends DataException(s"Invalid data: ${data.mkString()}")
 
   object Type extends TaggedType[Byte] {
     final val Null = Type @@ 0x00.toByte

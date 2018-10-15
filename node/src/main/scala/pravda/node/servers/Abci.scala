@@ -24,27 +24,26 @@ import java.security.MessageDigest
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
+import pravda.common.domain._
+import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
-import pravda.node.data.blockchain.Transaction.AuthorizedTransaction
+import pravda.node.data.blockchain.Transaction
+import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTransaction}
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.bson._
 import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
-import pravda.node.persistence.FileStore
-import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
+import pravda.node.persistence.BlockChainStore.balanceEntry
+import pravda.node.persistence.{FileStore, _}
+import pravda.vm
+import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
-import pravda.node.persistence._
-import pravda.common.domain._
-import pravda.node.data.blockchain.Transaction.SignedTransaction
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import pravda.common.{bytes => byteUtils}
-import pravda.node.data.blockchain.ExecutionInfo
-import pravda.node.persistence.BlockChainStore.balanceEntry
 
 class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: Seq[CoinDistributionMember])(
     implicit ec: ExecutionContext)
@@ -98,7 +97,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       .map(_ => ResponseBeginBlock())
   }
 
-  def checkTransaction(tx: AuthorizedTransaction): Try[Unit] = {
+  private def checkTxWatts(tx: Transaction): Try[Unit] = {
     if (tx.wattPrice <= NativeCoin.zero) {
       Failure(WrongWattPriceException())
     } else if (tx.wattLimit <= 0) {
@@ -108,38 +107,53 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     }
   }
 
-  def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: BlockDependentEnvironment)(
-      result: (Int, String) => R): Future[R] = {
-    val `try` = for {
-      tx <- Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
-      authTx <- cryptography
-        .checkTransactionSignature(tx)
-        .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
-      _ <- checkTransaction(authTx)
-      tid = TransactionId.forEncodedTransaction(encodedTransaction)
-      env = environmentProvider.transactionEnvironment(authTx.from, tid)
+  def verifyTx(tx: Transaction, id: TransactionId, ep: BlockDependentEnvironment): Try[TransactionResult] = {
+
+    val vm = new VmImpl()
+    val env = ep.transactionEnvironment(tx.from, id)
+    val wattPayer = tx.wattPayer.fold(tx.from)(identity)
+
+    for {
+      _ <- checkTxWatts(tx)
       // Select watt payer. if watt payer is defined use them,
       // else use transaction sender (from).
       // Signature is checked above in `checkTransaction` function.
-      wattPayer = authTx.wattPayer.fold(authTx.from)(identity)
-      _ <- Try(environmentProvider.withdraw(wattPayer, NativeCoin(authTx.wattPrice * authTx.wattLimit)))
-      vm = new VmImpl()
-      execResult = vm.spawn(authTx.program, env, MemoryImpl.empty, new WattCounterImpl(authTx.wattLimit), authTx.from)
+      _ <- Try(ep.withdraw(wattPayer, NativeCoin(tx.wattPrice * tx.wattLimit)))
+      execResult <- Try(vm.spawn(tx.program, env, tx.wattLimit))
     } yield {
-      if (execResult.isSuccess) {
-        env.commitTransaction()
+      val total = execResult match {
+        case Left(RuntimeException(_, state, _, _)) => state.totalWatts
+        case Right(state) =>
+          env.commitTransaction()
+          state.totalWatts
       }
-      val total = execResult.wattCounter.total
-      val remaining = authTx.wattLimit - total
-      environmentProvider.accrue(wattPayer, NativeCoin(authTx.wattPrice * remaining))
-      environmentProvider.appendFee(NativeCoin(authTx.wattPrice * total))
-      execResult
+      val remaining = tx.wattLimit - total
+      ep.accrue(wattPayer, NativeCoin(tx.wattPrice * remaining))
+      ep.appendFee(NativeCoin(tx.wattPrice * total))
+      TransactionResult(execResult, env.collectEffects)
     }
+  }
+
+  def verifySignedTx(tx: SignedTransaction,
+                     id: TransactionId,
+                     ep: BlockDependentEnvironment): Try[TransactionResult] = {
+    cryptography
+      .checkTransactionSignature(tx)
+      .fold[Try[AuthorizedTransaction]](Failure(TransactionUnauthorizedException()))(Success.apply)
+      .flatMap(verifyTx(_, id, ep))
+  }
+
+  def deliverOrCheckTx[R](encodedTransaction: ByteString, environmentProvider: BlockDependentEnvironment)(
+      result: (Int, String) => R): Future[R] = {
+
+    val tid = TransactionId.forEncodedTransaction(encodedTransaction)
+    val `try` = Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+      .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
       `try` match {
         case Success(executionResult) =>
-          result(TxStatusOk, transcode(ExecutionInfo.from(executionResult)).to[Json])
+          result(TxStatusOk, transcode(executionResult).to[Json])
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorizedException]) TxStatusUnauthorized
@@ -189,13 +203,21 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
 object Abci {
 
-  final case class TransactionUnauthorizedException()   extends Exception("Transaction signature is invalid")
-  final case class ProgramNotFoundException()           extends Exception("Program not found")
-  final case class ProgramIsSealedException()           extends Exception("Program is sealed")
-  final case class NotEnoughMoneyException()            extends Exception("Not enough money")
-  final case class WrongWattPriceException()            extends Exception("Bad transaction parameter: wattPrice")
-  final case class WrongWattLimitException()            extends Exception("Bad transaction parameter: wattLimit")
-  final case class AmountShouldNotBeNegativeException() extends Exception("Amount should not be negative")
+  final case class TransactionResult(
+      executionResult: ExecutionResult,
+      effects: Seq[Effect]
+  )
+
+  sealed abstract class TransactionValidationException(message: String) extends Exception(message)
+
+  final case class TransactionUnauthorizedException()
+      extends TransactionValidationException("Transaction signature is invalid")
+
+  final case class WrongWattPriceException()
+      extends TransactionValidationException("Bad transaction parameter: wattPrice")
+
+  final case class WrongWattLimitException()
+      extends TransactionValidationException("Bad transaction parameter: wattLimit")
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -203,37 +225,12 @@ object Abci {
 
   final case class StoredProgram(code: ByteString, owner: Address, `sealed`: Boolean)
 
-  sealed trait EnvironmentEffect
-
-  object EnvironmentEffect {
-
-    final case class StorageRemove(program: Address, key: Data, value: Option[Data]) extends EnvironmentEffect
-
-    final case class StorageWrite(program: Address, key: Data, previous: Option[Data], value: Data)
-        extends EnvironmentEffect
-
-    final case class StorageRead(program: Address, key: Data, value: Option[Data]) extends EnvironmentEffect
-
-    final case class ProgramCreate(address: Address, program: Data.Primitive.Bytes) extends EnvironmentEffect
-
-    final case class ProgramSeal(address: Address) extends EnvironmentEffect
-
-    final case class ProgramUpdate(address: Address, program: Data.Primitive.Bytes) extends EnvironmentEffect
-
-    // TODO program address
-    final case class Transfer(from: Address, to: Address, amount: NativeCoin) extends EnvironmentEffect
-
-    final case class ShowBalance(address: Address, amount: NativeCoin) extends EnvironmentEffect
-  }
-
-  final case class Event(address: Address, name: String, data: Data)
-
   final class BlockDependentEnvironment(db: DB) {
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
-    private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[EnvironmentEffect])]
-    private val events = mutable.Buffer.empty[Event]
+    private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[Effect])]
+    private val events = mutable.Buffer.empty[Effect.Event]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
@@ -242,19 +239,18 @@ object Abci {
     private lazy val blockBalancesPath = new CachedDbPath(new PureDbPath(db, "balance"), cache, operations)
 
     def transactionEnvironment(executor: Address, tid: TransactionId): TransactionDependentEnvironment = {
-      val effects = mutable.Buffer.empty[EnvironmentEffect]
+      val effects = mutable.Buffer.empty[Effect]
       effectsMap += (tid -> effects)
       new TransactionDependentEnvironment(executor, tid, effects)
     }
 
     final class TransactionDependentEnvironment(val executor: Address,
                                                 transactionId: TransactionId,
-                                                effects: mutable.Buffer[EnvironmentEffect])
+                                                effects: mutable.Buffer[Effect])
         extends Environment {
 
       private val transactionOperations = mutable.Buffer.empty[Operation]
-      private val transactionEffects = mutable.Buffer.empty[EnvironmentEffect]
-      private val transactionEvents = mutable.Buffer.empty[Event]
+      private val transactionEffects = mutable.Buffer.empty[Effect]
       private val transactionCache = mutable.Map.empty[String, Option[Array[Byte]]]
 
       private lazy val transactionProgramsPath =
@@ -266,10 +262,10 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
-        events ++= transactionEvents
+        events ++= transactionEffects.collect { case ev: Effect.Event => ev }
       }
 
-      import EnvironmentEffect._
+      import Effect._
 
       private final class WsProgramStorage(address: Address, dbPath: DbPath) extends Storage {
 
@@ -308,37 +304,38 @@ object Abci {
       }
 
       def sealProgram(address: Address): Unit = {
-        val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
+        val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
         val sp = oldSb.copy(`sealed` = true)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramSeal(address)
       }
 
       def updateProgram(address: Address, code: ByteString): Unit = {
-        val oldSb = getStoredProgram(address).getOrElse(throw ProgramNotFoundException())
-        if (oldSb.`sealed`) throw ProgramIsSealedException()
+        val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
+        if (oldSb.`sealed`) throw vm.ThrowableVmError(Error.ProgramIsSealed)
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
       }
 
       def event(address: Address, name: String, data: Data): Unit = {
-        transactionEvents += Event(address, name, data)
+        transactionEffects += Event(address, name, data)
       }
 
       def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
         if (amount < 0)
-          throw AmountShouldNotBeNegativeException()
+          throw ThrowableVmError(Error.AmountShouldNotBeNegative)
 
-        val current = balance(from)
+        val currentFrom = balance(from)
+        val currentTo = balance(to)
 
-        if (current < amount)
-          throw NotEnoughMoneyException()
+        if (currentFrom < amount)
+          throw ThrowableVmError(Error.NotEnoughMoney)
 
-        transactionBalancesPath.put(byteUtils.byteString2hex(from), current - amount)
-        transactionBalancesPath.put(byteUtils.byteString2hex(to), current + amount)
-        transactionEffects += EnvironmentEffect.Transfer(from, to, amount)
-
+        // TODO consider to add `to` balance overflow
+        transactionBalancesPath.put(byteUtils.byteString2hex(from), currentFrom - amount)
+        transactionBalancesPath.put(byteUtils.byteString2hex(to), currentTo + amount)
+        transactionEffects += Effect.Transfer(from, to, amount)
       }
 
       def balance(address: Address): NativeCoin = {
@@ -363,6 +360,8 @@ object Abci {
           val storage = new WsProgramStorage(address, newPath)
           ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
         }
+
+      def collectEffects: Seq[Effect] = transactionEffects
     }
 
     def appendFee(coins: NativeCoin): Unit = {
@@ -379,20 +378,23 @@ object Abci {
     }
 
     def withdraw(address: Address, amount: NativeCoin): Unit = {
-      if (amount < 0) throw AmountShouldNotBeNegativeException()
+      if (amount < 0)
+        throw vm.ThrowableVmError(Error.AmountShouldNotBeNegative)
+
       val current = blockBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
-      if (current < amount) throw NotEnoughMoneyException()
+
+      if (current < amount)
+        throw vm.ThrowableVmError(Error.NotEnoughMoney)
 
       blockBalancesPath.put(byteUtils.byteString2hex(address), current - amount)
-
     }
 
     def accrue(address: Address, amount: NativeCoin): Unit = {
-      if (amount < 0) throw AmountShouldNotBeNegativeException()
+      if (amount < 0)
+        throw vm.ThrowableVmError(Error.ProgramIsSealed)
 
       val current = blockBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
       blockBalancesPath.put(byteUtils.byteString2hex(address), current + amount)
-
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
@@ -406,19 +408,19 @@ object Abci {
       accrue(validators((height % validators.length).toInt), remainder)
 
       if (effectsMap.nonEmpty) {
-        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[EnvironmentEffect]]]
+        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
       events
         .groupBy {
-          case Event(address, name, data) => (address, name)
+          case Effect.Event(address, name, data) => (address, name)
         }
         .foreach {
           case ((address, name), evs) =>
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
-              case (Event(_, _, data), i) =>
+              case (Effect.Event(_, _, data), i) =>
                 eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)

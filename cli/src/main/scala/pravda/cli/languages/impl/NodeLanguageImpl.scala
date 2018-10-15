@@ -49,19 +49,14 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
   def singAndBroadcastTransaction(uriPrefix: String,
                                   address: ByteString,
                                   privateKey: ByteString,
+                                  wattPayerPrivateKey: Option[ByteString],
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
-                                  dryRun: Boolean,
+                                  wattPayer: Option[Address],
                                   data: ByteString): Future[Either[String, String]] = {
 
     val fromHex = bytes.byteString2hex(address)
-    val request = if (dryRun) {
-      HttpRequest(
-        method = HttpMethods.POST,
-        uri = s"$uriPrefix/dryRun?from=$fromHex",
-        entity = HttpEntity(data.toByteArray)
-      )
-    } else {
+    val request = {
       val tx = UnsignedTransaction(
         from = Address @@ address,
         program = TransactionData @@ data,
@@ -71,13 +66,24 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
         nonce = Random.nextInt()
       )
 
-      val stx = cryptography.signTransaction(PrivateKey @@ privateKey, tx)
-      val signatureHex = bytes.byteString2hex(stx.signature)
+      val stx = {
+        val one = cryptography.signTransaction(PrivateKey @@ privateKey, tx)
+        wattPayerPrivateKey match {
+          case Some(pk) => cryptography.addWattPayerSignature(PrivateKey @@ pk, one.copy(wattPayer = wattPayer))
+          case None     => one
+        }
+      }
 
       HttpRequest(
         method = HttpMethods.POST,
-        uri =
-          s"$uriPrefix?from=$fromHex&signature=$signatureHex&nonce=${tx.nonce}&wattLimit=${tx.wattLimit}&wattPrice=${tx.wattPrice}",
+        uri = uriPrefix +
+          s"?from=$fromHex" +
+          s"&signature=${bytes.byteString2hex(stx.signature)}" +
+          s"&nonce=${tx.nonce}" +
+          s"&wattLimit=${tx.wattLimit}" +
+          s"&wattPrice=${tx.wattPrice}" +
+          wattPayer.fold("")(wp => s"&wattPayer=${bytes.byteString2hex(wp)}") +
+          stx.wattPayerSignature.fold("")(s => s"&wattPayerSignature=${bytes.byteString2hex(s)}"),
         entity = HttpEntity(data.toByteArray)
       )
     }

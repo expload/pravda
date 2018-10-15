@@ -1,7 +1,6 @@
 exe: arrays.exe
 ---
 translation: |-
-  meta translator_mark "jump to methods"
   dup
   push "ctor"
   eq
@@ -22,19 +21,16 @@ translation: |-
   jumpi @method_WorkWithBytes
   push "Wrong method name"
   throw
-  meta translator_mark "WorkWithArrays method"
+  @method_WorkWithArrays:
   meta method {
   "name":"WorkWithArrays","returnTpe":int8(0)
   }
-  @method_WorkWithArrays:
-  meta translator_mark "WorkWithArrays local vars definition"
   push null
   push null
   push null
   push null
   push null
   push null
-  meta translator_mark "WorkWithArrays method body"
   new int16[97, 98, 99]
   push int32(7)
   swapn
@@ -111,7 +107,6 @@ translation: |-
   swapn
   pop
   jump @WorkWithArrays_lvc
-  meta translator_mark "WorkWithArrays local vars clearing"
   @WorkWithArrays_lvc:
   pop
   pop
@@ -120,14 +115,11 @@ translation: |-
   pop
   pop
   pop
-  meta translator_mark "end of WorkWithArrays method"
   jump @stop
-  meta translator_mark "WorkWithBytes method"
+  @method_WorkWithBytes:
   meta method {
   "name":"WorkWithBytes","returnTpe":int8(0)
   }
-  @method_WorkWithBytes:
-  meta translator_mark "WorkWithBytes local vars definition"
   push null
   push null
   push null
@@ -138,18 +130,17 @@ translation: |-
   push null
   push null
   push null
-  meta translator_mark "WorkWithBytes method body"
   new int8[1, 2, 3]
   push int32(11)
   swapn
   pop
   new int8[4, 5, 6]
-  call @array_to_bytes
+  call @stdlib_array_to_bytes
   push int32(10)
   swapn
   pop
   new int8[7, 8, 9]
-  call @array_to_bytes
+  call @stdlib_array_to_bytes
   push int32(9)
   swapn
   pop
@@ -210,7 +201,7 @@ translation: |-
   pop
   push x6279746573
   new int8[8, 9, 10]
-  call @array_to_bytes
+  call @stdlib_array_to_bytes
   push int8(14)
   cast
   swap
@@ -235,7 +226,7 @@ translation: |-
   push int32(10)
   dupn
   new int8[7, 8, 9]
-  call @array_to_bytes
+  call @stdlib_array_to_bytes
   push int32(2)
   dupn
   push int8(14)
@@ -266,7 +257,6 @@ translation: |-
   swapn
   pop
   jump @WorkWithBytes_lvc
-  meta translator_mark "WorkWithBytes local vars clearing"
   @WorkWithBytes_lvc:
   pop
   pop
@@ -279,14 +269,11 @@ translation: |-
   pop
   pop
   pop
-  meta translator_mark "end of WorkWithBytes method"
   jump @stop
-  meta translator_mark "ctor method"
+  @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
   }
-  @method_ctor:
-  meta translator_mark "ctor check"
   from
   paddr
   owner
@@ -305,16 +292,11 @@ translation: |-
   push null
   push "init"
   sput
-  meta translator_mark "ctor local vars definition"
-  meta translator_mark "ctor method body"
   jump @ctor_lvc
-  meta translator_mark "ctor local vars clearing"
   @ctor_lvc:
   pop
-  meta translator_mark "end of ctor method"
   jump @stop
-  meta translator_mark "helper functions"
-  @array_to_bytes:
+  @stdlib_array_to_bytes:
   dup
   length
   push x

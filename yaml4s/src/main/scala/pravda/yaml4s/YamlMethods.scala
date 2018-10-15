@@ -110,5 +110,5 @@ object YamlMethods {
     Try { parseUnsafe(in, useBigDecimalForDouble) }.toOption
 
   def parseAllOpt(in: JsonInput, useBigDecimalForDouble: Boolean): Option[List[JValue]] =
-    Try { parseAllUnsafe(in, useBigDecimalForDouble) }.toOption
+    Try { parseAllUnsafe(in, useBigDecimalForDouble) }.fold(e => { e.printStackTrace(); None }, r => Some(r))
 }

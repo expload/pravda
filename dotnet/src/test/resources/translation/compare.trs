@@ -1,7 +1,6 @@
 exe: compare.exe
 ---
 translation: |-
-  meta translator_mark "jump to methods"
   dup
   push "ctor"
   eq
@@ -18,12 +17,10 @@ translation: |-
   jumpi @method_compare
   push "Wrong method name"
   throw
-  meta translator_mark "compare method"
+  @method_compare:
   meta method {
   "name":"compare","returnTpe":int8(0)
   }
-  @method_compare:
-  meta translator_mark "compare local vars definition"
   push null
   push null
   push null
@@ -61,7 +58,6 @@ translation: |-
   push null
   push null
   push null
-  meta translator_mark "compare method body"
   push int32(1)
   push int32(38)
   swapn
@@ -1257,7 +1253,6 @@ translation: |-
   jumpi @compare_br722
   @compare_br722:
   jump @compare_lvc
-  meta translator_mark "compare local vars clearing"
   @compare_lvc:
   pop
   pop
@@ -1297,14 +1292,11 @@ translation: |-
   pop
   pop
   pop
-  meta translator_mark "end of compare method"
   jump @stop
-  meta translator_mark "ctor method"
+  @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
   }
-  @method_ctor:
-  meta translator_mark "ctor check"
   from
   paddr
   owner
@@ -1323,13 +1315,8 @@ translation: |-
   push null
   push "init"
   sput
-  meta translator_mark "ctor local vars definition"
-  meta translator_mark "ctor method body"
   jump @ctor_lvc
-  meta translator_mark "ctor local vars clearing"
   @ctor_lvc:
   pop
-  meta translator_mark "end of ctor method"
   jump @stop
-  meta translator_mark "helper functions"
   @stop:

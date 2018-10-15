@@ -30,10 +30,6 @@ import scala.annotation.tailrec
 // which itself requires delta offsets
 trait OpcodeTranslator {
 
-  def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx)
-    : Either[InnerTranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
-    Left(UnknownOpcode)
-
   def deltaOffset(ops: List[CIL.Op],
                   ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)]
 
@@ -126,23 +122,11 @@ trait OpcodeTranslatorOnlyAsm extends OpcodeTranslator {
 
 trait OneToManyTranslator extends OpcodeTranslator {
 
-  def additionalFunctionsOne(
-      op: CIL.Op,
-      ctx: MethodTranslationCtx): Either[InnerTranslationError, List[OpcodeTranslator.HelperFunction]] =
-    Left(UnknownOpcode)
-
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int]
 
   def asmOpsOne(op: CIL.Op,
                 stackOffsetO: Option[Int],
                 ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]]
-
-  override def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx)
-    : Either[InnerTranslationError, (OpcodeTranslator.Taken, List[OpcodeTranslator.HelperFunction])] =
-    ops match {
-      case head :: _ => additionalFunctionsOne(head, ctx).map((1, _))
-      case _         => Right((0, List.empty))
-    }
 
   def deltaOffset(ops: List[CIL.Op],
                   ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)] =
@@ -184,7 +168,7 @@ object OpcodeTranslator {
       StringTranslation,
       BytesTranslation,
       ArrayTranslation,
-      CallsTransation
+      CallsTranslation
     )
 
   private def notUnknownOpcode[T](res: Either[InnerTranslationError, T]): Boolean = res match {
@@ -203,11 +187,6 @@ object OpcodeTranslator {
       }
     case _ => None
   }
-
-  def additionalFunctions(ops: List[CIL.Op], ctx: MethodTranslationCtx): (Taken, List[HelperFunction]) =
-    findAndReturn(translators, (t: OpcodeTranslator) => t.additionalFunctions(ops, ctx), notUnknownOpcode)
-      .flatMap(_.toOption)
-      .getOrElse((0, List.empty))
 
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],

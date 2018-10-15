@@ -17,20 +17,12 @@
 
 package pravda.dotnet.translation.data
 
-import pravda.dotnet.parser.CIL
-import pravda.dotnet.translation.opcode.OpcodeTranslator
 import pravda.vm.{Meta, asm}
 
-final case class OpCodeTranslation(source: Either[String, List[CIL.Op]], // some name or actual opcode
-                                   sourceMarks: List[Meta.SourceMark],
-                                   asmOps: List[asm.Operation])
+final case class OpCodeTranslation(sourceMarks: List[Meta.SourceMark], asmOps: List[asm.Operation])
 
-final case class MethodTranslation(name: String,
-                                   opcodes: List[OpCodeTranslation],
-                                   additionalFunctions: List[OpcodeTranslator.HelperFunction])
+final case class MethodTranslation(kind: String, name: String, forceAdd: Boolean, opcodes: List[OpCodeTranslation]) {
+  lazy val label: String = s"${kind}_$name"
+}
 
-final case class Translation(jumpToMethods: List[asm.Operation],
-                             methods: List[MethodTranslation],
-                             funcs: List[MethodTranslation],
-                             helperFunctions: List[OpcodeTranslator.HelperFunction],
-                             finishOps: List[asm.Operation])
+final case class Translation(methods: List[MethodTranslation], funcs: List[MethodTranslation])
