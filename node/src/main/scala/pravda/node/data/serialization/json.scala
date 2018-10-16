@@ -107,6 +107,7 @@ object json {
   //----------------------------------------------------------------------
 
   implicit val dataPrimitiveReader: JsonReader[vm.Data.Primitive] = new JsonReader[Data.Primitive] {
+
     def read(it: TokenIterator)(implicit fieldName: FieldName): Data.Primitive = {
       val token = it.currentToken()
       val s =
@@ -138,6 +139,7 @@ object json {
   }
 
   implicit val dataReader: JsonReader[vm.Data] = new JsonReader[Data] {
+
     def read(it: TokenIterator)(implicit fieldName: FieldName): Data = {
       val token = it.currentToken()
       if (token.isArrayStart) {
@@ -152,22 +154,21 @@ object json {
         }
         if (it.nextToken().isStringValue) {
           it.string() match {
-            case "int8" => Data.Array.Int8Array(readArray(_.int().toByte))
-            case "int16" => Data.Array.Int16Array(readArray(_.int().toShort))
-            case "int32" => Data.Array.Int32Array(readArray(_.int()))
-            case "uint8" => Data.Array.Uint8Array(readArray(_.int()))
-            case "uint16" => Data.Array.Uint16Array(readArray(_.int()))
-            case "uint32" => Data.Array.Uint32Array(readArray(_.long()))
-            case "bigint" => Data.Array.BigIntArray(readArray(x => BigInt(x.long())))
-            case "number" => Data.Array.NumberArray(readArray(_.double()))
-            case "ref" => Data.Array.RefArray(readArray(_.int()))
-            case "bool" => Data.Array.BoolArray(readArray(x => Data.Primitive.Bool(x.boolean())))
-            case "utf8" => Data.Array.Utf8Array(readArray(_.string()))
-            case "bytes" => Data.Array.BytesArray(readArray(x => bytes.hex2byteString(x.string())))
+            case "int8"   => Data.Array.Int8Array(readArray(_.string().toByte))
+            case "int16"  => Data.Array.Int16Array(readArray(_.string().toShort))
+            case "int32"  => Data.Array.Int32Array(readArray(_.string().toInt))
+            case "uint8"  => Data.Array.Uint8Array(readArray(_.string().toInt))
+            case "uint16" => Data.Array.Uint16Array(readArray(_.string().toInt))
+            case "uint32" => Data.Array.Uint32Array(readArray(_.string().toLong))
+            case "bigint" => Data.Array.BigIntArray(readArray(x => BigInt(x.string())))
+            case "number" => Data.Array.NumberArray(readArray(_.string().toDouble))
+            case "ref"    => Data.Array.RefArray(readArray(_.string().toInt))
+            case "bool"   => Data.Array.BoolArray(readArray(x => Data.Primitive.Bool(x.string().toBoolean)))
+            case "utf8"   => Data.Array.Utf8Array(readArray(_.string()))
+            case "bytes"  => Data.Array.BytesArray(readArray(x => bytes.hex2byteString(x.string())))
           }
         } else throwUtrj(token)
-      }
-      else if (token.isObjectStart) {
+      } else if (token.isObjectStart) {
         val ar = mutable.Map.empty[Data.Primitive, Data.Primitive]
         var ct = it.nextToken()
         while (!ct.isObjectEnd) {
@@ -178,14 +179,11 @@ object json {
           ct = it.nextToken()
         }
         Data.Struct(ar)
-      }
-      else if (token.isStringValue || token.isBooleanValue || token.isNullValue) {
+      } else if (token.isStringValue || token.isBooleanValue || token.isNullValue) {
         dataPrimitiveReader.read(it)
-      }
-      else throwUtrj(token)
+      } else throwUtrj(token)
     }
   }
-
 
   private def writePrimitive[U](value: Data.Primitive, f: String => U) = value match {
     case Data.Primitive.Null      => f("null")
@@ -201,8 +199,8 @@ object json {
     case Data.Primitive.Bool(x)   => f(s"bool:$x")
     case Data.Primitive.Bytes(x)  => f(s"bytes:${bytes.byteString2hex(x)}")
     case Data.Primitive.Utf8(x)   => f(s"utf8:$x")
-  } 
-    
+  }
+
   implicit val dataPrimitiveWriter: JsonWriter[Data.Primitive] = (value: Data.Primitive, w: TokenWriter) => {
     writePrimitive(value, w.writeString)
   }
@@ -219,19 +217,19 @@ object json {
       }
 
       value match {
-        case p: Data.Primitive => dataPrimitiveWriter.write(p, w)
-        case Data.Array.Int8Array(xs) => writeArray(xs, "int8")(x => w.writeNumber(x.toInt))
-        case Data.Array.Int16Array(xs) => writeArray(xs, "int16")(x => w.writeNumber(x.toInt))
-        case Data.Array.Int32Array(xs) => writeArray(xs, "int32")(x => w.writeNumber(x))
-        case Data.Array.Uint8Array(xs) => writeArray(xs, "uint8")(x => w.writeNumber(x))
-        case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeNumber(x))
-        case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeNumber(x))
-        case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeNumber(x))
-        case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeNumber(x))
-        case Data.Array.RefArray(xs) => writeArray(xs, "ref")(x => w.writeNumber(x))
-        case Data.Array.BoolArray(xs) => writeArray(xs, "bool")(x => w.writeBoolean(x.toBoolean))
-        case Data.Array.Utf8Array(xs) => writeArray(xs, "utf8")(x => w.writeString(x))
-        case Data.Array.BytesArray(xs) => writeArray(xs, "bytes")(x => w.writeString(bytes.byteString2hex(x)))
+        case p: Data.Primitive          => dataPrimitiveWriter.write(p, w)
+        case Data.Array.Int8Array(xs)   => writeArray(xs, "int8")(x => w.writeString(x.toString))
+        case Data.Array.Int16Array(xs)  => writeArray(xs, "int16")(x => w.writeString(x.toString))
+        case Data.Array.Int32Array(xs)  => writeArray(xs, "int32")(x => w.writeString(x.toString))
+        case Data.Array.Uint8Array(xs)  => writeArray(xs, "uint8")(x => w.writeString(x.toString))
+        case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeString(x.toString))
+        case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeString(x.toString))
+        case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeString(x.toString))
+        case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeString(x.toString))
+        case Data.Array.RefArray(xs)    => writeArray(xs, "ref")(x => w.writeString(x.toString))
+        case Data.Array.BoolArray(xs)   => writeArray(xs, "bool")(x => w.writeString(x.toString))
+        case Data.Array.Utf8Array(xs)   => writeArray(xs, "utf8")(x => w.writeString(x))
+        case Data.Array.BytesArray(xs)  => writeArray(xs, "bytes")(x => w.writeString(bytes.byteString2hex(x)))
         case Data.Struct(xs) =>
           w.writeObjectStart()
           xs.foreach {
