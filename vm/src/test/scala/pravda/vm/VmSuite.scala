@@ -52,7 +52,8 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
       json4sFormat[vm.Error] +
       json4sFormat[asm.Operation] +
       json4sKeyFormat[ByteString] +
-      json4sKeyFormat[Primitive.Ref]
+      json4sKeyFormat[Primitive.Ref] +
+      json4sKeyFormat[Primitive]
 
   override def produce(input: Preconditions): Either[String, Expectations] = {
     val sandboxVm = new VmImpl()

@@ -14,11 +14,11 @@ import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import org.json4s.DefaultFormats
 import pravda.common.domain.Address
-import pravda.common.json.json4sFormat
+import pravda.common.json._
 import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
-import pravda.vm.VmSuiteData.{Expectations, Memory}
+import pravda.vm.VmSuiteData.Expectations
 import pravda.vm.asm.PravdaAssembler
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 import pravda.vm.json._
@@ -28,16 +28,18 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 
 object DotnetSuiteData {
-  final case class Memory(stack: Seq[Primitive] = Nil, heap: Map[Primitive.Ref, Data] = Map.empty)
-
-  final case class Preconditions(balances: Map[Address, Primitive.BigInt],
-                                 memory: Memory = Memory(),
+  final case class Preconditions(balances: Map[Address, Primitive.BigInt] = Map.empty,
+                                 stack: Seq[Primitive] = Nil,
+                                 heap: Map[Primitive.Ref, Data] = Map.empty,
                                  storage: Map[Primitive, Data] = Map.empty,
                                  programs: Map[Address, Primitive.Bytes] = Map.empty,
-                                 executor: Option[Address],
+                                 executor: Option[Address] = None,
                                  dotnetCompilation: String)
 
-  final case class Expectations(memory: Memory, effects: Seq[vm.Effect], error: Option[RuntimeException])
+  final case class Expectations(heap: Map[Primitive.Ref, Data] = Map.empty,
+                                storage: Map[Primitive, Data] = Map.empty,
+                                effects: Seq[vm.Effect] = Nil,
+                                error: Option[vm.Error] = None)
 }
 
 import DotnetSuiteData._
@@ -87,9 +89,18 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
   }
 
   lazy val dir = new File("testkit/src/test/resources")
-  override lazy val ext = "sbox"
+  override lazy val ext = "sbox_"
   override lazy val formats =
-    DefaultFormats + json4sFormat[Data] + json4sFormat[vm.Effect] + json4sFormat[RuntimeException]
+    DefaultFormats +
+      json4sFormat[Data] +
+      json4sFormat[Primitive] +
+      json4sFormat[Primitive.BigInt] +
+      json4sFormat[Primitive.Bytes] +
+      json4sFormat[vm.Effect] +
+      json4sFormat[vm.Error] +
+      json4sKeyFormat[ByteString] +
+      json4sKeyFormat[Primitive.Ref] +
+      json4sKeyFormat[Primitive]
 
   def produce(input: Preconditions): Either[String, Expectations] = {
     val lines = input.dotnetCompilation.lines.toList
@@ -100,16 +111,16 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
 
     val sandboxVm = new VmImpl()
     val heap = {
-      if (input.memory.heap.nonEmpty) {
-        val length = input.memory.heap.map(_._1.data).max + 1
+      if (input.heap.nonEmpty) {
+        val length = input.heap.map(_._1.data).max + 1
         val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
-        input.memory.heap.foreach { case (ref, value) => buffer(ref.data) = value }
+        input.heap.foreach { case (ref, value) => buffer(ref.data) = value }
         buffer
       } else {
         ArrayBuffer[Data]()
       }
     }
-    val memory = MemoryImpl(ArrayBuffer(input.memory.stack: _*), heap)
+    val memory = MemoryImpl(ArrayBuffer(input.stack: _*), heap)
     val wattCounter = new WattCounterImpl(Long.MaxValue)
 
     val pExecutor = input.executor.getOrElse {
@@ -160,12 +171,10 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
 
       Expectations(
         wattCounter.spent,
-        Memory(
-          memory.stack,
-          memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
-        ),
+        memory.stack,
+        memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap,
         effects,
-        error
+        error.map(_.error)
       )
     }
   }
