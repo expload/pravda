@@ -75,6 +75,7 @@ lazy val common = (project in file("common"))
       "org.whispersystems" % "curve25519-java" % "0.4.1",
       "org.rudogma" %% "supertagged" % "1.4",
       "com.tethys-json" %% "tethys" % "0.7.0.2",
+      "com.tethys-json" %% "tethys-derivation" % "0.7.0.2",
       "com.tethys-json" %% "tethys-json4s" % "0.7.0.2",
       "org.json4s" %% "json4s-ast" % "3.6.1"
     )

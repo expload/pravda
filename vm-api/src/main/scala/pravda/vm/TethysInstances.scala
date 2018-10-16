@@ -6,8 +6,10 @@ import tethys.derivation.semiauto.{jsonReader, jsonWriter}
 import tethys.readers.FieldName
 import tethys.readers.tokens.TokenIterator
 import tethys.writers.tokens.TokenWriter
+import pravda.common.json._
 
 trait TethysInstances {
+
   //----------------------------------------------------------------------
   // vm.Data support for tethys
   //----------------------------------------------------------------------
@@ -18,10 +20,28 @@ trait TethysInstances {
   implicit val dataWriter: JsonWriter[Data] =
     JsonWriter.stringWriter.contramap(_.mkString())
 
-  implicit val dataBytesReader: JsonReader[Data.Primitive.Bytes] =
+  implicit val primitiveReader: JsonReader[Data.Primitive] =
+    JsonReader.stringReader.map(s => Data.parser.primitive.parse(s).get.value)
+
+  implicit val primitiveWriter: JsonWriter[Data.Primitive] =
+    JsonWriter.stringWriter.contramap(_.mkString())
+
+  implicit val primitiveRefReader: JsonReader[Data.Primitive.Ref] =
+    JsonReader.stringReader.map(s => Data.parser.ref.parse(s).get.value)
+
+  implicit val primitiveRefWriter: JsonWriter[Data.Primitive.Ref] =
+    JsonWriter.stringWriter.contramap(_.mkString())
+
+  implicit val primitiveBytesReader: JsonReader[Data.Primitive.Bytes] =
     JsonReader.stringReader.map(s => Data.parser.bytes.parse(s).get.value)
 
-  implicit val dataBytesWriter: JsonWriter[Data.Primitive.Bytes] =
+  implicit val primitiveBytesWriter: JsonWriter[Data.Primitive.Bytes] =
+    JsonWriter.stringWriter.contramap(_.mkString())
+
+  implicit val primitiveBigIntReader: JsonReader[Data.Primitive.BigInt] =
+    JsonReader.stringReader.map(s => Data.parser.bigint.parse(s).get.value)
+
+  implicit val primitiveBigIntWriter: JsonWriter[Data.Primitive.BigInt] =
     JsonWriter.stringWriter.contramap(_.mkString())
 
   //---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-package pravda.common.tethys
+package pravda.common.json
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes.{byteString2hex, hex2byteString}

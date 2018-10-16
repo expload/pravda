@@ -18,6 +18,6 @@
 package pravda.node.data.serialization
 
 object json
-    extends pravda.node.data.serialization.TethysInstances
+    extends pravda.common.json.TethysInstances
     with pravda.vm.TethysInstances
-    with pravda.common.tethys.TethysInstances
+    with pravda.node.data.serialization.TethysInstances

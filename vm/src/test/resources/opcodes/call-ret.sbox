@@ -1,15 +1,14 @@
----preconditions
 watts-limit: 1000
----expectations
+code:
+  - jump @main
+  - "@proc:"
+  - add
+  - ret
+  - "@main:"
+  - push int8(2)
+  - push int8(3)
+  - call @proc
+---
 watts-spent: 130
 stack:
-  int32(5)
----code
-jump @main
-@proc:
-add
-ret
-@main:
-push int8(2)
-push int8(3)
-call @proc
+  - int32(5)

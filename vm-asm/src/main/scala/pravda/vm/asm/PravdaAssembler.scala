@@ -264,12 +264,7 @@ object PravdaAssembler {
     ParsingCommons.prettyPrintError(text, p)
   }
 
-  /**
-    * Use this to parse assembler text
-    * to sequence of operations.
-    */
-  val parser: fastparse.all.Parser[Seq[Operation]] = {
-
+  val operationParser: fastparse.all.Parser[Operation] = {
     import fastparse.all._
 
     import Data.parser.{primitive => dataPrimitive, all => dataAll}
@@ -277,7 +272,6 @@ object PravdaAssembler {
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_"))
     val alphadigdot = P(alpha | digit | ".")
     val ident = P("@" ~ (alpha.rep(1) ~ alphadigdot.rep(1).?).!)
-    val whitespace = P(CharIn(" \t\r\n").rep)
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 
     val label = P(ident ~ ":").map(n => Operation.Label(n))
@@ -293,11 +287,22 @@ object PravdaAssembler {
 
     val meta = P("meta " ~ pravda.vm.Meta.parser.meta).map(Meta)
 
-    val operation = Operation.Orphans
+    Operation.Orphans
       .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))
       .++(Seq(jumpi, jump, call, pushRef, push, `new`, struct_get, struct_mut, label, comment, meta))
       .reduce(_ | _)
+  }
 
-    P(whitespace ~ operation.rep(sep = delim) ~ whitespace)
+  /**
+    * Use this to parse assembler text
+    * to sequence of operations.
+    */
+  val parser: fastparse.all.Parser[Seq[Operation]] = {
+    import fastparse.all._
+
+    val whitespace = P(CharIn(" \t\r\n").rep)
+    val delim = P(CharIn(" \t\r\n").rep(min = 1))
+
+    P(whitespace ~ operationParser.rep(sep = delim) ~ whitespace)
   }
 }

@@ -11,6 +11,8 @@ import tethys.derivation.builder._
 import tethys.derivation.semiauto._
 import tethys.jackson.jacksonTokenIteratorProducer
 import tethys.jackson.pretty.prettyJacksonTokenWriterProducer
+import pravda.common.json._
+import pravda.vm.json._
 
 trait TethysInstances {
   //----------------------------------------------------------------------
