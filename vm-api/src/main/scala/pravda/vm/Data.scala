@@ -586,8 +586,14 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class Bytes(data: ByteString)    extends Primitive with Array
     final case class Ref(data: Int)             extends Primitive
 
-    case object Null  extends Primitive
-    sealed trait Bool extends Primitive
+    case object Null extends Primitive
+    sealed trait Bool extends Primitive {
+
+      def toBoolean: Boolean = this match {
+        case True  => true
+        case False => false
+      }
+    }
 
     object Ref {
       final val Void = Ref(-1)
