@@ -23,5 +23,6 @@ object MarshalledData {
 
   final case class Simple(data: Data) extends MarshalledData
 
-  final case class Complex(data: Data, pseudoHeap: Seq[(Data.Primitive.Ref, Data)]) extends MarshalledData
+  // FIXME pseudoHeap key should be Data.Primitive.Ref
+  final case class Complex(data: Data, pseudoHeap: Map[Int, Data]) extends MarshalledData
 }

@@ -50,7 +50,7 @@ final class SystemOperations(program: ByteBuffer,
     opcode = PCALL,
     description = "Takes two words by which it is followed. " +
       "They are address `a` and the number of parameters `n`, " +
-      "respectively. Then it executes the smart contract with " +
+      "respectively. Then it executes the program with " +
       "the address `a` and passes there only $n$ top elements " +
       "of the stack."
   )
@@ -197,15 +197,21 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = EVENT,
-    description =
-      "Takes string and arbitrary data from stack, create new event with name as given string and with given data.")
+    description = "Takes string and arbitrary data from stack, " +
+      "create new event with name as given string and with given data.")
   def event(): Unit = {
 
     def marshalData(data: Data) = {
       // (Original -> (UpdatedData, AssignedRef))
       val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
-      def extract(ref: Data.Primitive.Ref) =
-        pHeap.getOrElseUpdate(ref, Data.Primitive.Ref(pHeap.size) -> aux(memory.heapGet(ref.data)))
+      def extract(ref: Data.Primitive.Ref) = {
+        val k = Data.Primitive.Ref(pHeap.size)
+        val v = aux(memory.heapGet(ref.data))
+        wattCounter.storageUsage(k.volume.toLong)
+        wattCounter.storageUsage(v.volume.toLong)
+        wattCounter.cpuUsage(10)
+        pHeap.getOrElseUpdate(ref, k -> v)
+      }
       def aux(data: Data): Data = data match {
         // TODO drop private fields by convention
         case struct: Data.Struct =>
@@ -224,7 +230,7 @@ final class SystemOperations(program: ByteBuffer,
           Data.Array.RefArray(updated)
         case _ => data
       }
-      (aux(data), pHeap.values.toList)
+      (aux(data), pHeap.values.toMap)
     }
 
     val name = utf8(memory.pop())
@@ -232,7 +238,7 @@ final class SystemOperations(program: ByteBuffer,
       case ref: Data.Primitive.Ref =>
         marshalData(memory.heapGet(ref.data)) match {
           case (d, ph) if ph.isEmpty => MarshalledData.Simple(d)
-          case (d, ph)               => MarshalledData.Complex(d, ph)
+          case (d, ph)               => MarshalledData.Complex(d, ph.map { case (k, v) => (k.data, v) })
         }
       case value => MarshalledData.Simple(value)
     }

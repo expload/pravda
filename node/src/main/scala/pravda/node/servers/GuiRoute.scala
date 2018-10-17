@@ -43,7 +43,7 @@ import pravda.node.db.DB
 import pravda.node.persistence.FileStore
 import pravda.node.utils
 import pravda.vm
-import pravda.vm.Data
+import pravda.vm.{Data, MarshalledData}
 import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
@@ -82,6 +82,20 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private def mono(s: Data): Node =
     'span ('class /= "hash", s.mkString(pretty = true))
+
+  private def mono(s: MarshalledData): Node =
+    'span ('class /= "hash", s match {
+      case MarshalledData.Complex(data, pseudoHeap) =>
+        s"""Heap
+           |----------
+           |${pseudoHeap.foreach{ case (k, v) => s"${k}: ${v.mkString(pretty = true)}"}}
+           |Data
+           |----------
+           |${data.mkString(pretty = true)}
+         """.stripMargin
+      case MarshalledData.Simple(data) =>
+        data.mkString(pretty = true)
+    })
 
   private def effectToTableElement(effect: vm.Effect): Map[String, Node] = {
 
