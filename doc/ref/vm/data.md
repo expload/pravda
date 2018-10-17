@@ -2,6 +2,8 @@
 
 ## String representation
 
+Human-readable representation of `vm.Data`. Supported by assembler for PravdaVM.
+ 
 ### Primitive types
 
 ```
@@ -104,3 +106,44 @@ data := primitive
 3. `&length` refers to given `length` field and means an integer representation of that field.
 4. `(a, b)` means pair type, e.g. two values of a and b are written consecutively.
 5. `data(primitive_type)` means corresponding structure for `primitive` except type byte.
+
+## Json representation
+
+### Primitives
+
+All primitives encodes as JSON strings with prefix. It's easy to parse. Most of popular languages have `indexOf` and `substring` functions.  Type always before first colon, value after.
+
+```json
+"int8:-100"
+"int16:-100" 
+"int32:-100"
+"uint8:100"
+"uint16:100"
+"uint32:1000"
+"bitint:9999999999999"
+"number:2.0"
+"ref:1"
+"bool:true"
+"utf8:i am cow"
+"bytes:01fca4e91"
+"null"
+```
+
+### Arrays
+
+Arrays corresponds to JSON arrays. First item contains type of primitive.
+
+```json
+["int32", "100", "200", "300"]
+```
+
+### Structs
+
+Structs corresponds to JSON objects.
+
+```json
+{
+  "utf8:user": "ref:9153",
+  "int32:1432": "bytes:41f8cff6"
+}
+```

@@ -1,6 +1,6 @@
 watts-limit: 1000
 stack:
-  - int32(2)
+  - int32:2
   - "null"
 code:
   - add
