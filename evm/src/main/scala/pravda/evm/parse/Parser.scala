@@ -20,6 +20,9 @@ package pravda.evm.parse
 import fastparse.byte.all._
 import pravda.evm.EVM
 import pravda.evm.EVM._
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.either._
 
 object Parser {
 
@@ -53,12 +56,7 @@ object Parser {
     })
   }
 
-  private def sequence[T](l: List[Either[String, T]]): Either[String, List[T]] =
-    l.foldRight(Right(Nil): Either[String, List[T]]) { (e, acc) =>
-      for (xs <- acc.right; x <- e.right) yield x :: xs
-    }
-
-  private val ops: P[Either[String, List[Op]]] = P(Start ~ op.rep ~ End).map(ops => sequence(ops.toList))
+  private val ops: P[Either[String, List[Op]]] = P(Start ~ op.rep ~ End).map(ops => ops.toList.sequence)
 
   val opsWithIndices = P(Start ~ (Index ~ op).rep ~ End)
 

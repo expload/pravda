@@ -181,7 +181,7 @@ object EvaluateTests extends TestSuite {
           )),
         precondition
       ).foreach({ expect =>
-        expect.watts ==> 229L
+        expect.watts ==> 154L
         expect.memory.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
         expect.error ==> None
       })
@@ -203,7 +203,7 @@ object EvaluateTests extends TestSuite {
           )),
         precondition
       ).foreach({ expect =>
-        expect.watts ==> 249L
+        expect.watts ==> 173L
         expect.memory.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
         expect.error ==> None
       })

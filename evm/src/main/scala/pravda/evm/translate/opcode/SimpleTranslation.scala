@@ -26,8 +26,6 @@ object SimpleTranslation {
 
   import pravda.evm.EVM._
 
-  private def codeToOps(codes: Int*) = codes.map(asm.Operation(_)).toList
-
   private val translate: PartialFunction[EVM.Op, List[asm.Operation]] = {
     case Push(bytes) => pushBigInt(BigInt(1, bytes.toArray)) :: Nil
 
@@ -73,10 +71,9 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case Jump => pushBigInt(BigInt(-1)) :: codeToOps(Opcodes.MUL, Opcodes.SGET) ::: Operation.Jump(None) :: Nil
+    case Jump => Operation.Jump(Some(getNameByNumber(0))) :: Nil
     case JumpI =>
-      pushBigInt(BigInt(-1)) :: codeToOps(Opcodes.MUL, Opcodes.SGET, Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: codeToOps(
-        Opcodes.SWAP) ::: Operation.JumpI(None) :: Nil
+      codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(Some(getNameByNumber(0))) :: Nil
     case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)

@@ -24,6 +24,7 @@ import pravda.vm.{Data, Opcodes, asm}
 package object opcode {
 
   def getNameByAddress(n: Int): String = s"_lbl_$n"
+  def getNameByNumber(n: Int): String = s"__switch_branch_$n"
 
   def push[T](value: T, toPrimitive: T => Data.Primitive): asm.Operation =
     asm.Operation.Push(toPrimitive(value))
@@ -60,4 +61,7 @@ package object opcode {
 
   def swapn(n: Int): List[asm.Operation] =
     List(pushInt(n), asm.Operation(Opcodes.SWAPN))
+
+  def codeToOps(codes: Int*): List[asm.Operation] = codes.map(asm.Operation(_)).toList
+
 }

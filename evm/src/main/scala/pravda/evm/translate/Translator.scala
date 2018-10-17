@@ -17,22 +17,25 @@
 
 package pravda.evm.translate
 
-import pravda.evm.EVM
+import pravda.evm.EVM._
 import pravda.vm.asm
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
-import pravda.evm.EVM.{CodeCopy, JumpDest, Push}
+import pravda.evm.EVM
 import pravda.evm.translate.opcode.{JumpDestinationPrepare, SimpleTranslation}
+import pravda.vm.asm.Operation
 
 object Translator {
+
+  private val startLabelName = "__start_evm_program"
 
   def apply(ops: List[EVM.Op]): Either[String, List[asm.Operation]] = {
     ops.map(SimpleTranslation.evmOpToOps).sequence.map(_.flatten)
   }
 
   def translateActualContract(ops: List[(Int, EVM.Op)]): Either[String, List[asm.Operation]] = {
-    val offsetEither = ops
+    ops
       .takeWhile({
         case (_, CodeCopy) => false
         case _             => true
@@ -40,28 +43,29 @@ object Translator {
       .reverse
       .tail
       .headOption match {
-      case Some((_, Push(address))) => Right(BigInt(1, address.toArray).intValue())
-      case _                        => Left("Parse error")
+      case Some((_, Push(address))) =>
+        val offset = BigInt(1, address.toArray).intValue()
+
+        val filteredOps = ops
+          .map({ case (ind, op) => ind - offset -> op })
+          .filterNot(_._1 < 0)
+          .map({
+            case (ind, JumpDest) => JumpDest(ind)
+            case (_, op)         => op
+          })
+
+        import JumpDestinationPrepare._
+        val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
+        val prepare = jumpDests.flatMap(jumpDestToOps)
+        Translator(filteredOps).map(
+          opcodes =>
+            Operation.Jump(Some(startLabelName))
+              :: addLastBranch(prepare, jumpDests.size) ++
+              (asm.Operation.Label(startLabelName) :: opcodes))
+
+      case _ => Left("Parse error")
     }
 
-    offsetEither.flatMap({ offset =>
-      val filteredOps = ops
-        .map({ case (ind, op) => ind - offset -> op })
-        .filterNot(_._1 < 0)
-        .map({
-          case (ind, JumpDest) => JumpDest(ind)
-          case (_, op)         => op
-        })
-      val jumpDests = filteredOps.filter({
-        case JumpDest(_) => true
-        case _           => false
-      })
-      jumpDests
-        .map(JumpDestinationPrepare.evmOpToOps)
-        .sequence
-        .map(_.flatten)
-        .flatMap(prepare => Translator(filteredOps).map(opcodes => prepare ++ opcodes))
-    })
   }
 
 }
