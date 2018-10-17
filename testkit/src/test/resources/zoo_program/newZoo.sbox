@@ -1,9 +1,42 @@
 stack:
-  utf8:NewZoo
+  [utf8.NewZoo]
 storage:
-  utf8:p_ZooCnt: int32:1
-  utf8:p_PetId: int32:1
-  utf8:init: "null"
+  utf8.p_ZooCnt: int32.1
+  utf8.p_PetId: int32.1
+  utf8.init: "null"
 dotnetCompilation: |-
   zoo_program.cs
 ---
+stack:
+  - int32.1
+storage:
+  utf8.p_ZooCnt: int32.2
+  utf8.p_PetId: int32.1
+  bytes.5a6f6f546f4f776e657200000001: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_ZooCnt
+    value: int32.1
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5a6f6f546f4f776e657200000001
+    value: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_ZooCnt
+    value: int32.1
+  - program: "0000000000000000000000000000000000000000000000000000000000000000"
+    eventType: StorageWrite
+    previous: int32.1
+    key: utf8.p_ZooCnt
+    value: int32.2
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_ZooCnt
+    value: int32.2

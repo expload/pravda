@@ -34,7 +34,7 @@ trait TethysInstances {
       if (s == "null") {
         Data.Primitive.Null
       } else {
-        val i = s.indexOf(':')
+        val i = s.indexOf('.')
         val t = s.substring(0, i)
         val v = s.substring(i + 1)
         t match {
@@ -103,18 +103,18 @@ trait TethysInstances {
 
   private def writePrimitive[U](value: Data.Primitive, f: String => U) = value match {
     case Data.Primitive.Null      => f("null")
-    case Data.Primitive.Int8(x)   => f(s"int8:$x")
-    case Data.Primitive.Int16(x)  => f(s"int16:$x")
-    case Data.Primitive.Int32(x)  => f(s"int32:$x")
-    case Data.Primitive.Uint8(x)  => f(s"uint8:$x")
-    case Data.Primitive.Uint16(x) => f(s"uint16:$x")
-    case Data.Primitive.Uint32(x) => f(s"uint32:$x")
-    case Data.Primitive.Number(x) => f(s"number:$x")
-    case Data.Primitive.BigInt(x) => f(s"bigint:$x")
-    case Data.Primitive.Ref(x)    => f(s"ref:$x")
-    case Data.Primitive.Bool(x)   => f(s"bool:$x")
-    case Data.Primitive.Bytes(x)  => f(s"bytes:${bytes.byteString2hex(x)}")
-    case Data.Primitive.Utf8(x)   => f(s"utf8:$x")
+    case Data.Primitive.Int8(x)   => f(s"int8.$x")
+    case Data.Primitive.Int16(x)  => f(s"int16.$x")
+    case Data.Primitive.Int32(x)  => f(s"int32.$x")
+    case Data.Primitive.Uint8(x)  => f(s"uint8.$x")
+    case Data.Primitive.Uint16(x) => f(s"uint16.$x")
+    case Data.Primitive.Uint32(x) => f(s"uint32.$x")
+    case Data.Primitive.Number(x) => f(s"number.$x")
+    case Data.Primitive.BigInt(x) => f(s"bigint.$x")
+    case Data.Primitive.Ref(x)    => f(s"ref.$x")
+    case Data.Primitive.Bool(x)   => f(s"bool.$x")
+    case Data.Primitive.Bytes(x)  => f(s"bytes.${bytes.byteString2hex(x)}")
+    case Data.Primitive.Utf8(x)   => f(s"utf8.$x")
   }
 
   implicit val dataPrimitiveWriter: JsonWriter[Data.Primitive] = (value: Data.Primitive, w: TokenWriter) => {
@@ -159,22 +159,22 @@ trait TethysInstances {
   }
 
   implicit val primitiveRefReader: JsonReader[Data.Primitive.Ref] =
-    JsonReader.stringReader.map(s => Data.Primitive.Ref(s.stripPrefix("ref:").toInt))
+    JsonReader.stringReader.map(s => Data.Primitive.Ref(s.stripPrefix("ref.").toInt))
 
   implicit val primitiveRefWriter: JsonWriter[Data.Primitive.Ref] =
-    JsonWriter.stringWriter.contramap(r => s"ref:${r.data}")
+    JsonWriter.stringWriter.contramap(r => s"ref.${r.data}")
 
   implicit val primitiveBytesReader: JsonReader[Data.Primitive.Bytes] =
-    JsonReader.stringReader.map(s => Data.Primitive.Bytes(bytes.hex2byteString(s.stripPrefix("bytes:"))))
+    JsonReader.stringReader.map(s => Data.Primitive.Bytes(bytes.hex2byteString(s.stripPrefix("bytes."))))
 
   implicit val primitiveBytesWriter: JsonWriter[Data.Primitive.Bytes] =
-    JsonWriter.stringWriter.contramap(s => s"bytes:${bytes.byteString2hex(s.data)}")
+    JsonWriter.stringWriter.contramap(s => s"bytes.${bytes.byteString2hex(s.data)}")
 
   implicit val primitiveBigIntReader: JsonReader[Data.Primitive.BigInt] =
-    JsonReader.stringReader.map(s => Data.Primitive.BigInt(BigInt(s.stripPrefix("bigint:"))))
+    JsonReader.stringReader.map(s => Data.Primitive.BigInt(BigInt(s.stripPrefix("bigint."))))
 
   implicit val primitiveBigIntWriter: JsonWriter[Data.Primitive.BigInt] =
-    JsonWriter.stringWriter.contramap(b => s"bigint:$b")
+    JsonWriter.stringWriter.contramap(b => s"bigint.$b")
 
   //---------------------------------------------------------------------------
   // VM RWs for tethys

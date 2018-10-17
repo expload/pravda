@@ -1,32 +1,32 @@
 stack:
-  [utf8:MakeEvent]
+  [utf8.MakeEvent]
 storage:
-  utf8:init: "null"
+  utf8.init: "null"
 dotnetCompilation: |-
   event.cs
 ---
 heap:
-  ref:0: [int8, "1", "2", "3", "4"]
+  ref.0: [int8, "1", "2", "3", "4"]
 storage:
-  utf8:init: "null"
+  utf8.init: "null"
 effects:
   - eventType: StorageRead
     program: "0000000000000000000000000000000000000000000000000000000000000000"
-    key: utf8:init
+    key: utf8.init
     value: "null"
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: int32:1234
+    data: int32.1234
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: utf8:my_string
+    data: utf8.my_string
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: number:2.0
+    data: number.2.0
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: bytes:01020304
+    data: bytes.01020304

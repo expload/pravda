@@ -1,17 +1,17 @@
 stack:
-  [utf8:boom]
+  [utf8.boom]
 storage:
-  utf8:init: "null"
+  utf8.init: "null"
 dotnetCompilation: |-
   smart_program.cs
 ---
 stack:
-  [utf8:boom]
+  [utf8.boom]
 storage:
-  utf8:init: "null"
+  utf8.init: "null"
 effects:
   - eventType: StorageRead
     program: "0000000000000000000000000000000000000000000000000000000000000000"
-    key: utf8:init
+    key: utf8.init
     value: "null"
 error: Wrong method name

@@ -23,7 +23,7 @@ object RunBytecodeSuite extends TestSuite {
       |  "spentWatts" : 0,
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
-      |  "stack" : [ "int8:42" ],
+      |  "stack" : [ "int8.42" ],
       |  "heap" : [ ]
       |}
       |""".stripMargin)
@@ -34,7 +34,7 @@ object RunBytecodeSuite extends TestSuite {
       |  "spentWatts" : 0,
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
-      |  "stack" : [ "int16:740" ],
+      |  "stack" : [ "int16.740" ],
       |  "heap" : [ ]
       |}
       |""".stripMargin)

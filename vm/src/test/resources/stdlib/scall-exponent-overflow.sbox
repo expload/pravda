@@ -15,6 +15,6 @@ code:
 ---
 watts-spent: 202
 stack:
-  - number:Infinity
-  - int32:2147483647
-  - bigint:1000000000000000000000000000000
+  - number.Infinity
+  - int32.2147483647
+  - bigint.1000000000000000000000000000000
