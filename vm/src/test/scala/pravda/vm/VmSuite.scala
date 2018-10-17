@@ -33,6 +33,7 @@ object VmSuiteData {
   final case class Expectations(`watts-spent`: Long,
                                 stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
+                                storage: Map[Primitive, Data] = Map.empty,
                                 effects: Seq[vm.Effect] = Nil,
                                 error: Option[vm.Error] = None)
 }
@@ -78,7 +79,7 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
     val effects = mutable.Buffer[vm.Effect]()
     val environment: Environment =
       new VmSandbox.EnvironmentSandbox(effects, input.balances.toSeq, input.programs.toSeq, pExecutor)
-    val storage: Storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
+    val storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
 
     val error = Try {
       memory.enterProgram(Address.Void)
@@ -118,6 +119,7 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
         wattCounter.spent,
         memory.stack,
         memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap,
+        storage.storageItems.toMap,
         effects,
         error.map(_.error)
       )

@@ -1,19 +1,32 @@
----preconditions
-watts-limit: 10000
 stack:
-  "MakeEvent"
+  [utf8:MakeEvent]
 storage:
-  "init" = null
----expectations
-watts-spent: 504
+  utf8:init: "null"
+dotnetCompilation: |-
+  event.cs
+---
 heap:
-  #0x0 = int8[1, 2, 3, 4]
+  ref:0: [int8, "1", "2", "3", "4"]
+storage:
+  utf8:init: "null"
 effects:
-  sget "init" null
-events:
-  x0000000000000000000000000000000000000000000000000000000000000000 my_event int32(1234),
-  x0000000000000000000000000000000000000000000000000000000000000000 my_event "my_string",
-  x0000000000000000000000000000000000000000000000000000000000000000 my_event number(2.0),
-  x0000000000000000000000000000000000000000000000000000000000000000 my_event x01020304
----dotnet-files
-event.cs
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8:init
+    value: "null"
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data: int32:1234
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data: utf8:my_string
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data: number:2.0
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data: bytes:01020304

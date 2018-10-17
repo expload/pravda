@@ -1,16 +1,17 @@
----preconditions
-watts-limit: 10000
 stack:
-  "boom"
+  [utf8:boom]
 storage:
-  "init" = null
----expectations
-watts-spent: 200
+  utf8:init: "null"
+dotnetCompilation: |-
+  smart_program.cs
+---
 stack:
-  "boom"
+  [utf8:boom]
+storage:
+  utf8:init: "null"
 effects:
-  sget "init" null
-error:
-  |UserError(Wrong method name)
----dotnet-files
-smart_program.cs
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8:init
+    value: "null"
+error: Wrong method name

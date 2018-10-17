@@ -1,13 +1,5 @@
----preconditions
-watts-limit: 10000
 stack:
-  "ctor"
----expectations
-watts-spent: 517
-effects:
-  sget "init",
-  sput "init" null,
-  sput "p_ZooCnt" int32(1),
-  sput "p_PetId" int32(1)
----dotnet-files
-zoo_program.cs
+  [utf8:ctor]
+dotnetCompilation: |-
+  zoo_program.cs
+---

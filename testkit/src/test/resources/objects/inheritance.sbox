@@ -1,17 +1,7 @@
----preconditions
-watts-limit: 3000
 stack:
-  "Func"
+  utf8:Func
 storage:
-  "init" = null
----expectations
-watts-spent: 704
-stack:
-  int32(387)
-heap:
-  #0x0 = {  "AVal": int32(100),  "Answer": #0x501,  "AnswerPlus1": #0xB18},
-  #0x1 = {  "BVal": int32(200),  "Answer": #0x780,  "AnswerPlus1": #0xB18}
-effects:
-  sget "init" null
----dotnet-files
-inheritance.cs
+  utf8:init: "null"
+dotnetCompilation: |-
+  inheritance.cs
+---

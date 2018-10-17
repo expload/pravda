@@ -112,10 +112,10 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
   def main(args: Array[String]): Unit = {
     val overwrite = args.contains("--overwrite")
     if (!overwrite) {
-      println("Running proverka tests...")
+      println("Running plaintests...")
       TestRunner.runAndPrint(constructTests(false), dir.getName)
     } else {
-      println("Overwriting proverka tests...")
+      println("Overwriting plaintests...")
       TestRunner.runAndPrint(constructTests(true), dir.getName)
     }
   }

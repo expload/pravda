@@ -47,9 +47,9 @@ object VmSandbox {
       programs.get(address).map { p =>
         ProgramContext(
           new Storage { // TODO meaningful storage
-            override def get(key: Data): Option[Data] = None
-            override def put(key: Data, value: Data): Option[Data] = None
-            override def delete(key: Data): Option[Data] = None
+            override def get(key: Data.Primitive): Option[Data] = None
+            override def put(key: Data.Primitive, value: Data): Option[Data] = None
+            override def delete(key: Data.Primitive): Option[Data] = None
           },
           p.data.asReadOnlyByteBuffer()
         )
@@ -76,22 +76,22 @@ object VmSandbox {
       effects += vm.Effect.Event(address, name, data)
   }
 
-  class StorageSandbox(effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data, Data)]) extends Storage {
-    val storageItems: mutable.Map[Data, Data] = mutable.Map(initStorage: _*)
+  class StorageSandbox(effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)]) extends Storage {
+    val storageItems: mutable.Map[Data.Primitive, Data] = mutable.Map(initStorage: _*)
 
-    override def get(key: Data): Option[Data] = {
+    override def get(key: Data.Primitive): Option[Data] = {
       val value = storageItems.get(key)
       effects += vm.Effect.StorageRead(Address.Void, key, value)
       value
     }
 
-    override def put(key: Data, value: Data): Option[Data] = {
+    override def put(key: Data.Primitive, value: Data): Option[Data] = {
       val prev = storageItems.put(key, value)
       effects += vm.Effect.StorageWrite(Address.Void, key, prev, value)
       prev
     }
 
-    override def delete(key: Data): Option[Data] = {
+    override def delete(key: Data.Primitive): Option[Data] = {
       val prev = storageItems.remove(key)
       effects += vm.Effect.StorageRemove(Address.Void, key, prev)
       prev

@@ -28,6 +28,9 @@ trait TethysInstances {
         if (token.isStringValue) it.string()
         else if (token.isFieldName) it.fieldName()
         else throwUtrj(token)
+
+      it.nextToken()
+
       if (s == "null") {
         Data.Primitive.Null
       } else {
@@ -87,10 +90,9 @@ trait TethysInstances {
         var ct = it.nextToken()
         while (!ct.isObjectEnd) {
           val k = dataPrimitiveReader.read(it)
-          it.nextToken()
           val v = dataPrimitiveReader.read(it)
           ar.put(k, v)
-          ct = it.nextToken()
+          ct = it.currentToken()
         }
         Data.Struct(ar)
       } else if (token.isStringValue || token.isBooleanValue || token.isNullValue) {

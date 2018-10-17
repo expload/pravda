@@ -18,7 +18,6 @@ import pravda.common.json._
 import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
-import pravda.vm.VmSuiteData.Expectations
 import pravda.vm.asm.PravdaAssembler
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 import pravda.vm.json._
@@ -36,7 +35,8 @@ object DotnetSuiteData {
                                  executor: Option[Address] = None,
                                  dotnetCompilation: String)
 
-  final case class Expectations(heap: Map[Primitive.Ref, Data] = Map.empty,
+  final case class Expectations(stack: Seq[Primitive] = Nil,
+                                heap: Map[Primitive.Ref, Data] = Map.empty,
                                 storage: Map[Primitive, Data] = Map.empty,
                                 effects: Seq[vm.Effect] = Nil,
                                 error: Option[vm.Error] = None)
@@ -89,7 +89,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
   }
 
   lazy val dir = new File("testkit/src/test/resources")
-  override lazy val ext = "sbox_"
+  override lazy val ext = "sbox"
   override lazy val formats =
     DefaultFormats +
       json4sFormat[Data] +
@@ -131,7 +131,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
     val environment: Environment =
       new VmSandbox.EnvironmentSandbox(effects, input.balances.toSeq, input.programs.toSeq, pExecutor)
 
-    val storage: Storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
+    val storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
 
     for {
       a <- asmProgram
@@ -170,9 +170,9 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
       )
 
       Expectations(
-        wattCounter.spent,
         memory.stack,
         memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap,
+        storage.storageItems.toMap,
         effects,
         error.map(_.error)
       )
