@@ -11,7 +11,6 @@ import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
 import pravda.vm.asm.PravdaAssembler
-import pravda.vm.asm.json._
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 import pravda.vm.json._
 
@@ -28,7 +27,7 @@ object VmSuiteData {
                                  storage: Map[Primitive, Data] = Map.empty,
                                  programs: Map[Address, Primitive.Bytes] = Map.empty,
                                  executor: Option[Address] = None,
-                                 code: List[asm.Operation])
+                                 code: String)
 
   final case class Expectations(`watts-spent`: Long,
                                 stack: Seq[Primitive] = Nil,
@@ -51,14 +50,13 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
       json4sFormat[Primitive.Bytes] +
       json4sFormat[vm.Effect] +
       json4sFormat[vm.Error] +
-      json4sFormat[asm.Operation] +
       json4sKeyFormat[ByteString] +
       json4sKeyFormat[Primitive.Ref] +
       json4sKeyFormat[Primitive]
 
   override def produce(input: Preconditions): Either[String, Expectations] = {
     val sandboxVm = new VmImpl()
-    val asmProgram = PravdaAssembler.assemble(input.code, saveLabels = true)
+    val asmProgramE = PravdaAssembler.assemble(input.code, saveLabels = true)
     val heap = {
       if (input.heap.nonEmpty) {
         val length = input.heap.map(_._1.data).max + 1
@@ -81,40 +79,42 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
       new VmSandbox.EnvironmentSandbox(effects, input.balances.toSeq, input.programs.toSeq, pExecutor)
     val storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
 
-    val error = Try {
-      memory.enterProgram(Address.Void)
-      sandboxVm.runBytes(
-        asmProgram.asReadOnlyByteBuffer(),
-        environment,
-        memory,
-        wattCounter,
-        Some(storage),
-        Some(Address.Void),
-        pcallAllowed = true
+    for {
+      asmProgram <- asmProgramE.left.map(_.mkString)
+    } yield {
+      val error = Try {
+        memory.enterProgram(Address.Void)
+        sandboxVm.runBytes(
+          asmProgram.asReadOnlyByteBuffer(),
+          environment,
+          memory,
+          wattCounter,
+          Some(storage),
+          Some(Address.Void),
+          pcallAllowed = true
+        )
+        memory.exitProgram()
+      }.fold(
+        {
+          case e: Data.DataException =>
+            Some(
+              RuntimeException(
+                DataError(e.getMessage),
+                FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
+                memory.callStack,
+                memory.currentOffset
+              ))
+          case ThrowableVmError(e) =>
+            Some(
+              RuntimeException(
+                e,
+                FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
+                memory.callStack,
+                memory.currentOffset))
+        },
+        _ => None
       )
-      memory.exitProgram()
-    }.fold(
-      {
-        case e: Data.DataException =>
-          Some(
-            RuntimeException(
-              DataError(e.getMessage),
-              FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
-              memory.callStack,
-              memory.currentOffset
-            ))
-        case ThrowableVmError(e) =>
-          Some(
-            RuntimeException(
-              e,
-              FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
-              memory.callStack,
-              memory.currentOffset))
-      },
-      _ => None
-    )
 
-    Right(
       Expectations(
         wattCounter.spent,
         memory.stack,
@@ -123,6 +123,6 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
         effects,
         error.map(_.error)
       )
-    )
+    }
   }
 }

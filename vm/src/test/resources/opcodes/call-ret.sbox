@@ -1,13 +1,13 @@
 watts-limit: 1000
-code:
-  - jump @main
-  - "@proc:"
-  - add
-  - ret
-  - "@main:"
-  - push int8(2)
-  - push int8(3)
-  - call @proc
+code: |-
+  jump @main
+  @proc:
+  add
+  ret
+  @main:
+  push int8(2)
+  push int8(3)
+  call @proc
 ---
 watts-spent: 130
 stack:

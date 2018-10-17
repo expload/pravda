@@ -1,9 +1,9 @@
+watts-limit: 1000
 balances:
   25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d: bigint.42
-watts-limit: 1000
-code:
-  - push x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
-  - balance
+code: |-
+  push x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
+  balance
 ---
 watts-spent: 122
 stack:

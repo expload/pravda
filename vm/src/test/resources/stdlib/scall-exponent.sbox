@@ -1,9 +1,9 @@
 watts-limit: 1000
-code:
-  - push 0x02
-  - push 0x02
-  - push 0x03
-  - scall
+code: |-
+  push 0x02
+  push 0x02
+  push 0x03
+  scall
 ---
 watts-spent: 134
 stack:

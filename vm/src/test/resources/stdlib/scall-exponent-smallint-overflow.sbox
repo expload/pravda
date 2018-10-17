@@ -1,30 +1,30 @@
 watts-limit: 1000
-code:
-  - push bigint(1000000000005)
-  - push 0x2
-  - push 0x03
-  - scall
-  - push bigint(10)
-  - push int8(0x2)
-  - push 0x03
-  - scall
-  - push bigint(100000000000)
-  - push int8(0x2)
-  - push 0x03
-  - scall
-  - push bigint(1000000000000000000000000000000000000000)
-  - push int32(0x2)
-  - push 0x03
-  - scall
-  - push bigint(1000000000000000000000000000000000000)
-  - push int32(0x2)
-  - push 0x03
-  - scall
-  - eq
-  - push bigint(1000000)
-  - push int16(2)
-  - push 0x03
-  - scall
+code: |-
+  push bigint(1000000000005)
+  push 0x2
+  push 0x03
+  scall
+  push bigint(10)
+  push int8(0x2)
+  push 0x03
+  scall
+  push bigint(100000000000)
+  push int8(0x2)
+  push 0x03
+  scall
+  push bigint(1000000000000000000000000000000000000000)
+  push int32(0x2)
+  push 0x03
+  scall
+  push bigint(1000000000000000000000000000000000000)
+  push int32(0x2)
+  push 0x03
+  scall
+  eq
+  push bigint(1000000)
+  push int16(2)
+  push 0x03
+  scall
 ---
 watts-spent: 310
 stack:
