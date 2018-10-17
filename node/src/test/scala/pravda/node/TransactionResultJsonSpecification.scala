@@ -24,7 +24,7 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
   val marshalledData: Gen[MarshalledData] = {
     val hitem = for (d <- data; r <- ref) yield (r, d)
     val simple = DataSpecification.data.map(MarshalledData.Simple)
-    val complex = for (d <- data; h <- Gen.listOf(hitem)) yield MarshalledData.Complex(d, h)
+    val complex = for (d <- data; h <- Gen.listOf(hitem).map(_.toMap)) yield MarshalledData.Complex(d, h)
     Gen.oneOf(simple, complex)
   }
 
@@ -60,15 +60,21 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
         yield Effect.Event(f, n, d)
 
     Gen.oneOf(
-      storageRemove , storageWrite , storageRead ,
-      programCreate , programSeal , programUpdate ,
-      transfer , showBalance , event
+      storageRemove,
+      storageWrite,
+      storageRead,
+      programCreate,
+      programSeal,
+      programUpdate,
+      transfer,
+      showBalance,
+      event
     )
   }
 
   val finalState: Gen[FinalState] =
-    for (sw <- watts; tw <- watts; rw <- watts; stack <- Gen.listOf(primitive); heap <- Gen.listOf(data)) yield
-      FinalState(sw, rw, tw, stack, heap)
+    for (sw <- watts; tw <- watts; rw <- watts; stack <- Gen.listOf(primitive); heap <- Gen.listOf(data))
+      yield FinalState(sw, rw, tw, stack, heap)
 
   val error: Gen[Error] = Gen.oneOf(
     Error.StackOverflow,
@@ -78,13 +84,11 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
     Error.WrongType,
     Error.InvalidCoinAmount,
     Error.InvalidAddress,
-
     Error.OperationDenied,
     Error.PcallDenied,
     Error.NotEnoughMoney,
     Error.AmountShouldNotBeNegative,
     Error.ProgramIsSealed,
-
     Error.NoSuchProgram,
     Error.NoSuchMethod,
     Error.NoSuchElement,
@@ -118,9 +122,9 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
     transcode(json).to[TransactionResult] == txr
   }
 
-  property("Error/write->read") = forAll(error) { either =>
-    val json = transcode(either).to[Json]
-    transcode(json).to[Error] == either
+  property("Error/write->read") = forAll(error) { error =>
+    val json = transcode(error).to[Json]
+    transcode(json).to[Error] == error
   }
 
 }

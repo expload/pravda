@@ -124,8 +124,8 @@ object VmSandbox {
     }
 
     def printEvent(event: EnviromentEvent) = event match {
-      case VmSandbox.EnviromentEvent(address, name, data) =>
-        s"x${byteUtils.byteString2hex(address)} $name ${data.mkString()}"
+      case VmSandbox.EnviromentEvent(address, name, _) =>
+        s"x${byteUtils.byteString2hex(address)} $name ---"
     }
 
     def combine(ops: Seq[(String, Option[String])]): String =

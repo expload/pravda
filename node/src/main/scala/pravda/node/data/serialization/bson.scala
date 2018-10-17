@@ -19,9 +19,11 @@ package pravda.node.data.serialization
 
 import com.google.protobuf.ByteString
 import pravda.vm.Data
-import reactivemongo.bson.{BSONDocument, BSONValue}
 import reactivemongo.bson.buffer.{ArrayBSONBuffer, ArrayReadableBuffer}
+import reactivemongo.bson.{BSONDocument, BSONValue}
 import supertagged.{Tagged, lifterF}
+
+import scala.util.Success
 
 object bson extends BsonTranscoder
 
@@ -48,7 +50,7 @@ trait BsonTranscoder {
   }
   //-----------------------
 
-  import bsonpickle.default.{Writer => BsonWriter, Reader => BsonReader}
+  import bsonpickle.default.{Reader => BsonReader, Writer => BsonWriter}
 
   // Tagged types
 
@@ -67,14 +69,31 @@ trait BsonTranscoder {
       }
     }
 
-  implicit def dataReader(implicit arrayReader: BsonReader[Array[Byte]]): BsonReader[Data] =
+  implicit val dataReader: BsonReader[Data] =
     new BsonReader[Data] {
+      private val arrayReader = implicitly[BsonReader[Array[Byte]]]
       override def read0: PartialFunction[BSONValue, Data] = {
         case x if arrayReader.read0.isDefinedAt(x) => Data.fromBytes(arrayReader.read0(x))
       }
     }
 
   // Protobuf
+
+  // fomkin: I dont get why this reader is not derived by autoderivation
+  // Looks like it some kind of bug in implicit macros.
+  implicit val mapRefDataReader: BsonReader[Map[Data.Primitive.Ref, Data]] = {
+    new BsonReader[Map[Data.Primitive.Ref, Data]] {
+      override def read0: PartialFunction[BSONValue, Map[Data.Primitive.Ref, Data]] = {
+        case BSONDocument(xs) =>
+          xs.collect {
+            case Success(x) =>
+              val k = Data.Primitive.Ref(x.name.substring(x.name.indexOf(':') + 1).toInt)
+              val v = dataReader.read(x.value)
+              k -> v
+          }.toMap
+      }
+    }
+  }
 
   implicit def protoWriter(implicit arrayWriter: BsonWriter[Array[Byte]]): BsonWriter[ByteString] =
     new BsonWriter[ByteString] {

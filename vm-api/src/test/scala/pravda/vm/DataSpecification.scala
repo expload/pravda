@@ -31,9 +31,10 @@ import scala.collection.mutable
 
   val (bigInt, bigIntArray) = {
     //val n = arbitrary[scala.BigInt].suchThat(x => x < Int.MinValue && x > 0xFFFFFFFFl)
+    val i = Gen.chooseNum[Int](1, Int.MaxValue)
     val n = Gen.oneOf(
-      arbitrary[Int].map(x => scala.BigInt(Int.MinValue) - x),
-      arbitrary[Int].map(x => scala.BigInt(0xFFFFFFFFl) + x)
+      i.map(x => scala.BigInt(Int.MinValue) - x),
+      i.map(x => scala.BigInt(0xFFFFFFFFl) + x)
     )
     genPrimitive(n, BigInt, BigIntArray)
   }

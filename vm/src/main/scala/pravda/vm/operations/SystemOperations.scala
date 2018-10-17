@@ -195,10 +195,9 @@ final class SystemOperations(program: ByteBuffer,
     throw ThrowableVmError(UserError(message))
   }
 
-  @OpcodeImplementation(
-    opcode = EVENT,
-    description = "Takes string and arbitrary data from stack, " +
-      "create new event with name as given string and with given data.")
+  @OpcodeImplementation(opcode = EVENT,
+                        description = "Takes string and arbitrary data from stack, " +
+                          "create new event with name as given string and with given data.")
   def event(): Unit = {
 
     def marshalData(data: Data) = {
@@ -238,7 +237,7 @@ final class SystemOperations(program: ByteBuffer,
       case ref: Data.Primitive.Ref =>
         marshalData(memory.heapGet(ref.data)) match {
           case (d, ph) if ph.isEmpty => MarshalledData.Simple(d)
-          case (d, ph)               => MarshalledData.Complex(d, ph.map { case (k, v) => (k.data, v) })
+          case (d, ph)               => MarshalledData.Complex(d, ph)
         }
       case value => MarshalledData.Simple(value)
     }

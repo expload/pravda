@@ -23,4 +23,3 @@ final case class RuntimeException(error: Error,
                                   finalState: FinalState,
                                   callStack: Seq[(Option[Address], Seq[Int])],
                                   lastPosition: Int)
-
