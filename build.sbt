@@ -169,6 +169,7 @@ lazy val node = (project in file("node"))
   .enablePlugins(AshScriptPlugin)
   .enablePlugins(DockerPlugin)
   .settings(commonSettings: _*)
+  .settings(scalacheckOps:_*)
   .settings(
     packageName in Docker := "pravda",
     dockerExposedPorts := Seq(8080, 46656),
