@@ -43,8 +43,8 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
           case List(input, output) =>
             implicit val f = formats
             for {
-              i <- Try { input.extract[Input] }.toEither.left.map(e => {e.printStackTrace(); e.toString})
-              o <- Try { output.extract[Output] }.toEither.left.map(e => {e.printStackTrace(); e.toString})
+              i <- Try { input.extract[Input] }.toEither.left.map(e => { e.printStackTrace(); e.toString })
+              o <- Try { output.extract[Output] }.toEither.left.map(e => { e.printStackTrace(); e.toString })
             } yield (i, o)
           case _ => Left("File must contain exactly two yaml documents")
         }
@@ -79,14 +79,17 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
                   }
                 } else {
                   produce(input) match {
-                    case Right(res) => Predef.assert(res == output,
-                      s"""
+                    case Right(res) =>
+                      Predef.assert(
+                        res == output,
+                        s"""
                          |Expected:
                          |${yaml4s.renderYaml(Extraction.decompose(res)(formats))}
                          |Actual output:
                          |${yaml4s.renderYaml(Extraction.decompose(output)(formats))}
-                       """.stripMargin)
-                    case Left(err)  => Predef.assert(false, s"${f.getName}: $err")
+                       """.stripMargin
+                      )
+                    case Left(err) => Predef.assert(false, s"${f.getName}: $err")
                   }
                 }
               case Left(err) => Predef.assert(false, s"${f.getName}: $err")

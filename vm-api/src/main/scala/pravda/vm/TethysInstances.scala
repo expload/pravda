@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package pravda.vm
 
 import pravda.common.bytes
@@ -251,16 +268,16 @@ trait TethysInstances {
   implicit val effectReader: JsonReader[vm.Effect] = JsonReader.builder
     .addField[String]("eventType")
     .selectReader[vm.Effect] {
-    case "Event"         => jsonReader[vm.Effect.Event]
-    case "ProgramCreate" => jsonReader[vm.Effect.ProgramCreate]
-    case "ProgramSeal"   => jsonReader[vm.Effect.ProgramSeal]
-    case "ProgramUpdate" => jsonReader[vm.Effect.ProgramUpdate]
-    case "ShowBalance"   => jsonReader[vm.Effect.ShowBalance]
-    case "StorageRead"   => jsonReader[vm.Effect.StorageRead]
-    case "StorageRemove" => jsonReader[vm.Effect.StorageRemove]
-    case "StorageWrite"  => jsonReader[vm.Effect.StorageWrite]
-    case "Transfer"      => jsonReader[vm.Effect.Transfer]
-  }
+      case "Event"         => jsonReader[vm.Effect.Event]
+      case "ProgramCreate" => jsonReader[vm.Effect.ProgramCreate]
+      case "ProgramSeal"   => jsonReader[vm.Effect.ProgramSeal]
+      case "ProgramUpdate" => jsonReader[vm.Effect.ProgramUpdate]
+      case "ShowBalance"   => jsonReader[vm.Effect.ShowBalance]
+      case "StorageRead"   => jsonReader[vm.Effect.StorageRead]
+      case "StorageRemove" => jsonReader[vm.Effect.StorageRemove]
+      case "StorageWrite"  => jsonReader[vm.Effect.StorageWrite]
+      case "Transfer"      => jsonReader[vm.Effect.Transfer]
+    }
 
   implicit val effectEventWriter: JsonObjectWriter[vm.Effect.Event] = jsonWriter[vm.Effect.Event]
 
