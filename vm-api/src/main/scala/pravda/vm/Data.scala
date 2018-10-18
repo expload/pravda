@@ -631,6 +631,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   }
 
   object Struct {
+
     def empty: Struct = Struct(mutable.Map.empty)
   }
 

@@ -27,6 +27,8 @@ import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
+import scala.collection.mutable
+
 final class SystemOperations(program: ByteBuffer,
                              memory: Memory,
                              currentStorage: Option[Storage],
@@ -48,7 +50,7 @@ final class SystemOperations(program: ByteBuffer,
     opcode = PCALL,
     description = "Takes two words by which it is followed. " +
       "They are address `a` and the number of parameters `n`, " +
-      "respectively. Then it executes the smart contract with " +
+      "respectively. Then it executes the program with " +
       "the address `a` and passes there only $n$ top elements " +
       "of the stack."
   )
@@ -193,13 +195,53 @@ final class SystemOperations(program: ByteBuffer,
     throw ThrowableVmError(UserError(message))
   }
 
-  @OpcodeImplementation(
-    opcode = EVENT,
-    description =
-      "Takes string and arbitrary data from stack, create new event with name as given string and with given data.")
+  @OpcodeImplementation(opcode = EVENT,
+                        description = "Takes string and arbitrary data from stack, " +
+                          "create new event with name as given string and with given data.")
   def event(): Unit = {
+
+    def marshalData(data: Data) = {
+      // (Original -> (UpdatedData, AssignedRef))
+      val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
+      def extract(ref: Data.Primitive.Ref) = {
+        val k = Data.Primitive.Ref(pHeap.size)
+        val v = aux(memory.heapGet(ref.data))
+        wattCounter.storageUsage(k.volume.toLong)
+        wattCounter.storageUsage(v.volume.toLong)
+        wattCounter.cpuUsage(10)
+        pHeap.getOrElseUpdate(ref, k -> v)
+      }
+      def aux(data: Data): Data = data match {
+        // TODO drop private fields by convention
+        case struct: Data.Struct =>
+          val updated = struct.data collect {
+            case (_: Data.Primitive.Ref, _) =>
+              // Using ref as key is not allowed for marshalling
+              throw ThrowableVmError(Error.WrongType)
+            case (k, orig: Data.Primitive.Ref) =>
+              val (ref, _) = extract(orig)
+              (k, ref)
+            case tpl => tpl
+          }
+          Data.Struct(updated)
+        case Data.Array.RefArray(xs) =>
+          val updated = xs.map(x => extract(Data.Primitive.Ref(x))._1.data)
+          Data.Array.RefArray(updated)
+        case _ => data
+      }
+      (aux(data), pHeap.values.toMap)
+    }
+
     val name = utf8(memory.pop())
-    val data = memory.pop()
+    val data = memory.pop() match {
+      case ref: Data.Primitive.Ref =>
+        marshalData(memory.heapGet(ref.data)) match {
+          case (d, ph) if ph.isEmpty => MarshalledData.Simple(d)
+          case (d, ph)               => MarshalledData.Complex(d, ph)
+        }
+      case value => MarshalledData.Simple(value)
+    }
+
     maybeProgramAddress match {
       case Some(addr) => env.event(addr, name, data)
       case None       => throw ThrowableVmError(OperationDenied)

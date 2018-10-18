@@ -28,13 +28,11 @@ trait TethysInstances {
         if (token.isStringValue) it.string()
         else if (token.isFieldName) it.fieldName()
         else throwUtrj(token)
-
       it.nextToken()
-
       if (s == "null") {
         Data.Primitive.Null
       } else {
-        val i = s.indexOf('.')
+        val i = s.indexOf(':')
         val t = s.substring(0, i)
         val v = s.substring(i + 1)
         t match {
@@ -62,11 +60,10 @@ trait TethysInstances {
       if (token.isArrayStart) {
         def readArray[T](f: TokenIterator => T): mutable.Buffer[T] = {
           val ar = mutable.Buffer.empty[T]
-          var ct = it.nextToken()
-          while (!ct.isArrayEnd) {
+          while (!it.nextToken().isArrayEnd) {
             ar += f(it)
-            ct = it.nextToken()
           }
+          it.nextToken()
           ar
         }
         if (it.nextToken().isStringValue) {
@@ -91,13 +88,16 @@ trait TethysInstances {
         while (!ct.isObjectEnd) {
           val k = dataPrimitiveReader.read(it)
           val v = dataPrimitiveReader.read(it)
-          ar.put(k, v)
           ct = it.currentToken()
+          ar.put(k, v)
         }
+        it.nextToken()
         Data.Struct(ar)
-      } else if (token.isStringValue || token.isBooleanValue || token.isNullValue) {
+      } else if (token.isStringValue) {
         dataPrimitiveReader.read(it)
-      } else throwUtrj(token)
+      } else {
+        throwUtrj(token)
+      }
     }
   }
 
@@ -121,42 +121,69 @@ trait TethysInstances {
     writePrimitive(value, w.writeString)
   }
 
-  implicit val dataWriter: JsonWriter[Data] = new JsonWriter[Data] {
+  implicit val dataWriter: JsonWriter[Data] = (value: Data, w: TokenWriter) => {
 
-    def write(value: Data, w: TokenWriter): Unit = {
+    def writeArray[T](xs: Seq[T], t: String)(f: T => Unit) = {
+      w.writeArrayStart()
+      w.writeString(t)
+      xs.foreach(f(_))
+      w.writeArrayEnd()
+    }
 
-      def writeArray[T](xs: Seq[T], t: String)(f: T => Unit) = {
-        w.writeArrayStart()
-        w.writeString(t)
-        xs.foreach(f(_))
-        w.writeArrayEnd()
-      }
-
-      value match {
-        case p: Data.Primitive          => dataPrimitiveWriter.write(p, w)
-        case Data.Array.Int8Array(xs)   => writeArray(xs, "int8")(x => w.writeString(x.toString))
-        case Data.Array.Int16Array(xs)  => writeArray(xs, "int16")(x => w.writeString(x.toString))
-        case Data.Array.Int32Array(xs)  => writeArray(xs, "int32")(x => w.writeString(x.toString))
-        case Data.Array.Uint8Array(xs)  => writeArray(xs, "uint8")(x => w.writeString(x.toString))
-        case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeString(x.toString))
-        case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeString(x.toString))
-        case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeString(x.toString))
-        case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeString(x.toString))
-        case Data.Array.RefArray(xs)    => writeArray(xs, "ref")(x => w.writeString(x.toString))
-        case Data.Array.BoolArray(xs)   => writeArray(xs, "bool")(x => w.writeString(x.toString))
-        case Data.Array.Utf8Array(xs)   => writeArray(xs, "utf8")(x => w.writeString(x))
-        case Data.Array.BytesArray(xs)  => writeArray(xs, "bytes")(x => w.writeString(bytes.byteString2hex(x)))
-        case Data.Struct(xs) =>
-          w.writeObjectStart()
-          xs.foreach {
-            case (k, v) =>
-              writePrimitive(k, w.writeFieldName(_))
-              dataPrimitiveWriter.write(v, w)
-          }
-          w.writeObjectEnd()
-      }
+    value match {
+      case p: Data.Primitive          => dataPrimitiveWriter.write(p, w)
+      case Data.Array.Int8Array(xs)   => writeArray(xs, "int8")(x => w.writeString(x.toString))
+      case Data.Array.Int16Array(xs)  => writeArray(xs, "int16")(x => w.writeString(x.toString))
+      case Data.Array.Int32Array(xs)  => writeArray(xs, "int32")(x => w.writeString(x.toString))
+      case Data.Array.Uint8Array(xs)  => writeArray(xs, "uint8")(x => w.writeString(x.toString))
+      case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeString(x.toString))
+      case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeString(x.toString))
+      case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeString(x.toString))
+      case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeString(x.toString))
+      case Data.Array.RefArray(xs)    => writeArray(xs, "ref")(x => w.writeString(x.toString))
+      case Data.Array.BoolArray(xs)   => writeArray(xs, "bool")(x => w.writeString(x.toBoolean.toString))
+      case Data.Array.Utf8Array(xs)   => writeArray(xs, "utf8")(x => w.writeString(x))
+      case Data.Array.BytesArray(xs)  => writeArray(xs, "bytes")(x => w.writeString(bytes.byteString2hex(x)))
+      case Data.Struct(xs) =>
+        w.writeObjectStart()
+        xs.foreach {
+          case (k, v) =>
+            writePrimitive(k, w.writeFieldName(_))
+            dataPrimitiveWriter.write(v, w)
+        }
+        w.writeObjectEnd()
     }
   }
+
+  implicit val marshalledDataSimpleReader: JsonReader[MarshalledData.Simple] =
+    jsonReader[MarshalledData.Simple]
+
+  implicit val marshalledDataComplexReader: JsonReader[MarshalledData.Complex] =
+    jsonReader[MarshalledData.Complex]
+
+  implicit val marshalledDataSimpleWriter: JsonObjectWriter[MarshalledData.Simple] =
+    jsonWriter[MarshalledData.Simple]
+
+  implicit val marshalledDataComplexWriter: JsonObjectWriter[MarshalledData.Complex] =
+    jsonWriter[MarshalledData.Complex]
+
+  implicit val marshalledDataReader: JsonReader[MarshalledData] =
+    sealedTraitReader { implicit fieldName =>
+      {
+        case (it, "simple")  => marshalledDataSimpleReader.read(it)
+        case (it, "complex") => marshalledDataComplexReader.read(it)
+      }
+    }
+
+  implicit val marshalledDataWriter: JsonWriter[MarshalledData] =
+    (value: MarshalledData, tw: TokenWriter) => {
+      tw.writeObjectStart()
+      value match {
+        case simple: MarshalledData.Simple   => marshalledDataSimpleWriter.write("simple", simple, tw)
+        case complex: MarshalledData.Complex => marshalledDataComplexWriter.write("complex", complex, tw)
+      }
+      tw.writeObjectEnd()
+    }
 
   implicit val primitiveRefReader: JsonReader[Data.Primitive.Ref] =
     JsonReader.stringReader.map(s => Data.Primitive.Ref(s.stripPrefix("ref.").toInt))
@@ -176,51 +203,49 @@ trait TethysInstances {
   implicit val primitiveBigIntWriter: JsonWriter[Data.Primitive.BigInt] =
     JsonWriter.stringWriter.contramap(b => s"bigint.$b")
 
+  implicit val primitiveRefSupport: MapKeySupport[Data.Primitive.Ref] = new MapKeySupport[Data.Primitive.Ref] {
+    def show(s: Data.Primitive.Ref): String = s"ref:${s.data}"
+    def mk(s: String): Data.Primitive.Ref = Data.Primitive.Ref(s.substring(s.indexOf(':') + 1).toInt)
+  }
+
   //---------------------------------------------------------------------------
   // VM RWs for tethys
   //---------------------------------------------------------------------------
 
-  implicit val vmErrorWriter: JsonWriter[vm.Error] = (value: vm.Error, tokenWriter: TokenWriter) => {
-    value match {
-      case vm.Error.UserError(message) => tokenWriter.writeString(message)
-      case error                       => tokenWriter.writeNumber(error.code)
+  private final case class ErrorJson(code: Int, message: String)
+
+  implicit val vmErrorWriter: JsonWriter[vm.Error] =
+    jsonWriter[ErrorJson].contramap {
+      case e @ Error.UserError(message) => ErrorJson(e.code, message)
+      case e @ Error.DataError(message) => ErrorJson(e.code, message)
+      case e                            => ErrorJson(e.code, e.toString)
     }
-  }
 
   implicit val vmErrorReader: JsonReader[vm.Error] =
-    new JsonReader[vm.Error] {
-      override def read(it: TokenIterator)(implicit fieldName: FieldName): vm.Error = {
-        val token = it.currentToken()
-        val res = if (token.isNumberValue) {
-          it.int() match {
-            case 100 => vm.Error.StackOverflow
-            case 101 => vm.Error.StackUnderflow
-            case 102 => vm.Error.WrongStackIndex
-            case 103 => vm.Error.WrongHeapIndex
-            case 104 => vm.Error.WrongType
-            case 105 => vm.Error.InvalidCoinAmount
-            case 106 => vm.Error.InvalidAddress
-            case 200 => vm.Error.OperationDenied
-            case 201 => vm.Error.PcallDenied
-            case 202 => vm.Error.NotEnoughMoney
-            case 203 => vm.Error.AmountShouldNotBeNegative
-            case 300 => vm.Error.NoSuchProgram
-            case 302 => vm.Error.NoSuchMethod
-            case 400 => vm.Error.NoSuchElement
-            case 500 => vm.Error.OutOfWatts
-            case 600 => vm.Error.CallStackOverflow
-            case 601 => vm.Error.CallStackUnderflow
-            case 602 => vm.Error.ExtCallStackOverflow
-            case 603 => vm.Error.ExtCallStackUnderflow
-          }
-        } else if (token.isStringValue) {
-          vm.Error.UserError(it.string())
-        } else {
-          throw new Exception(s"Unable to read JSON. Unexpected token $token")
-        }
-        it.nextToken()
-        res
-      }
+    jsonReader[ErrorJson].map {
+      case ErrorJson(100, _)       => vm.Error.StackOverflow
+      case ErrorJson(101, _)       => vm.Error.StackUnderflow
+      case ErrorJson(102, _)       => vm.Error.WrongStackIndex
+      case ErrorJson(103, _)       => vm.Error.WrongHeapIndex
+      case ErrorJson(104, _)       => vm.Error.WrongType
+      case ErrorJson(105, _)       => vm.Error.InvalidCoinAmount
+      case ErrorJson(106, _)       => vm.Error.InvalidAddress
+      case ErrorJson(200, _)       => vm.Error.OperationDenied
+      case ErrorJson(201, _)       => vm.Error.PcallDenied
+      case ErrorJson(202, _)       => vm.Error.NotEnoughMoney
+      case ErrorJson(203, _)       => vm.Error.AmountShouldNotBeNegative
+      case ErrorJson(204, _)       => vm.Error.ProgramIsSealed
+      case ErrorJson(300, _)       => vm.Error.NoSuchProgram
+      case ErrorJson(302, _)       => vm.Error.NoSuchMethod
+      case ErrorJson(400, _)       => vm.Error.NoSuchElement
+      case ErrorJson(500, _)       => vm.Error.OutOfWatts
+      case ErrorJson(600, _)       => vm.Error.CallStackOverflow
+      case ErrorJson(601, _)       => vm.Error.CallStackUnderflow
+      case ErrorJson(602, _)       => vm.Error.ExtCallStackOverflow
+      case ErrorJson(603, _)       => vm.Error.ExtCallStackUnderflow
+      case ErrorJson(700, message) => vm.Error.UserError(message)
+      case ErrorJson(701, message) => vm.Error.DataError(message)
+      case _                       => throw new Exception("Unknown error")
     }
 
   implicit val effectReader: JsonReader[vm.Effect] = JsonReader.builder

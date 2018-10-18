@@ -17,26 +17,11 @@
 
 package pravda.vm
 
-import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
+sealed trait MarshalledData
 
-trait Environment {
+object MarshalledData {
 
-  /**
-    * Current executor
-    */
-  def executor: Address
+  final case class Simple(data: Data) extends MarshalledData
 
-  // Programs
-  def sealProgram(address: Address): Unit
-  def updateProgram(address: Address, code: ByteString): Unit
-  def createProgram(owner: Address, code: ByteString): Address
-  def getProgram(address: Address): Option[ProgramContext]
-  def getProgramOwner(address: Address): Option[Address]
-
-  def event(address: Address, name: String, data: MarshalledData): Unit
-
-  // Balance
-  def balance(address: Address): NativeCoin
-  def transfer(from: Address, to: Address, amount: NativeCoin): Unit
+  final case class Complex(data: Data, pseudoHeap: Map[Data.Primitive.Ref, Data]) extends MarshalledData
 }
