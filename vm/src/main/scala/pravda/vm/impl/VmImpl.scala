@@ -179,6 +179,7 @@ class VmImpl extends Vm {
           }
         case THROW => systemOperations.`throw`()
         case EVENT => systemOperations.event()
+        case CODE  => systemOperations.code()
         case META  => Meta.readFromByteBuffer(program)
         case _     =>
       }

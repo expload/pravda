@@ -50,6 +50,21 @@ final class SystemOperations(program: ByteBuffer,
   }
 
   @OpcodeImplementation(
+    opcode = CODE,
+    description = "Take address of a program. Pushes program bytecode to the stack"
+  )
+  def code(): Unit = {
+    val programAddress = address(memory.pop())
+    wattCounter.cpuUsage(CpuStorageUse)
+    env.getProgram(programAddress) match {
+      case Some(context) =>
+        wattCounter.memoryUsage(context.code.size().toLong)
+        memory.push(Data.Primitive.Bytes(context.code))
+      case None => throw ThrowableVmError(Error.NoSuchProgram)
+    }
+  }
+
+  @OpcodeImplementation(
     opcode = PCALL,
     description = "Takes two words by which it is followed. " +
       "They are address `a` and the number of parameters `n`, " +
