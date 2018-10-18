@@ -21,21 +21,13 @@ translation: |-
   meta method {
   "name":"ctor","returnTpe":int8(0)
   }
-  from
-  paddr
-  owner
-  eq
-  jumpi @ctor_ok_1
-  push "Only owner can call the constructor"
-  throw
-  @ctor_ok_1:
   push "init"
   sexist
   not
-  jumpi @ctor_ok_2
+  jumpi @ctor_ok
   push "Program has been already initialized"
   throw
-  @ctor_ok_2:
+  @ctor_ok:
   push null
   push "init"
   sput
@@ -50,12 +42,6 @@ translation: |-
   push null
   push null
   push null
-  push null
-  push x
-  owner
-  push int32(5)
-  swapn
-  pop
   push x
   balance
   push int32(4)
@@ -71,7 +57,6 @@ translation: |-
   pop
   jump @system_lvc
   @system_lvc:
-  pop
   pop
   pop
   pop

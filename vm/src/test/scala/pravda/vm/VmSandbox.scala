@@ -5,7 +5,6 @@ import pravda.vm
 import pravda.vm.Data.Primitive
 
 import scala.collection.mutable
-import scala.util.Random
 
 object VmSandbox {
 
@@ -15,32 +14,25 @@ object VmSandbox {
                            pExecutor: Address)
       extends Environment {
 
-    val balances = mutable.Map(initBalances: _*)
-    val programs = mutable.Map(initPrograms: _*)
-    val sealedPrograms = mutable.Map[Address, Boolean]()
+    private val balances = mutable.Map(initBalances: _*)
+    private val programs = mutable.Map(initPrograms: _*)
+    private val sealedPrograms = mutable.Map[Address, Boolean]()
 
     def executor: Address = pExecutor
 
     def sealProgram(address: Address): Unit = {
       sealedPrograms(address) = true
       effects += vm.Effect.ProgramSeal(address)
-
     }
 
     def updateProgram(address: Address, code: ByteString): Unit = {
-      if (sealedPrograms.get(address).exists(identity)) {
-        programs(address) = Data.Primitive.Bytes(code)
-        effects += vm.Effect.ProgramUpdate(address, Data.Primitive.Bytes(code))
-      }
+      programs(address) = Data.Primitive.Bytes(code)
+      effects += vm.Effect.ProgramUpdate(address, Data.Primitive.Bytes(code))
     }
 
-    def createProgram(owner: Address, code: ByteString): Address = {
-      val randomBytes = new Array[Byte](32)
-      Random.nextBytes(randomBytes)
-      val address = Address @@ ByteString.copyFrom(randomBytes)
+    def createProgram(address: Address, code: ByteString): Unit = {
       programs(address) = Data.Primitive.Bytes(code)
       effects += vm.Effect.ProgramCreate(address, Data.Primitive.Bytes(code))
-      address
     }
 
     def getProgram(address: Address): Option[ProgramContext] = {
@@ -51,13 +43,11 @@ object VmSandbox {
             override def put(key: Data.Primitive, value: Data): Option[Data] = None
             override def delete(key: Data.Primitive): Option[Data] = None
           },
-          p.data.asReadOnlyByteBuffer()
+          p.data,
+          `sealed` = sealedPrograms.getOrElse(address, false)
         )
       }
     }
-
-    def getProgramOwner(address: Address): Option[Address] =
-      Some(pExecutor) // TODO display actual owner for created programs
 
     def balance(address: Address): NativeCoin = {
       val balance = NativeCoin @@ balances.get(address).fold(0L)(_.data.toLong)

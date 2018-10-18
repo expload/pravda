@@ -19,8 +19,9 @@ package pravda.vm.operations
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
+import pravda.common.contrib.ed25519
 import pravda.common.domain
-import pravda.common.domain.Address
 import pravda.vm.Opcodes._
 import pravda.vm.Error.{OperationDenied, UserError}
 import pravda.vm.WattCounter._
@@ -37,6 +38,8 @@ final class SystemOperations(program: ByteBuffer,
                              maybeProgramAddress: Option[domain.Address],
                              standardLibrary: Map[Long, (Memory, WattCounter) => Unit],
                              vm: Vm) {
+
+  import SystemOperations._
 
   @OpcodeImplementation(
     opcode = STOP,
@@ -101,51 +104,75 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PUPDATE,
-    description = "Takes address of a program and new bytecode. " +
-      "Replaces bytecode in storage. This opcode can be performed " +
-      "only from owner of the program"
+    description = "Takes address of an existing program, code, and signature. " +
+      "Message for signing is result of concatenation of old code new code of the program"
   )
   def pupdate(): Unit = {
+    val signature = bytes(memory.pop()).toByteArray
+    val newCode = bytes(memory.pop())
     val programAddress = address(memory.pop())
-    val code = bytes(memory.pop())
+
     wattCounter.cpuUsage(CpuStorageUse)
-    if (env.getProgramOwner(programAddress).contains(env.executor)) {
-      val oldProgram = env.getProgram(programAddress)
-      val oldProgramSize = oldProgram.fold(0L)(_.code.remaining.toLong)
-      wattCounter.cpuUsage(CpuStorageUse)
-      wattCounter.storageUsage(occupiedBytes = code.size().toLong, oldProgramSize)
-      env.updateProgram(programAddress, code)
-    } else {
-      throw ThrowableVmError(OperationDenied)
+
+    env.getProgram(programAddress) match {
+      case Some(ProgramContext(_, oldCode, false)) =>
+        wattCounter.cpuUsage((newCode.size() + oldCode.size()) * CpuArithmetic * 2)
+        val message = oldCode.concat(newCode).toByteArray
+        if (ed25519.verify(programAddress.toByteArray, message, signature)) {
+          wattCounter.storageUsage(newCode.size().toLong, oldCode.size().toLong)
+          env.updateProgram(programAddress, newCode)
+        } else {
+          throw ThrowableVmError(Error.OperationDenied)
+        }
+      case Some(ProgramContext(_, _, true)) => throw ThrowableVmError(Error.ProgramIsSealed)
+      case None => throw ThrowableVmError(Error.NoSuchProgram)
     }
   }
 
   @OpcodeImplementation(
     opcode = PCREATE,
-    description = "Takes bytecode of a new program, put's it to " +
-      "state and returns program address."
+    description = "Takes address (pubKey), bytecode, and it's ed25519 signature. " +
+      "If signature is invalid and program on the address is not existed before create new program."
   )
   def pcreate(): Unit = {
+    val signature = bytes(memory.pop()).toByteArray
     val code = bytes(memory.pop())
-    val programAddress = env.createProgram(env.executor, code)
-    val data = address(programAddress)
+    val programAddress = address(memory.pop())
+
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
-    wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(address(programAddress))
+    wattCounter.cpuUsage(code.size() * CpuArithmetic)
+
+    env.getProgram(programAddress) match {
+      case None if ed25519.verify(programAddress.toByteArray, code.toByteArray, signature) =>
+        wattCounter.storageUsage(occupiedBytes = code.size().toLong)
+        env.createProgram(programAddress, code)
+      case _ =>
+        throw ThrowableVmError(Error.OperationDenied)
+    }
   }
 
   @OpcodeImplementation(
     opcode = SEAL,
-    description = "Takes the address of an existing program, makes the program sealed"
+    description = "Takes the address of an existing program, and signature of code with seal mark. " +
+      "Message for signing is result of concatenation of 'Seal' word (in UTF8 encoding) and current code of program."
   )
   def seal(): Unit = {
+    val signature = bytes(memory.pop()).toByteArray
     val programAddress = address(memory.pop())
-    if (env.getProgramOwner(programAddress).contains(env.executor)) {
-      wattCounter.cpuUsage(CpuStorageUse)
-      env.sealProgram(programAddress)
-    } else {
-      throw ThrowableVmError(OperationDenied)
+
+    wattCounter.cpuUsage(CpuStorageUse)
+
+    env.getProgram(programAddress) match {
+      case Some(ProgramContext(_, code, false)) =>
+        wattCounter.cpuUsage(code.size() * CpuArithmetic * 2)
+        val message = Seal.concat(code).toByteArray // Seal ++ Code
+        if (ed25519.verify(programAddress.toByteArray, message, signature)) {
+          env.sealProgram(programAddress)
+        } else {
+          throw ThrowableVmError(Error.OperationDenied)
+        }
+      case Some(ProgramContext(_, _, true)) => throw ThrowableVmError(Error.ProgramIsSealed)
+      case None => throw ThrowableVmError(Error.NoSuchProgram)
     }
   }
 
@@ -169,18 +196,6 @@ final class SystemOperations(program: ByteBuffer,
   )
   def from(): Unit = {
     val datum = address(env.executor)
-    wattCounter.memoryUsage(datum.volume.toLong)
-    memory.push(datum)
-  }
-
-  @OpcodeImplementation(
-    opcode = OWNER,
-    description = "Gives program owner's address. " +
-      "If there's no owner of the given address then the void address (32 zero bytes) is returned. "
-  )
-  def owner(): Unit = {
-    val programAddress = address(memory.pop())
-    val datum = address(env.getProgramOwner(programAddress).getOrElse(Address.Void))
     wattCounter.memoryUsage(datum.volume.toLong)
     memory.push(datum)
   }
@@ -247,4 +262,8 @@ final class SystemOperations(program: ByteBuffer,
       case None       => throw ThrowableVmError(OperationDenied)
     }
   }
+}
+
+object SystemOperations {
+  final val Seal = ByteString.copyFromUtf8("sealed")
 }

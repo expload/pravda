@@ -85,7 +85,6 @@ case object CallsTranslation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(-1) else Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Sender", _))                     => Right(1)
-      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Owner", _))                      => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Balance", _))                    => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "ProgramAddress", _))             => Right(1)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "Ripemd160", _))                => Right(0)
@@ -218,8 +217,6 @@ case object CallsTranslation extends OneToManyTranslator {
         if (ctx.struct.isDefined) Right(List(Operation(Opcodes.POP))) else Right(List.empty)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Sender", _)) =>
         Right(List(Operation(Opcodes.FROM)))
-      case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Owner", _)) =>
-        Right(List(Operation(Opcodes.OWNER)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Balance", _)) =>
         Right(List(Operation(Opcodes.BALANCE)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "ProgramAddress", _)) =>

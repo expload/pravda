@@ -19,9 +19,6 @@ package pravda.node
 
 package servers
 
-import java.nio.ByteBuffer
-import java.security.MessageDigest
-
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import pravda.common.domain._
@@ -223,7 +220,7 @@ object Abci {
   final val TxStatusUnauthorized = 1
   final val TxStatusError = 2
 
-  final case class StoredProgram(code: ByteString, owner: Address, `sealed`: Boolean)
+  final case class StoredProgram(code: ByteString, `sealed`: Boolean)
 
   final class BlockDependentEnvironment(db: DB) {
 
@@ -292,15 +289,10 @@ object Abci {
         }
       }
 
-      def createProgram(owner: Address, code: ByteString): Address = {
-        val sha256 = MessageDigest.getInstance("SHA-256")
-        val addressBytes = sha256.digest(transactionId.concat(code).toByteArray)
-        val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, owner, `sealed` = false)
-
-        transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
+      def createProgram(address: Address, code: ByteString): Unit = {
+        val sp = StoredProgram(code, `sealed` = false)
+        transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramCreate(address, Data.Primitive.Bytes(code))
-        address
       }
 
       def sealProgram(address: Address): Unit = {
@@ -312,7 +304,6 @@ object Abci {
 
       def updateProgram(address: Address, code: ByteString): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
-        if (oldSb.`sealed`) throw vm.ThrowableVmError(Error.ProgramIsSealed)
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
@@ -351,14 +342,11 @@ object Abci {
       // Effects below are ignored by effect collect
       // because they are inaccessible from user space
 
-      def getProgramOwner(address: Address): Option[Address] =
-        getStoredProgram(address).map(_.owner)
-
       def getProgram(address: Address): Option[ProgramContext] =
         getStoredProgram(address) map { program =>
           val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
           val storage = new WsProgramStorage(address, newPath)
-          ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
+          ProgramContext(storage, program.code, program.`sealed`)
         }
 
       def collectEffects: Seq[Effect] = transactionEffects
