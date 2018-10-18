@@ -111,21 +111,21 @@ data := primitive
 
 ### Primitives
 
-All primitives encodes as JSON strings with prefix. It's easy to parse. Most of popular languages have `indexOf` and `substring` functions.  Type always before first colon, value after.
+All primitives encodes as JSON strings with prefix. It's easy to parse. Most of popular languages have `indexOf` and `substring` functions.  Type always before first dot, value after.
 
 ```json
-"int8:-100"
-"int16:-100" 
-"int32:-100"
-"uint8:100"
-"uint16:100"
-"uint32:1000"
-"bitint:9999999999999"
-"number:2.0"
-"ref:1"
-"bool:true"
-"utf8:i am cow"
-"bytes:01fca4e91"
+"int8.-100"
+"int16.-100" 
+"int32.-100"
+"uint8.100"
+"uint16.100"
+"uint32.1000"
+"bitint.9999999999999"
+"number.2.0"
+"ref.1"
+"bool.true"
+"utf8.i am cow"
+"bytes.01fca4e91"
 "null"
 ```
 
@@ -143,7 +143,7 @@ Structs corresponds to JSON objects.
 
 ```json
 {
-  "utf8:user": "ref:9153",
-  "int32:1432": "bytes:41f8cff6"
+  "utf8.user": "ref.9153",
+  "int32.1432": "bytes.41f8cff6"
 }
 ```

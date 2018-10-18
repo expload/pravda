@@ -269,14 +269,14 @@ object Abci {
 
       private final class WsProgramStorage(address: Address, dbPath: DbPath) extends Storage {
 
-        def get(key: Data): Option[Data] = {
+        def get(key: Data.Primitive): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
           transactionEffects += StorageRead(address, key, value.map(Data.fromBytes))
           value.map(Data.fromBytes)
         }
 
-        def put(key: Data, value: Data): Option[Data] = {
+        def put(key: Data.Primitive, value: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val array = value.toByteString.toByteArray
           val prev = dbPath.putRawBytes(hexKey, array)
@@ -284,7 +284,7 @@ object Abci {
           prev.map(Data.fromBytes)
         }
 
-        def delete(key: Data): Option[Data] = {
+        def delete(key: Data.Primitive): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.remove(hexKey)
           transactionEffects += StorageRemove(address, key, value.map(Data.fromBytes))

@@ -1,17 +1,25 @@
----preconditions
-watts-limit: 3000
 stack:
-  "Func"
+  [utf8.Func]
 storage:
-  "init" = null
----expectations
-watts-spent: 704
+  utf8.init: "null"
+dotnetCompilation: |-
+  inheritance.cs
+---
 stack:
-  int32(387)
+  - int32.387
 heap:
-  #0x0 = {  "AVal": int32(100),  "Answer": #0x501,  "AnswerPlus1": #0xB18},
-  #0x1 = {  "BVal": int32(200),  "Answer": #0x780,  "AnswerPlus1": #0xB18}
+  ref.0:
+    utf8.AVal: int32.100
+    utf8.Answer: ref.1281
+    utf8.AnswerPlus1: ref.2840
+  ref.1:
+    utf8.BVal: int32.200
+    utf8.Answer: ref.1920
+    utf8.AnswerPlus1: ref.2840
+storage:
+    utf8.init: "null"
 effects:
-  sget "init" null
----dotnet-files
-inheritance.cs
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"

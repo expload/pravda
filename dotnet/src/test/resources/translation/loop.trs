@@ -1,127 +1,127 @@
----exe
-loop.exe
----translation
-dup
-push "ctor"
-eq
-jumpi @method_ctor
-push "init"
-sexist
-jumpi @methods
-push "Program was not initialized"
-throw
-@methods:
-dup
-push "loops"
-eq
-jumpi @method_loops
-push "Wrong method name"
-throw
-@method_ctor:
-meta method {
-"name":"ctor","returnTpe":int8(0)
-}
-from
-paddr
-owner
-eq
-jumpi @ctor_ok_1
-push "Only owner can call the constructor"
-throw
-@ctor_ok_1:
-push "init"
-sexist
-not
-jumpi @ctor_ok_2
-push "Program has been already initialized"
-throw
-@ctor_ok_2:
-push null
-push "init"
-sput
-jump @ctor_lvc
-@ctor_lvc:
-pop
-jump @stop
-@method_loops:
-meta method {
-"name":"loops","returnTpe":int8(0)
-}
-push null
-push null
-push null
-push null
-push int32(0)
-push int32(5)
-swapn
-pop
-push int32(0)
-push int32(4)
-swapn
-pop
-jump @loops_br17
-@loops_br7:
-push int32(4)
-dupn
-push int32(2)
-add
-push int32(5)
-swapn
-pop
-push int32(3)
-dupn
-push int32(1)
-add
-push int32(4)
-swapn
-pop
-@loops_br17:
-push int32(3)
-dupn
-push int32(10)
-swap
-lt
-push int8(3)
-cast
-push int32(3)
-swapn
-pop
-push int32(2)
-dupn
-push int32(1)
-eq
-jumpi @loops_br7
-jump @loops_br34
-@loops_br28:
-push int32(4)
-dupn
-push int32(2)
-mul
-push int32(5)
-swapn
-pop
-@loops_br34:
-push int32(4)
-dupn
-push int32(10000)
-swap
-lt
-push int8(3)
-cast
-push int32(2)
-swapn
-pop
-push int32(1)
-dupn
-push int32(1)
-eq
-jumpi @loops_br28
-jump @loops_lvc
-@loops_lvc:
-pop
-pop
-pop
-pop
-pop
-jump @stop
-@stop:
+exe: loop.exe
+---
+translation: |-
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "loops"
+  eq
+  jumpi @method_loops
+  push "Wrong method name"
+  throw
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  from
+  paddr
+  owner
+  eq
+  jumpi @ctor_ok_1
+  push "Only owner can call the constructor"
+  throw
+  @ctor_ok_1:
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok_2
+  push "Program has been already initialized"
+  throw
+  @ctor_ok_2:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @method_loops:
+  meta method {
+  "name":"loops","returnTpe":int8(0)
+  }
+  push null
+  push null
+  push null
+  push null
+  push int32(0)
+  push int32(5)
+  swapn
+  pop
+  push int32(0)
+  push int32(4)
+  swapn
+  pop
+  jump @loops_br17
+  @loops_br7:
+  push int32(4)
+  dupn
+  push int32(2)
+  add
+  push int32(5)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  push int32(1)
+  add
+  push int32(4)
+  swapn
+  pop
+  @loops_br17:
+  push int32(3)
+  dupn
+  push int32(10)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  pop
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  jumpi @loops_br7
+  jump @loops_br34
+  @loops_br28:
+  push int32(4)
+  dupn
+  push int32(2)
+  mul
+  push int32(5)
+  swapn
+  pop
+  @loops_br34:
+  push int32(4)
+  dupn
+  push int32(10000)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int32(1)
+  eq
+  jumpi @loops_br28
+  jump @loops_lvc
+  @loops_lvc:
+  pop
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @stop:

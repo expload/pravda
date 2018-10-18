@@ -1,19 +1,26 @@
----preconditions
-watts-limit: 10000
 stack:
-  null, "balanceOf"
+  ["null", utf8.balanceOf]
 storage:
-  "init" = null,
-  x62616C616E6365730011 = int32(10)
----expectations
-watts-spent: 197
+  utf8.init: "null"
+  bytes.62616C616E6365730011: int32.10
+dotnetCompilation: |-
+  smart_program.cs
+---
 stack:
-  null, "balanceOf", null, x62616C616E636573, null, int32(0)
+  - "null"
+  - utf8.balanceOf
+  - "null"
+  - bytes.62616c616e636573
+  - "null"
+  - int32.0
+storage:
+  bytes.62616c616e6365730011: int32.10
+  utf8.init: "null"
 effects:
-  sget "init" null
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
 error:
-  |DataError(Unexpected type: Null)
-  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/smart_program.cs:17
-  |0000000000000000000000000000000000000000000000000000000000000000:/tmp/pravda/smart_program.cs:9
----dotnet-files
-smart_program.cs
+  code: 701
+  message: "Unexpected type: Null"
