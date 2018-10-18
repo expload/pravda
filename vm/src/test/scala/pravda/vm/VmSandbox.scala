@@ -72,7 +72,8 @@ object VmSandbox {
       balances(to) = Data.Primitive.BigInt(toBalance + amount)
       effects += vm.Effect.Transfer(from, to, amount)
     }
-    override def event(address: Address, name: String, data: Data): Unit =
+
+    def event(address: Address, name: String, data: MarshalledData): Unit =
       effects += vm.Effect.Event(address, name, data)
   }
 

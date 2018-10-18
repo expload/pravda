@@ -6,4 +6,6 @@ code: |-
   add
 ---
 watts-spent: 11
-error: 104
+error:
+  code: 104
+  message: WrongType

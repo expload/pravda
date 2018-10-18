@@ -32,7 +32,7 @@ trait TethysInstances {
       if (s == "null") {
         Data.Primitive.Null
       } else {
-        val i = s.indexOf(':')
+        val i = s.indexOf('.')
         val t = s.substring(0, i)
         val v = s.substring(i + 1)
         t match {
@@ -212,7 +212,7 @@ trait TethysInstances {
   // VM RWs for tethys
   //---------------------------------------------------------------------------
 
-  private final case class ErrorJson(code: Int, message: String)
+  private case class ErrorJson(code: Int, message: String)
 
   implicit val vmErrorWriter: JsonWriter[vm.Error] =
     jsonWriter[ErrorJson].contramap {

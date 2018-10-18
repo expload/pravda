@@ -38,4 +38,6 @@ effects:
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     key: bytes.5461626c654361726473ffffffff
     value: int32.0
-error: 102
+error:
+  code: 102
+  message: WrongStackIndex

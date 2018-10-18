@@ -17,16 +17,24 @@ effects:
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: int32.1234
+    data:
+      simple:
+        data: int32.1234
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: utf8.my_string
+    data:
+      simple:
+        data: utf8.my_string
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: number.2.0
+    data:
+      simple:
+        data: number.2.0
   - eventType: Event
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     name: my_event
-    data: bytes.01020304
+    data:
+      simple:
+        data: bytes.01020304

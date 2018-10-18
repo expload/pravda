@@ -21,4 +21,6 @@ effects:
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     key: utf8.init
     value: "null"
-error: 701
+error:
+  code: 701
+  message: "Unexpected type: Null"
