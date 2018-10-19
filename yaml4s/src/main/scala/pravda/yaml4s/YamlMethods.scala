@@ -55,8 +55,7 @@ object YamlMethods {
     case null      => JNull
     case s: String => JString(s)
     case l: java.util.List[_] =>
-      JArray(l.asScala.toList.map { v =>
-        java2jvalue(v.asInstanceOf[AnyRef], ubdfd)
+      JArray(l.asScala.toList.map { v => java2jvalue(v.asInstanceOf[AnyRef], ubdfd)
       })
     case m: java.util.Map[_, _] =>
       val pairs = m.asScala.map {
@@ -110,6 +109,84 @@ object YamlMethods {
     yaml.synchronized {
       yaml.dump(javaObj)
     }
+  }
+
+  def renderDiff(node: JValue, expected: JValue): String = {
+
+    val red = "\033[0;31m"
+    val green = "\033[1;32m"
+    val yellow = "\033[1;33m"
+    val clear = "\033[0m"
+
+    def print(j: JValue) = yaml.dump(jvalue2java(j))
+    def printWithColour(j: JValue, colour: String) = s"$colour${print(j)}$clear"
+
+    def diff(j1: JValue, j2: JValue): String = (j1, j2) match {
+      case (x, y) if x == y                     => print(x)
+      case (JObject(xs), JObject(ys))           => diffFields(xs, ys)
+      case (JArray(xs), JArray(ys))             => diffVals(xs, ys)
+      case (x: JInt, y: JInt) if x != y         => printWithColour(y, yellow)
+      case (x: JDouble, y: JDouble) if x != y   => printWithColour(y, yellow)
+      case (x: JDecimal, y: JDecimal) if x != y => printWithColour(y, yellow)
+      case (x: JString, y: JString) if x != y   => printWithColour(y, yellow)
+      case (x: JBool, y: JBool) if x != y       => printWithColour(y, yellow)
+      case (JNothing, x)                        => printWithColour(x, green)
+      case (x, JNothing)                        => printWithColour(x, red)
+      case (x, y)                               => printWithColour(y, yellow)
+    }
+
+    def diffFields(xs: List[JField], ys: List[JField]): String = {
+      def formatElem(name: String, elem: String) = {
+        val lines = elem.lines.toList
+        if (lines.length <= 1) {
+          s"$name: $elem"
+        } else {
+          s"""$name:
+             |  ${lines.mkString("\n  ")}
+           """.stripMargin
+        }
+      }
+
+      xs match {
+        case (xname, xvalue) :: xtail if ys.exists(_._1 == xname) =>
+          val (_, yvalue) = ys.find(_._1 == xname).get
+          formatElem(xname, diff(xvalue, yvalue)) + diffFields(xtail, ys.filterNot(_ == (xname, yvalue)))
+        case (xname, xvalue) :: xtail =>
+          formatElem(xname, printWithColour(xvalue, red)) + diffFields(xtail, ys)
+        case Nil => ys match {
+          case (yname, yvalue) :: ytail =>
+            formatElem(yname, printWithColour(yvalue, green)) + diffFields(Nil, ytail)
+          case Nil => ""
+        }
+      }
+    }
+
+    def diffVals(xs: List[JValue], ys: List[JValue]): String = {
+       
+      def formatElem(elem: String) = {
+        val lines = elem.lines.toList
+        lines match {
+          case Nil => s"-"
+          case head :: tail =>
+            val h = s"- $head"
+            val t = if (tail.nonEmpty) {
+              s"\n${tail.map(s => s"  $s").mkString("\n")}"
+            } else {
+              ""
+            }
+            h + t
+        }
+      }
+
+      (xs, ys) match {
+        case (x :: xtail, y :: ytail) => formatElem(diff(x, y)) + diffVals(xtail, ytail)
+        case (Nil, y :: ytail) => formatElem(printWithColour(y, green)) + diffVals(Nil, ytail)
+        case (x :: xtail, Nil) => formatElem(printWithColour(x, red)) + diffVals(xtail, Nil)
+        case (Nil, Nil) => ""
+      }
+    }
+
+    diff(node, expected)
   }
 
   def parseOpt(in: JsonInput, useBigDecimalForDouble: Boolean): Option[JValue] =
