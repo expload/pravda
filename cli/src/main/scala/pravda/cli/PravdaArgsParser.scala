@@ -175,7 +175,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (hex,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(to = Some(hex)))
                     case (_, otherwise) => otherwise
                   },
@@ -183,7 +183,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (amount,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(amount = Some(amount)))
                     case (_, otherwise) => otherwise
                   }
@@ -194,30 +194,12 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .children(broadcastInput),
             cmd("seal")
               .text("Seal existing Pravda program in the blockchain.")
-              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
-              .children(
-                broadcastInput,
-                opt[String]('a', "address")
-                  .text("Address of the program to seal")
-                  .action {
-                    case (hex, config: PravdaConfig.Broadcast) =>
-                      config.copy(mode = PravdaConfig.Broadcast.Mode.Seal(Some(hex)))
-                    case (_, otherwise) => otherwise
-                  }
-              ),
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Seal))
+              .children(broadcastInput),
             cmd("update")
               .text("Update existing Pravda program in the blockchain.")
-              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
-              .children(
-                broadcastInput,
-                opt[String]('a', "address")
-                  .text("Address of the program to update")
-                  .action {
-                    case (hex, config: PravdaConfig.Broadcast) =>
-                      config.copy(mode = PravdaConfig.Broadcast.Mode.Update(Some(hex)))
-                    case (_, otherwise) => otherwise
-                  }
-              ),
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update))
+              .children(broadcastInput),
             opt[Unit]("dry-run")
               .text("Broadcast action without applying effects.")
               .action {
@@ -229,6 +211,13 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(wallet = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[File]('p', "program-wallet")
+              .text("Wallet of program account")
+              .action {
+                case (file, config: PravdaConfig.Broadcast) =>
+                  config.copy(programWallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[File]("watt-payer-wallet")
@@ -245,7 +234,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   config.copy(wattLimit = limit)
                 case (_, otherwise) => otherwise
               },
-            opt[Long]('p', "price")
+            opt[Long]('P', "price")
               .text(s"Watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).") // FIXME what to do with default values?
               .action {
                 case (price, config: PravdaConfig.Broadcast) =>

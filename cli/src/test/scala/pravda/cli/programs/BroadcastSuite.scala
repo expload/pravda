@@ -4,11 +4,28 @@ import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.languages.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
+import pravda.node.servers.Abci.TransactionResult
+import pravda.vm.FinalState
 import utest._
 
 import scala.collection.mutable
 
 object BroadcastSuite extends TestSuite {
+
+  final val expectedResult =
+    s"""{
+       |  "executionResult" : {
+       |    "success" : {
+       |      "spentWatts" : 0,
+       |      "refundWatts" : 0,
+       |      "totalWatts" : 0,
+       |      "stack" : [ ],
+       |      "heap" : [ ]
+       |    }
+       |  },
+       |  "effects" : [ ]
+       |}
+       |""".stripMargin
 
   final val Wallet = ByteString.copyFromUtf8(
     """{
@@ -19,7 +36,7 @@ object BroadcastSuite extends TestSuite {
 
   val tests = Tests {
     "run -w w.json" - {
-      val api = new NodeLanguageStub(Right("[]"))
+      val api = new NodeLanguageStub(Right(TransactionResult(Right(FinalState.Empty), Nil)))
       val io = new IoLanguageStub(files = mutable.Map("w.json" -> Wallet))
       val compilers = new CompilersLanguage[Id] {
         def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
@@ -30,11 +47,11 @@ object BroadcastSuite extends TestSuite {
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
-      assert(io.stdout.headOption.contains(ByteString.copyFromUtf8("[]\n")))
+      assert(io.stdout.headOption.contains(ByteString.copyFromUtf8(expectedResult)))
     }
 
     "run" - {
-      val api = new NodeLanguageStub(Right("[]"))
+      val api = new NodeLanguageStub(Right(TransactionResult(Right(FinalState.Empty), Nil)))
       val io = new IoLanguageStub()
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")

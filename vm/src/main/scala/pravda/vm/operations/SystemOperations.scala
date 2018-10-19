@@ -180,7 +180,7 @@ final class SystemOperations(program: ByteBuffer,
     env.getProgram(programAddress) match {
       case Some(ProgramContext(_, code, false)) =>
         wattCounter.cpuUsage(code.size() * CpuArithmetic * 2)
-        val message = Seal.concat(code).toByteArray // Seal ++ Code
+        val message = SealTag.concat(code).toByteArray // Seal ++ Code
         if (ed25519.verify(programAddress.toByteArray, message, signature)) {
           env.sealProgram(programAddress)
         } else {
@@ -280,5 +280,5 @@ final class SystemOperations(program: ByteBuffer,
 }
 
 object SystemOperations {
-  final val Seal = ByteString.copyFromUtf8("sealed")
+  final val SealTag = ByteString.copyFromUtf8("sealed")
 }

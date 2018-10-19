@@ -19,6 +19,7 @@ package pravda.cli.languages
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.servers.Abci.TransactionResult
 
 import scala.language.higherKinds
 
@@ -33,5 +34,5 @@ trait NodeLanguage[F[_]] {
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
                                   wattPayer: Option[Address],
-                                  data: ByteString): F[Either[String, String]]
+                                  data: ByteString): F[Either[String, TransactionResult]]
 }

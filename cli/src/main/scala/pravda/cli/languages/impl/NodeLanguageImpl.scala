@@ -26,11 +26,16 @@ import com.google.protobuf.ByteString
 import pravda.cli.languages.NodeLanguage
 import pravda.common.bytes
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
+import pravda.node.data.serialization.Json
 import pravda.node.launcher
+import pravda.node.servers.Abci.TransactionResult
+import pravda.node.data.serialization._
+import pravda.node.data.serialization.json._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
@@ -53,7 +58,7 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
                                   wattLimit: Long,
                                   wattPrice: NativeCoin,
                                   wattPayer: Option[Address],
-                                  data: ByteString): Future[Either[String, String]] = {
+                                  data: ByteString): Future[Either[String, TransactionResult]] = {
 
     val fromHex = bytes.byteString2hex(address)
     val request = {
@@ -92,7 +97,10 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
       .flatMap { response =>
         response.entity.dataBytes
           .runFold(AkkaByteString(""))(_ ++ _)
-          .map(x => Right(x.utf8String))
+          .map { x =>
+            val txr = transcode(Json @@ x.utf8String).to[Either[RpcError, TransactionResult]]
+            txr.left.map(_.message)
+          }
       }
   }
 }
