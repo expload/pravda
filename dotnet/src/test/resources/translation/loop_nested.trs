@@ -1,6 +1,7 @@
 exe: loop_nested.exe
 ---
 translation: |-
+  meta custom "CIL"
   dup
   push "ctor"
   eq

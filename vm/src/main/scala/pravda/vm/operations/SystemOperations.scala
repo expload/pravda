@@ -119,8 +119,8 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PUPDATE,
-    description = "Takes address of an existing program, code, and signature. " +
-      "Message for signing is result of concatenation of old code new code of the program"
+    description = "Takes address of an existing program, code and signature. " +
+      "Signature is computed from concatenation of old code and new code of the program"
   )
   def pupdate(): Unit = {
     val signature = bytes(memory.pop()).toByteArray
@@ -140,14 +140,14 @@ final class SystemOperations(program: ByteBuffer,
           throw ThrowableVmError(Error.OperationDenied)
         }
       case Some(ProgramContext(_, _, true)) => throw ThrowableVmError(Error.ProgramIsSealed)
-      case None => throw ThrowableVmError(Error.NoSuchProgram)
+      case None                             => throw ThrowableVmError(Error.NoSuchProgram)
     }
   }
 
   @OpcodeImplementation(
     opcode = PCREATE,
-    description = "Takes address (pubKey), bytecode, and it's ed25519 signature. " +
-      "If signature is invalid and program on the address is not existed before create new program."
+    description = "Takes address (pubKey), bytecode, and its ed25519 signature. " +
+      "If signature is valid and program didn't exist before on the specified address create new program."
   )
   def pcreate(): Unit = {
     val signature = bytes(memory.pop()).toByteArray
@@ -168,8 +168,8 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = SEAL,
-    description = "Takes the address of an existing program, and signature of code with seal mark. " +
-      "Message for signing is result of concatenation of 'Seal' word (in UTF8 encoding) and current code of program."
+    description = "Takes the address of an existing program and signature of code with seal mark. " +
+      "Signature is computed from concatenation of 'Seal' word (in UTF8 encoding) and current code of program."
   )
   def seal(): Unit = {
     val signature = bytes(memory.pop()).toByteArray
@@ -187,7 +187,7 @@ final class SystemOperations(program: ByteBuffer,
           throw ThrowableVmError(Error.OperationDenied)
         }
       case Some(ProgramContext(_, _, true)) => throw ThrowableVmError(Error.ProgramIsSealed)
-      case None => throw ThrowableVmError(Error.NoSuchProgram)
+      case None                             => throw ThrowableVmError(Error.NoSuchProgram)
     }
   }
 
@@ -280,5 +280,5 @@ final class SystemOperations(program: ByteBuffer,
 }
 
 object SystemOperations {
-  final val SealTag = ByteString.copyFromUtf8("sealed")
+  final val SealTag = ByteString.copyFromUtf8("Seal")
 }

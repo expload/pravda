@@ -3,6 +3,7 @@ exe: |-
   Expload.Pravda.Programs.MyProgram
 ---
 translation: |-
+  meta custom "CIL"
   dup
   push "ctor"
   eq

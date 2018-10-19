@@ -6,6 +6,7 @@ import pravda.cli.PravdaConfig
 import pravda.cli.languages.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
 import pravda.node.servers.Abci.TransactionResult
 import pravda.vm.FinalState
+import pravda.vm.asm.Operation
 import utest._
 
 import scala.collection.mutable
@@ -42,6 +43,7 @@ object BroadcastSuite extends TestSuite {
         def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def disasm(source: ByteString): Id[String] = ""
+        def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
       }
@@ -56,6 +58,7 @@ object BroadcastSuite extends TestSuite {
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
         def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
+        def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
         def disasm(source: ByteString): Id[String] = ""
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")

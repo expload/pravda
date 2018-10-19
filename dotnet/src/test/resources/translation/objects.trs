@@ -1,6 +1,7 @@
 exe: objects.exe
 ---
 translation: |-
+  meta custom "CIL"
   dup
   push "ctor"
   eq

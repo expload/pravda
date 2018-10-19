@@ -1,6 +1,7 @@
 exe: static_class.exe
 ---
 translation: |-
+  meta custom "CIL"
   dup
   push "ctor"
   eq

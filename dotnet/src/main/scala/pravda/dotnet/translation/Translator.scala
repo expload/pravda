@@ -36,6 +36,8 @@ import scala.collection.mutable.ListBuffer
 
 object Translator {
 
+  final val CILMark = Meta.Custom("CIL")
+
   def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
     case SigType.Void          => Meta.TypeSignature.Null
     case SigType.Boolean       => Meta.TypeSignature.Boolean
@@ -576,8 +578,7 @@ object Translator {
       Operation(Opcodes.THROW)
     )
 
-    // TODO fomkin add tag the code produced by c# translator
-    val prefix = ctorCheck ++
+    val prefix = Operation.Meta(CILMark) :: ctorCheck ++
       List(Operation.Label("methods")) ++ jumpToMethods ++ List(
       Operation.Push(Data.Primitive.Utf8("Wrong method name")),
       Operation(Opcodes.THROW)

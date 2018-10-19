@@ -1,6 +1,7 @@
 exe: stdlib.exe
 ---
 translation: |-
+  meta custom "CIL"
   dup
   push "ctor"
   eq

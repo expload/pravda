@@ -18,6 +18,7 @@
 package pravda.cli.languages
 
 import com.google.protobuf.ByteString
+import pravda.vm.asm.Operation
 
 import scala.language.higherKinds
 
@@ -25,5 +26,6 @@ trait CompilersLanguage[F[_]] {
   def asm(fileName: String, source: String): F[Either[String, ByteString]]
   def asm(source: String): F[Either[String, ByteString]]
   def disasm(source: ByteString): F[String]
+  def disasmToOps(source: ByteString): F[Seq[(Int, Operation)]]
   def dotnet(sources: Seq[(ByteString, Option[ByteString])], mainClass: Option[String]): F[Either[String, ByteString]]
 }

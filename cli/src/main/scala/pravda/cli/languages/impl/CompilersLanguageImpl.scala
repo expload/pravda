@@ -22,7 +22,7 @@ package impl
 import com.google.protobuf.ByteString
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.{Translator => DotnetTranslator}
-import pravda.vm.asm.PravdaAssembler
+import pravda.vm.asm.{Operation, PravdaAssembler}
 import cats.implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,6 +39,10 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
 
   def disasm(source: ByteString): Future[String] = Future {
     PravdaAssembler.render(PravdaAssembler.disassemble(source).map(_._2))
+  }
+
+  def disasmToOps(source: ByteString): Future[Seq[(Int, Operation)]] = Future {
+    PravdaAssembler.disassemble(source)
   }
 
   def dotnet(sources: Seq[(ByteString, Option[ByteString])],
