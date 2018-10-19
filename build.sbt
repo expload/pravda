@@ -312,7 +312,8 @@ lazy val yaml4s = (project in file("yaml4s"))
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % "1.23",
       "org.json4s" %% "json4s-native" % "3.6.1"
-    )
+    ),
+    testFrameworks := Seq(new TestFramework("pravda.yaml4s.Yaml4sFramework"))
   )
 
 lazy val plaintest = (project in file("plaintest"))

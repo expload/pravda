@@ -111,28 +111,34 @@ object YamlMethods {
     }
   }
 
+  /**
+    * Render diff of two JValues as yaml.
+    * Changed parts are coloured yellow, added parts -- green, deleted parts -- red.
+    * The style is fixed, and produced yaml can be wrong, it should be used only in demonstrating purposes.
+    *
+    * @param node Obtained JValue.
+    * @param expected Expected JValue.
+    * @return Yaml with colours.
+    */
   def renderDiff(node: JValue, expected: JValue): String = {
 
-    val red = "\033[0;31m"
-    val green = "\033[1;32m"
-    val yellow = "\033[1;33m"
-    val clear = "\033[0m"
+    def print(j: JValue) = yaml.dump(jvalue2java(j)).trim
+    def printWithColour(j: JValue, colour: String) = s"$colour${print(j)}${Console.RESET}"
 
-    def print(j: JValue) = yaml.dump(jvalue2java(j))
-    def printWithColour(j: JValue, colour: String) = s"$colour${print(j)}$clear"
+    def withNewLine(s: String) = if (s.nonEmpty) "\n" + s else s
 
     def diff(j1: JValue, j2: JValue): String = (j1, j2) match {
       case (x, y) if x == y                     => print(x)
       case (JObject(xs), JObject(ys))           => diffFields(xs, ys)
       case (JArray(xs), JArray(ys))             => diffVals(xs, ys)
-      case (x: JInt, y: JInt) if x != y         => printWithColour(y, yellow)
-      case (x: JDouble, y: JDouble) if x != y   => printWithColour(y, yellow)
-      case (x: JDecimal, y: JDecimal) if x != y => printWithColour(y, yellow)
-      case (x: JString, y: JString) if x != y   => printWithColour(y, yellow)
-      case (x: JBool, y: JBool) if x != y       => printWithColour(y, yellow)
-      case (JNothing, x)                        => printWithColour(x, green)
-      case (x, JNothing)                        => printWithColour(x, red)
-      case (x, y)                               => printWithColour(y, yellow)
+      case (x: JInt, y: JInt) if x != y         => printWithColour(y, Console.YELLOW)
+      case (x: JDouble, y: JDouble) if x != y   => printWithColour(y, Console.YELLOW)
+      case (x: JDecimal, y: JDecimal) if x != y => printWithColour(y, Console.YELLOW)
+      case (x: JString, y: JString) if x != y   => printWithColour(y, Console.YELLOW)
+      case (x: JBool, y: JBool) if x != y       => printWithColour(y, Console.YELLOW)
+      case (JNothing, x)                        => printWithColour(x, Console.GREEN)
+      case (x, JNothing)                        => printWithColour(x, Console.RED)
+      case (x, y)                               => printWithColour(y, Console.YELLOW)
     }
 
     def diffFields(xs: List[JField], ys: List[JField]): String = {
@@ -150,19 +156,19 @@ object YamlMethods {
       xs match {
         case (xname, xvalue) :: xtail if ys.exists(_._1 == xname) =>
           val (_, yvalue) = ys.find(_._1 == xname).get
-          formatElem(xname, diff(xvalue, yvalue)) + diffFields(xtail, ys.filterNot(_ == (xname, yvalue)))
+          formatElem(xname, diff(xvalue, yvalue)) + withNewLine(diffFields(xtail, ys.filterNot(_ == xname -> yvalue)))
         case (xname, xvalue) :: xtail =>
-          formatElem(xname, printWithColour(xvalue, red)) + diffFields(xtail, ys)
-        case Nil => ys match {
-          case (yname, yvalue) :: ytail =>
-            formatElem(yname, printWithColour(yvalue, green)) + diffFields(Nil, ytail)
-          case Nil => ""
-        }
+          formatElem(xname, printWithColour(xvalue, Console.RED)) + withNewLine(diffFields(xtail, ys))
+        case Nil =>
+          ys match {
+            case (yname, yvalue) :: ytail =>
+              formatElem(yname, printWithColour(yvalue, Console.GREEN)) + withNewLine(diffFields(Nil, ytail))
+            case Nil => ""
+          }
       }
     }
 
     def diffVals(xs: List[JValue], ys: List[JValue]): String = {
-       
       def formatElem(elem: String) = {
         val lines = elem.lines.toList
         lines match {
@@ -179,10 +185,10 @@ object YamlMethods {
       }
 
       (xs, ys) match {
-        case (x :: xtail, y :: ytail) => formatElem(diff(x, y)) + diffVals(xtail, ytail)
-        case (Nil, y :: ytail) => formatElem(printWithColour(y, green)) + diffVals(Nil, ytail)
-        case (x :: xtail, Nil) => formatElem(printWithColour(x, red)) + diffVals(xtail, Nil)
-        case (Nil, Nil) => ""
+        case (x :: xtail, y :: ytail) => formatElem(diff(x, y)) + withNewLine(diffVals(xtail, ytail))
+        case (Nil, y :: ytail)        => formatElem(printWithColour(y, Console.GREEN)) + withNewLine(diffVals(Nil, ytail))
+        case (x :: xtail, Nil)        => formatElem(printWithColour(x, Console.RED)) + withNewLine(diffVals(xtail, Nil))
+        case (Nil, Nil)               => ""
       }
     }
 

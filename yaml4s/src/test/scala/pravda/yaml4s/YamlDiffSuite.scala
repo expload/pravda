@@ -23,7 +23,12 @@ object YamlDiffSuite extends TestSuite {
              "third body": "three"
            }
           """)
-      println(YamlMethods.renderDiff(json1, json2))
+      YamlMethods.renderDiff(json1, json2) ==>
+        """
+          |first body: one
+          |second body: two
+          |third body: three
+        """.stripMargin
     }
   }
 }
