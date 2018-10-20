@@ -45,10 +45,8 @@ trait Memory {
   def swap(i: Int, j: Int): Unit
   def length: Int
 
-  // TODO should return Data.Ref
-  def heapPut(x: Data): Int
-  // TODO should take Data.Ref
-  def heapGet(idx: Int): Data
+  def heapPut(x: Data): Data.Primitive.Ref
+  def heapGet(idx: Data.Primitive.Ref): Data
   def heapLength: Int
 
   def top(): Data.Primitive

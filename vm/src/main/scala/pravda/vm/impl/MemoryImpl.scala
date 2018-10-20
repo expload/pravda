@@ -150,12 +150,13 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   def length: Int = stack.length
 
-  def heapPut(x: Data): Int = {
+  def heapPut(x: Data): Data.Primitive.Ref = {
     heap += x
-    heap.length - 1
+    Data.Primitive.Ref(heap.length - 1)
   }
 
-  def heapGet(idx: Int): Data = {
+  def heapGet(ref: Data.Primitive.Ref): Data = {
+    val idx = ref.data
     if (idx >= heap.length || idx < 0) {
       throw ThrowableVmError(Error.WrongHeapIndex)
     }
