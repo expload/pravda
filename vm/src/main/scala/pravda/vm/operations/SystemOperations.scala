@@ -110,7 +110,7 @@ final class SystemOperations(program: ByteBuffer,
   )
   def scall(): Unit = {
     val id = integer(memory.pop())
-    wattCounter.cpuUsage(CpuStorageUse)
+    wattCounter.cpuUsage(CpuArithmetic)
     standardLibrary.get(id) match {
       case None           => throw ThrowableVmError(Error.InvalidAddress)
       case Some(function) => function(memory, wattCounter)

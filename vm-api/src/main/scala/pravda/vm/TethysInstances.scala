@@ -249,6 +249,7 @@ trait TethysInstances {
       case ErrorJson(104, _)       => vm.Error.WrongType
       case ErrorJson(105, _)       => vm.Error.InvalidCoinAmount
       case ErrorJson(106, _)       => vm.Error.InvalidAddress
+      case ErrorJson(107, _)       => vm.Error.InvalidArgument
       case ErrorJson(200, _)       => vm.Error.OperationDenied
       case ErrorJson(201, _)       => vm.Error.PcallDenied
       case ErrorJson(202, _)       => vm.Error.NotEnoughMoney

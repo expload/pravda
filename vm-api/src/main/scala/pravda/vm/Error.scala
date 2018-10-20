@@ -28,6 +28,7 @@ object Error {
   case object WrongType         extends Error(104)
   case object InvalidCoinAmount extends Error(105)
   case object InvalidAddress    extends Error(106)
+  case object InvalidArgument   extends Error(107)
 
   case object OperationDenied           extends Error(200)
   case object PcallDenied               extends Error(201)
