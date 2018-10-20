@@ -16,7 +16,7 @@ pipeline:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
       - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
-  package-zip:
+  package-zip-and-publish-to-bintray:
     image: gcr.io/time-coin/sbt:latest
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
@@ -24,7 +24,8 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage node/docker:stage
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage node/docker:stage publish
+    secrets: [ bintray_user, bintray_pass ]
     when:
       event: tag
   package-msi:
