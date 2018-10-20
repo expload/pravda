@@ -44,7 +44,14 @@ translation: |-
   }
   push null
   push null
-  push x0000000000000000000000000000000000000000000000000000000000000000
+  push null
+  new int8[30, -82, -46, 11, 124, -30, -77, 54, 4, 62, 75, 52, 11, 3, 31, -107, -69, 28, -26, -39, 53, -17, 115, 58, -28, -33, 27, 102, -31, -29, -39, 31]
+  push int32(4)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  call @stdlib_array_to_bytes
   push int32(10)
   push int32(20)
   push int32(2)
@@ -73,5 +80,39 @@ translation: |-
   pop
   swap
   pop
+  swap
+  pop
   jump @stop
+  @stdlib_array_to_bytes:
+  dup
+  length
+  push x
+  push int32(0)
+  @array_to_bytes_loop:
+  push int32(4)
+  dupn
+  push int32(2)
+  dupn
+  array_get
+  push int8(14)
+  cast
+  push int32(3)
+  dupn
+  concat
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  add
+  dup
+  push int32(4)
+  dupn
+  gt
+  jumpi @array_to_bytes_loop
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
   @stop:

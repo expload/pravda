@@ -599,7 +599,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       * It has constant size presintation in bytecode.
       * You can't cast it to other types.
       */
-    final case class Offset(data: Int)  extends Primitive
+    final case class Offset(data: Int) extends Primitive
 
     case object Null extends Primitive
     sealed trait Bool extends Primitive {
