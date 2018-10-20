@@ -42,6 +42,11 @@ package object operations {
     case _      => throw ThrowableVmError(WrongType)
   }
 
+  def offset(value: Data): Int = value match {
+    case x: Offset => x.data
+    case _         => throw ThrowableVmError(WrongType)
+  }
+
   def integer(value: Data.Primitive): Long = value match {
     case Int8(x)   => x.toLong
     case Int16(x)  => x.toLong

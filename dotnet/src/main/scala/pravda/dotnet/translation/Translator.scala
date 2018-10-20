@@ -78,7 +78,7 @@ object Translator {
       case (name, tpe) =>
         List(
           Operation(Opcodes.DUP),
-          Operation.PushRef(s"func_$tpe.$name"),
+          Operation.PushOffset(s"func_$tpe.$name"),
           Operation.StructMut(Some(Data.Primitive.Utf8(name)))
         )
     }.toList

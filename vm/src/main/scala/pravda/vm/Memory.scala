@@ -19,8 +19,8 @@ package pravda.vm
 import pravda.common.domain.Address
 
 trait Memory {
-  def updateOffset(newOffset: Int): Unit
-  def currentOffset: Int
+  def setCounter(newOffset: Int): Unit
+  def currentCounter: Int
 
   def enterProgram(address: Address): Unit
   def exitProgram(): Unit

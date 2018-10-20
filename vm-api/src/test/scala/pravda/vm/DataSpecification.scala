@@ -42,6 +42,8 @@ import scala.collection.mutable
 
   val (ref, refArray) = genPrimitive(arbitrary[Int], Ref.apply, RefArray)
 
+  val offset: Gen[Offset] = Gen.chooseNum(0, 65535).map(i => Data.Primitive.Offset(i))
+
   val (boolean, booleanArray) = {
     val f: Boolean => Bool = {
       case true  => Bool.True
@@ -77,6 +79,7 @@ import scala.collection.mutable
     bytes,
     boolean,
     ref,
+    offset,
     `null`
   )
 

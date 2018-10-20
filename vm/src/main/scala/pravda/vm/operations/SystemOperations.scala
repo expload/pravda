@@ -81,7 +81,7 @@ final class SystemOperations(program: ByteBuffer,
     vm.run(programAddress, env, memory, wattCounter, pcallAllowed = true)
     memory.exitProgram()
     memory.dropLimit()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -101,7 +101,7 @@ final class SystemOperations(program: ByteBuffer,
     vm.run(addr, env, memory, wattCounter, pcallAllowed = false) // TODO disallow to change storage
     memory.exitProgram()
     memory.dropLimit()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(

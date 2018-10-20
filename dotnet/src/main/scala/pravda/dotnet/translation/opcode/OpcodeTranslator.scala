@@ -50,7 +50,7 @@ object OpcodeTranslatorOnlyAsm {
     case Jump(name)     => if (name.isDefined) 0 else -1
     case JumpI(name)    => if (name.isDefined) -1 else -2
     case Call(name)     => if (name.isDefined) 0 else -1
-    case PushRef(name)  => 1
+    case PushOffset(name)  => 1
     case StructMut(key) => if (key.isDefined) -2 else -3
     case StructGet(key) => if (key.isDefined) 0 else -1
     case Orphan(opcode) =>

@@ -58,9 +58,9 @@ class VmImpl extends Vm {
       Right(makeFinalState(mem, counter))
     } catch {
       case e: Data.DataException =>
-        Left(RuntimeException(DataError(e.getMessage), makeFinalState(mem, counter), mem.callStack, mem.currentOffset))
+        Left(RuntimeException(DataError(e.getMessage), makeFinalState(mem, counter), mem.callStack, mem.currentCounter))
       case ThrowableVmError(e) =>
-        Left(RuntimeException(e, makeFinalState(mem, counter), mem.callStack, mem.currentOffset))
+        Left(RuntimeException(e, makeFinalState(mem, counter), mem.callStack, mem.currentCounter))
     }
   }
 
@@ -110,7 +110,7 @@ class VmImpl extends Vm {
     while (continue && program.hasRemaining) {
       counter.cpuUsage(CpuBasic)
       val op = program.get() & 0xff
-      mem.updateOffset(program.position())
+      mem.setCounter(program.position())
       (op: @switch) match {
         // Control operations
         case CALL  => controlOperations.call()

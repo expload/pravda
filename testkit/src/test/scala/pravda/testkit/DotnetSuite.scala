@@ -156,7 +156,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
                 DataError(e.getMessage),
                 FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
                 memory.callStack,
-                memory.currentOffset
+                memory.currentCounter
               ))
           case ThrowableVmError(e) =>
             Some(
@@ -164,7 +164,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
                 e,
                 FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
                 memory.callStack,
-                memory.currentOffset))
+                memory.currentCounter))
         },
         _ => None
       )
