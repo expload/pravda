@@ -1,0 +1,13 @@
+watts-limit: 1000
+code: |-
+  new "boxed"
+  new { "hello": #0 }
+---
+watts-spent: 102
+stack:
+  - ref.0
+heap:
+  ref.0: utf8.boxed
+error:
+  code: 104
+  message: WrongType

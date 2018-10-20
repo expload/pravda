@@ -64,10 +64,26 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   @OpcodeImplementation(
     opcode = NEW,
     description = "Puts the data following the opcode to the heap. " +
-      "Pushes reference to the stack."
+      "Pushes reference to the stack. Refs in structs and ref arrays are prohibited."
   )
   def `new`(): Unit = {
-    val data = Data.readFromByteBuffer(program)
+    val data = Data.readFromByteBuffer(program) match {
+      case _: Data.Primitive.Ref =>
+        throw ThrowableVmError(Error.WrongType)
+      case _: Data.Array.RefArray =>
+        throw ThrowableVmError(Error.WrongType)
+      case data: Data.Struct =>
+        // check for refs
+        data.data.foreach {
+          case (_: Primitive.Ref, _) =>
+            throw ThrowableVmError(Error.WrongType)
+          case (_, _: Primitive.Ref) =>
+            throw ThrowableVmError(Error.WrongType)
+          case _ => // do nothing
+        }
+        data
+      case x => x
+    }
     val i = memory.heapPut(data)
     wattCounter.memoryUsage(data.volume.toLong)
     wattCounter.memoryUsage(i.volume.toLong)

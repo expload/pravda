@@ -1,0 +1,7 @@
+watts-limit: 1000
+code: |-
+  push int8(10)
+---
+watts-spent: 101
+stack:
+  - int8.10
