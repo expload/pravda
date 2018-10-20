@@ -76,7 +76,6 @@ object OpcodeTranslatorOnlyAsm {
         case Opcodes.NEW_ARRAY         => -1
         case Opcodes.LENGTH            => 0
         case Opcodes.BALANCE           => 0
-        case Opcodes.OWNER             => 0
 
         case Opcodes.SPUT   => -2
         case Opcodes.SGET   => 0

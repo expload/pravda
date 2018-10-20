@@ -17,6 +17,6 @@
 
 package pravda.vm
 
-import java.nio.ByteBuffer
+import com.google.protobuf.ByteString
 
-final case class ProgramContext(storage: Storage, code: ByteBuffer)
+final case class ProgramContext(storage: Storage, code: ByteString, `sealed`: Boolean)

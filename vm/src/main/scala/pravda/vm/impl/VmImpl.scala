@@ -75,8 +75,7 @@ class VmImpl extends Vm {
     wattCounter.cpuUsage(CpuStorageUse)
     environment.getProgram(programAddress) match {
       case Some(program) =>
-        program.code.rewind()
-        runBytes(program.code,
+        runBytes(program.code.asReadOnlyByteBuffer(),
                  environment,
                  memory,
                  wattCounter,
@@ -166,7 +165,6 @@ class VmImpl extends Vm {
         // System operations
         case STOP    => continue = false
         case FROM    => systemOperations.from()
-        case OWNER   => systemOperations.owner()
         case LCALL   => systemOperations.lcall()
         case SCALL   => systemOperations.scall()
         case PCREATE => systemOperations.pcreate()
@@ -181,6 +179,7 @@ class VmImpl extends Vm {
           }
         case THROW => systemOperations.`throw`()
         case EVENT => systemOperations.event()
+        case CODE  => systemOperations.code()
         case META  => Meta.readFromByteBuffer(program)
         case _     =>
       }

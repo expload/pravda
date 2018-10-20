@@ -1,6 +1,7 @@
 exe: arrays.exe
 ---
 translation: |-
+  meta custom "CIL"
   dup
   push "ctor"
   eq
@@ -274,21 +275,13 @@ translation: |-
   meta method {
   "name":"ctor","returnTpe":int8(0)
   }
-  from
-  paddr
-  owner
-  eq
-  jumpi @ctor_ok_1
-  push "Only owner can call the constructor"
-  throw
-  @ctor_ok_1:
   push "init"
   sexist
   not
-  jumpi @ctor_ok_2
+  jumpi @ctor_ok
   push "Program has been already initialized"
   throw
-  @ctor_ok_2:
+  @ctor_ok:
   push null
   push "init"
   sput

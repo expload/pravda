@@ -49,6 +49,7 @@ object PravdaConfig {
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
+                             programWallet: Option[String] = None,
                              wattPayerWallet: Option[String] = None,
                              input: Option[String] = None,
                              dryRun: Boolean = false,
@@ -65,8 +66,8 @@ object PravdaConfig {
       case object Nope                                                    extends Mode
       case object Deploy                                                  extends Mode
       case object Run                                                     extends Mode
-      final case class Update(program: Option[String])                    extends Mode
-      final case class Seal(program: Option[String])                      extends Mode
+      case object Update                                                  extends Mode
+      case object Seal                                                    extends Mode
       final case class Transfer(to: Option[String], amount: Option[Long]) extends Mode
     }
   }

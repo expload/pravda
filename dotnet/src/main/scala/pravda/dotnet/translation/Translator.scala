@@ -36,6 +36,8 @@ import scala.collection.mutable.ListBuffer
 
 object Translator {
 
+  final val CILMark = Meta.Custom("CIL")
+
   def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
     case SigType.Void          => Meta.TypeSignature.Null
     case SigType.Boolean       => Meta.TypeSignature.Boolean
@@ -348,24 +350,16 @@ object Translator {
         case Some(i) =>
           val method = methods(i)
           val prefix = List(
-            Operation(Opcodes.FROM),
-            Operation(Opcodes.PADDR),
-            Operation(Opcodes.OWNER),
-            Operation(Opcodes.EQ),
-            Operation.JumpI(Some("ctor_ok_1")),
-            Operation.Push(Data.Primitive.Utf8("Only owner can call the constructor")),
-            Operation(Opcodes.THROW),
-            Operation.Label("ctor_ok_1"),
             Operation.Push(Data.Primitive.Utf8("init")),
             Operation(Opcodes.SEXIST),
             Operation(Opcodes.NOT),
-            Operation.JumpI(Some("ctor_ok_2")),
+            Operation.JumpI(Some("ctor_ok")),
             Operation.Push(Data.Primitive.Utf8("Program has been already initialized")),
             Operation(Opcodes.THROW),
-            Operation.Label("ctor_ok_2"),
+            Operation.Label("ctor_ok"),
             Operation.Push(Data.Primitive.Null),
             Operation.Push(Data.Primitive.Utf8("init")),
-            Operation(Opcodes.SPUT),
+            Operation(Opcodes.SPUT)
           )
 
           translateMethod(
@@ -584,7 +578,7 @@ object Translator {
       Operation(Opcodes.THROW)
     )
 
-    val prefix = ctorCheck ++
+    val prefix = Operation.Meta(CILMark) :: ctorCheck ++
       List(Operation.Label("methods")) ++ jumpToMethods ++ List(
       Operation.Push(Data.Primitive.Utf8("Wrong method name")),
       Operation(Opcodes.THROW)
