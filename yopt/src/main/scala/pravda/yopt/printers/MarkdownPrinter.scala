@@ -51,7 +51,7 @@ object MarkdownPrinter {
   private def printHeader[C](cmdPath: CmdPath[C]): String = {
     val dne = s"<!--${EOL}THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!$EOL-->"
     val usage = s"```${cmdPath.toUsageString}```"
-    val desc = s"## Description$EOL${cmdPath.text}"
+    val desc = s"## Description$EOL${cmdPath.mdText}"
     List(dne, usage, desc).mkString(s"$EOL$EOL")
   }
 

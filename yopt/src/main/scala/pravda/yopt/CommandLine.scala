@@ -24,11 +24,14 @@ object CommandLine {
   final case class Head[C](
       name: String,
       text: String = "",
+      mdText: Option[String] = None,
       verbs: List[Verb[C]] = List.empty[Verb[C]]
   ) {
     def children(xs: Verb[C]*): Head[C] = copy(verbs = verbs ++ xs)
 
     def text(msg: String): Head[C] = copy(text = msg)
+
+    def mdText(msg: String): Head[C] = copy(mdText = Some(msg))
   }
 
   sealed trait Verb[C]
@@ -79,6 +82,13 @@ object CommandLine {
         head.verbs
       } else {
         cmds.last.verbs
+      }
+
+    lazy val mdText: String =
+      if (cmds.isEmpty) {
+        head.mdText.getOrElse(head.text)
+      } else {
+        cmds.last.text
       }
 
     lazy val text: String =
