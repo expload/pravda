@@ -32,11 +32,11 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   private val limits = new ArrayBuffer[Int](1024)
 
-  def updateOffset(newOffset: Int): Unit = {
+  def setCounter(newOffset: Int): Unit = {
     offset = newOffset
   }
 
-  def currentOffset: Int = offset
+  def currentCounter: Int = offset
 
   private def localCallStack = {
     if (callStack.isEmpty) {
@@ -50,9 +50,9 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
     if (pcallStack.length >= 1024 || callStack.length >= 1024) {
       throw ThrowableVmError(ExtCallStackOverflow)
     }
-    pcallStack += currentOffset
+    pcallStack += currentCounter
     callStack += (Some(address) -> new ArrayBuffer[Int](1024))
-    updateOffset(0)
+    setCounter(0)
   }
 
   def exitProgram(): Unit = {
@@ -63,7 +63,7 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
     }
 
     callStack.remove(callStack.length - 1) match {
-      case (Some(_), _) => updateOffset(lastOffset)
+      case (Some(_), _) => setCounter(lastOffset)
       case _            => throw ThrowableVmError(ExtCallStackUnderflow)
     }
   }
@@ -72,15 +72,15 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
     if (localCallStack.isEmpty) {
       throw ThrowableVmError(CallStackUnderflow)
     }
-    updateOffset(localCallStack.remove(localCallStack.length - 1))
+    setCounter(localCallStack.remove(localCallStack.length - 1))
   }
 
   def makeCall(newOffset: Int): Unit = {
     if (localCallStack.length >= 1024) {
       throw ThrowableVmError(CallStackOverflow)
     }
-    localCallStack += currentOffset
-    updateOffset(newOffset)
+    localCallStack += currentCounter
+    setCounter(newOffset)
   }
 
   def limit(index: Int): Unit = {
@@ -150,12 +150,13 @@ final case class MemoryImpl(stack: ArrayBuffer[Data.Primitive], heap: ArrayBuffe
 
   def length: Int = stack.length
 
-  def heapPut(x: Data): Int = {
+  def heapPut(x: Data): Data.Primitive.Ref = {
     heap += x
-    heap.length - 1
+    Data.Primitive.Ref(heap.length - 1)
   }
 
-  def heapGet(idx: Int): Data = {
+  def heapGet(ref: Data.Primitive.Ref): Data = {
+    val idx = ref.data
     if (idx >= heap.length || idx < 0) {
       throw ThrowableVmError(Error.WrongHeapIndex)
     }

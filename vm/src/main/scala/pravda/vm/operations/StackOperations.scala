@@ -39,10 +39,12 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
 
   @OpcodeImplementation(
     opcode = Opcodes.PUSHX,
-    description = "Pushes the word following the opcode to the stack."
+    description = "Pushes the data primitive following the opcode to the stack. Refs are prohibited"
   )
   def push(): Unit = {
     Data.readFromByteBuffer(program) match {
+      case _: Data.Primitive.Ref =>
+        throw ThrowableVmError(Error.WrongType)
       case data: Data.Primitive =>
         wattCounter.memoryUsage(data.volume.toLong)
         memory.push(data)

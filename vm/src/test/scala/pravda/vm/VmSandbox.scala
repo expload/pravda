@@ -9,6 +9,7 @@ import scala.collection.mutable
 object VmSandbox {
 
   class EnvironmentSandbox(effects: mutable.Buffer[vm.Effect],
+                           initStorages: Map[Address, Map[Primitive, Data]],
                            initBalances: Seq[(Address, Primitive.BigInt)],
                            initPrograms: Seq[(Address, Primitive.Bytes)],
                            pExecutor: Address)
@@ -38,11 +39,7 @@ object VmSandbox {
     def getProgram(address: Address): Option[ProgramContext] = {
       programs.get(address).map { p =>
         ProgramContext(
-          new Storage { // TODO meaningful storage
-            override def get(key: Data.Primitive): Option[Data] = None
-            override def put(key: Data.Primitive, value: Data): Option[Data] = None
-            override def delete(key: Data.Primitive): Option[Data] = None
-          },
+          new StorageSandbox(address, effects, initStorages.getOrElse(address, Map.empty).toSeq),
           p.data,
           `sealed` = sealedPrograms.getOrElse(address, false)
         )
@@ -67,24 +64,26 @@ object VmSandbox {
       effects += vm.Effect.Event(address, name, data)
   }
 
-  class StorageSandbox(effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)]) extends Storage {
+  class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])
+      extends Storage {
+
     val storageItems: mutable.Map[Data.Primitive, Data] = mutable.Map(initStorage: _*)
 
-    override def get(key: Data.Primitive): Option[Data] = {
+    def get(key: Data.Primitive): Option[Data] = {
       val value = storageItems.get(key)
-      effects += vm.Effect.StorageRead(Address.Void, key, value)
+      effects += vm.Effect.StorageRead(address, key, value)
       value
     }
 
-    override def put(key: Data.Primitive, value: Data): Option[Data] = {
+    def put(key: Data.Primitive, value: Data): Option[Data] = {
       val prev = storageItems.put(key, value)
-      effects += vm.Effect.StorageWrite(Address.Void, key, prev, value)
+      effects += vm.Effect.StorageWrite(address, key, prev, value)
       prev
     }
 
-    override def delete(key: Data.Primitive): Option[Data] = {
+    def delete(key: Data.Primitive): Option[Data] = {
       val prev = storageItems.remove(key)
-      effects += vm.Effect.StorageRemove(Address.Void, key, prev)
+      effects += vm.Effect.StorageRemove(address, key, prev)
       prev
     }
   }

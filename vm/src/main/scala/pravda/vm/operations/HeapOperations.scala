@@ -45,7 +45,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val data = memory.pop()
     val i = memory.heapPut(data)
     wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(Data.Primitive.Ref(i))
+    memory.push(i)
   }
 
   @OpcodeImplementation(
@@ -55,7 +55,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   )
   def primitiveGet(): Unit = {
     val i = ref(memory.pop())
-    memory.heapGet(i.data) match {
+    memory.heapGet(i) match {
       case primitive: Data.Primitive => memory.push(primitive)
       case _                         => throw ThrowableVmError(Error.WrongType)
     }
@@ -64,15 +64,30 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   @OpcodeImplementation(
     opcode = NEW,
     description = "Puts the data following the opcode to the heap. " +
-      "Pushes reference to the stack."
+      "Pushes reference to the stack. Refs in structs and ref arrays are prohibited."
   )
   def `new`(): Unit = {
-    val data = Data.readFromByteBuffer(program)
+    val data = Data.readFromByteBuffer(program) match {
+      case _: Data.Primitive.Ref =>
+        throw ThrowableVmError(Error.WrongType)
+      case _: Data.Array.RefArray =>
+        throw ThrowableVmError(Error.WrongType)
+      case data: Data.Struct =>
+        // check for refs
+        data.data.foreach {
+          case (_: Primitive.Ref, _) =>
+            throw ThrowableVmError(Error.WrongType)
+          case (_, _: Primitive.Ref) =>
+            throw ThrowableVmError(Error.WrongType)
+          case _ => // do nothing
+        }
+        data
+      case x => x
+    }
     val i = memory.heapPut(data)
-    val reference = Data.Primitive.Ref(i)
     wattCounter.memoryUsage(data.volume.toLong)
-    wattCounter.memoryUsage(reference.volume.toLong)
-    memory.push(reference)
+    wattCounter.memoryUsage(i.volume.toLong)
+    memory.push(i)
   }
 
   @OpcodeImplementation(
@@ -101,7 +116,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case _            => throw ThrowableVmError(WrongType)
     }
 
-    memory.push(Data.Primitive.Ref(memory.heapPut(arr)))
+    memory.push(memory.heapPut(arr))
   }
 
   @OpcodeImplementation(
@@ -112,7 +127,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def arrayGet(): Unit = {
     val index = integer(memory.pop()).toInt
     memory.pop() match {
-      case Ref(reference) =>
+      case reference: Ref =>
         val datum = memory.heapGet(reference) match {
           case Bytes(data)       => Uint8(data.byteAt(index) & 0xFF)
           case Utf8(data)        => Uint8(data.charAt(index).toByte & 0xFF)
@@ -152,7 +167,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val index = integer(memory.pop()).toInt
     val primitive = memory.pop()
     val reference = ref(memory.pop())
-    val array = memory.heapGet(reference.data)
+    val array = memory.heapGet(reference)
     (primitive, array) match {
       case (Int8(value), Int8Array(data))     => data(index) = value
       case (Int16(value), Int16Array(data))   => data(index) = value
@@ -177,7 +192,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   )
   def length(): Unit = {
     val len = memory.pop() match {
-      case Ref(reference) =>
+      case reference: Ref =>
         memory.heapGet(reference) match {
           case Int8Array(data)   => data.length
           case Int16Array(data)  => data.length
@@ -208,7 +223,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def structGet(): Unit = {
     val key = memory.pop()
     val reference = ref(memory.pop())
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     val datum = struct match {
       case Struct(data) =>
         data(key)
@@ -226,7 +241,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def structGetStatic(): Unit = {
     val reference = ref(memory.pop())
     val key = Data.readFromByteBuffer(program)
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     val datum = (struct, key) match {
       case (Struct(data), k: Primitive) =>
         data(k)
@@ -245,7 +260,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val key = memory.pop()
     val value = memory.pop()
     val reference = ref(memory.pop())
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     struct match {
       case Struct(data) =>
         data(key) = value
@@ -262,7 +277,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def structMutStatic(): Unit = {
     val value = memory.pop()
     val reference = ref(memory.pop())
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     val key = Data.readFromByteBuffer(program)
     (struct, key) match {
       case (Struct(data), k: Primitive) =>

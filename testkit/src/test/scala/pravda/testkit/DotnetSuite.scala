@@ -31,13 +31,13 @@ object DotnetSuiteData {
                                  stack: Seq[Primitive] = Nil,
                                  heap: Map[Primitive.Ref, Data] = Map.empty,
                                  storage: Map[Primitive, Data] = Map.empty,
+                                 `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
                                  programs: Map[Address, Primitive.Bytes] = Map.empty,
                                  executor: Option[Address] = None,
                                  dotnetCompilation: String)
 
   final case class Expectations(stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
-                                storage: Map[Primitive, Data] = Map.empty,
                                 effects: Seq[vm.Effect] = Nil,
                                 error: Option[vm.Error] = None)
 }
@@ -128,10 +128,19 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
     }
 
     val effects = mutable.Buffer[vm.Effect]()
-    val environment: Environment =
-      new VmSandbox.EnvironmentSandbox(effects, input.balances.toSeq, input.programs.toSeq, pExecutor)
+    val environment: Environment = new VmSandbox.EnvironmentSandbox(
+      effects = effects,
+      initStorages = input.`program-storage`,
+      initBalances = input.balances.toSeq,
+      initPrograms = input.programs.toSeq,
+      pExecutor = pExecutor
+    )
 
-    val storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
+    val storage = new VmSandbox.StorageSandbox(
+      Address.Void,
+      effects,
+      input.storage.toSeq
+    )
 
     for {
       a <- asmProgram
@@ -156,7 +165,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
                 DataError(e.getMessage),
                 FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
                 memory.callStack,
-                memory.currentOffset
+                memory.currentCounter
               ))
           case ThrowableVmError(e) =>
             Some(
@@ -164,7 +173,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
                 e,
                 FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
                 memory.callStack,
-                memory.currentOffset))
+                memory.currentCounter))
         },
         _ => None
       )
@@ -172,7 +181,6 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
       Expectations(
         memory.stack,
         memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap,
-        storage.storageItems.toMap,
         effects,
         error.map(_.error)
       )

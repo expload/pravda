@@ -81,7 +81,7 @@ final class SystemOperations(program: ByteBuffer,
     vm.run(programAddress, env, memory, wattCounter, pcallAllowed = true)
     memory.exitProgram()
     memory.dropLimit()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -101,7 +101,7 @@ final class SystemOperations(program: ByteBuffer,
     vm.run(addr, env, memory, wattCounter, pcallAllowed = false) // TODO disallow to change storage
     memory.exitProgram()
     memory.dropLimit()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -235,7 +235,7 @@ final class SystemOperations(program: ByteBuffer,
       val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
       def extract(ref: Data.Primitive.Ref) = {
         val k = Data.Primitive.Ref(pHeap.size)
-        val v = aux(memory.heapGet(ref.data))
+        val v = aux(memory.heapGet(ref))
         wattCounter.storageUsage(k.volume.toLong)
         wattCounter.storageUsage(v.volume.toLong)
         wattCounter.cpuUsage(10)
@@ -265,7 +265,7 @@ final class SystemOperations(program: ByteBuffer,
     val name = utf8(memory.pop())
     val data = memory.pop() match {
       case ref: Data.Primitive.Ref =>
-        marshalData(memory.heapGet(ref.data)) match {
+        marshalData(memory.heapGet(ref)) match {
           case (d, ph) if ph.isEmpty => MarshalledData.Simple(d)
           case (d, ph)               => MarshalledData.Complex(d, ph)
         }

@@ -25,6 +25,7 @@ object VmSuiteData {
                                  stack: Seq[Primitive] = Nil,
                                  heap: Map[Primitive.Ref, Data] = Map.empty,
                                  storage: Map[Primitive, Data] = Map.empty,
+                                 `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
                                  programs: Map[Address, Primitive.Bytes] = Map.empty,
                                  executor: Option[Address] = None,
                                  code: String)
@@ -32,7 +33,6 @@ object VmSuiteData {
   final case class Expectations(`watts-spent`: Long,
                                 stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
-                                storage: Map[Primitive, Data] = Map.empty,
                                 effects: Seq[vm.Effect] = Nil,
                                 error: Option[vm.Error] = None)
 }
@@ -75,9 +75,14 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
     }
 
     val effects = mutable.Buffer[vm.Effect]()
-    val environment: Environment =
-      new VmSandbox.EnvironmentSandbox(effects, input.balances.toSeq, input.programs.toSeq, pExecutor)
-    val storage = new VmSandbox.StorageSandbox(effects, input.storage.toSeq)
+    val environment: Environment = new VmSandbox.EnvironmentSandbox(
+      effects,
+      input.`program-storage`,
+      input.balances.toSeq,
+      input.programs.toSeq,
+      pExecutor
+    )
+    val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     for {
       asmProgram <- asmProgramE.left.map(_.mkString)
@@ -102,7 +107,7 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
                 DataError(e.getMessage),
                 FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
                 memory.callStack,
-                memory.currentOffset
+                memory.currentCounter
               ))
           case ThrowableVmError(e) =>
             Some(
@@ -110,7 +115,7 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
                 e,
                 FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
                 memory.callStack,
-                memory.currentOffset))
+                memory.currentCounter))
         },
         _ => None
       )
@@ -119,7 +124,6 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
         wattCounter.spent,
         memory.stack,
         memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap,
-        storage.storageItems.toMap,
         effects,
         error.map(_.error)
       )

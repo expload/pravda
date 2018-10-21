@@ -64,7 +64,7 @@ object PravdaAssembler {
       bytecode.put(opcode.toByte)
 
     // put placeholder for the label reference
-    def pushRef(name: String): Unit = {
+    def pushLabel(name: String): Unit = {
       if (saveLabels) {
         putOp(Opcodes.META)
         Metadata.LabelUse(name).writeToByteBuffer(bytecode)
@@ -73,12 +73,12 @@ object PravdaAssembler {
       // Save goto offset to set in a future
       gotos.put(bytecode.position, name)
       // Just a placeholer. Ref is constant sized
-      Primitive.Ref.Void.writeToByteBuffer(bytecode)
+      Primitive.Offset.Void.writeToByteBuffer(bytecode)
     }
 
     // Go to `name` using `opcode`
     def goto(name: String, opcode: Int): Unit = {
-      pushRef(name)
+      pushLabel(name)
       putOp(opcode)
     }
 
@@ -115,7 +115,7 @@ object PravdaAssembler {
       case Jump(None)        => putOp(Opcodes.JUMP)
       case JumpI(None)       => putOp(Opcodes.JUMPI)
       case Call(None)        => putOp(Opcodes.CALL)
-      case PushRef(name)     => pushRef(name)
+      case PushOffset(label) => pushLabel(label)
       case Orphan(opcode)    => putOp(opcode)
       // Simple operations
       case Nop        => ()
@@ -126,7 +126,7 @@ object PravdaAssembler {
     bytecode.flip()
 
     for ((offset, label) <- gotos) {
-      val data = Primitive.Ref(labels(label))
+      val data = Primitive.Offset(labels(label))
       // Replace placeholder with real offset
       bytecode.position(offset)
       data.writeToByteBuffer(bytecode)
@@ -173,7 +173,7 @@ object PravdaAssembler {
           }
         case Opcodes.PUSHX if label.nonEmpty =>
           Data.readFromByteBuffer(buffer)
-          operations += (offset -> Operation.PushRef(label.get))
+          operations += (offset -> Operation.PushOffset(label.get))
           label = None
         case Opcodes.PUSHX =>
           val offset = buffer.position()
@@ -183,7 +183,7 @@ object PravdaAssembler {
           }
         case Opcodes.JUMP =>
           operations.last match {
-            case (_, Operation.PushRef(l)) =>
+            case (_, Operation.PushOffset(l)) =>
               operations.remove(operations.length - 1)
               operations += (offset -> Operation.Jump(Some(l)))
             case _ =>
@@ -191,7 +191,7 @@ object PravdaAssembler {
           }
         case Opcodes.JUMPI =>
           operations.last match {
-            case (_, Operation.PushRef(l)) =>
+            case (_, Operation.PushOffset(l)) =>
               operations.remove(operations.length - 1)
               operations += (offset -> Operation.JumpI(Some(l)))
             case _ =>
@@ -199,7 +199,7 @@ object PravdaAssembler {
           }
         case Opcodes.CALL =>
           operations.last match {
-            case (_, Operation.PushRef(l)) =>
+            case (_, Operation.PushOffset(l)) =>
               operations.remove(operations.length - 1)
               operations += (offset -> Operation.Call(Some(l)))
             case _ =>
@@ -229,7 +229,7 @@ object PravdaAssembler {
     case Jump(Some(label))  => s"${mnemonic(Opcodes.JUMP)} @$label"
     case JumpI(Some(label)) => s"${mnemonic(Opcodes.JUMPI)} @$label"
     case Call(Some(label))  => s"${mnemonic(Opcodes.CALL)} @$label"
-    case PushRef(label)     => s"${mnemonic(Opcodes.PUSHX)} @$label"
+    case PushOffset(label)  => s"${mnemonic(Opcodes.PUSHX)} @$label"
     case Jump(None)         => mnemonic(Opcodes.JUMP)
     case JumpI(None)        => mnemonic(Opcodes.JUMPI)
     case Call(None)         => mnemonic(Opcodes.CALL)
@@ -281,7 +281,7 @@ object PravdaAssembler {
     val delim = P(CharIn(" \t\r\n").rep(min = 1))
 
     val label = P(ident ~ ":").map(n => Operation.Label(n))
-    val pushRef = P(IgnoreCase("push") ~ delim ~ ident).map(Operation.PushRef)
+    val pushLabel = P(IgnoreCase("push") ~ delim ~ ident).map(Operation.PushOffset)
     val push = P(IgnoreCase("push") ~ delim ~ dataPrimitive).map(Operation.Push)
     val `new` = P(IgnoreCase("new") ~ delim ~ dataAll).map(Operation.New)
     val jump = P(IgnoreCase("jump") ~ (delim ~ ident).?).map(Operation.Jump)
@@ -295,7 +295,7 @@ object PravdaAssembler {
 
     val operation = Operation.Orphans
       .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))
-      .++(Seq(jumpi, jump, call, pushRef, push, `new`, struct_get, struct_mut, label, comment, meta))
+      .++(Seq(jumpi, jump, call, pushLabel, push, `new`, struct_get, struct_mut, label, comment, meta))
       .reduce(_ | _)
 
     P(whitespace ~ operation.rep(sep = delim) ~ whitespace)

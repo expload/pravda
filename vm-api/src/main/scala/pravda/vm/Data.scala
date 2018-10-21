@@ -57,6 +57,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Utf8(_)        => "Utf8"
       case Bytes(_)       => "Bytes"
       case Ref(_)         => "Ref"
+      case Offset(_)      => "Offset"
       case Int8Array(_)   => "Int8Array"
       case Int16Array(_)  => "Int16Array"
       case Int32Array(_)  => "Int32Array"
@@ -117,6 +118,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Number(data) => s"number($data)"
       case BigInt(data) => s"bigint($data)"
       case Ref(data)    => s"#${ref(data)}"
+      case Offset(data) => s"$$${ref(data)}"
       case Bytes(data)  => s"x${bytes(data)}"
       case Bool.True    => "true"
       case Bool.False   => "false"
@@ -225,6 +227,11 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       buffer.putInt(x)
     }
 
+    def putOffset(x: Int): Unit = {
+      buffer.put(Type.Offset)
+      buffer.putShort(x.toShort)
+    }
+
     def putPrimitive(typeTag: Type)(f: ByteBuffer => Unit): Unit = {
       buffer.put(typeTag)
       putTaglessPrimitive(f)
@@ -287,6 +294,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Uint32(data)      => putPrimitive(Type.Uint32)(_.putLong(data))
       case BigInt(data)      => putTaggedBigInt(buffer, data)
       case Ref(data)         => putRef(data)
+      case Offset(data)      => putOffset(data)
       case Bool.True         => putBoolean(buffer, 1.toByte)
       case Bool.False        => putBoolean(buffer, 0.toByte)
       case Int8Array(data)   => putPrimitiveArray(Type.Int8, data)(_.put(_))
@@ -586,6 +594,13 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class Bytes(data: ByteString)    extends Primitive with Array
     final case class Ref(data: Int)             extends Primitive
 
+    /**
+      * Special primitive to present offsets in program.
+      * It has constant size presintation in bytecode.
+      * You can't cast it to other types.
+      */
+    final case class Offset(data: Int) extends Primitive
+
     case object Null extends Primitive
     sealed trait Bool extends Primitive {
 
@@ -595,8 +610,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       }
     }
 
-    object Ref {
-      final val Void = Ref(-1)
+    object Offset {
+      final val Void = Offset(-1)
     }
 
     object Bool {
@@ -705,7 +720,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   object parser {
 
-    val (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct) = {
+    val (primitive, all, utf8, ref, offset, bytes, bigint, uint, int, array, struct) = {
       import fastparse.all._
 
       val wChars = Seq(' ', '\t', '\n', '\r')
@@ -757,6 +772,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val ref = P("#" ~ uint).map(_.toInt).map(Primitive.Ref.apply)
 
+      val offset = P("$" ~ uint).map(_.toInt).map(Primitive.Offset.apply)
+
       val `null` = P(IgnoreCase("null")).map(_ => Primitive.Null)
 
       val string = {
@@ -782,7 +799,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val bytes = P(IgnoreCase("x") ~ (hexString | (PassWith(ByteString.EMPTY) ~ &(space)))).map(Primitive.Bytes)
 
-      val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | numeric | `null`)
+      val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | offset | numeric | `null`)
 
       def arrayParser[P1, P2, T, A](prefix: String, p1: Parser[P1], p2: Parser[P2])(array: mutable.Buffer[T] => A,
                                                                                     f1: P1 => T,
@@ -817,7 +834,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val all = P(struct | array | primitive)
 
       // exports
-      (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct)
+      (primitive, all, utf8, ref, offset, bytes, bigint, uint, int, array, struct)
     }
   }
 
@@ -918,6 +935,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     def getBigInt = scala.BigInt(getBytes(getLength))
     def getDouble = primitiveBuffer(8).getDouble
     def getRef = buffer.getInt()
+    def getOffset = buffer.getShort() & 0xFFFF
 
     buffer.get match {
       case Type.Null    => Primitive.Null
@@ -928,9 +946,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Type.Uint16  => Primitive.Uint16(getUint16) // uint16
       case Type.Uint32  => Primitive.Uint32(getUint32) // uint32
       case Type.BigInt  => Primitive.BigInt(getBigInt) // uint64
-      case Type.Number  => Primitive.Number(getDouble) // decimal // TODO
+      case Type.Number  => Primitive.Number(getDouble) // decimal
       case Type.Boolean => getBool
       case Type.Ref     => Primitive.Ref(getRef)
+      case Type.Offset  => Primitive.Offset(getOffset)
       case Type.Utf8    => Primitive.Utf8(getString) // utf8
       case Type.Bytes   => Primitive.Bytes(getByteString) // bytes
       case Type.Array =>
@@ -989,6 +1008,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final val Array = Type @@ 0x0C.toByte
     final val Struct = Type @@ 0x0D.toByte
     final val Bytes = Type @@ 0x0E.toByte
+    final val Offset = Type @@ 0x0F.toByte
   }
 
   type Type = Type.Type
