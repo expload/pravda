@@ -62,15 +62,15 @@ translation: |-
   swap
   push int32(3)
   pcall
-  push int32(4)
-  swapn
-  pop
-  push int32(3)
-  dupn
   push int32(3)
   swapn
   pop
   push int32(2)
+  dupn
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
   dupn
   jump @pcall_lvc
   @pcall_lvc:

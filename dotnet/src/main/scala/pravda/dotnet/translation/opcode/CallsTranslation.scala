@@ -70,7 +70,7 @@ case object CallsTranslation extends OneToManyTranslator {
       val sig = ctx.tctx.signatures.get(signatureIdx)
       val void = sig.exists(MethodExtractors.isVoid)
       val paramsLen = sig.map(MethodExtractors.methodParamsCount).getOrElse(0)
-      -paramsLen + (if (void) 0 else 1)
+      -paramsLen - 1 + (if (void) 0 else 1)
     }
 
     op match {
