@@ -22,6 +22,8 @@ package object yaml4s {
 
   def renderYaml(node: JValue): String = YamlMethods.render(node)
 
+  def renderYamlDiff(node: JValue, expected: JValue): String = YamlMethods.renderDiff(node, expected)
+
   def parseYamlOpt(in: JsonInput, useBigDecimalForDouble: Boolean): Option[JValue] =
     YamlMethods.parseOpt(in, useBigDecimalForDouble)
 

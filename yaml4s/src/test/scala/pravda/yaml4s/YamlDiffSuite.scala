@@ -67,6 +67,54 @@ object YamlDiffSuite extends TestSuite {
           |third body: [yellow]three[reset]""".stripMargin
     }
 
+    "simple object deletion diff" - {
+      val json1 = parse("""
+           {
+             "first body": 1,
+             "second body": "two",
+             "third body": "three",
+             "forth body": "four"
+           }
+          """)
+      val json2 = parse("""
+           {
+             "first body": "one",
+             "second body": "two",
+             "third body": "three"
+           }
+          """)
+
+      escapeColours(YamlMethods.renderDiff(json1, json2)) ==>
+        """first body: [yellow]one[reset]
+          |second body: two
+          |third body: three
+          |[red]forth body: four[reset]""".stripMargin
+    }
+
+    "simple object addition diff" - {
+      val json1 = parse("""
+           {
+             "first body": 1,
+             "second body": "two",
+             "third body": "three",
+           }
+          """)
+      val json2 = parse("""
+           {
+             "first body": "one",
+             "second body": "two",
+             "third body": "three",
+             "forth body": "four"
+           }
+          """)
+
+      escapeColours(YamlMethods.renderDiff(json1, json2)) ==>
+        """first body: [yellow]one[reset]
+          |second body: two
+          |third body: three
+          |[green]forth body: four[reset]""".stripMargin
+    }
+
     "simple object permutation diff" - {
       val json1 = parse("""
            {

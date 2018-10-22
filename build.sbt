@@ -113,6 +113,7 @@ lazy val vm = (project in file("vm"))
   .settings(
     sources in doc := Seq.empty,
     publishArtifact in packageDoc := false,
+    testFrameworks := Seq(new TestFramework("pravda.common.PreserveColoursFramework"))
   )
   .dependsOn(`vm-api`, `vm-asm` % "compile->test")
   .dependsOn(common % "compile->compile;test->test")
@@ -148,7 +149,8 @@ lazy val dotnet = (project in file("dotnet"))
       "org.typelevel" %% "cats-core" % "1.0.1",
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
       "com.lihaoyi" %% "pprint" % "0.5.3" % "test"
-    )
+    ),
+    testFrameworks := Seq(new TestFramework("pravda.common.PreserveColoursFramework"))
   )
   .dependsOn(`vm-asm`)
   .dependsOn(common % "test->test")
@@ -297,7 +299,8 @@ lazy val testkit = (project in file("testkit"))
   .settings(
     skip in publish := true,
     normalizedName := "pravda-testkit",
-    unmanagedResourceDirectories in Test += dotnetTests
+    unmanagedResourceDirectories in Test += dotnetTests,
+    testFrameworks := Seq(new TestFramework("pravda.common.PreserveColoursFramework"))
   )
   .dependsOn(common % "test->test")
   .dependsOn(vm % "compile->compile;test->test")

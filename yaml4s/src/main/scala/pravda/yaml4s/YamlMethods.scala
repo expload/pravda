@@ -123,7 +123,8 @@ object YamlMethods {
   def renderDiff(node: JValue, expected: JValue): String = {
 
     def print(j: JValue) = yaml.dump(jvalue2java(j)).trim
-    def printWithColour(j: JValue, colour: String) = s"$colour${print(j)}${Console.RESET}"
+    def withColour(s: String, colour: String) = s"$colour$s${Console.RESET}"
+    def printWithColour(j: JValue, colour: String) = withColour(print(j), colour)
 
     def withNewLine(s: String) = if (s.nonEmpty) "\n" + s else s
 
@@ -158,11 +159,11 @@ object YamlMethods {
           val (_, yvalue) = ys.find(_._1 == xname).get
           formatElem(xname, diff(xvalue, yvalue)) + withNewLine(diffFields(xtail, ys.filterNot(_ == xname -> yvalue)))
         case (xname, xvalue) :: xtail =>
-          formatElem(xname, printWithColour(xvalue, Console.RED)) + withNewLine(diffFields(xtail, ys))
+          withColour(formatElem(xname, print(xvalue)), Console.RED) + withNewLine(diffFields(xtail, ys))
         case Nil =>
           ys match {
             case (yname, yvalue) :: ytail =>
-              formatElem(yname, printWithColour(yvalue, Console.GREEN)) + withNewLine(diffFields(Nil, ytail))
+              withColour(formatElem(yname, print(yvalue)), Console.GREEN) + withNewLine(diffFields(Nil, ytail))
             case Nil => ""
           }
       }
@@ -186,8 +187,8 @@ object YamlMethods {
 
       (xs, ys) match {
         case (x :: xtail, y :: ytail) => formatElem(diff(x, y)) + withNewLine(diffVals(xtail, ytail))
-        case (Nil, y :: ytail)        => formatElem(printWithColour(y, Console.GREEN)) + withNewLine(diffVals(Nil, ytail))
-        case (x :: xtail, Nil)        => formatElem(printWithColour(x, Console.RED)) + withNewLine(diffVals(xtail, Nil))
+        case (Nil, y :: ytail)        => withColour(formatElem(print(y)), Console.GREEN) + withNewLine(diffVals(Nil, ytail))
+        case (x :: xtail, Nil)        => withColour(formatElem(print(x)), Console.RED) + withNewLine(diffVals(xtail, Nil))
         case (Nil, Nil)               => ""
       }
     }
