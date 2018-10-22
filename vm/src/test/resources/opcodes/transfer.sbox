@@ -1,19 +1,23 @@
----preconditions
-executor: x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
-balances:
-  x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d = bigint(1000000),
-  xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b = bigint(1199)
 watts-limit: 1000
----expectations
+executor: 25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
+balances:
+  25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d: bigint.1000000
+  a4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b: bigint.1199
+code: |-
+  push xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
+  push bigint(100000)
+  transfer
+  push xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
+  balance
+---
 watts-spent: 145
 stack:
-  bigint(101199)
+  - bigint.101199
 effects:
-  transfer x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b 100000,
-  balance xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b 101199
----code
-push xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
-push bigint(100000)
-transfer
-push xa4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
-balance
+  - eventType: Transfer
+    from: 0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+    to: a4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
+    amount: 100000
+  - eventType: ShowBalance
+    address: a4b6e44ddd94b7ceee9b38c5e1f05c9509688288b8328e63a4cdc7defeaa2a7b
+    amount: 101199

@@ -40,7 +40,7 @@ import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
 import pravda.node.servers.Abci.TransactionResult
-import pravda.vm.{Data, ThrowableVmError}
+import pravda.vm.{MarshalledData, ThrowableVmError}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -204,10 +204,10 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                   bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
                   count.toLong
                 )
-                .map(_.map(r => transcode(Bson @@ r.bytes).to[Data]))
+                .map(_.map(r => transcode(Bson @@ r.bytes).to[MarshalledData]))
 
               onSuccess(f) { res =>
-                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d.mkString()) })
+                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d) })
               }
             }
           }
@@ -216,7 +216,8 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
 }
 
 object ApiRoute {
+
   final val MaxEventCount = 1000
 
-  final case class EventItem(offset: Int, data: String)
+  final case class EventItem(offset: Int, data: MarshalledData)
 }

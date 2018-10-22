@@ -19,9 +19,6 @@ package pravda.node
 
 package servers
 
-import java.nio.ByteBuffer
-import java.security.MessageDigest
-
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
 import pravda.common.domain._
@@ -223,7 +220,7 @@ object Abci {
   final val TxStatusUnauthorized = 1
   final val TxStatusError = 2
 
-  final case class StoredProgram(code: ByteString, owner: Address, `sealed`: Boolean)
+  final case class StoredProgram(code: ByteString, `sealed`: Boolean)
 
   final class BlockDependentEnvironment(db: DB) {
 
@@ -269,14 +266,14 @@ object Abci {
 
       private final class WsProgramStorage(address: Address, dbPath: DbPath) extends Storage {
 
-        def get(key: Data): Option[Data] = {
+        def get(key: Data.Primitive): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
           transactionEffects += StorageRead(address, key, value.map(Data.fromBytes))
           value.map(Data.fromBytes)
         }
 
-        def put(key: Data, value: Data): Option[Data] = {
+        def put(key: Data.Primitive, value: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val array = value.toByteString.toByteArray
           val prev = dbPath.putRawBytes(hexKey, array)
@@ -284,7 +281,7 @@ object Abci {
           prev.map(Data.fromBytes)
         }
 
-        def delete(key: Data): Option[Data] = {
+        def delete(key: Data.Primitive): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.remove(hexKey)
           transactionEffects += StorageRemove(address, key, value.map(Data.fromBytes))
@@ -292,15 +289,10 @@ object Abci {
         }
       }
 
-      def createProgram(owner: Address, code: ByteString): Address = {
-        val sha256 = MessageDigest.getInstance("SHA-256")
-        val addressBytes = sha256.digest(transactionId.concat(code).toByteArray)
-        val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, owner, `sealed` = false)
-
-        transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
+      def createProgram(address: Address, code: ByteString): Unit = {
+        val sp = StoredProgram(code, `sealed` = false)
+        transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramCreate(address, Data.Primitive.Bytes(code))
-        address
       }
 
       def sealProgram(address: Address): Unit = {
@@ -312,13 +304,12 @@ object Abci {
 
       def updateProgram(address: Address, code: ByteString): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
-        if (oldSb.`sealed`) throw vm.ThrowableVmError(Error.ProgramIsSealed)
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
       }
 
-      def event(address: Address, name: String, data: Data): Unit = {
+      def event(address: Address, name: String, data: MarshalledData): Unit = {
         transactionEffects += Event(address, name, data)
       }
 
@@ -351,14 +342,11 @@ object Abci {
       // Effects below are ignored by effect collect
       // because they are inaccessible from user space
 
-      def getProgramOwner(address: Address): Option[Address] =
-        getStoredProgram(address).map(_.owner)
-
       def getProgram(address: Address): Option[ProgramContext] =
         getStoredProgram(address) map { program =>
           val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
           val storage = new WsProgramStorage(address, newPath)
-          ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
+          ProgramContext(storage, program.code, program.`sealed`)
         }
 
       def collectEffects: Seq[Effect] = transactionEffects
@@ -421,7 +409,7 @@ object Abci {
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
               case (Effect.Event(_, _, data), i) =>
-                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data)
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
         }

@@ -70,39 +70,47 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               }
 
             case DotNet =>
-              inputs.find {
+              val (other, csfiles) = inputs.partition {
                 case (p, f) => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb") && p != "stdin"
-              } match {
-                case Some((p, f)) => Monad[F].pure(Left(s"Wrong file extension: $p"))
-                case None =>
-                  val dotnetFilesE: Either[String, List[(ByteString, Option[ByteString])]] =
-                    inputs
-                      .groupBy { case (p, _) => p.dropRight(4) }
-                      .map {
-                        case (prefix, files) =>
-                          val exeO = files.find { case (path, _) => path == s"$prefix.exe" || path == "stdin" }
-                          val dllO = files.find { case (path, _) => path == s"$prefix.dll" }
-                          val pdbO = files.find { case (path, _) => path == s"$prefix.pdb" }
-
-                          (exeO, dllO) match {
-                            case (Some((exePath, _)), Some((dllPath, _))) =>
-                              Left(s".dll and .exe files have the same name: $exePath, $dllPath")
-                            case (None, None) =>
-                              Left(s".dll or .exe is not specified: $prefix")
-                            case (Some((exePath, exeContent)), None) =>
-                              Right((exeContent, pdbO.map(_._2)))
-                            case (None, Some((dllPath, dllContnet))) =>
-                              Right((dllContnet, pdbO.map(_._2)))
-                          }
-                      }
-                      .toList
-                      .sequence
-
-                  dotnetFilesE match {
-                    case Left(err)          => Monad[F].pure(Left(err))
-                    case Right(dotnetFiles) => compilers.dotnet(dotnetFiles, config.mainClass)
-                  }
               }
+
+              val dotnetFilesE: Either[String, List[(ByteString, Option[ByteString])]] =
+                csfiles
+                  .groupBy { case (p, _) => p.dropRight(4) }
+                  .map {
+                    case (prefix, files) =>
+                      val exeO = files.find { case (path, _) => path == s"$prefix.exe" || path == "stdin" }
+                      val dllO = files.find { case (path, _) => path == s"$prefix.dll" }
+                      val pdbO = files.find { case (path, _) => path == s"$prefix.pdb" }
+
+                      (exeO, dllO) match {
+                        case (Some((exePath, _)), Some((dllPath, _))) =>
+                          Left(s".dll and .exe files have the same name: $exePath, $dllPath")
+                        case (None, None) =>
+                          Left(s".dll or .exe is not specified: $prefix")
+                        case (Some((exePath, exeContent)), None) =>
+                          Right((exeContent, pdbO.map(_._2)))
+                        case (None, Some((dllPath, dllContnet))) =>
+                          Right((dllContnet, pdbO.map(_._2)))
+                      }
+                  }
+                  .toList
+                  .sequence
+
+              val compiled = dotnetFilesE match {
+                case Left(err)          => Monad[F].pure(Left(err))
+                case Right(dotnetFiles) => compilers.dotnet(dotnetFiles, config.mainClass)
+              }
+
+              for {
+                _ <- if (other.nonEmpty) {
+                  io.writeStringToStdout(
+                    other.map(o => s"Warning: ${o._1} has wrong file extension").mkString("", "\n", "\n"))
+                } else {
+                  Monad[F].pure(())
+                }
+                c <- compiled
+              } yield c
             case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }

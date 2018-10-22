@@ -44,7 +44,7 @@ object PravdaAssemblerSpecification extends Properties("PravdaAssembler") {
     calls = labels.map(s => Call(Some(s)))
     jumps = labels.map(s => Jump(Some(s)))
     jumpis = labels.map(s => JumpI(Some(s)))
-    pushRefs = labels.map(s => PushRef(s))
+    pushRefs = labels.map(s => PushOffset(s))
   } yield {
     labels.map(Label) ++ calls ++ jumps ++ jumpis ++ pushRefs
   }

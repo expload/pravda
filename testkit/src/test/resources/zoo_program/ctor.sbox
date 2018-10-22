@@ -1,13 +1,25 @@
----preconditions
-watts-limit: 10000
 stack:
-  "ctor"
----expectations
-watts-spent: 517
+  [utf8.ctor]
+dotnetCompilation: |-
+  zoo_program.cs
+---
+storage:
+  utf8.p_ZooCnt: int32.1
+  utf8.p_PetId: int32.1
+  utf8.init: "null"
 effects:
-  sget "init",
-  sput "init" null,
-  sput "p_ZooCnt" int32(1),
-  sput "p_PetId" int32(1)
----dotnet-files
-zoo_program.cs
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_ZooCnt
+    value: int32.1
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_PetId
+    value: int32.1

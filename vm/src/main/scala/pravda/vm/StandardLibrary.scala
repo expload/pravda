@@ -21,7 +21,8 @@ object StandardLibrary {
 
   val All = Seq(
     standard.Ripemd160,
-    standard.ValidateEd25519Signature
+    standard.ValidateEd25519Signature,
+    standard.ExponentialFunction
   )
 
   val Index: Map[Long, (Memory, WattCounter) => Unit] =

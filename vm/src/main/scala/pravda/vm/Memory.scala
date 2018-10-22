@@ -19,8 +19,8 @@ package pravda.vm
 import pravda.common.domain.Address
 
 trait Memory {
-  def updateOffset(newOffset: Int): Unit
-  def currentOffset: Int
+  def setCounter(newOffset: Int): Unit
+  def currentCounter: Int
 
   def enterProgram(address: Address): Unit
   def exitProgram(): Unit
@@ -45,10 +45,8 @@ trait Memory {
   def swap(i: Int, j: Int): Unit
   def length: Int
 
-  // TODO should return Data.Ref
-  def heapPut(x: Data): Int
-  // TODO should take Data.Ref
-  def heapGet(idx: Int): Data
+  def heapPut(x: Data): Data.Primitive.Ref
+  def heapGet(idx: Data.Primitive.Ref): Data
   def heapLength: Int
 
   def top(): Data.Primitive

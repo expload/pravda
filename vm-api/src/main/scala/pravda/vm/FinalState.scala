@@ -24,3 +24,13 @@ final case class FinalState(
     stack: Seq[Data],
     heap: Seq[Data]
 )
+
+object FinalState {
+  final val Empty = FinalState(
+    spentWatts = 0,
+    refundWatts = 0,
+    totalWatts = 0,
+    stack = Nil,
+    heap = Nil
+  )
+}

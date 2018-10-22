@@ -29,11 +29,20 @@ import scala.collection.mutable
   val (uint16, uint16Array) = genPrimitive(Gen.chooseNum(0xFF + 1, 0xFFFF), Uint16, Uint16Array)
   val (uint32, uint32Array) = genPrimitive(Gen.chooseNum(0xFFFFl + 1, 0xFFFFFFFFl), Uint32, Uint32Array)
 
-  val (bigInt, bigIntArray) =
-    genPrimitive(arbitrary[scala.BigInt].suchThat(x => x < Int.MinValue && x > 0xFFFFFFFFl), BigInt, BigIntArray)
+  val (bigInt, bigIntArray) = {
+    //val n = arbitrary[scala.BigInt].suchThat(x => x < Int.MinValue && x > 0xFFFFFFFFl)
+    val i = Gen.chooseNum[Int](1, Int.MaxValue)
+    val n = Gen.oneOf(
+      i.map(x => scala.BigInt(Int.MinValue) - x),
+      i.map(x => scala.BigInt(0xFFFFFFFFl) + x)
+    )
+    genPrimitive(n, BigInt, BigIntArray)
+  }
   val (number, numberArray) = genPrimitive(arbitrary[Double], Number, NumberArray)
 
   val (ref, refArray) = genPrimitive(arbitrary[Int], Ref.apply, RefArray)
+
+  val offset: Gen[Offset] = Gen.chooseNum(0, 65535).map(i => Data.Primitive.Offset(i))
 
   val (boolean, booleanArray) = {
     val f: Boolean => Bool = {
@@ -70,6 +79,7 @@ import scala.collection.mutable
     bytes,
     boolean,
     ref,
+    offset,
     `null`
   )
 

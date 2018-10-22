@@ -32,11 +32,11 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
   )
   def jumpi(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic, CpuProgControl)
-    val offset = ref(memory.pop())
+    val i = offset(memory.pop())
     val condition = boolean(memory.pop())
     if (condition) {
-      memory.updateOffset(offset.data)
-      program.position(memory.currentOffset)
+      memory.setCounter(i)
+      program.position(memory.currentCounter)
     }
   }
 
@@ -46,9 +46,9 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
   )
   def jump(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    val offset = ref(memory.pop())
-    memory.updateOffset(offset.data)
-    program.position(memory.currentOffset)
+    val i = offset(memory.pop())
+    memory.setCounter(i)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -59,9 +59,9 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
   )
   def call(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
-    val callOffset = ref(memory.pop())
-    memory.makeCall(callOffset.data)
-    program.position(memory.currentOffset)
+    val callOffset = offset(memory.pop())
+    memory.makeCall(callOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -71,6 +71,6 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
   )
   def ret(): Unit = {
     memory.makeRet()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 }

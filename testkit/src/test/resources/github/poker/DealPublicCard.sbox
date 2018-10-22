@@ -1,16 +1,29 @@
----preconditions
-watts-limit: 100000
 stack:
-  int32(9), "DealPublicCard"
+  [int32.9, utf8.DealPublicCard]
 storage:
-  "cardCombinations" = x1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C,
-  "init" = null
----expectations
-watts-spent: 759
+  utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+  utf8.init: "null"
+dotnetCompilation: |-
+  poker.cs
+---
+storage:
+   bytes.5461626c65436172647300000000: int32.9
+   utf8.cardCombinations: bytes.1f2f4f3757673b5b6b733d5d6d75793e5e6e767a7c
+   bytes.5461626c654361726473ffffffff: int32.1
+   utf8.init: "null"
 effects:
-  sget "init" null,
-  sget x5461626C654361726473FFFFFFFF,
-  sput x5461626C65436172647300000000 int32(9),
-  sput x5461626C654361726473FFFFFFFF int32(1)
----dotnet-files
-poker.cs
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c654361726473ffffffff
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c65436172647300000000
+    value: int32.9
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c654361726473ffffffff
+    value: int32.1

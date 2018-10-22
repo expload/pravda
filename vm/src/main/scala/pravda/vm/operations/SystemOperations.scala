@@ -19,13 +19,16 @@ package pravda.vm.operations
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
+import pravda.common.contrib.ed25519
 import pravda.common.domain
-import pravda.common.domain.Address
 import pravda.vm.Opcodes._
 import pravda.vm.Error.{OperationDenied, UserError}
 import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
+
+import scala.collection.mutable
 
 final class SystemOperations(program: ByteBuffer,
                              memory: Memory,
@@ -36,6 +39,8 @@ final class SystemOperations(program: ByteBuffer,
                              standardLibrary: Map[Long, (Memory, WattCounter) => Unit],
                              vm: Vm) {
 
+  import SystemOperations._
+
   @OpcodeImplementation(
     opcode = STOP,
     description = "Stops program execution."
@@ -45,10 +50,25 @@ final class SystemOperations(program: ByteBuffer,
   }
 
   @OpcodeImplementation(
+    opcode = CODE,
+    description = "Take address of a program. Pushes program bytecode to the stack"
+  )
+  def code(): Unit = {
+    val programAddress = address(memory.pop())
+    wattCounter.cpuUsage(CpuStorageUse)
+    env.getProgram(programAddress) match {
+      case Some(context) =>
+        wattCounter.memoryUsage(context.code.size().toLong)
+        memory.push(Data.Primitive.Bytes(context.code))
+      case None => throw ThrowableVmError(Error.NoSuchProgram)
+    }
+  }
+
+  @OpcodeImplementation(
     opcode = PCALL,
     description = "Takes two words by which it is followed. " +
       "They are address `a` and the number of parameters `n`, " +
-      "respectively. Then it executes the smart contract with " +
+      "respectively. Then it executes the program with " +
       "the address `a` and passes there only $n$ top elements " +
       "of the stack."
   )
@@ -61,7 +81,7 @@ final class SystemOperations(program: ByteBuffer,
     vm.run(programAddress, env, memory, wattCounter, pcallAllowed = true)
     memory.exitProgram()
     memory.dropLimit()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -81,7 +101,7 @@ final class SystemOperations(program: ByteBuffer,
     vm.run(addr, env, memory, wattCounter, pcallAllowed = false) // TODO disallow to change storage
     memory.exitProgram()
     memory.dropLimit()
-    program.position(memory.currentOffset)
+    program.position(memory.currentCounter)
   }
 
   @OpcodeImplementation(
@@ -99,51 +119,75 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PUPDATE,
-    description = "Takes address of a program and new bytecode. " +
-      "Replaces bytecode in storage. This opcode can be performed " +
-      "only from owner of the program"
+    description = "Takes address of an existing program, code and signature. " +
+      "Signature is computed from concatenation of old code and new code of the program"
   )
   def pupdate(): Unit = {
+    val signature = bytes(memory.pop()).toByteArray
+    val newCode = bytes(memory.pop())
     val programAddress = address(memory.pop())
-    val code = bytes(memory.pop())
+
     wattCounter.cpuUsage(CpuStorageUse)
-    if (env.getProgramOwner(programAddress).contains(env.executor)) {
-      val oldProgram = env.getProgram(programAddress)
-      val oldProgramSize = oldProgram.fold(0L)(_.code.remaining.toLong)
-      wattCounter.cpuUsage(CpuStorageUse)
-      wattCounter.storageUsage(occupiedBytes = code.size().toLong, oldProgramSize)
-      env.updateProgram(programAddress, code)
-    } else {
-      throw ThrowableVmError(OperationDenied)
+
+    env.getProgram(programAddress) match {
+      case Some(ProgramContext(_, oldCode, false)) =>
+        wattCounter.cpuUsage((newCode.size() + oldCode.size()) * CpuArithmetic * 2)
+        val message = oldCode.concat(newCode).toByteArray
+        if (ed25519.verify(programAddress.toByteArray, message, signature)) {
+          wattCounter.storageUsage(newCode.size().toLong, oldCode.size().toLong)
+          env.updateProgram(programAddress, newCode)
+        } else {
+          throw ThrowableVmError(Error.OperationDenied)
+        }
+      case Some(ProgramContext(_, _, true)) => throw ThrowableVmError(Error.ProgramIsSealed)
+      case None                             => throw ThrowableVmError(Error.NoSuchProgram)
     }
   }
 
   @OpcodeImplementation(
     opcode = PCREATE,
-    description = "Takes bytecode of a new program, put's it to " +
-      "state and returns program address."
+    description = "Takes address (pubKey), bytecode, and its ed25519 signature. " +
+      "If signature is valid and program didn't exist before on the specified address create new program."
   )
   def pcreate(): Unit = {
+    val signature = bytes(memory.pop()).toByteArray
     val code = bytes(memory.pop())
-    val programAddress = env.createProgram(env.executor, code)
-    val data = address(programAddress)
+    val programAddress = address(memory.pop())
+
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.storageUsage(occupiedBytes = code.size().toLong)
-    wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(address(programAddress))
+    wattCounter.cpuUsage(code.size() * CpuArithmetic)
+
+    env.getProgram(programAddress) match {
+      case None if ed25519.verify(programAddress.toByteArray, code.toByteArray, signature) =>
+        wattCounter.storageUsage(occupiedBytes = code.size().toLong)
+        env.createProgram(programAddress, code)
+      case _ =>
+        throw ThrowableVmError(Error.OperationDenied)
+    }
   }
 
   @OpcodeImplementation(
     opcode = SEAL,
-    description = "Takes the address of an existing program, makes the program sealed"
+    description = "Takes the address of an existing program and signature of code with seal mark. " +
+      "Signature is computed from concatenation of 'Seal' word (in UTF8 encoding) and current code of program."
   )
   def seal(): Unit = {
+    val signature = bytes(memory.pop()).toByteArray
     val programAddress = address(memory.pop())
-    if (env.getProgramOwner(programAddress).contains(env.executor)) {
-      wattCounter.cpuUsage(CpuStorageUse)
-      env.sealProgram(programAddress)
-    } else {
-      throw ThrowableVmError(OperationDenied)
+
+    wattCounter.cpuUsage(CpuStorageUse)
+
+    env.getProgram(programAddress) match {
+      case Some(ProgramContext(_, code, false)) =>
+        wattCounter.cpuUsage(code.size() * CpuArithmetic * 2)
+        val message = SealTag.concat(code).toByteArray // Seal ++ Code
+        if (ed25519.verify(programAddress.toByteArray, message, signature)) {
+          env.sealProgram(programAddress)
+        } else {
+          throw ThrowableVmError(Error.OperationDenied)
+        }
+      case Some(ProgramContext(_, _, true)) => throw ThrowableVmError(Error.ProgramIsSealed)
+      case None                             => throw ThrowableVmError(Error.NoSuchProgram)
     }
   }
 
@@ -172,18 +216,6 @@ final class SystemOperations(program: ByteBuffer,
   }
 
   @OpcodeImplementation(
-    opcode = OWNER,
-    description = "Gives program owner's address. " +
-      "If there's no owner of the given address then the void address (32 zero bytes) is returned. "
-  )
-  def owner(): Unit = {
-    val programAddress = address(memory.pop())
-    val datum = address(env.getProgramOwner(programAddress).getOrElse(Address.Void))
-    wattCounter.memoryUsage(datum.volume.toLong)
-    memory.push(datum)
-  }
-
-  @OpcodeImplementation(
     opcode = THROW,
     description = "Takes string from stack and throws an error with description " +
       "as given string that stops the program."
@@ -193,16 +225,60 @@ final class SystemOperations(program: ByteBuffer,
     throw ThrowableVmError(UserError(message))
   }
 
-  @OpcodeImplementation(
-    opcode = EVENT,
-    description =
-      "Takes string and arbitrary data from stack, create new event with name as given string and with given data.")
+  @OpcodeImplementation(opcode = EVENT,
+                        description = "Takes string and arbitrary data from stack, " +
+                          "create new event with name as given string and with given data.")
   def event(): Unit = {
+
+    def marshalData(data: Data) = {
+      // (Original -> (UpdatedData, AssignedRef))
+      val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
+      def extract(ref: Data.Primitive.Ref) = {
+        val k = Data.Primitive.Ref(pHeap.size)
+        val v = aux(memory.heapGet(ref))
+        wattCounter.storageUsage(k.volume.toLong)
+        wattCounter.storageUsage(v.volume.toLong)
+        wattCounter.cpuUsage(10)
+        pHeap.getOrElseUpdate(ref, k -> v)
+      }
+      def aux(data: Data): Data = data match {
+        // TODO drop private fields by convention
+        case struct: Data.Struct =>
+          val updated = struct.data collect {
+            case (_: Data.Primitive.Ref, _) =>
+              // Using ref as key is not allowed for marshalling
+              throw ThrowableVmError(Error.WrongType)
+            case (k, orig: Data.Primitive.Ref) =>
+              val (ref, _) = extract(orig)
+              (k, ref)
+            case tpl => tpl
+          }
+          Data.Struct(updated)
+        case Data.Array.RefArray(xs) =>
+          val updated = xs.map(x => extract(Data.Primitive.Ref(x))._1.data)
+          Data.Array.RefArray(updated)
+        case _ => data
+      }
+      (aux(data), pHeap.values.toMap)
+    }
+
     val name = utf8(memory.pop())
-    val data = memory.pop()
+    val data = memory.pop() match {
+      case ref: Data.Primitive.Ref =>
+        marshalData(memory.heapGet(ref)) match {
+          case (d, ph) if ph.isEmpty => MarshalledData.Simple(d)
+          case (d, ph)               => MarshalledData.Complex(d, ph)
+        }
+      case value => MarshalledData.Simple(value)
+    }
+
     maybeProgramAddress match {
       case Some(addr) => env.event(addr, name, data)
       case None       => throw ThrowableVmError(OperationDenied)
     }
   }
+}
+
+object SystemOperations {
+  final val SealTag = ByteString.copyFromUtf8("Seal")
 }

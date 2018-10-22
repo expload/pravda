@@ -40,5 +40,5 @@ object Effect {
 
   final case class ShowBalance(address: Address, amount: NativeCoin) extends Effect
 
-  final case class Event(program: Address, name: String, data: Data) extends Effect
+  final case class Event(program: Address, name: String, data: MarshalledData) extends Effect
 }
