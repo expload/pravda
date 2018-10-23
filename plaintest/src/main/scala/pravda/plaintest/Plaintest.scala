@@ -84,7 +84,8 @@ abstract class Plaintest[Input: Manifest, Output: Manifest] extends TestSuite {
                         res == output,
                         s"""
                          |Produced:
-                         |${yaml4s.renderYamlDiff(Extraction.decompose(output)(formats), Extraction.decompose(res)(formats))}
+                         |${yaml4s.renderYamlDiff(Extraction.decompose(output)(formats),
+                                                  Extraction.decompose(res)(formats))}
                         """.stripMargin
                       )
                     case Left(err) => Predef.assert(false, s"${f.getName}: $err")

@@ -55,7 +55,8 @@ object YamlMethods {
     case null      => JNull
     case s: String => JString(s)
     case l: java.util.List[_] =>
-      JArray(l.asScala.toList.map { v => java2jvalue(v.asInstanceOf[AnyRef], ubdfd)
+      JArray(l.asScala.toList.map { v =>
+        java2jvalue(v.asInstanceOf[AnyRef], ubdfd)
       })
     case m: java.util.Map[_, _] =>
       val pairs = m.asScala.map {
