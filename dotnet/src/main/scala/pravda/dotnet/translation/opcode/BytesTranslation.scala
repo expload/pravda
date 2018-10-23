@@ -20,7 +20,9 @@ import com.google.protobuf.ByteString
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
-import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
+import pravda.dotnet.parser.Signatures.SigType.{String => DotNetString, _}
+import pravda.dotnet.parser.Signatures.{MethodRefDefSig, Tpe}
+import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationCtx, UnknownOpcode}
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}
 
@@ -45,7 +47,19 @@ object BytesTranslation extends OneToManyTranslator {
     case LdSFld(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", _)) =>
       Right(List(Operation.Push(Data.Primitive.Bytes(ByteString.copyFrom(Array.fill[Byte](32)(0))))))
     case NewObj(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), ".ctor", signatureIdx)) =>
-      Right(List(Operation.Call(Some("stdlib_array_to_bytes"))))
+      ctx.tctx.signatures.get(signatureIdx) match {
+        case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(DotNetString, false)))) =>
+          // TODO 0x04 is an index of HexToByes standard function
+          // TODO there is should be some way to obtain indexes of
+          // TODO procedures of standard library. May be it is
+          // TODO good idea to make translator dependent `vm`
+          // TODO instead of `vm-api`.
+          Right(List(pushInt(0x04), Operation(Opcodes.SCALL)))
+        case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(Arr(U1, ArrayShape(1, Nil, Nil)), false)))) =>
+          Right(List(Operation.Call(Some("stdlib_array_to_bytes"))))
+        case None =>
+          Left(UnknownOpcode)
+      }
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "get_Item", _)) =>
       Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "Bytes", "Expload.Pravda"), "Slice", _)) =>

@@ -13,7 +13,7 @@ code: |-
   push 0x03
   scall
 ---
-watts-spent: 202
+watts-spent: 172
 stack:
   - number.Infinity
   - int32.2147483647

@@ -5,36 +5,54 @@ methods: |-
     Method(
       List(
         Nop,
+        LdStr("1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"),
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 26L)),
+        StLoc0,
+        LdLoc0,
+        Call(
+          MethodSpecData(
+            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 31L),
+            39L
+          )
+        ),
+        LdcI41,
+        LdcI42,
+        CallVirt(
+          MemberRefData(TypeRefData(14L, "MyAnotherProgram", "Expload.Pravda.Programs"), "Add", 44L)
+        ),
+        StLoc1,
         LdcI4S(32),
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 65L)),
+        LdToken(FieldData(307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 73L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            23L
+            50L
           )
         ),
-        StLoc0,
-        LdLoc0,
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 31L)),
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 58L)),
+        StLoc2,
+        LdLoc2,
         Call(
           MethodSpecData(
-            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 37L),
-            45L
+            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 31L),
+            39L
           )
         ),
-        LdcI4S(10),
-        LdcI4S(20),
+        LdcI43,
+        LdcI44,
         CallVirt(
-          MemberRefData(TypeRefData(14L, "MyAnotherProgram", "Expload.Pravda.Programs"), "Add", 50L)
+          MemberRefData(TypeRefData(14L, "MyAnotherProgram", "Expload.Pravda.Programs"), "Add", 44L)
         ),
-        StLoc1,
+        StLoc3,
         LdLoc1,
-        StLoc2,
+        LdLoc3,
+        Add,
+        StLocS(4),
         BrS(0),
-        LdLoc2,
+        LdLocS(4),
         Ret
       ),
       3,
@@ -67,14 +85,41 @@ signatures: |-
       16L,
       LocalVarSig(
         List(
-          LocalVar(Arr(U1, ArrayShape(1, List(), List())), false),
+          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
+          LocalVar(I4, false),
+          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
           LocalVar(I4, false),
           LocalVar(I4, false)
         )
       )
     ),
+    (26L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
     (
-      23L,
+      31L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        1,
+        Tpe(MVar(0), false),
+        List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
+      )
+    ),
+    (
+      44L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(I4, false),
+        List(Tpe(I4, false), Tpe(I4, false))
+      )
+    ),
+    (
+      50L,
       MethodRefDefSig(
         false,
         false,
@@ -89,7 +134,7 @@ signatures: |-
       )
     ),
     (
-      31L,
+      58L,
       MethodRefDefSig(
         true,
         false,
@@ -101,31 +146,7 @@ signatures: |-
       )
     ),
     (
-      37L,
-      MethodRefDefSig(
-        false,
-        false,
-        false,
-        false,
-        1,
-        Tpe(MVar(0), false),
-        List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
-      )
-    ),
-    (
-      50L,
-      MethodRefDefSig(
-        true,
-        false,
-        false,
-        false,
-        0,
-        Tpe(I4, false),
-        List(Tpe(I4, false), Tpe(I4, false))
-      )
-    ),
-    (
-      65L,
+      73L,
       FieldSig(
         ValueTpe(
           TypeDefData(
@@ -140,6 +161,6 @@ signatures: |-
         )
       )
     ),
-    (69L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (73L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (77L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (81L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

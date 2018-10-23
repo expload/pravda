@@ -4,6 +4,6 @@ code: |-
   push 0x02
   scall
 ---
-watts-spent: 233
+watts-spent: 223
 stack:
   - bytes.98C615784CCB5FE5936FBC0CBE9DFDB408D92F0F

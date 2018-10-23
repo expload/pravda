@@ -26,7 +26,7 @@ code: |-
   push 0x03
   scall
 ---
-watts-spent: 310
+watts-spent: 250
 stack:
   - uint8.32
   - int32.1024

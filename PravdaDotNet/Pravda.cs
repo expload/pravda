@@ -43,6 +43,7 @@ namespace Expload.Pravda {
        public static Bytes VOID_ADDRESS = null;
 
        public Bytes(params byte[] bytes) {}
+       public Bytes(String hex) {}
 
        // Get the i-th byte
        public byte this[int i] { get { return 0; } set { return; } }
@@ -57,6 +58,8 @@ namespace Expload.Pravda {
     public class StdLib {
         public static Bytes Ripemd160(Bytes bytes) { return null; }
         public static Bytes Ripemd160(String str) { return null; }
+
+        public static Bytes HexToBytes(String hex) { return null; }
 
         public static bool ValidateEd25519Signature(Bytes pubKey, Bytes message, Bytes signature) { return false; }
         public static bool ValidateEd25519Signature(Bytes pubKey, String message, Bytes signature) { return false; }
