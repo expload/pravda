@@ -1,4 +1,11 @@
-exe: arrays.exe
+dotnet-compilation:
+  steps:
+    - target: Pravda.dll
+      sources: [PravdaDotNet/Pravda.cs]
+    - target: arrays.exe
+      sources:
+        - Pravda.dll
+        - dotnet-tests/resources/arrays.cs
 ---
 translation: |-
   meta custom "CIL"
