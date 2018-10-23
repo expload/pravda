@@ -57,12 +57,31 @@ pipeline:
     secrets: [ GITHUB_RELEASE_API_KEY ]
     when:
       event: tag
-  publish-docker:
+  publish-docker-hub:
     image: plugins/docker
     repo: expload/pravda
     context: /workdir/code/node/target/docker/stage/
     dockerfile: /workdir/code/node/target/docker/stage/Dockerfile
     secrets: [ docker_username, docker_password ]
     auto_tag: true
+    when:
+      event: tag
+  publish-docker-image-private:
+    image: plugins/gcr
+    registry: gcr.io/time-coin
+    repo: gcr.io/time-coin/expload-pravda-node
+    context: .
+    dockerfile: ./docker/images/expload-pravda-node/Dockerfile
+    secrets: [ gcr_json_key ]
+    when:
+      event: push
+      branch: master
+  publish-docker-image-private-tagged:
+    image: plugins/gcr
+    registry: gcr.io/time-coin
+    repo: gcr.io/time-coin/expload-pravda-node
+    context: .
+    dockerfile: ./docker/images/expload-pravda-node/Dockerfile
+    secrets: [ gcr_json_key ]
     when:
       event: tag
