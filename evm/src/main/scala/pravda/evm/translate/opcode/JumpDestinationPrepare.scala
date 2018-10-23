@@ -21,7 +21,7 @@ import pravda.evm.EVM
 import pravda.evm.EVM.JumpDest
 import pravda.vm.asm.Operation
 import pravda.vm.{Opcodes, asm}
-import pravda.vm.asm.Operation.PushRef
+import pravda.vm.asm.Operation.PushOffset
 
 object JumpDestinationPrepare {
 
@@ -36,16 +36,14 @@ object JumpDestinationPrepare {
           asm.Operation(Opcodes.NOT),
           Operation.JumpI(Some(getNameByNumber(ind + 1))),
           asm.Operation(Opcodes.POP),
-          PushRef(getNameByAddress(addr)),
+          PushOffset(getNameByAddress(addr)),
           Operation.Jump(None)
         )
       case _ => List()
     }
 
-  def addLastBranch(ops: List[asm.Operation], n: Int): List[asm.Operation] =
-    ops ++ (if (n > 0)
-              List(asm.Operation.Label(getNameByNumber(n)),
-                   pushString("Incorrect destination"),
-                   asm.Operation(Opcodes.THROW))
-            else Nil)
+  def addLastBranch(n: Int): List[asm.Operation] =
+    if (n > 0)
+      List(asm.Operation.Label(getNameByNumber(n)), pushString("Incorrect destination"), asm.Operation(Opcodes.THROW))
+    else Nil
 }

@@ -1,7 +1,7 @@
 package pravda.evm.parse
 
 import fastparse.byte.all._
-import pravda.evm
+import pravda.evm._
 import pravda.evm.EVM._
 import utest._
 

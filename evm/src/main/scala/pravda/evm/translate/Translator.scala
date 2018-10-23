@@ -23,6 +23,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
+import pravda.evm.translate.opcode.JumpDestinationPrepare.addLastBranch
 import pravda.evm.translate.opcode.{JumpDestinationPrepare, SimpleTranslation}
 import pravda.vm.asm.Operation
 
@@ -56,12 +57,9 @@ object Translator {
 
         import JumpDestinationPrepare._
         val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
-        val prepare = jumpDests.flatMap(jumpDestToOps)
-        Translator(filteredOps).map(
-          opcodes =>
-            Operation.Jump(Some(startLabelName))
-              :: addLastBranch(prepare, jumpDests.size) ++
-              (asm.Operation.Label(startLabelName) :: opcodes))
+        val prepare = Operation.Jump(Some(startLabelName)) :: jumpDests.flatMap(jumpDestToOps) ::: addLastBranch(
+          jumpDests.size)
+        Translator(filteredOps).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
 
       case _ => Left("Parse error")
     }
