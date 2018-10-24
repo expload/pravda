@@ -8,6 +8,7 @@ import pravda.evm.EVM._
 import pravda.evm.translate.Translator
 import pravda.vm.Data.Primitive.BigInt
 import pravda.vm.Effect.{StorageRead, StorageWrite}
+import pravda.vm.Error.UserError
 import utest._
 
 import scala.collection.mutable.ArrayBuffer
@@ -122,12 +123,12 @@ object EvaluateTests extends TestSuite {
       var pos = hex"0x1f"
 
       run(Translator(List(Push(x), Push(pos), Byte)), precondition) ==>
-        Right(expectations(191L, stack = ArrayBuffer(BigInt(scala.BigInt(x.last.toInt)))))
+        Right(expectations(181L, stack = ArrayBuffer(BigInt(scala.BigInt(x.last.toInt)))))
 
       pos = hex"0x1e"
       val expectation = x.reverse.tail.head.toInt
       run(Translator(List(Push(x), Push(pos), Byte)), precondition) ==>
-        Right(expectations(191L, stack = ArrayBuffer(BigInt(scala.BigInt(expectation)))))
+        Right(expectations(181L, stack = ArrayBuffer(BigInt(scala.BigInt(expectation)))))
     }
 
     "LT" - {
@@ -164,32 +165,82 @@ object EvaluateTests extends TestSuite {
     val `1` = hex"0x1"
     val `3` = hex"0x3"
     val `4` = hex"0x4"
+    val `10` = hex"0xa"
+
     "JUMPS" - {
 
-      run(
-        Translator.translateActualContract(
-          List(
-            0 -> Push(`4`),
-            2 -> Push(`0`),
-            3 -> CodeCopy,
-            4 -> Push(`4`),
-            4 -> Push(`3`),
-            5 -> Jump,
-            5 -> Push(`4`),
-            6 -> Push(`4`),
-            7 -> Push(`4`),
-            7 -> JumpDest,
-          )),
-        precondition
-      ).foreach({ expect =>
-        expect.`watts-spent` ==> 154L
-        expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
-        expect.error ==> None
-      })
+      "One jump" - {
+        run(
+          Translator.translateActualContract(
+            List(
+              0 -> Push(`4`),
+              2 -> Push(`0`),
+              3 -> CodeCopy,
+              4 -> Push(`4`),
+              4 -> Push(`3`),
+              5 -> Jump,
+              5 -> Push(`4`),
+              6 -> Push(`4`),
+              7 -> Push(`4`),
+              7 -> JumpDest,
+            )),
+          precondition
+        ).foreach({ expect =>
+          expect.`watts-spent` ==> 154L
+          expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
+          expect.error ==> None
+        })
 
-      run(
-        Translator.translateActualContract(
-          List(
+        run(
+          Translator.translateActualContract(
+            List(
+              0 -> Push(`4`),
+              2 -> Push(`0`),
+              3 -> CodeCopy,
+              4 -> Push(`4`),
+              5 -> Push(`1`),
+              6 -> Push(`3`),
+              5 -> JumpI,
+              5 -> Push(`4`),
+              6 -> Push(`4`),
+              7 -> Push(`4`),
+              7 -> JumpDest,
+            )),
+          precondition
+        ).foreach({ expect =>
+          expect.`watts-spent` ==> 173L
+          expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
+          expect.error ==> None
+        })
+
+        run(
+          Translator.translateActualContract(
+            List(
+              0 -> Push(`4`),
+              2 -> Push(`0`),
+              3 -> CodeCopy,
+              4 -> Push(`4`),
+              5 -> Push(`0`),
+              6 -> Push(`3`),
+              5 -> JumpI,
+              5 -> Push(`4`),
+              6 -> Push(`4`),
+              7 -> Push(`4`),
+              7 -> JumpDest,
+            )),
+          precondition
+        ).foreach({ expect =>
+          expect.`watts-spent` ==> 142L
+          expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)),
+                                       BigInt(scala.BigInt(4)),
+                                       BigInt(scala.BigInt(4)),
+                                       BigInt(scala.BigInt(4)))
+          expect.error ==> None
+        })
+      }
+      "Several jumps" - {
+        run(
+          Translator.translateActualContract(List(
             0 -> Push(`4`),
             2 -> Push(`0`),
             3 -> CodeCopy,
@@ -201,13 +252,73 @@ object EvaluateTests extends TestSuite {
             6 -> Push(`4`),
             7 -> Push(`4`),
             7 -> JumpDest,
+            8 -> Push(`1`),
+            9 -> Push(`10`),
+            10 -> Jump,
+            11 -> Push(`4`),
+            12 -> Push(`4`),
+            13 -> Push(`4`),
+            14 -> JumpDest,
           )),
-        precondition
-      ).foreach({ expect =>
-        expect.`watts-spent` ==> 173L
-        expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
-        expect.error ==> None
-      })
+          precondition
+        ).foreach({ expect =>
+          expect.`watts-spent` ==> 246L
+          expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(1)))
+          expect.error ==> None
+        })
+
+        run(
+          Translator.translateActualContract(List(
+            0 -> Push(`4`),
+            2 -> Push(`0`),
+            3 -> CodeCopy,
+            4 -> Push(`4`),
+            6 -> Push(`3`),
+            5 -> Jump,
+            5 -> Push(`4`),
+            6 -> Push(`4`),
+            7 -> Push(`4`),
+            7 -> JumpDest,
+            8 -> Push(`1`),
+            9 -> Push(`10`),
+            10 -> Jump,
+            11 -> Push(`4`),
+            12 -> Push(`4`),
+            13 -> Push(`4`),
+            14 -> JumpDest,
+          )),
+          precondition
+        ).foreach({ expect =>
+          expect.`watts-spent` ==> 227L
+          expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(1)))
+          expect.error ==> None
+        })
+      }
+
+      "Jump to bad destination" - {
+
+        run(
+          Translator.translateActualContract(
+            List(
+              0 -> Push(`4`),
+              2 -> Push(`0`),
+              3 -> CodeCopy,
+              4 -> Push(`4`),
+              4 -> Push(`4`),
+              5 -> Jump,
+              5 -> Push(`4`),
+              6 -> Push(`4`),
+              7 -> Push(`4`),
+              7 -> JumpDest,
+            )),
+          precondition
+        ).foreach({ expect =>
+          expect.`watts-spent` ==> 147L
+          expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(4)))
+          expect.error ==> Some(UserError("Incorrect destination"))
+        })
+
+      }
     }
 
     "SSTORE SLOAD" - {

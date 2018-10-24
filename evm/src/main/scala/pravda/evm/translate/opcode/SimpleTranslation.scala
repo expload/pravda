@@ -73,7 +73,8 @@ object SimpleTranslation {
 
     case Jump => Operation.Jump(Some(getNameByNumber(0))) :: Nil
     case JumpI =>
-      codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(Some(getNameByNumber(0))) :: Nil
+      codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(Some(getNameByNumber(0))) :: codeToOps(
+        Opcodes.POP) ::: Nil
     case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
