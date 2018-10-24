@@ -212,7 +212,8 @@ trait TethysInstances {
   implicit val storedProgramWriter: JsonWriter[StoredProgram] =
     jsonWriter[StoredProgram]
 
-  implicit val forSignatureReaderReader: JsonReader[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
+  implicit val forSignatureReaderReader
+    : JsonReader[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
     JsonReader.builder
       .addField[Address]("a")
       .addField[TransactionData]("td")
@@ -222,8 +223,10 @@ trait TethysInstances {
       .addField[Option[Address]]("oa")
       .buildReader((a, td, l, nc, i, oa) => (a, td, l, nc, i, oa))
 
-  implicit val forSignatureReaderWriter: JsonWriter[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
-    JsonWriter.obj[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])]
+  implicit val forSignatureReaderWriter
+    : JsonWriter[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
+    JsonWriter
+      .obj[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])]
       .addField[Address]("a")(_._1)
       .addField[TransactionData]("td")(_._2)
       .addField[Long]("l")(_._3)
