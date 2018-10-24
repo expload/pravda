@@ -10,7 +10,16 @@ else
   echo "Giving money to $PRAVDA_COIN_HOLDER"
 fi
 
+if [ -z "$GAMETOKEN_WALLET_ADDRESS" ]
+then
+  echo "Env. var \$GAMETOKEN_WALLET_ADDRESS should be defined"
+  exit 1
+else
+  echo "Giving money to $GAMETOKEN_WALLET_ADDRESS"
+fi
+
 sed -i "s/PRAVDA_COIN_HOLDER/$PRAVDA_COIN_HOLDER/g" /pravda-cli/coin-distr.json
+sed -i "s/GAMETOKEN_WALLET_ADDRESS/$GAMETOKEN_WALLET_ADDRESS/g" /pravda-cli/coin-distr.json
 
 if [ -z "$(ls -A /node-data)" ]; then
   echo "/node-data does not exist, creating"
