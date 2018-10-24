@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets
 
 import tethys._
 import tethys.jackson.jacksonTokenIteratorProducer
-import tethys.jackson.pretty.prettyJacksonTokenWriterProducer
+import tethys.jackson.jacksonTokenWriterProducer
 
 object bjson extends BJsonTranscoder
 
