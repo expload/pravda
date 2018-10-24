@@ -10,6 +10,16 @@ else
   echo "Giving money to $PRAVDA_COIN_HOLDER"
 fi
 
+if [ -z "$PRAVDA_COIN_HOLDER_2" ]
+then
+  echo "Please specify public key in \$PRAVDA_COIN_HOLDER_2 to perform initial coin distribution"
+  exit 1
+else
+  echo "Giving money to $PRAVDA_COIN_HOLDER_2"
+fi
+
+# More specific regular expressions should follow before
+sed -i "s/PRAVDA_COIN_HOLDER_2/$PRAVDA_COIN_HOLDER_2/g" /pravda-cli/coin-distr.json
 sed -i "s/PRAVDA_COIN_HOLDER/$PRAVDA_COIN_HOLDER/g" /pravda-cli/coin-distr.json
 
 if [ -z "$(ls -A /node-data)" ]; then
