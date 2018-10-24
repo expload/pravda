@@ -4,6 +4,8 @@ import com.google.protobuf.ByteString
 import pravda.node.servers.Abci.StoredProgram
 import utest._
 
+import pravda.node.data.serialization.json._
+
 object BJsonTranscode extends TestSuite {
 
   val tests = Tests {
@@ -13,7 +15,7 @@ object BJsonTranscode extends TestSuite {
 
       val storedProrgram = StoredProgram(ByteString.copyFrom(Array[Byte](0x01, 0x02)), `sealed` = false)
       val bjson = transcode(storedProrgram).to[BJson]
-      transcode(BJson @@ bjson).to[StoredProgram] ==> storedProrgram
+      transcode(bjson).to[StoredProgram] ==> storedProrgram
     }
   }
 }
