@@ -310,7 +310,6 @@ object Abci {
       }
 
       def event(address: Address, name: String, data: MarshalledData): Unit = {
-        println(s">>>>>event -> $data")
         transactionEffects += Event(address, name, data)
       }
 
@@ -387,9 +386,6 @@ object Abci {
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
-
-      println(">>>> commit")
-
       // Share fee
       val share = NativeCoin @@ (fee / validators.length)
       val remainder = NativeCoin @@ (fee % validators.length)
@@ -416,7 +412,6 @@ object Abci {
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
               case (Effect.Event(_, _, data), i) =>
-                println(s">>>> add event $data")
                 eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data)
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
