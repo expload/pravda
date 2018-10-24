@@ -18,12 +18,12 @@
 package pravda.dotnet.translation
 
 package opcode
+
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.Signatures.SigType._
 import pravda.dotnet.parser.Signatures._
-import pravda.dotnet.translation.TypeDetectors
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes}
@@ -89,6 +89,7 @@ case object CallsTranslation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "ProgramAddress", _))             => Right(1)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "ValidateEd25519Signature", _)) => Right(-2)
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "HexToBytes", _))               => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Error", "Expload.Pravda"), "Throw", _))                     => Right(-1)
       case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Expload.Pravda"), "Program", _), _)) =>
         Right(0)
@@ -223,6 +224,8 @@ case object CallsTranslation extends OneToManyTranslator {
         Right(List(Operation(Opcodes.PADDR)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "Ripemd160", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation(Opcodes.SCALL)))
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "HexToBytes", _)) =>
+        Right(List(Operation.Push(Data.Primitive.Int32(4)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "ValidateEd25519Signature", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "Error", "Expload.Pravda"), "Throw", _)) =>

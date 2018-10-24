@@ -61,7 +61,7 @@ object DotnetCodegen {
       case Meta.TypeSignature.Ref => ???
       case Meta.TypeSignature.Utf8 =>
         arg =>
-          s""" "\\"" + $arg" + "\\"" """
+          s""" "\\"" + $arg + "\\"" """
       case Meta.TypeSignature.Bytes =>
         arg =>
           s""" "\\"" + BitConverter.ToString($arg).Replace("-","") + "\\"" """

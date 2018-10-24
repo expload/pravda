@@ -7,6 +7,6 @@ stack:
 code: |-
   scall
 ---
-watts-spent: 1091
+watts-spent: 1081
 stack:
   - bool.false
