@@ -29,7 +29,7 @@ import tethys.writers.tokens.TokenWriter
 
 import scala.collection.mutable
 
-trait TethysInstances extends {
+trait TethysInstances {
   private def throwUtrj(token: Token) =
     throw new Exception(s"Unable to read JSON. Unexpected token $token")
 

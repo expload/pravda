@@ -394,13 +394,9 @@ object Abci {
       }
       accrue(validators((height % validators.length).toInt), remainder)
 
-      try {
-        if (effectsMap.nonEmpty) {
-          val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
-          blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
-        }
-      } catch {
-        case e: Throwable => e.printStackTrace()
+      if (effectsMap.nonEmpty) {
+        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
+        blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
       events
