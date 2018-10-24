@@ -29,7 +29,7 @@ import tethys.writers.tokens.TokenWriter
 
 import scala.collection.mutable
 
-trait TethysInstances {
+trait TethysInstances extends {
   private def throwUtrj(token: Token) =
     throw new Exception(s"Unable to read JSON. Unexpected token $token")
 
@@ -102,7 +102,7 @@ trait TethysInstances {
   // scala.Map support
   //---------------------------------------------------------------------------
 
-  trait MapKeySupport[T] {
+  trait MapKeySupport[T] { // TODO use KeyReader, KeyWriter instead
     def show(x: T): String
     def mk(x: String): T
   }

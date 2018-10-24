@@ -38,7 +38,8 @@ import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.bjson._
 import pravda.node.db.DB
 import pravda.node.persistence.FileStore
 import pravda.node.utils
@@ -428,7 +429,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
     for {
       blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
-        transcode(Bson @@ r.bytes).to[Map[TransactionId, Seq[vm.Effect]]])
+        transcode(BJson @@ r.bytes).to[Map[TransactionId, Seq[vm.Effect]]])
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {

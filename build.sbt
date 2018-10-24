@@ -196,9 +196,7 @@ lazy val node = (project in file("node"))
       "com.github.pureconfig" %% "pureconfig" % "0.9.1",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.7.0.2",
-      "io.suzaku" %% "boopickle" % "1.2.6",
       "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17",
-      "name.pellet.jp" %% "bsonpickle" % "0.4.4.2",
       "com.chuusai" %% "shapeless" % "2.3.3"
     ),
     dependencyOverrides += "org.scala-lan" %% "scala-compiler" % "2.12.6",

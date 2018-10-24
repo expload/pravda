@@ -29,7 +29,7 @@ import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTra
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.bjson._
 import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
@@ -144,7 +144,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       result: (Int, String) => R): Future[R] = {
 
     val tid = TransactionId.forEncodedTransaction(encodedTransaction)
-    val `try` = Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+    val `try` = Try(transcode(BJson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
@@ -310,6 +310,7 @@ object Abci {
       }
 
       def event(address: Address, name: String, data: MarshalledData): Unit = {
+        println(s">>>>>event -> $data")
         transactionEffects += Event(address, name, data)
       }
 
@@ -387,6 +388,8 @@ object Abci {
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
 
+      println(">>>> commit")
+
       // Share fee
       val share = NativeCoin @@ (fee / validators.length)
       val remainder = NativeCoin @@ (fee % validators.length)
@@ -395,9 +398,13 @@ object Abci {
       }
       accrue(validators((height % validators.length).toInt), remainder)
 
-      if (effectsMap.nonEmpty) {
-        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
-        blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
+      try {
+        if (effectsMap.nonEmpty) {
+          val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
+          blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
+        }
+      } catch {
+        case e: Throwable => e.printStackTrace()
       }
 
       events
@@ -409,6 +416,7 @@ object Abci {
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
               case (Effect.Event(_, _, data), i) =>
+                println(s">>>> add event $data")
                 eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data)
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
