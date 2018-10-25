@@ -29,7 +29,7 @@ import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTra
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.bjson._
 import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
@@ -144,7 +144,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       result: (Int, String) => R): Future[R] = {
 
     val tid = TransactionId.forEncodedTransaction(encodedTransaction)
-    val `try` = Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+    val `try` = Try(transcode(BJson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
@@ -386,7 +386,6 @@ object Abci {
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
-
       // Share fee
       val share = NativeCoin @@ (fee / validators.length)
       val remainder = NativeCoin @@ (fee % validators.length)

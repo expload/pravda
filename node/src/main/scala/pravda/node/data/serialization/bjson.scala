@@ -15,21 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node
+package pravda.node.data.serialization
 
-package persistence
+import java.nio.charset.StandardCharsets
 
-import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
-import data.serialization._
+import tethys._
+import tethys.jackson.jacksonTokenIteratorProducer
+import tethys.jackson.jacksonTokenWriterProducer
 
-object implicits extends BJsonTranscoder with CompositeTranscoder {
+object bjson extends BJsonTranscoder
 
-  implicit def keyWriter[T: CompositeEncoder]: KeyWriter[T] = (value: T) => transcode(value).to[Composite]
+trait BJsonTranscoder {
 
-  implicit def valueReader[T](implicit t: Transcoder[BJson, T]): ValueReader[T] =
-    (array: Array[Byte]) => transcode(BJson @@ array).to[T]
+  type BJsonEncoder[T] = Transcoder[T, BJson]
+  type BJsonDecoder[T] = Transcoder[BJson, T]
 
-  implicit def valueWriter[T](implicit t: Transcoder[T, BJson]): ValueWriter[T] =
-    (value: T) => transcode(value).to[BJson]
+  implicit def bjsonEncoder[T: JsonWriter]: BJsonEncoder[T] =
+    t => BJson @@ t.asJson.getBytes(StandardCharsets.UTF_8)
 
+  implicit def bjsonDecoder[T: JsonReader]: BJsonDecoder[T] =
+    t => new String(t, StandardCharsets.UTF_8).jsonAs[T].fold(throw _, identity)
 }

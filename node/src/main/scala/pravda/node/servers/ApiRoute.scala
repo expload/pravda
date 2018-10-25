@@ -35,7 +35,9 @@ import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTrans
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.{Bson, transcode}
+import pravda.node.data.serialization.bjson._
+import tethys._
+import pravda.node.data.serialization._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
@@ -188,7 +190,6 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
         } ~
         get {
           path("events") {
-            import pravda.node.data.serialization.bson._
             parameters(
               (
                 'address.as(hexUnmarshaller),
@@ -204,7 +205,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                   bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
                   count.toLong
                 )
-                .map(_.map(r => transcode(Bson @@ r.bytes).to[MarshalledData]))
+                .map(_.map(r => transcode(BJson @@ r.bytes).to[MarshalledData]))
 
               onSuccess(f) { res =>
                 complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d) })

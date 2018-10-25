@@ -17,12 +17,13 @@
 
 package pravda.node.persistence
 
-import pravda.node.data.serialization.bson.{BsonDecoder, BsonEncoder}
-import pravda.node.data.serialization.{Bson, transcode}
+import pravda.node.data.serialization.{BJson, transcode}
 import pravda.node.db.{DB, Operation}
 
 import scala.collection.mutable
 import pravda.common.{bytes => byteUtils}
+import pravda.node.data.serialization.bjson._
+import tethys.{JsonReader, JsonWriter}
 
 trait DbPath {
 
@@ -30,14 +31,14 @@ trait DbPath {
 
   def :+(suffix: String): DbPath
 
-  def getAs[V: BsonDecoder](suffix: String): Option[V] =
-    getRawBytes(suffix).map(arr => transcode(Bson @@ arr).to[V])
+  def getAs[V: JsonReader](suffix: String): Option[V] =
+    getRawBytes(suffix).map(arr => transcode[BJson](BJson @@ arr).to[V])
 
   def getRawBytes(suffix: String): Option[Array[Byte]]
 
-  def put[V: BsonEncoder](suffix: String, value: V): Option[Array[Byte]] = {
-    val bsonValue: Array[Byte] = transcode(value).to[Bson]
-    putRawBytes(suffix, bsonValue)
+  def put[V: JsonWriter](suffix: String, value: V): Option[Array[Byte]] = {
+    val jsonBytes: Array[Byte] = transcode(value).to[BJson]
+    putRawBytes(suffix, jsonBytes)
   }
 
   def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]]
