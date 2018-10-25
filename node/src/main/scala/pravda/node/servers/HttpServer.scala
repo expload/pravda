@@ -36,7 +36,7 @@ object HttpServer {
       executionContext: ExecutionContextExecutor): Future[Http.ServerBinding] = {
     val route = pathPrefix("healthz") {
       complete("pravda node: I'm OK :)")
-    } ~
+    } ~ path("version") { { complete(pravda.node.BuildInfo.version) } } ~
       pathPrefix("api")(apiRoute) ~
       pathPrefix("ui")(guiRoute)
     Http().bindAndHandle(route, config.host, config.port) andThen {

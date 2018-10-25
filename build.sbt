@@ -173,6 +173,7 @@ lazy val node = (project in file("node"))
   .enablePlugins(UniversalPlugin)
   .enablePlugins(AshScriptPlugin)
   .enablePlugins(DockerPlugin)
+  .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings: _*)
   .settings(scalacheckOps:_*)
   .settings(
@@ -182,7 +183,9 @@ lazy val node = (project in file("node"))
     dockerUpdateLatest := true,
     name := "pravda-node",
     normalizedName := "pravda-node",
-    description := "Pravda network node"
+    description := "Pravda network node",
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "pravda.node",
   )
   .settings(
     normalizedName := "pravda-node",
