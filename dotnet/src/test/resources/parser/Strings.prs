@@ -1,4 +1,14 @@
-exe: strings.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: Strings.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Strings.cs
+    optimize: false
 ---
 methods: |-
   List(
@@ -16,13 +26,13 @@ methods: |-
         Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 27L)),
         StLoc3,
         LdArg0,
-        LdFld(FieldData(6, "strings", 74L)),
+        LdFld(FieldData(6, "StringsMapping", 74L)),
         LdLoc3,
         LdLoc0,
         CallVirt(MemberRefData(TypeSpecData(33L), "put", 40L)),
         Nop,
         LdArg0,
-        LdFld(FieldData(6, "strings", 74L)),
+        LdFld(FieldData(6, "StringsMapping", 74L)),
         LdStr("user1"),
         CallVirt(MemberRefData(TypeSpecData(33L), "exists", 48L)),
         StLocS(7),
@@ -30,7 +40,7 @@ methods: |-
         BrFalseS(24),
         Nop,
         LdArg0,
-        LdFld(FieldData(6, "strings", 74L)),
+        LdFld(FieldData(6, "StringsMapping", 74L)),
         LdStr("user2"),
         LdStr(""),
         CallVirt(MemberRefData(TypeSpecData(33L), "put", 40L)),
@@ -59,7 +69,7 @@ methods: |-
       List(
         LdArg0,
         NewObj(MemberRefData(TypeSpecData(33L), ".ctor", 6L)),
-        StFld(FieldData(6, "strings", 74L)),
+        StFld(FieldData(6, "StringsMapping", 74L)),
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
         Nop,

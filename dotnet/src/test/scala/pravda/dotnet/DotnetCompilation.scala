@@ -11,6 +11,17 @@ final case class DotnetCompilation(steps: Seq[DotnetCompilationStep], `main-clas
 
 object DotnetCompilation {
 
+  object dsl {
+    def steps(pairs: (String, Seq[String])*): DotnetCompilation =
+      DotnetCompilation(pairs.map { case (target, sources) => DotnetCompilationStep(target, sources) })
+
+    implicit class DotnetCompilationOps(dc: DotnetCompilation) {
+      def withMainClass(mainClass: String): DotnetCompilation = dc.copy(`main-class` = Some(mainClass))
+
+      def run: Either[String, List[ParsedDotnetFile]] = DotnetCompilation.run(dc)
+    }
+  }
+
   val pravdaDir = Paths.get("/tmp/pravda")
 
   private def readFileBytes(p: Path) = Files.readAllBytes(p)
@@ -22,6 +33,8 @@ object DotnetCompilation {
     FileParser.parsePdb(readFileBytes(p))
 
   def run(compilation: DotnetCompilation): Either[String, List[ParsedDotnetFile]] = {
+
+    Files.createDirectories(pravdaDir)
 
     val (_, filesE) =
       compilation.steps.foldLeft((Vector.empty[String], Vector.empty[Either[String, ParsedDotnetFile]])) {

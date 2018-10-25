@@ -1,4 +1,14 @@
-exe: if.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: If.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/If.cs
+    optimize: false
 ---
 methods: |-
   List(

@@ -4,7 +4,7 @@ dotnet-compilation:
     sources:
     - PravdaDotNet/Pravda.cs
     optimize: false
-  - target: System.exe
+  - target: SystemMethods.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/SystemMethods.cs

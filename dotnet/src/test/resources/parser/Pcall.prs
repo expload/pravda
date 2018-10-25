@@ -1,4 +1,21 @@
-exe: pcall.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: PcallProgram.dll
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/PcallProgram.cs
+    optimize: false
+  - target: Pcall.exe
+    sources:
+    - Pravda.dll
+    - PcallProgram.dll
+    - dotnet-tests/resources/Pcall.cs
+    optimize: false
+  main-class: PcallNamespace.Pcall
 ---
 methods: |-
   List(
@@ -41,12 +58,10 @@ methods: |-
             39L
           )
         ),
-        LdcI43,
-        LdcI44,
-        CallVirt(
-          MemberRefData(TypeRefData(14L, "MyAnotherProgram", "Expload.Pravda.Programs"), "Add", 44L)
-        ),
-        StLoc3,
+        LdcI4S(10),
+        LdcI4S(20),
+        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 50L)),
+        StLoc1,
         LdLoc1,
         LdLoc3,
         Add,

@@ -1,4 +1,14 @@
-exe: loop_nested.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: LoopNested.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/LoopNested.cs
+    optimize: false
 ---
 methods: |-
   List(
@@ -68,6 +78,10 @@ methods: |-
         StLocS(6),
         LdLocS(6),
         BrTrueS(-20),
+        LdLoc0,
+        StLocS(7),
+        BrS(0),
+        LdLocS(7),
         Ret
       ),
       3,
@@ -106,9 +120,11 @@ signatures: |-
           LocalVar(Boolean, false),
           LocalVar(Boolean, false),
           LocalVar(Boolean, false),
-          LocalVar(Boolean, false)
+          LocalVar(Boolean, false),
+          LocalVar(I4, false)
         )
       )
     ),
-    (35L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (36L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (40L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

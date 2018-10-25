@@ -1,18 +1,29 @@
-exe: hello_world.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: VmOps.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/VmOps.cs
+    optimize: false
 ---
 methods: |-
   List(
     Method(
       List(
         Nop,
-        LdStr("Hello World!"),
-        Call(MemberRefData(TypeRefData(6L, "Console", "System"), "WriteLine", 16L)),
+        LdStr("Oops!"),
+        Call(MemberRefData(TypeRefData(10L, "Error", "Expload.Pravda"), "Throw", 16L)),
         Nop,
         Ret
       ),
       0,
       None
     ),
+    Method(List(Nop, Ret), 0, None),
     Method(
       List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
       0,

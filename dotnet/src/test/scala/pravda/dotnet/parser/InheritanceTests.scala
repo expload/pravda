@@ -3,6 +3,7 @@ package pravda.dotnet
 package parser
 
 import pravda.common.TestUtils
+import pravda.dotnet.DotnetCompilation.dsl._
 import pravda.dotnet.data.TablesData._
 import utest._
 
@@ -10,7 +11,13 @@ object InheritanceTests extends TestSuite {
 
   val tests = Tests {
     'inheritanceParse - {
-      val Right(pe) = parsePeFile("inheritance.exe")
+      val Right(files) =
+        steps(
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Inheritance.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/Inheritance.cs")
+        ).run
+
+      val pe = files.last.parsedPe
 
       val parentCls =
         TypeDefData(

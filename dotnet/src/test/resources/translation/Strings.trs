@@ -4,7 +4,7 @@ dotnet-compilation:
     sources:
     - PravdaDotNet/Pravda.cs
     optimize: false
-  - target: String.exe
+  - target: Strings.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Strings.cs

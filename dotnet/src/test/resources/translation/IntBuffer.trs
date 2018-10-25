@@ -4,10 +4,10 @@ dotnet-compilation:
     sources:
     - PravdaDotNet/Pravda.cs
     optimize: false
-  - target: Arrays.exe
+  - target: IntBuffer.exe
     sources:
     - Pravda.dll
-    - dotnet-tests/resources/Arrays.cs
+    - dotnet-tests/resources/IntBuffer.cs
     optimize: false
 ---
 translation: |-
@@ -23,18 +23,14 @@ translation: |-
   throw
   @methods:
   dup
-  push "TestAllArrays"
+  push "TestBuffer"
   eq
-  jumpi @method_TestAllArrays
-  dup
-  push "TestByteArrays"
-  eq
-  jumpi @method_TestByteArrays
+  jumpi @method_TestBuffer
   push "Wrong method name"
   throw
-  @method_TestAllArrays:
+  @method_TestBuffer:
   meta method {
-  "name":"TestAllArrays","returnTpe":int8(0)
+  "name":"TestBuffer","returnTpe":int8(11)
   }
   push null
   push null
@@ -43,332 +39,197 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(32),"sc":int32(33),"el":int32(32),"src":"/tmp/pravda/Arrays.cs","ec":int32(34)
+  "sl":int32(41),"sc":int32(5),"el":int32(41),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(33),"sc":int32(9),"el":int32(33),"src":"/tmp/pravda/Arrays.cs","ec":int32(53)
+  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(43)
   }
-  new int16[97, 98, 99]
+  push int32(2)
+  new {}
+  call @vtable_IntBuffer
+  push int32(2)
+  swapn
+  call @func_IntBuffer.ctor_int32
   push int32(7)
   swapn
   pop
   meta source_mark {
-  "sl":int32(34),"sc":int32(9),"el":int32(34),"src":"/tmp/pravda/Arrays.cs","ec":int32(44)
-  }
-  new int32[1, 2, 3]
-  push int32(6)
-  swapn
-  pop
-  meta source_mark {
-  "sl":int32(35),"sc":int32(9),"el":int32(35),"src":"/tmp/pravda/Arrays.cs","ec":int32(59)
-  }
-  new number[1.0, 2.0, 3.0]
-  push int32(5)
-  swapn
-  pop
-  meta source_mark {
-  "sl":int32(36),"sc":int32(9),"el":int32(36),"src":"/tmp/pravda/Arrays.cs","ec":int32(65)
-  }
-  push int32(3)
-  push int8(11)
-  new_array
-  dup
-  push int32(0)
-  push "abc"
-  swap
-  array_mut
-  dup
-  push int32(1)
-  push "def"
-  swap
-  array_mut
-  dup
-  push int32(2)
-  push "rty"
-  swap
-  array_mut
-  push int32(4)
-  swapn
-  pop
-  meta source_mark {
-  "sl":int32(37),"sc":int32(9),"el":int32(37),"src":"/tmp/pravda/Arrays.cs","ec":int32(47)
-  }
-  new int32[4, 5, 6]
-  push int32(3)
-  swapn
-  pop
-  meta source_mark {
-  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"/tmp/pravda/Arrays.cs","ec":int32(24)
+  "sl":int32(43),"sc":int32(9),"el":int32(43),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(24)
   }
   push int32(6)
   dupn
   push int32(1)
-  push int32(100)
-  swap
-  array_mut
+  call @func_IntBuffer.Append_int32
+  pop
   meta source_mark {
-  "sl":int32(40),"sc":int32(9),"el":int32(40),"src":"/tmp/pravda/Arrays.cs","ec":int32(21)
+  "sl":int32(44),"sc":int32(9),"el":int32(44),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(24)
   }
-  push int32(5)
+  push int32(6)
   dupn
-  push int32(1)
-  push int32(4)
-  swap
-  array_mut
-  meta source_mark {
-  "sl":int32(41),"sc":int32(9),"el":int32(41),"src":"/tmp/pravda/Arrays.cs","ec":int32(26)
-  }
-  push int32(4)
-  dupn
-  push int32(1)
-  push number(4.0)
-  swap
-  array_mut
-  meta source_mark {
-  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"/tmp/pravda/Arrays.cs","ec":int32(29)
-  }
   push int32(3)
-  dupn
-  push int32(1)
-  push "asdf"
-  swap
-  array_mut
+  call @func_IntBuffer.Append_int32
+  pop
   meta source_mark {
-  "sl":int32(43),"sc":int32(9),"el":int32(43),"src":"/tmp/pravda/Arrays.cs","ec":int32(22)
+  "sl":int32(45),"sc":int32(9),"el":int32(45),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(24)
   }
-  push int32(2)
+  push int32(6)
   dupn
-  push int32(1)
+  push int32(5)
+  call @func_IntBuffer.Append_int32
+  pop
+  meta source_mark {
+  "sl":int32(46),"sc":int32(9),"el":int32(46),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(24)
+  }
+  push int32(6)
+  dupn
   push int32(7)
-  swap
-  array_mut
+  call @func_IntBuffer.Append_int32
+  pop
   meta source_mark {
-  "sl":int32(45),"sc":int32(9),"el":int32(45),"src":"/tmp/pravda/Arrays.cs","ec":int32(34)
+  "sl":int32(47),"sc":int32(9),"el":int32(47),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(24)
   }
-  push int32(3)
+  push int32(6)
   dupn
-  length
-  push int8(3)
-  cast
-  push int32(2)
-  swapn
+  push int32(9)
+  call @func_IntBuffer.Append_int32
   pop
   meta source_mark {
-  "sl":int32(46),"sc":int32(5),"el":int32(46),"src":"/tmp/pravda/Arrays.cs","ec":int32(6)
+  "sl":int32(48),"sc":int32(9),"el":int32(48),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  jump @TestAllArrays_lvc
-  @TestAllArrays_lvc:
-  pop
-  pop
-  pop
-  pop
-  pop
-  pop
-  pop
-  jump @stop
-  @method_TestByteArrays:
-  meta method {
-  "name":"TestByteArrays","returnTpe":int8(0)
-  }
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  meta source_mark {
-  "sl":int32(9),"sc":int32(34),"el":int32(9),"src":"/tmp/pravda/Arrays.cs","ec":int32(35)
-  }
-  meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/Arrays.cs","ec":int32(44)
-  }
-  new int8[1, 2, 3]
+  push int32(6)
+  dupn
   push int32(11)
-  swapn
+  call @func_IntBuffer.Append_int32
   pop
   meta source_mark {
-  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/Arrays.cs","ec":int32(43)
+  "sl":int32(49),"sc":int32(9),"el":int32(49),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  new int8[4, 5, 6]
-  call @stdlib_array_to_bytes
-  push int32(10)
-  swapn
+  push int32(6)
+  dupn
+  push int32(13)
+  call @func_IntBuffer.Append_int32
   pop
   meta source_mark {
-  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Arrays.cs","ec":int32(43)
+  "sl":int32(50),"sc":int32(9),"el":int32(50),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  new int8[7, 8, 9]
-  call @stdlib_array_to_bytes
-  push int32(9)
-  swapn
+  push int32(6)
+  dupn
+  push int32(15)
+  call @func_IntBuffer.Append_int32
   pop
   meta source_mark {
-  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Arrays.cs","ec":int32(27)
+  "sl":int32(51),"sc":int32(9),"el":int32(51),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  push int32(10)
+  push int32(6)
+  dupn
+  push int32(17)
+  call @func_IntBuffer.Append_int32
+  pop
+  meta source_mark {
+  "sl":int32(52),"sc":int32(9),"el":int32(52),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
+  }
+  push int32(6)
   dupn
   push int32(0)
-  array_get
-  push int32(8)
-  swapn
+  call @func_IntBuffer.get_Item_int32
+  swap
   pop
-  meta source_mark {
-  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"/tmp/pravda/Arrays.cs","ec":int32(27)
-  }
-  push int32(10)
-  dupn
-  push int32(2)
-  array_get
-  push int32(7)
-  swapn
-  pop
-  meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/Arrays.cs","ec":int32(29)
-  }
-  push int32(9)
-  dupn
-  push int32(1)
-  array_get
   push int32(6)
   swapn
   pop
   meta source_mark {
-  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/Arrays.cs","ec":int32(29)
+  "sl":int32(53),"sc":int32(9),"el":int32(53),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  push int32(8)
+  push int32(6)
   dupn
   push int32(1)
-  array_get
+  call @func_IntBuffer.get_Item_int32
+  swap
+  pop
   push int32(5)
   swapn
   pop
   meta source_mark {
-  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/Arrays.cs","ec":int32(43)
+  "sl":int32(54),"sc":int32(9),"el":int32(54),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  push int32(9)
+  push int32(6)
   dupn
-  push int32(1)
   push int32(2)
-  push int32(2)
-  dupn
-  add
+  call @func_IntBuffer.get_Item_int32
   swap
-  slice
+  pop
   push int32(4)
   swapn
   pop
   meta source_mark {
-  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/Arrays.cs","ec":int32(42)
+  "sl":int32(55),"sc":int32(9),"el":int32(55),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(22)
   }
-  push x42797465734D617070696E67
+  push int32(6)
+  dupn
+  push int32(1)
   push int32(10)
-  dupn
-  push int32(10)
-  dupn
-  push int32(2)
-  dupn
-  push int8(14)
-  cast
-  push int32(4)
-  dupn
-  concat
-  sput
-  pop
+  call @func_IntBuffer.set_Item_int32_int32
   pop
   meta source_mark {
-  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(54)
+  "sl":int32(56),"sc":int32(9),"el":int32(56),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(25)
   }
-  push x42797465734D617070696E67
-  new int8[8, 9, 10]
-  call @stdlib_array_to_bytes
-  push int8(14)
-  cast
+  push int32(6)
+  dupn
+  push int32(1)
+  call @func_IntBuffer.get_Item_int32
   swap
-  concat
-  sexist
-  push int8(3)
-  cast
-  push int32(2)
-  swapn
   pop
-  push int32(1)
-  dupn
-  push int8(9)
-  cast
-  not
-  push int8(3)
-  cast
-  push int32(1)
-  eq
-  jumpi @TestByteArrays_br192
-  meta source_mark {
-  "sl":int32(22),"sc":int32(55),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(56)
-  }
-  meta source_mark {
-  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"/tmp/pravda/Arrays.cs","ec":int32(56)
-  }
-  push x42797465734D617070696E67
-  push int32(10)
-  dupn
-  new int8[7, 8, 9]
-  call @stdlib_array_to_bytes
-  push int32(2)
-  dupn
-  push int8(14)
-  cast
-  push int32(4)
-  dupn
-  concat
-  sput
-  pop
-  pop
-  @TestByteArrays_br192:
-  meta source_mark {
-  "sl":int32(24),"sc":int32(9),"el":int32(24),"src":"/tmp/pravda/Arrays.cs","ec":int32(10)
-  }
-  push int32(10)
-  dupn
-  meta source_mark {
-  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"/tmp/pravda/Arrays.cs","ec":int32(21)
-  }
-  push int32(0)
-  push int32(2)
-  swap
-  array_mut
-  push int32(10)
-  dupn
-  meta source_mark {
-  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"/tmp/pravda/Arrays.cs","ec":int32(21)
-  }
-  push int32(1)
-  push int32(1)
-  swap
-  array_mut
-  push int32(9)
-  dupn
-  meta source_mark {
-  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"/tmp/pravda/Arrays.cs","ec":int32(35)
-  }
-  length
   push int32(3)
   swapn
   pop
-  jump @TestByteArrays_lvc
-  @TestByteArrays_lvc:
+  meta source_mark {
+  "sl":int32(57),"sc":int32(9),"el":int32(57),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(102)
+  }
+  push int32(5)
+  dupn
+  push int8(11)
+  cast
+  push int32(5)
+  dupn
+  push int8(11)
+  cast
+  push int32(5)
+  dupn
+  push int8(11)
+  cast
+  push int32(5)
+  dupn
+  push int8(11)
+  cast
+  swap
+  concat
+  swap
+  concat
+  swap
+  concat
+  push int32(2)
+  swapn
   pop
+  meta source_mark {
+  "sl":int32(58),"sc":int32(5),"el":int32(58),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
+  }
+  push int32(1)
+  dupn
+  jump @TestBuffer_lvc
+  @TestBuffer_lvc:
+  swap
   pop
+  swap
   pop
+  swap
   pop
+  swap
   pop
+  swap
   pop
+  swap
   pop
-  pop
-  pop
-  pop
+  swap
   pop
   jump @stop
   @method_ctor:
@@ -385,43 +246,296 @@ translation: |-
   push null
   push "init"
   sput
-  meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/Arrays.cs","ec":int32(77)
-  }
   jump @ctor_lvc
   @ctor_lvc:
   pop
   jump @stop
-  @stdlib_array_to_bytes:
-  dup
+  @func_IntBuffer.Append_int32:
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(20),"sc":int32(5),"el":int32(20),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(35)
+  }
+  push int32(6)
+  dupn
+  struct_get "size"
+  push int32(7)
+  dupn
+  struct_get "buffer"
   length
-  push x
-  push int32(0)
-  @array_to_bytes_loop:
+  push int8(3)
+  cast
+  eq
+  push int8(3)
+  cast
+  push int32(5)
+  swapn
+  pop
   push int32(4)
   dupn
-  push int32(2)
-  dupn
-  array_get
-  push int8(14)
+  push int8(9)
   cast
-  push int32(3)
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @IntBuffer.Append_int32_br84
+  meta source_mark {
+  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(10)
+  }
+  push int32(6)
   dupn
-  concat
+  meta source_mark {
+  "sl":int32(23),"sc":int32(13),"el":int32(23),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(62)
+  }
+  struct_get "buffer"
+  length
+  push int8(3)
+  cast
+  push int32(2)
+  mul
+  push int32(1)
+  add
+  push int8(3)
+  new_array
+  push int32(4)
+  swapn
+  pop
+  push int32(0)
+  meta source_mark {
+  "sl":int32(24),"sc":int32(18),"el":int32(24),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(27)
+  }
   push int32(3)
   swapn
   pop
+  jump @IntBuffer.Append_int32_br61
+  @IntBuffer.Append_int32_br44:
+  push int32(3)
+  dupn
+  push int32(3)
+  dupn
+  meta source_mark {
+  "sl":int32(24),"sc":int32(53),"el":int32(24),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(54)
+  }
+  push int32(8)
+  dupn
+  meta source_mark {
+  "sl":int32(25),"sc":int32(17),"el":int32(25),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(42)
+  }
+  struct_get "buffer"
+  push int32(5)
+  dupn
+  array_get
+  swap
+  array_mut
+  push int32(2)
+  dupn
   push int32(1)
+  meta source_mark {
+  "sl":int32(26),"sc":int32(13),"el":int32(26),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(14)
+  }
   add
-  dup
+  meta source_mark {
+  "sl":int32(24),"sc":int32(48),"el":int32(24),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(51)
+  }
+  push int32(3)
+  swapn
+  pop
+  @IntBuffer.Append_int32_br61:
+  push int32(2)
+  dupn
+  push int32(7)
+  dupn
+  meta source_mark {
+  "sl":int32(24),"sc":int32(29),"el":int32(24),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(46)
+  }
+  struct_get "buffer"
+  length
+  push int8(3)
+  cast
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int32(1)
+  eq
+  jumpi @IntBuffer.Append_int32_br44
+  push int32(6)
+  dupn
   push int32(4)
   dupn
-  gt
-  jumpi @array_to_bytes_loop
+  meta source_mark {
+  "sl":int32(27),"sc":int32(13),"el":int32(27),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(32)
+  }
+  struct_mut "buffer"
+  @IntBuffer.Append_int32_br84:
+  push int32(6)
+  dupn
+  meta source_mark {
+  "sl":int32(28),"sc":int32(9),"el":int32(28),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(30),"sc":int32(9),"el":int32(30),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(29)
+  }
+  struct_get "buffer"
+  push int32(7)
+  dupn
+  struct_get "size"
+  push int32(7)
+  dupn
+  swap
+  array_mut
+  push int32(6)
+  dupn
+  push int32(7)
+  dupn
+  meta source_mark {
+  "sl":int32(31),"sc":int32(9),"el":int32(31),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(19)
+  }
+  struct_get "size"
+  push int32(1)
+  add
+  struct_mut "size"
+  jump @IntBuffer.Append_int32_lvc
+  @IntBuffer.Append_int32_lvc:
   pop
+  pop
+  pop
+  pop
+  pop
+  ret
+  @func_IntBuffer.ctor:
+  meta source_mark {
+  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(26)
+  }
+  push int32(1)
+  dupn
+  push int32(0)
+  struct_mut "size"
+  meta source_mark {
+  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(23)
+  }
+  push int32(1)
+  dupn
+  pop
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(30)
+  }
+  push int32(1)
+  dupn
+  push int32(16)
+  push int8(3)
+  new_array
+  struct_mut "buffer"
+  meta source_mark {
+  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
+  }
+  jump @IntBuffer.ctor_lvc
+  @IntBuffer.ctor_lvc:
+  ret
+  @func_IntBuffer.ctor_int32:
+  meta source_mark {
+  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(26)
+  }
+  push int32(2)
+  dupn
+  push int32(0)
+  struct_mut "size"
+  meta source_mark {
+  "sl":int32(14),"sc":int32(5),"el":int32(14),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(35)
+  }
+  push int32(2)
+  dupn
+  pop
+  meta source_mark {
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(36)
+  }
+  push int32(2)
+  dupn
+  push int32(2)
+  dupn
+  push int8(3)
+  new_array
+  struct_mut "buffer"
+  meta source_mark {
+  "sl":int32(17),"sc":int32(5),"el":int32(17),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(6)
+  }
+  jump @IntBuffer.ctor_int32_lvc
+  @IntBuffer.ctor_int32_lvc:
+  pop
+  ret
+  @func_IntBuffer.get_Item_int32:
+  push null
+  meta source_mark {
+  "sl":int32(34),"sc":int32(34),"el":int32(34),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(35)
+  }
+  meta source_mark {
+  "sl":int32(34),"sc":int32(36),"el":int32(34),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(53)
+  }
+  push int32(3)
+  dupn
+  struct_get "buffer"
+  push int32(3)
+  dupn
+  array_get
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(34),"sc":int32(54),"el":int32(34),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(55)
+  }
+  jump @IntBuffer.get_Item_int32_lvc
+  @IntBuffer.get_Item_int32_lvc:
   swap
   pop
   swap
   pop
+  ret
+  @func_IntBuffer.set_Item_int32_int32:
+  meta source_mark {
+  "sl":int32(34),"sc":int32(60),"el":int32(34),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(61)
+  }
+  meta source_mark {
+  "sl":int32(34),"sc":int32(62),"el":int32(34),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(80)
+  }
+  push int32(3)
+  dupn
+  struct_get "buffer"
+  push int32(3)
+  dupn
+  push int32(3)
+  dupn
+  swap
+  array_mut
+  meta source_mark {
+  "sl":int32(34),"sc":int32(81),"el":int32(34),"src":"/tmp/pravda/IntBuffer.cs","ec":int32(82)
+  }
+  jump @IntBuffer.set_Item_int32_int32_lvc
+  @IntBuffer.set_Item_int32_int32_lvc:
+  pop
+  pop
+  ret
+  @vtable_IntBuffer:
+  ret
+  @vtable_IntBuffer:
   ret
   @stop:

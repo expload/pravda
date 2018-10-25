@@ -1,49 +1,69 @@
-exe: arithmetics.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: Loop.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Loop.cs
+    optimize: false
 ---
 methods: |-
   List(
     Method(
       List(
         Nop,
-        LdSFld(FieldData(22, "x", 33L)),
+        LdcI40,
+        StLoc0,
+        LdcI40,
+        StLoc1,
+        BrS(10),
+        Nop,
+        LdLoc0,
         LdcI42,
         Add,
         StLoc0,
-        LdSFld(FieldData(22, "x", 33L)),
-        LdcI42,
-        Mul,
-        StLoc1,
-        LdSFld(FieldData(22, "x", 33L)),
-        LdcI42,
-        Div,
-        StLoc2,
-        LdSFld(FieldData(22, "x", 33L)),
-        LdcI42,
-        Rem,
-        StLoc3,
-        LdLoc0,
+        Nop,
         LdLoc1,
+        LdcI41,
         Add,
-        LdcI4S(42),
-        Add,
+        StLoc1,
+        LdLoc1,
+        LdcI4S(10),
+        Clt,
+        StLoc2,
         LdLoc2,
+        BrTrueS(-19),
+        BrS(6),
+        Nop,
+        LdLoc0,
+        LdcI42,
         Mul,
+        StLoc0,
+        Nop,
+        LdLoc0,
+        LdcI4(10000),
+        Clt,
+        StLoc3,
         LdLoc3,
-        Add,
-        LdcI4(1337),
-        Div,
+        BrTrueS(-18),
+        LdLoc0,
         StLocS(4),
+        BrS(0),
+        LdLocS(4),
         Ret
       ),
       2,
       Some(16L)
     ),
+    Method(List(Nop, Ret), 0, None),
     Method(
       List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
       0,
       None
-    ),
-    Method(List(LdcI4S(10), StSFld(FieldData(22, "x", 33L)), Ret), 0, None)
+    )
   )
 signatures: |-
   List(
@@ -67,12 +87,12 @@ signatures: |-
         List(
           LocalVar(I4, false),
           LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(I4, false),
+          LocalVar(Boolean, false),
+          LocalVar(Boolean, false),
           LocalVar(I4, false)
         )
       )
     ),
-    (33L, FieldSig(I4)),
-    (36L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (33L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (37L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

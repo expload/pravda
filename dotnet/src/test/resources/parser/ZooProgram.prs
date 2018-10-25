@@ -1,4 +1,14 @@
-exe: zoo_program.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ZooProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ZooProgram.cs
+    optimize: false
 ---
 methods: |-
   List(

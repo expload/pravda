@@ -1,4 +1,14 @@
-exe: smart_program.exe
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: SmartProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/SmartProgram.cs
+    optimize: false
 ---
 methods: |-
   List(
@@ -6,7 +16,7 @@ methods: |-
       List(
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "balances", 64L)),
+        LdFld(FieldData(1, "Balances", 64L)),
         LdArg1,
         LdcI40,
         CallVirt(MemberRefData(TypeSpecData(20L), "getDefault", 28L)),
@@ -29,7 +39,7 @@ methods: |-
         BrFalseS(95),
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "balances", 64L)),
+        LdFld(FieldData(1, "Balances", 64L)),
         Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
         LdcI40,
         CallVirt(MemberRefData(TypeSpecData(20L), "getDefault", 28L)),
@@ -42,10 +52,10 @@ methods: |-
         BrFalseS(66),
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "balances", 64L)),
+        LdFld(FieldData(1, "Balances", 64L)),
         Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
         LdArg0,
-        LdFld(FieldData(1, "balances", 64L)),
+        LdFld(FieldData(1, "Balances", 64L)),
         Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
         LdcI40,
         CallVirt(MemberRefData(TypeSpecData(20L), "getDefault", 28L)),
@@ -54,10 +64,10 @@ methods: |-
         CallVirt(MemberRefData(TypeSpecData(20L), "put", 47L)),
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "balances", 64L)),
+        LdFld(FieldData(1, "Balances", 64L)),
         LdArg1,
         LdArg0,
-        LdFld(FieldData(1, "balances", 64L)),
+        LdFld(FieldData(1, "Balances", 64L)),
         LdArg1,
         LdcI40,
         CallVirt(MemberRefData(TypeSpecData(20L), "getDefault", 28L)),
@@ -77,7 +87,7 @@ methods: |-
       List(
         LdArg0,
         NewObj(MemberRefData(TypeSpecData(20L), ".ctor", 6L)),
-        StFld(FieldData(1, "balances", 64L)),
+        StFld(FieldData(1, "Balances", 64L)),
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
         Nop,
