@@ -251,10 +251,8 @@ trait TethysInstances {
     def mk(x: String): TransactionId = TransactionId @@ hex2byteString(x)
   }
 
-  implicit val mtiseReader: JsonReader[Map[TransactionId, Seq[Effect]]] =
-    implicitly[JsonReader[Map[TransactionId, Seq[Effect]]]]
+  implicit val mtiseReader: JsonReader[Map[TransactionId, Seq[Effect]]] = mapReader
 
-  implicit val mtiseWriter: JsonWriter[Map[TransactionId, Seq[Effect]]] =
-    implicitly[JsonWriter[Map[TransactionId, Seq[Effect]]]]
+  implicit val mtiseWriter: JsonWriter[Map[TransactionId, Seq[Effect]]] = mapWriter
 
 }
