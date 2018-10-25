@@ -3,15 +3,19 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: false
   - target: PcallProgram.dll
     sources:
     - Pravda.dll
     - dotnet-tests/resources/PcallProgram.cs
+    optimize: false
   - target: Pcall.exe
-      sources:
-      - Pravda.dll
-      - PcallProgram.dll
-      - dotnet-tests/resources/Pcall.cs
+    sources:
+    - Pravda.dll
+    - PcallProgram.dll
+    - dotnet-tests/resources/Pcall.cs
+    optimize: false
+  main-class: PcallNamespace.Pcall
 ---
 translation: |-
   meta custom "CIL"
@@ -26,11 +30,78 @@ translation: |-
   throw
   @methods:
   dup
-  push "pcall"
+  push "TestPcall"
   eq
-  jumpi @method_pcall
+  jumpi @method_TestPcall
   push "Wrong method name"
   throw
+  @method_TestPcall:
+  meta method {
+  "name":"TestPcall","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/Pcall.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"/tmp/pravda/Pcall.cs","ec":int32(185)
+  }
+  new int8[30, -82, -46, 11, 124, -30, -77, 54, 4, 62, 75, 52, 11, 3, 31, -107, -69, 28, -26, -39, 53, -17, 115, 58, -28, -33, 27, 102, -31, -29, -39, 31]
+  call @stdlib_array_to_bytes
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(13),"el":int32(12),"src":"/tmp/pravda/Pcall.cs","ec":int32(91)
+  }
+  push int32(3)
+  dupn
+  push int32(3)
+  push int32(4)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(13),"el":int32(13),"src":"/tmp/pravda/Pcall.cs","ec":int32(24)
+  }
+  push int32(2)
+  dupn
+  push int32(3)
+  dupn
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Pcall.cs","ec":int32(10)
+  }
+  jump @TestPcall_lvc
+  @TestPcall_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
   @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
@@ -47,81 +118,6 @@ translation: |-
   sput
   jump @ctor_lvc
   @ctor_lvc:
-  pop
-  jump @stop
-  @method_pcall:
-  meta method {
-  "name":"pcall","returnTpe":int8(3)
-  }
-  push null
-  push null
-  push null
-  push null
-  push null
-  push "1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"
-  push int32(4)
-  scall
-  push int32(6)
-  swapn
-  pop
-  push int32(5)
-  dupn
-  push int32(1)
-  push int32(2)
-  push int32(2)
-  swapn
-  push int32(3)
-  swapn
-  push "Add"
-  swap
-  push int32(3)
-  pcall
-  push int32(5)
-  swapn
-  pop
-  new int8[30, -82, -46, 11, 124, -30, -77, 54, 4, 62, 75, 52, 11, 3, 31, -107, -69, 28, -26, -39, 53, -17, 115, 58, -28, -33, 27, 102, -31, -29, -39, 31]
-  call @stdlib_array_to_bytes
-  push int32(4)
-  swapn
-  pop
-  push int32(3)
-  dupn
-  push int32(3)
-  push int32(4)
-  push int32(2)
-  swapn
-  push int32(3)
-  swapn
-  push "Add"
-  swap
-  push int32(3)
-  pcall
-  push int32(3)
-  swapn
-  pop
-  push int32(4)
-  dupn
-  push int32(3)
-  dupn
-  add
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  jump @pcall_lvc
-  @pcall_lvc:
-  swap
-  pop
-  swap
-  pop
-  swap
-  pop
-  swap
-  pop
-  swap
-  pop
-  swap
   pop
   jump @stop
   @stdlib_array_to_bytes:

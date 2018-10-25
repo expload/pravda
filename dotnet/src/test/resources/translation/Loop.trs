@@ -3,10 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: false
   - target: Loop.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Loop.cs
+    optimize: false
 ---
 translation: |-
   meta custom "CIL"
@@ -21,11 +23,143 @@ translation: |-
   throw
   @methods:
   dup
-  push "loops"
+  push "TestLoop"
   eq
-  jumpi @method_loops
+  jumpi @method_TestLoop
   push "Wrong method name"
   throw
+  @method_TestLoop:
+  meta method {
+  "name":"TestLoop","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(7),"sc":int32(4),"el":int32(7),"src":"/tmp/pravda/Loop.cs","ec":int32(5)
+  }
+  meta source_mark {
+  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"/tmp/pravda/Loop.cs","ec":int32(18)
+  }
+  push int32(0)
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(9),"sc":int32(13),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(22)
+  }
+  push int32(0)
+  push int32(5)
+  swapn
+  pop
+  jump @TestLoop_br17
+  @TestLoop_br7:
+  push int32(5)
+  dupn
+  meta source_mark {
+  "sl":int32(9),"sc":int32(37),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(38)
+  }
+  push int32(2)
+  meta source_mark {
+  "sl":int32(10),"sc":int32(12),"el":int32(10),"src":"/tmp/pravda/Loop.cs","ec":int32(19)
+  }
+  add
+  push int32(6)
+  swapn
+  pop
+  push int32(4)
+  dupn
+  meta source_mark {
+  "sl":int32(11),"sc":int32(8),"el":int32(11),"src":"/tmp/pravda/Loop.cs","ec":int32(9)
+  }
+  push int32(1)
+  meta source_mark {
+  "sl":int32(9),"sc":int32(32),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(35)
+  }
+  add
+  push int32(5)
+  swapn
+  pop
+  @TestLoop_br17:
+  push int32(4)
+  dupn
+  meta source_mark {
+  "sl":int32(9),"sc":int32(24),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(30)
+  }
+  push int32(10)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(4)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  push int32(1)
+  eq
+  jumpi @TestLoop_br7
+  jump @TestLoop_br34
+  @TestLoop_br28:
+  push int32(5)
+  dupn
+  push int32(2)
+  mul
+  push int32(6)
+  swapn
+  pop
+  @TestLoop_br34:
+  meta source_mark {
+  "sl":int32(13),"sc":int32(26),"el":int32(13),"src":"/tmp/pravda/Loop.cs","ec":int32(27)
+  }
+  push int32(5)
+  dupn
+  meta source_mark {
+  "sl":int32(14),"sc":int32(11),"el":int32(14),"src":"/tmp/pravda/Loop.cs","ec":int32(18)
+  }
+  meta source_mark {
+  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"/tmp/pravda/Loop.cs","ec":int32(9)
+  }
+  push int32(10000)
+  meta source_mark {
+  "sl":int32(13),"sc":int32(8),"el":int32(13),"src":"/tmp/pravda/Loop.cs","ec":int32(25)
+  }
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  pop
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  jumpi @TestLoop_br28
+  push int32(5)
+  dupn
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  jump @TestLoop_lvc
+  @TestLoop_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
   @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
@@ -42,87 +176,6 @@ translation: |-
   sput
   jump @ctor_lvc
   @ctor_lvc:
-  pop
-  jump @stop
-  @method_loops:
-  meta method {
-  "name":"loops","returnTpe":int8(0)
-  }
-  push null
-  push null
-  push null
-  push null
-  push int32(0)
-  push int32(5)
-  swapn
-  pop
-  push int32(0)
-  push int32(4)
-  swapn
-  pop
-  jump @loops_br17
-  @loops_br7:
-  push int32(4)
-  dupn
-  push int32(2)
-  add
-  push int32(5)
-  swapn
-  pop
-  push int32(3)
-  dupn
-  push int32(1)
-  add
-  push int32(4)
-  swapn
-  pop
-  @loops_br17:
-  push int32(3)
-  dupn
-  push int32(10)
-  swap
-  lt
-  push int8(3)
-  cast
-  push int32(3)
-  swapn
-  pop
-  push int32(2)
-  dupn
-  push int32(1)
-  eq
-  jumpi @loops_br7
-  jump @loops_br34
-  @loops_br28:
-  push int32(4)
-  dupn
-  push int32(2)
-  mul
-  push int32(5)
-  swapn
-  pop
-  @loops_br34:
-  push int32(4)
-  dupn
-  push int32(10000)
-  swap
-  lt
-  push int8(3)
-  cast
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  push int32(1)
-  eq
-  jumpi @loops_br28
-  jump @loops_lvc
-  @loops_lvc:
-  pop
-  pop
-  pop
-  pop
   pop
   jump @stop
   @stop:

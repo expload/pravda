@@ -3,7 +3,7 @@ using Expload.Pravda;
 [Program]
 public class Loop
 {
-   public Int TestLoop()
+   public int TestLoop()
    {
        int a = 0;
        for (int i = 0; i < 10; i++) {

@@ -15,8 +15,8 @@ public class SmartProgram
     {
         if (tokens > 0) {
             if (Balances.getDefault(Info.Sender(), 0) >= tokens) {
-                Balances.put(Info.Sender(), balances.getDefault(Info.Sender(), 0) - tokens);
-                Balances.put(to, balances.getDefault(to, 0) + tokens);
+                Balances.put(Info.Sender(), Balances.getDefault(Info.Sender(), 0) - tokens);
+                Balances.put(to, Balances.getDefault(to, 0) + tokens);
             }
         }
     }

@@ -3,10 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: false
   - target: Inheritance.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Inheritance.cs
+    optimize: false
 ---
 translation: |-
   meta custom "CIL"
@@ -21,14 +23,14 @@ translation: |-
   throw
   @methods:
   dup
-  push "Func"
+  push "TestInheritance"
   eq
-  jumpi @method_Func
+  jumpi @method_TestInheritance
   push "Wrong method name"
   throw
-  @method_Func:
+  @method_TestInheritance:
   meta method {
-  "name":"Func","returnTpe":int8(3)
+  "name":"TestInheritance","returnTpe":int8(3)
   }
   push null
   push null
@@ -36,6 +38,12 @@ translation: |-
   push null
   push null
   push null
+  meta source_mark {
+  "sl":int32(52),"sc":int32(5),"el":int32(52),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(53),"sc":int32(9),"el":int32(53),"src":"/tmp/pravda/Inheritance.cs","ec":int32(31)
+  }
   push int32(100)
   new {}
   call @vtable_A
@@ -45,6 +53,9 @@ translation: |-
   push int32(7)
   swapn
   pop
+  meta source_mark {
+  "sl":int32(54),"sc":int32(9),"el":int32(54),"src":"/tmp/pravda/Inheritance.cs","ec":int32(31)
+  }
   push int32(200)
   new {}
   call @vtable_B
@@ -54,6 +65,9 @@ translation: |-
   push int32(6)
   swapn
   pop
+  meta source_mark {
+  "sl":int32(55),"sc":int32(9),"el":int32(55),"src":"/tmp/pravda/Inheritance.cs","ec":int32(41)
+  }
   push int32(6)
   dupn
   push int32(1)
@@ -74,6 +88,9 @@ translation: |-
   push int32(5)
   swapn
   pop
+  meta source_mark {
+  "sl":int32(56),"sc":int32(9),"el":int32(56),"src":"/tmp/pravda/Inheritance.cs","ec":int32(33)
+  }
   push int32(6)
   dupn
   push int32(1)
@@ -85,6 +102,9 @@ translation: |-
   push int32(4)
   swapn
   pop
+  meta source_mark {
+  "sl":int32(57),"sc":int32(9),"el":int32(57),"src":"/tmp/pravda/Inheritance.cs","ec":int32(33)
+  }
   push int32(5)
   dupn
   push int32(1)
@@ -96,6 +116,9 @@ translation: |-
   push int32(3)
   swapn
   pop
+  meta source_mark {
+  "sl":int32(58),"sc":int32(9),"el":int32(58),"src":"/tmp/pravda/Inheritance.cs","ec":int32(22)
+  }
   push int32(3)
   dupn
   push int32(3)
@@ -104,10 +127,13 @@ translation: |-
   push int32(2)
   swapn
   pop
+  meta source_mark {
+  "sl":int32(59),"sc":int32(5),"el":int32(59),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   push int32(1)
   dupn
-  jump @Func_lvc
-  @Func_lvc:
+  jump @TestInheritance_lvc
+  @TestInheritance_lvc:
   swap
   pop
   swap
@@ -143,6 +169,12 @@ translation: |-
   jump @stop
   @func_A.Answer:
   push null
+  meta source_mark {
+  "sl":int32(28),"sc":int32(5),"el":int32(28),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"/tmp/pravda/Inheritance.cs","ec":int32(26)
+  }
   push int32(2)
   dupn
   struct_get "AVal"
@@ -153,29 +185,50 @@ translation: |-
   pop
   push int32(1)
   dupn
+  meta source_mark {
+  "sl":int32(30),"sc":int32(5),"el":int32(30),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   jump @A.Answer_lvc
   @A.Answer_lvc:
   swap
   pop
   ret
   @func_A.ctor_int32:
+  meta source_mark {
+  "sl":int32(22),"sc":int32(25),"el":int32(22),"src":"/tmp/pravda/Inheritance.cs","ec":int32(35)
+  }
   push int32(2)
   dupn
   push int32(2)
   dupn
   call @func_Parent.ctor_int32
   pop
+  meta source_mark {
+  "sl":int32(23),"sc":int32(5),"el":int32(23),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(24),"sc":int32(9),"el":int32(24),"src":"/tmp/pravda/Inheritance.cs","ec":int32(26)
+  }
   push int32(2)
   dupn
   push int32(2)
   dupn
   struct_mut "AVal"
+  meta source_mark {
+  "sl":int32(25),"sc":int32(5),"el":int32(25),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   jump @A.ctor_int32_lvc
   @A.ctor_int32_lvc:
   pop
   ret
   @func_B.Answer:
   push null
+  meta source_mark {
+  "sl":int32(43),"sc":int32(5),"el":int32(43),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(44),"sc":int32(9),"el":int32(44),"src":"/tmp/pravda/Inheritance.cs","ec":int32(26)
+  }
   push int32(2)
   dupn
   struct_get "BVal"
@@ -186,35 +239,59 @@ translation: |-
   pop
   push int32(1)
   dupn
+  meta source_mark {
+  "sl":int32(45),"sc":int32(5),"el":int32(45),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   jump @B.Answer_lvc
   @B.Answer_lvc:
   swap
   pop
   ret
   @func_B.ctor_int32:
+  meta source_mark {
+  "sl":int32(37),"sc":int32(25),"el":int32(37),"src":"/tmp/pravda/Inheritance.cs","ec":int32(35)
+  }
   push int32(2)
   dupn
   push int32(2)
   dupn
   call @func_Parent.ctor_int32
   pop
+  meta source_mark {
+  "sl":int32(38),"sc":int32(5),"el":int32(38),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"/tmp/pravda/Inheritance.cs","ec":int32(26)
+  }
   push int32(2)
   dupn
   push int32(2)
   dupn
   struct_mut "BVal"
+  meta source_mark {
+  "sl":int32(40),"sc":int32(5),"el":int32(40),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   jump @B.ctor_int32_lvc
   @B.ctor_int32_lvc:
   pop
   ret
   @func_Parent.Answer:
   push null
+  meta source_mark {
+  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Inheritance.cs","ec":int32(18)
+  }
   push int32(0)
   push int32(2)
   swapn
   pop
   push int32(1)
   dupn
+  meta source_mark {
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   jump @Parent.Answer_lvc
   @Parent.Answer_lvc:
   swap
@@ -222,6 +299,12 @@ translation: |-
   ret
   @func_Parent.AnswerPlus1:
   push null
+  meta source_mark {
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/Inheritance.cs","ec":int32(29)
+  }
   push int32(2)
   dupn
   push int32(1)
@@ -237,15 +320,27 @@ translation: |-
   pop
   push int32(1)
   dupn
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/Inheritance.cs","ec":int32(6)
+  }
   jump @Parent.AnswerPlus1_lvc
   @Parent.AnswerPlus1_lvc:
   swap
   pop
   ret
   @func_Parent.ctor_int32:
+  meta source_mark {
+  "sl":int32(5),"sc":int32(5),"el":int32(5),"src":"/tmp/pravda/Inheritance.cs","ec":int32(27)
+  }
   push int32(2)
   dupn
   pop
+  meta source_mark {
+  "sl":int32(5),"sc":int32(28),"el":int32(5),"src":"/tmp/pravda/Inheritance.cs","ec":int32(29)
+  }
+  meta source_mark {
+  "sl":int32(5),"sc":int32(29),"el":int32(5),"src":"/tmp/pravda/Inheritance.cs","ec":int32(30)
+  }
   jump @Parent.ctor_int32_lvc
   @Parent.ctor_int32_lvc:
   pop

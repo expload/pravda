@@ -2,7 +2,7 @@ using System;
 using Expload.Pravda;
 
 [Program]
-public class System
+public class SystemMethods
 {
     public void TestSystemMethods()
     {

@@ -3,10 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: false
   - target: LoopNested.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/LoopNested.cs
+    optimize: false
 ---
 translation: |-
   meta custom "CIL"
@@ -21,11 +23,235 @@ translation: |-
   throw
   @methods:
   dup
-  push "loops"
+  push "TestNestedLoop"
   eq
-  jumpi @method_loops
+  jumpi @method_TestNestedLoop
   push "Wrong method name"
   throw
+  @method_TestNestedLoop:
+  meta method {
+  "name":"TestNestedLoop","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/LoopNested.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(8),"sc":int32(9),"el":int32(8),"src":"/tmp/pravda/LoopNested.cs","ec":int32(19)
+  }
+  push int32(0)
+  push int32(9)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(9),"sc":int32(14),"el":int32(9),"src":"/tmp/pravda/LoopNested.cs","ec":int32(23)
+  }
+  push int32(0)
+  push int32(8)
+  swapn
+  pop
+  jump @TestNestedLoop_br58
+  @TestNestedLoop_br7:
+  push int32(0)
+  meta source_mark {
+  "sl":int32(9),"sc":int32(38),"el":int32(9),"src":"/tmp/pravda/LoopNested.cs","ec":int32(39)
+  }
+  push int32(7)
+  swapn
+  pop
+  jump @TestNestedLoop_br42
+  @TestNestedLoop_br12:
+  meta source_mark {
+  "sl":int32(10),"sc":int32(18),"el":int32(10),"src":"/tmp/pravda/LoopNested.cs","ec":int32(27)
+  }
+  push int32(8)
+  dupn
+  push int32(2)
+  swap
+  mod
+  meta source_mark {
+  "sl":int32(10),"sc":int32(42),"el":int32(10),"src":"/tmp/pravda/LoopNested.cs","ec":int32(43)
+  }
+  push int32(0)
+  meta source_mark {
+  "sl":int32(11),"sc":int32(14),"el":int32(11),"src":"/tmp/pravda/LoopNested.cs","ec":int32(29)
+  }
+  eq
+  push int8(3)
+  cast
+  push int32(6)
+  swapn
+  pop
+  push int32(5)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TestNestedLoop_br37
+  push int32(8)
+  dupn
+  push int32(8)
+  dupn
+  push int32(8)
+  dupn
+  add
+  meta source_mark {
+  "sl":int32(11),"sc":int32(30),"el":int32(11),"src":"/tmp/pravda/LoopNested.cs","ec":int32(31)
+  }
+  meta source_mark {
+  "sl":int32(12),"sc":int32(21),"el":int32(12),"src":"/tmp/pravda/LoopNested.cs","ec":int32(47)
+  }
+  push int32(1000000007)
+  swap
+  mod
+  add
+  push int32(9)
+  swapn
+  pop
+  @TestNestedLoop_br37:
+  push int32(6)
+  dupn
+  push int32(1)
+  add
+  meta source_mark {
+  "sl":int32(13),"sc":int32(14),"el":int32(13),"src":"/tmp/pravda/LoopNested.cs","ec":int32(15)
+  }
+  push int32(7)
+  swapn
+  pop
+  @TestNestedLoop_br42:
+  meta source_mark {
+  "sl":int32(14),"sc":int32(10),"el":int32(14),"src":"/tmp/pravda/LoopNested.cs","ec":int32(11)
+  }
+  push int32(6)
+  dupn
+  meta source_mark {
+  "sl":int32(10),"sc":int32(37),"el":int32(10),"src":"/tmp/pravda/LoopNested.cs","ec":int32(40)
+  }
+  push int32(20)
+  swap
+  lt
+  push int8(3)
+  cast
+  meta source_mark {
+  "sl":int32(10),"sc":int32(29),"el":int32(10),"src":"/tmp/pravda/LoopNested.cs","ec":int32(35)
+  }
+  push int32(5)
+  swapn
+  pop
+  push int32(4)
+  dupn
+  push int32(1)
+  eq
+  jumpi @TestNestedLoop_br12
+  push int32(7)
+  dupn
+  push int32(1)
+  add
+  push int32(8)
+  swapn
+  pop
+  @TestNestedLoop_br58:
+  push int32(7)
+  dupn
+  meta source_mark {
+  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"/tmp/pravda/LoopNested.cs","ec":int32(10)
+  }
+  push int32(10)
+  meta source_mark {
+  "sl":int32(9),"sc":int32(33),"el":int32(9),"src":"/tmp/pravda/LoopNested.cs","ec":int32(36)
+  }
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(9),"sc":int32(25),"el":int32(9),"src":"/tmp/pravda/LoopNested.cs","ec":int32(31)
+  }
+  push int32(3)
+  dupn
+  push int32(1)
+  eq
+  jumpi @TestNestedLoop_br7
+  jump @TestNestedLoop_br77
+  @TestNestedLoop_br71:
+  push int32(8)
+  dupn
+  push int32(2)
+  mul
+  push int32(9)
+  swapn
+  pop
+  @TestNestedLoop_br77:
+  push int32(8)
+  dupn
+  meta source_mark {
+  "sl":int32(17),"sc":int32(27),"el":int32(17),"src":"/tmp/pravda/LoopNested.cs","ec":int32(28)
+  }
+  push int32(10000)
+  meta source_mark {
+  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"/tmp/pravda/LoopNested.cs","ec":int32(20)
+  }
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/LoopNested.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/LoopNested.cs","ec":int32(26)
+  }
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  jumpi @TestNestedLoop_br71
+  push int32(8)
+  dupn
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  jump @TestNestedLoop_lvc
+  @TestNestedLoop_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
   @method_ctor:
   meta method {
   "name":"ctor","returnTpe":int8(0)
@@ -42,152 +268,6 @@ translation: |-
   sput
   jump @ctor_lvc
   @ctor_lvc:
-  pop
-  jump @stop
-  @method_loops:
-  meta method {
-  "name":"loops","returnTpe":int8(0)
-  }
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  push null
-  push int32(0)
-  push int32(8)
-  swapn
-  pop
-  push int32(0)
-  push int32(7)
-  swapn
-  pop
-  jump @loops_br58
-  @loops_br7:
-  push int32(0)
-  push int32(6)
-  swapn
-  pop
-  jump @loops_br42
-  @loops_br12:
-  push int32(7)
-  dupn
-  push int32(2)
-  swap
-  mod
-  push int32(0)
-  eq
-  push int8(3)
-  cast
-  push int32(5)
-  swapn
-  pop
-  push int32(4)
-  dupn
-  push int8(9)
-  cast
-  not
-  push int8(3)
-  cast
-  push int32(1)
-  eq
-  jumpi @loops_br37
-  push int32(7)
-  dupn
-  push int32(7)
-  dupn
-  push int32(7)
-  dupn
-  add
-  push int32(1000000007)
-  swap
-  mod
-  add
-  push int32(8)
-  swapn
-  pop
-  @loops_br37:
-  push int32(5)
-  dupn
-  push int32(1)
-  add
-  push int32(6)
-  swapn
-  pop
-  @loops_br42:
-  push int32(5)
-  dupn
-  push int32(20)
-  swap
-  lt
-  push int8(3)
-  cast
-  push int32(4)
-  swapn
-  pop
-  push int32(3)
-  dupn
-  push int32(1)
-  eq
-  jumpi @loops_br12
-  push int32(6)
-  dupn
-  push int32(1)
-  add
-  push int32(7)
-  swapn
-  pop
-  @loops_br58:
-  push int32(6)
-  dupn
-  push int32(10)
-  swap
-  lt
-  push int8(3)
-  cast
-  push int32(3)
-  swapn
-  pop
-  push int32(2)
-  dupn
-  push int32(1)
-  eq
-  jumpi @loops_br7
-  jump @loops_br77
-  @loops_br71:
-  push int32(7)
-  dupn
-  push int32(2)
-  mul
-  push int32(8)
-  swapn
-  pop
-  @loops_br77:
-  push int32(7)
-  dupn
-  push int32(10000)
-  swap
-  lt
-  push int8(3)
-  cast
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  push int32(1)
-  eq
-  jumpi @loops_br71
-  jump @loops_lvc
-  @loops_lvc:
-  pop
-  pop
-  pop
-  pop
-  pop
-  pop
-  pop
   pop
   jump @stop
   @stop:
