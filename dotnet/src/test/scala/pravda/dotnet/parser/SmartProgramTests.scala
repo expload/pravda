@@ -3,6 +3,7 @@ package pravda.dotnet
 package parser
 
 import pravda.common.TestUtils
+import pravda.dotnet.DotnetCompilation.dsl._
 import pravda.dotnet.data.Heaps.SequencePoint
 import pravda.dotnet.data.TablesData._
 import utest._
@@ -10,8 +11,16 @@ import utest._
 object SmartProgramTests extends TestSuite {
 
   val tests = Tests {
-    'smartProgramParse - {
-      val Right(pe) = parsePeFile("smart_program.exe")
+    'SmartProgram - {
+      val Right(files) =
+        steps(
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "SmartProgram.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/SmartProgram.cs")
+        ).run
+
+      val pe = files.last.parsedPe
+      val pdb = files.last.parsedPdb.get
+      val src = "/tmp/pravda/SmartProgram.cs"
 
       TestUtils.assertEqual(
         pe.cilData.tables.customAttributeTable,
@@ -33,14 +42,14 @@ object SmartProgramTests extends TestSuite {
           CustomAttributeData(
             TypeDefData(
               1,
-              1048576,
-              "MyProgram",
+              1048577,
+              "SmartProgram",
               "",
               TypeRefData(6, "Object", "System"),
-              Vector(FieldData(1, "balances", 64)),
+              Vector(FieldData(1, "Balances", 64)),
               Vector(
-                MethodDefData(0, 0, 134, "balanceOf", 73, Vector(ParamData(0, 1, "tokenOwner"))),
-                MethodDefData(1, 0, 134, "transfer", 79, Vector(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
+                MethodDefData(0, 0, 134, "BalanceOf", 73, Vector(ParamData(0, 1, "tokenOwner"))),
+                MethodDefData(1, 0, 134, "Transfer", 79, Vector(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),
                 MethodDefData(2, 0, 150, "Main", 86, Vector()),
                 MethodDefData(3, 0, 6278, ".ctor", 6, Vector())
               )
@@ -49,40 +58,34 @@ object SmartProgramTests extends TestSuite {
           )
         )
       )
-    }
-
-    'smartProgramPdbParse - {
-      val Right(pdb) = parsePdbFile("smart_program.pdb")
-      val src = "/tmp/pravda/smart_program.cs"
 
       TestUtils.assertEqual(
         pdb.tablesData.methodDebugInformationTable,
         Vector(
           MethodDebugInformationData(Some(src),
-                                     List(SequencePoint(0, 8, 44, 8, 45),
-                                          SequencePoint(1, 9, 9, 9, 51),
-                                          SequencePoint(17, 10, 5, 10, 6))),
+                                     List(SequencePoint(0, 10, 5, 10, 6),
+                                          SequencePoint(1, 11, 9, 11, 51),
+                                          SequencePoint(17, 12, 5, 12, 6))),
           MethodDebugInformationData(
             Some(src),
             List(
-              SequencePoint(0, 12, 48, 12, 49),
-              SequencePoint(1, 13, 9, 13, 24),
-              SequencePoint(9, 13, 25, 13, 26),
-              SequencePoint(10, 14, 13, 14, 65),
-              SequencePoint(37, 14, 66, 14, 67),
-              SequencePoint(38, 15, 17, 15, 93),
-              SequencePoint(74, 16, 17, 16, 71),
-              SequencePoint(102, 17, 13, 17, 14),
-              SequencePoint(103, 18, 9, 18, 10),
-              SequencePoint(104, 19, 5, 19, 6)
+              SequencePoint(0, 15, 5, 15, 6),
+              SequencePoint(1, 16, 9, 16, 24),
+              SequencePoint(9, 16, 25, 16, 26),
+              SequencePoint(10, 17, 13, 17, 65),
+              SequencePoint(37, 17, 66, 17, 67),
+              SequencePoint(38, 18, 17, 18, 93),
+              SequencePoint(74, 19, 17, 19, 71),
+              SequencePoint(102, 20, 13, 20, 14),
+              SequencePoint(103, 21, 9, 21, 10),
+              SequencePoint(104, 22, 5, 22, 6)
             )
           ),
           MethodDebugInformationData(Some(src),
-                                     List(SequencePoint(0, 21, 31, 21, 32), SequencePoint(1, 21, 32, 21, 33))),
-          MethodDebugInformationData(Some(src), List(SequencePoint(0, 6, 5, 6, 62)))
+                                     List(SequencePoint(0, 24, 31, 24, 32), SequencePoint(1, 24, 32, 24, 33))),
+          MethodDebugInformationData(Some(src), List(SequencePoint(0, 7, 5, 7, 62)))
         )
       )
-
     }
   }
 }

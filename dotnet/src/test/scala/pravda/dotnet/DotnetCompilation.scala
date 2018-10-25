@@ -12,6 +12,7 @@ final case class DotnetCompilation(steps: Seq[DotnetCompilationStep], `main-clas
 object DotnetCompilation {
 
   object dsl {
+
     def steps(pairs: (String, Seq[String])*): DotnetCompilation =
       DotnetCompilation(pairs.map { case (target, sources) => DotnetCompilationStep(target, sources) })
 
@@ -32,7 +33,7 @@ object DotnetCompilation {
   private def parsePdbFile(p: Path): Either[String, ParsedPdb] =
     FileParser.parsePdb(readFileBytes(p))
 
-  def run(compilation: DotnetCompilation): Either[String, List[ParsedDotnetFile]] = {
+  def run(compilation: DotnetCompilation): Either[String, List[ParsedDotnetFile]] = DotnetCompilation.synchronized {
 
     Files.createDirectories(pravdaDir)
 

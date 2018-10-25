@@ -10,7 +10,7 @@ import utest._
 object InheritanceTests extends TestSuite {
 
   val tests = Tests {
-    'inheritanceParse - {
+    'Inheritance - {
       val Right(files) =
         steps(
           "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
@@ -62,11 +62,11 @@ object InheritanceTests extends TestSuite {
           TypeDefData(
             4,
             1048577,
-            "MyProgram",
+            "Inheritance",
             "",
             TypeRefData(6, "Object", "System"),
             Vector(),
-            Vector(MethodDefData(7, 0, 134, "Func", 43, Vector()),
+            Vector(MethodDefData(7, 0, 134, "TestInheritance", 43, Vector()),
                    MethodDefData(8, 0, 150, "Main", 47, Vector()),
                    MethodDefData(9, 0, 6278, ".ctor", 6, Vector()))
           )
@@ -83,7 +83,7 @@ object InheritanceTests extends TestSuite {
           MethodDefData(4, 0, 198, "Answer", 43, Vector()),
           MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
           MethodDefData(6, 0, 198, "Answer", 43, Vector()),
-          MethodDefData(7, 0, 134, "Func", 43, Vector()),
+          MethodDefData(7, 0, 134, "TestInheritance", 43, Vector()),
           MethodDefData(8, 0, 150, "Main", 47, Vector()),
           MethodDefData(9, 0, 6278, ".ctor", 6, Vector())
         )
