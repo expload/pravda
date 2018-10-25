@@ -11,16 +11,16 @@ pipeline:
     pull: false
     commands:
       - git describe --tags | sed -e "s/^v//" > .tags
-  tests:
-    image: gcr.io/time-coin/sbt:latest
-    pull: true
-    volumes:
-      - /var/lib/sbt-cache:/workdir/sbt
-      - /var/lib/coursier-cache:/workdir/coursier
-    commands:
-      - export COURSIER_CACHE='/workdir/coursier/'
-      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
+#  tests:
+#    image: gcr.io/time-coin/sbt:latest
+#    pull: true
+#    volumes:
+#      - /var/lib/sbt-cache:/workdir/sbt
+#      - /var/lib/coursier-cache:/workdir/coursier
+#    commands:
+#      - export COURSIER_CACHE='/workdir/coursier/'
+#      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+#      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
   package-zip-and-publish-to-bintray:
     image: gcr.io/time-coin/sbt:latest
     volumes:
@@ -99,3 +99,40 @@ pipeline:
     secrets: [kubernetes_prod_token, kubernetes_prod_cluster, kubernetes_prod_server, kubernetes_prod_namespace]
     when:
       event: tag
+  temp-stage:
+    image: gcr.io/time-coin/sbt:latest
+    pull: true
+    volumes:
+      - /var/lib/sbt-cache:/workdir/sbt
+      - /var/lib/coursier-cache:/workdir/coursier
+    commands:
+      - export COURSIER_CACHE='/workdir/coursier/'
+      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:stage
+    when:
+      event: push
+      branch: test_gt
+  check-correct-compile-gametoken-program:
+    image: gcr.io/time-coin/gametoken-program-release-extractor:latest
+    pull: true
+    commands:
+      - mv /GameToken.cs /workdir/code/GameToken.cs
+      - mv /GameToken.csproj /workdir/code/GameToken.csproj
+      - cd /workdir/code
+      - sh -c "csc GameToken.cs /reference:PravdaDotNet/Pravda.dll /debug:portable"
+      - sh -c "cli/target/universal/stage/bin/pravda compile dotnet
+                --input GameToken.exe,GameToken.pdb
+                --output GameToken.pravda --main-class Expload.GameToken
+                && [ -e GameToken.pravda ]"
+    when:
+      event: push
+      branch: test_gt
+
+#  deploy-gametoken-program:
+#    image: gcr.io/time-coin/gametoken-program-deployer:0.3.3
+#    max_retries: 10
+#    delay_secs: 5
+#    secrets: [ gametoken_wallet_address, gametoken_wallet_private_key ]
+#    when:
+#      event: push
+#      branch: test_gt
