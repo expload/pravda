@@ -2,5 +2,9 @@
   {
     "address": "PRAVDA_COIN_HOLDER",
     "amount": 100000000
+  },
+  {
+    "address": "PRAVDA_COIN_HOLDER_2",
+    "amount": 10000000000
   }
 ]
