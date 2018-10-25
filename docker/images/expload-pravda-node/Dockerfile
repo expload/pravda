@@ -2,6 +2,9 @@ from gcr.io/time-coin/sbt:latest as builder
 
 workdir /build
 
+# It's necessary for correct work of sbt-git plugin
+copy .git .git
+
 copy cli     cli
 copy codegen codegen
 copy common  common
