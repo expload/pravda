@@ -15,7 +15,7 @@ object TranslationSuiteData {
 object TranslationSuite extends Plaintest[Input, Output] {
 
   lazy val dir = new File("dotnet/src/test/resources/translation")
-  override lazy val ext = "trs_"
+  override lazy val ext = "trs"
   override lazy val allowOverwrite = true
 
   def produce(input: Input): Either[String, Output] = {

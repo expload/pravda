@@ -1,0 +1,408 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: StaticClass.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/StaticClass.cs
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "ToHex"
+  eq
+  jumpi @method_ToHex
+  push "Wrong method name"
+  throw
+  @method_ToHex:
+  meta method {
+  "name":"ToHex",int32(0):int8(14),"returnTpe":int8(11)
+  }
+  push int32(2)
+  dupn
+  call @func_Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes
+  jump @ToHex_lvc
+  @ToHex_lvc:
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @func_Expload.Pravda.StringUtils.ByteToHex_uint8:
+  push int32(2)
+  dupn
+  push int32(16)
+  swap
+  div
+  call @func_Expload.Pravda.StringUtils.HexPart_int32
+  push int32(3)
+  dupn
+  push int32(16)
+  swap
+  mod
+  call @func_Expload.Pravda.StringUtils.HexPart_int32
+  swap
+  concat
+  jump @Expload.Pravda.StringUtils.ByteToHex_uint8_lvc
+  @Expload.Pravda.StringUtils.ByteToHex_uint8_lvc:
+  swap
+  pop
+  ret
+  @func_Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes:
+  push null
+  push null
+  push ""
+  push int32(3)
+  swapn
+  pop
+  push int32(0)
+  push int32(2)
+  swapn
+  pop
+  jump @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br33
+  @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br10:
+  push int32(2)
+  dupn
+  push int32(5)
+  dupn
+  push int32(3)
+  dupn
+  array_get
+  call @func_Expload.Pravda.StringUtils.ByteToHex_uint8
+  swap
+  concat
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int32(1)
+  add
+  push int32(2)
+  swapn
+  pop
+  @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br33:
+  push int32(1)
+  dupn
+  push int32(5)
+  dupn
+  length
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_br10
+  push int32(2)
+  dupn
+  jump @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_lvc
+  @Expload.Pravda.StringUtils.BytesToHex_Expload.Pravda.Bytes_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @func_Expload.Pravda.StringUtils.HexPart_int32:
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br9
+  push "0"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br9:
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br19
+  push "1"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br19:
+  push int32(2)
+  dupn
+  push int32(2)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br29
+  push "2"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br29:
+  push int32(2)
+  dupn
+  push int32(3)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br39
+  push "3"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br39:
+  push int32(2)
+  dupn
+  push int32(4)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br49
+  push "4"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br49:
+  push int32(2)
+  dupn
+  push int32(5)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br59
+  push "5"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br59:
+  push int32(2)
+  dupn
+  push int32(6)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br69
+  push "6"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br69:
+  push int32(2)
+  dupn
+  push int32(7)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br79
+  push "7"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br79:
+  push int32(2)
+  dupn
+  push int32(8)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br89
+  push "8"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br89:
+  push int32(2)
+  dupn
+  push int32(9)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br100
+  push "9"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br100:
+  push int32(2)
+  dupn
+  push int32(10)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br111
+  push "A"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br111:
+  push int32(2)
+  dupn
+  push int32(11)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br122
+  push "B"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br122:
+  push int32(2)
+  dupn
+  push int32(12)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br133
+  push "C"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br133:
+  push int32(2)
+  dupn
+  push int32(13)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br144
+  push "D"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br144:
+  push int32(2)
+  dupn
+  push int32(14)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br155
+  push "E"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br155:
+  push int32(2)
+  dupn
+  push int32(15)
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Expload.Pravda.StringUtils.HexPart_int32_br166
+  push "F"
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_br166:
+  push ""
+  jump @Expload.Pravda.StringUtils.HexPart_int32_lvc
+  @Expload.Pravda.StringUtils.HexPart_int32_lvc:
+  swap
+  pop
+  ret
+  @stop:

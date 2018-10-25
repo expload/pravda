@@ -1,0 +1,643 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: ZooProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ZooProgram.cs
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "BreedPets"
+  eq
+  jumpi @method_BreedPets
+  dup
+  push "NewPet"
+  eq
+  jumpi @method_NewPet
+  dup
+  push "NewZoo"
+  eq
+  jumpi @method_NewZoo
+  dup
+  push "TransferPet"
+  eq
+  jumpi @method_TransferPet
+  dup
+  push "TransferZoo"
+  eq
+  jumpi @method_TransferZoo
+  push "Wrong method name"
+  throw
+  @method_BreedPets:
+  meta method {
+  "name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
+  }
+  push null
+  push null
+  push null
+  push x506574546F4F776E6572
+  push int32(7)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @BreedPets_br79
+  push x506574546F4F776E6572
+  push int32(6)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @BreedPets_br79
+  push x506574546F5A6F6F
+  push int32(7)
+  dupn
+  push int32(-1)
+  call @stdlib_storage_get_default
+  push x506574546F5A6F6F
+  push int32(7)
+  dupn
+  push int32(-1)
+  call @stdlib_storage_get_default
+  eq
+  push int8(3)
+  cast
+  jump @BreedPets_br80
+  @BreedPets_br79:
+  push int32(0)
+  @BreedPets_br80:
+  push int32(4)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @BreedPets_br157
+  push int32(6)
+  dupn
+  push int32(6)
+  dupn
+  swap
+  concat
+  push int32(3)
+  swapn
+  pop
+  push x506574546F4F776E6572
+  push int32(3)
+  dupn
+  from
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push x5065745369676E6174757265
+  push int32(3)
+  dupn
+  push x5065745369676E6174757265
+  push int32(9)
+  dupn
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  push x5065745369676E6174757265
+  push int32(9)
+  dupn
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  swap
+  concat
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push int32(2)
+  dupn
+  push int32(2)
+  swapn
+  pop
+  jump @BreedPets_br166
+  @BreedPets_br157:
+  push ""
+  push int32(2)
+  swapn
+  pop
+  @BreedPets_br166:
+  push int32(1)
+  dupn
+  jump @BreedPets_lvc
+  @BreedPets_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_NewPet:
+  meta method {
+  "name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
+  }
+  push null
+  push null
+  push null
+  push x5A6F6F546F4F776E6572
+  push int32(6)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int32(4)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @NewPet_br108
+  push "pet"
+  push "p_PetId"
+  sget
+  push int8(11)
+  cast
+  swap
+  concat
+  push int32(3)
+  swapn
+  pop
+  push x506574546F4F776E6572
+  push int32(3)
+  dupn
+  from
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push x5065745369676E6174757265
+  push int32(3)
+  dupn
+  push int32(4)
+  dupn
+  call @func_GenerateSignature
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push "p_PetId"
+  sget
+  push int32(1)
+  add
+  push "p_PetId"
+  sput
+  push int32(2)
+  dupn
+  push int32(2)
+  swapn
+  pop
+  jump @NewPet_br116
+  @NewPet_br108:
+  push ""
+  push int32(2)
+  swapn
+  pop
+  @NewPet_br116:
+  push int32(1)
+  dupn
+  jump @NewPet_lvc
+  @NewPet_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_NewZoo:
+  meta method {
+  "name":"NewZoo","returnTpe":int8(3)
+  }
+  push null
+  push x5A6F6F546F4F776E6572
+  push "p_ZooCnt"
+  sget
+  from
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push "p_ZooCnt"
+  sget
+  push int32(1)
+  add
+  push "p_ZooCnt"
+  sput
+  push "p_ZooCnt"
+  sget
+  push int32(1)
+  push int32(-1)
+  mul
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  jump @NewZoo_lvc
+  @NewZoo_lvc:
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_TransferPet:
+  meta method {
+  "name":"TransferPet",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0),int32(2):int8(11)
+  }
+  push null
+  push x506574546F4F776E6572
+  push int32(4)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TransferPet_br47
+  push x5A6F6F546F4F776E6572
+  push int32(5)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  push int32(6)
+  dupn
+  eq
+  push int8(3)
+  cast
+  jump @TransferPet_br48
+  @TransferPet_br47:
+  push int32(0)
+  @TransferPet_br48:
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TransferPet_br82
+  push x506574546F4F776E6572
+  push int32(4)
+  dupn
+  push int32(7)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push x506574546F5A6F6F
+  push int32(4)
+  dupn
+  push int32(6)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  @TransferPet_br82:
+  jump @TransferPet_lvc
+  @TransferPet_lvc:
+  pop
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @method_TransferZoo:
+  meta method {
+  "name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+  }
+  push null
+  push x5A6F6F546F4F776E6572
+  push int32(4)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TransferZoo_br45
+  push x5A6F6F546F4F776E6572
+  push int32(4)
+  dupn
+  push int32(6)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  @TransferZoo_br45:
+  jump @TransferZoo_lvc
+  @TransferZoo_lvc:
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  push int32(1)
+  push "p_ZooCnt"
+  sput
+  push int32(1)
+  push "p_PetId"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @func_GenerateSignature:
+  push null
+  push null
+  push null
+  push null
+  push int32(10)
+  push int8(1)
+  new_array
+  push int32(5)
+  swapn
+  pop
+  push int32(0)
+  push int32(4)
+  swapn
+  pop
+  jump @GenerateSignature_br43
+  @GenerateSignature_br13:
+  push int32(4)
+  dupn
+  push int32(4)
+  dupn
+  push int32(7)
+  dupn
+  push int32(6)
+  dupn
+  push int32(9)
+  dupn
+  length
+  swap
+  mod
+  array_get
+  push int32(2)
+  swap
+  div
+  push int8(1)
+  cast
+  swap
+  array_mut
+  push int32(3)
+  dupn
+  push int32(1)
+  add
+  push int32(4)
+  swapn
+  pop
+  @GenerateSignature_br43:
+  push int32(3)
+  dupn
+  push int32(10)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  pop
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  jumpi @GenerateSignature_br13
+  push int32(4)
+  dupn
+  call @stdlib_array_to_bytes
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  jump @GenerateSignature_lvc
+  @GenerateSignature_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @stdlib_array_to_bytes:
+  dup
+  length
+  push x
+  push int32(0)
+  @array_to_bytes_loop:
+  push int32(4)
+  dupn
+  push int32(2)
+  dupn
+  array_get
+  push int8(14)
+  cast
+  push int32(3)
+  dupn
+  concat
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  add
+  dup
+  push int32(4)
+  dupn
+  gt
+  jumpi @array_to_bytes_loop
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @stdlib_storage_get_default:
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sexist
+  jumpi @get_default_if
+  swap
+  pop
+  swap
+  pop
+  ret
+  @get_default_if:
+  pop
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  ret
+  @stop:
