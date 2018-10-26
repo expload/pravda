@@ -22,6 +22,8 @@ object ParserSuite extends Plaintest[Input, Output] {
       files <- DotnetCompilation.run(input.`dotnet-compilation`)
       last = files.last
     } yield
-      Output(pprint.apply(last.parsedPe.methods, height = Int.MaxValue).plainText,
-             pprint.apply(last.parsedPe.signatures.toList.sortBy(_._1), height = Int.MaxValue).plainText)
+      Output(
+        pprint.apply(last.parsedPe.methods, height = Int.MaxValue).plainText,
+        pprint.apply(last.parsedPe.signatures.toList.sortBy(_._1), height = Int.MaxValue).plainText
+      )
 }
