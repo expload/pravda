@@ -42,6 +42,20 @@ pipeline:
       - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
+  check-correct-translate-gametoken-program:
+    image: gcr.io/time-coin/gametoken-program-release-extractor:latest
+    pull: true
+    commands:
+    - mv /GameToken.cs /workdir/code/GameToken.cs
+    - mv /GameToken.csproj /workdir/code/GameToken.csproj
+    - cd /workdir/code
+    - sh -c "csc GameToken.cs /reference:PravdaDotNet/Pravda.dll /debug:portable"
+    - sh -c "cli/target/universal/stage/bin/pravda compile dotnet
+        --input GameToken.exe,GameToken.pdb
+        --output GameToken.pravda --main-class Expload.GameToken
+      && [ -e GameToken.pravda ]"
+    when:
+      event: tag
   publish-to-bintray:
     group: publish
     image: gcr.io/time-coin/sbt:latest
