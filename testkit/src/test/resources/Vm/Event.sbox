@@ -1,0 +1,47 @@
+stack:
+  [utf8.TestEvent]
+storage:
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: Event.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Event.cs
+---
+heap:
+  ref.0: [int8, "1", "2", "3", "4"]
+storage:
+  utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data:
+      simple:
+        data: int32.1234
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data:
+      simple:
+        data: utf8.my_string
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data:
+      simple:
+        data: number.2.0
+  - eventType: Event
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    name: my_event
+    data:
+      simple:
+        data: bytes.01020304

@@ -307,7 +307,7 @@ lazy val testkit = (project in file("testkit"))
   .dependsOn(vm % "compile->compile;test->test")
   .dependsOn(`vm-api`)
   .dependsOn(`vm-asm`)
-  .dependsOn(dotnet)
+  .dependsOn(dotnet % "compile->compile;test->test")
   .dependsOn(codegen)
 
 lazy val yaml4s = (project in file("yaml4s"))

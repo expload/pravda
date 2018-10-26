@@ -1,0 +1,36 @@
+stack:
+  [int32.9, utf8.DealPublicCard]
+storage:
+  utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: Poker.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Poker.cs
+---
+storage:
+   bytes.5461626c65436172647300000000: int32.9
+   utf8.cardCombinations: bytes.1f2f4f3757673b5b6b733d5d6d75793e5e6e767a7c
+   bytes.5461626c654361726473ffffffff: int32.1
+   utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c654361726473ffffffff
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c65436172647300000000
+    value: int32.9
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c654361726473ffffffff
+    value: int32.1

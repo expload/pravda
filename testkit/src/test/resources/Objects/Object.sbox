@@ -1,0 +1,28 @@
+stack:
+  [utf8.TestObjects]
+storage:
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: Object.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Object.cs
+---
+stack:
+  - int32.385
+heap:
+  ref.0:
+    utf8.AVal: int32.100
+  ref.1:
+    utf8.BVal: int32.200
+storage:
+  utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"

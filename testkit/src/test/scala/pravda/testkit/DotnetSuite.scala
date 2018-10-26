@@ -1,23 +1,18 @@
 package pravda.testkit
 
 import java.io.File
-import java.nio.file.{Files, Paths}
 
-import pravda.dotnet.parser.FileParser
-import pravda.dotnet.parser.FileParser.ParsedDotnetFile
-import pravda.dotnet.translation.Translator
-import pravda.plaintest._
-import pravda.vm._
-import cats.instances.list._
-import cats.instances.either._
-import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import org.json4s.DefaultFormats
 import pravda.common.domain.Address
 import pravda.common.json._
+import pravda.dotnet.DotnetCompilation
+import pravda.dotnet.translation.Translator
+import pravda.plaintest._
 import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
+import pravda.vm._
 import pravda.vm.asm.PravdaAssembler
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 import pravda.vm.json._
@@ -34,7 +29,7 @@ object DotnetSuiteData {
                                  `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
                                  programs: Map[Address, Primitive.Bytes] = Map.empty,
                                  executor: Option[Address] = None,
-                                 dotnetCompilation: String)
+                                 `dotnet-compilation`: DotnetCompilation)
 
   final case class Expectations(stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
@@ -42,51 +37,9 @@ object DotnetSuiteData {
                                 error: Option[vm.Error] = None)
 }
 
-import DotnetSuiteData._
+import pravda.testkit.DotnetSuiteData._
 
 object DotnetSuite extends Plaintest[Preconditions, Expectations] {
-
-  private def dotnetToAsm(filename: String,
-                          dllsFiles: List[String],
-                          mainClass: Option[String]): Either[String, List[asm.Operation]] = {
-    import scala.sys.process._
-
-    val exploadDll = new File("PravdaDotNet/Pravda.dll")
-
-    new File("/tmp/pravda/").mkdirs()
-
-    val tmpSrcs =
-      (filename :: dllsFiles).map(f => (new File(s"dotnet-tests/resources/$f"), new File(s"/tmp/pravda/$f")))
-
-    tmpSrcs.foreach {
-      case (from, dest) =>
-        if (!dest.exists()) {
-          Files.copy(from.toPath, dest.toPath)
-        }
-    }
-
-    val exe = File.createTempFile("dotnet-", ".exe")
-    val pdb = File.createTempFile("dotnet-", ".pdb")
-    s"""csc ${tmpSrcs.head._2.getAbsolutePath}
-         |-out:${exe.getAbsolutePath}
-         |-reference:${exploadDll.getAbsolutePath}
-         |${tmpSrcs.tail.map(dll => s"-reference:${dll._2.getAbsolutePath}").mkString("\n")}
-         |-debug:portable
-         |-pdb:${pdb.getAbsolutePath}
-      """.stripMargin.!!
-
-    for {
-      pe <- FileParser.parsePe(Files.readAllBytes(exe.toPath))
-      pdb <- FileParser.parsePdb(Files.readAllBytes(pdb.toPath))
-      dlls <- dllsFiles
-        .map(f => FileParser.parsePe(Files.readAllBytes(Paths.get(s"dotnet-tests/resources/$f"))))
-        .sequence
-      asm <- Translator
-        .translateAsm(ParsedDotnetFile(pe, Some(pdb)) :: dlls.map(dll => ParsedDotnetFile(dll, None)), mainClass)
-        .left
-        .map(_.mkString)
-    } yield asm
-  }
 
   lazy val dir = new File("testkit/src/test/resources")
   override lazy val ext = "sbox"
@@ -103,11 +56,12 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
       json4sKeyFormat[Primitive]
 
   def produce(input: Preconditions): Either[String, Expectations] = {
-    val lines = input.dotnetCompilation.lines.toList
-    val file :: dlls = lines.head.split("\\s+").toList
-    val mainClass = lines.tail.headOption
-    val code = dotnetToAsm(file, dlls, mainClass)
-    val asmProgram = code.map(c => PravdaAssembler.assemble(c, saveLabels = true))
+    val asmE =
+      for {
+        files <- DotnetCompilation.run(input.`dotnet-compilation`)
+        ops <- Translator.translateAsm(files, input.`dotnet-compilation`.`main-class`).left.map(_.mkString)
+        asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
+      } yield asmProgram
 
     val sandboxVm = new VmImpl()
     val heap = {
@@ -143,12 +97,12 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
     )
 
     for {
-      a <- asmProgram
+      asm <- asmE
     } yield {
       val error = Try {
         memory.enterProgram(Address.Void)
         sandboxVm.runBytes(
-          a.asReadOnlyByteBuffer(),
+          asm.asReadOnlyByteBuffer(),
           environment,
           memory,
           wattCounter,

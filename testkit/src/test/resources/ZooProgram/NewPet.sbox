@@ -1,0 +1,74 @@
+stack:
+  [int32.1, utf8.NewPet]
+storage:
+  utf8.p_ZooCnt: int32.2
+  utf8.p_PetId: int32.1
+  bytes.5A6F6F546F4F776E657200000001: bytes.0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: ZooProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ZooProgram.cs
+---
+stack:
+  - utf8.pet1
+heap:
+  ref.0:
+    - int8
+    - "56"
+    - "50"
+    - "58"
+    - "24"
+    - "56"
+    - "50"
+    - "58"
+    - "24"
+    - "56"
+    - "50"
+storage:
+  utf8.init: "null"
+  bytes.5065745369676e617475726570657431: bytes.38323a1838323a183832
+  bytes.5a6f6f546f4f776e657200000001: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  bytes.506574546f4f776e657270657431: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  utf8.p_ZooCnt: int32.2
+  utf8.p_PetId: int32.2
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5a6f6f546f4f776e657200000001
+    value: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5a6f6f546f4f776e657200000001
+    value: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_PetId
+    value: int32.1
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506574546f4f776e657270657431
+    value: bytes.0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5065745369676e617475726570657431
+    value: bytes.38323a1838323a183832
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_PetId
+    value: int32.1
+  - program: "0000000000000000000000000000000000000000000000000000000000000000"
+    eventType: StorageWrite
+    previous: int32.1
+    key: utf8.p_PetId
+    value: int32.2
+  
