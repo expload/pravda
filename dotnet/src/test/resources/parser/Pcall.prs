@@ -34,9 +34,7 @@ methods: |-
         ),
         LdcI41,
         LdcI42,
-        CallVirt(
-          MemberRefData(TypeRefData(14L, "MyAnotherProgram", "Expload.Pravda.Programs"), "Add", 44L)
-        ),
+        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 44L)),
         StLoc1,
         LdcI4S(32),
         NewArr(TypeRefData(6L, "Byte", "System")),
@@ -58,10 +56,10 @@ methods: |-
             39L
           )
         ),
-        LdcI4S(10),
-        LdcI4S(20),
-        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 50L)),
-        StLoc1,
+        LdcI43,
+        LdcI44,
+        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 44L)),
+        StLoc3,
         LdLoc1,
         LdLoc3,
         Add,

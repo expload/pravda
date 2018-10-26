@@ -27,9 +27,13 @@ object DotnetToCodegen extends TestSuite {
     }
 
     'zoo_program - {
-      val Right(pe) =
-        FileParser.parsePe(Files.readAllBytes(new File(getClass.getResource("/zoo_program.exe").getPath).toPath))
-      val Right(asm) = Translator.translateAsm(List(ParsedDotnetFile(pe, None)), None)
+      val Right(files) =
+        steps(
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "ZooProgram.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/ZooProgram.cs")
+        ).run
+
+      val Right(asm) = Translator.translateAsm(List(ParsedDotnetFile(files.last.parsedPe, None)), None)
       val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
 
       TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("zoo_program.generated.cs").mkString))
