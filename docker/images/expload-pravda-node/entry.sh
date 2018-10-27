@@ -22,18 +22,19 @@ fi
 sed -i "s/PRAVDA_COIN_HOLDER_2/$PRAVDA_COIN_HOLDER_2/g" /pravda-cli/coin-distr.json
 sed -i "s/PRAVDA_COIN_HOLDER/$PRAVDA_COIN_HOLDER/g" /pravda-cli/coin-distr.json
 
-if [ -z "$(ls -A /node-data)" ]; then
-  echo "/node-data does not exist, creating"
-  mkdir -p /node-data
+if [ -z "$(ls -A ${PRAVDA_DATA})" ]; then
+  echo "${PRAVDA_DATA} does not exist, creating"
+  mkdir -p ${PRAVDA_DATA}
 fi
 
 if [ ! -f /node-data/initialized ]; then
   echo "Initializing node"
-  rm -rf /node-data/*
-  /pravda-cli/bin/pravda node init --data-dir /node-data --coin-distribution coin-distr.json
-  echo yes > /node-data/initialized
+  rm -rf ${PRAVDA_DATA}/*
+  /pravda-cli/bin/pravda node init --data-dir ${PRAVDA_DATA} --coin-distribution coin-distr.json
+  echo yes > ${PRAVDA_DATA}/initialized
 fi
 
 echo "Starting node"
 export TC_CONFIG_FILE=/pravda-cli/application.conf
-/pravda-cli/bin/pravda node run --data-dir /node-data
+
+exec java -classpath /pravda-cli/lib/"*" -Dconfig.file=/pravda-cli/application.conf pravda.node.launcher $@
