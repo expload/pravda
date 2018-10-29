@@ -1,34 +1,11 @@
-from gcr.io/time-coin/sbt:latest as builder
+FROM openjdk:8u171
 
-workdir /build
+WORKDIR /pravda-cli
 
-# It's necessary for correct work of sbt-git plugin
-copy .git .git
+COPY ./cli/target/universal/stage/lib lib
+COPY ./cli/target/universal/stage/bin bin
 
-copy cli     cli
-copy codegen codegen
-copy common  common
-copy dotnet  dotnet
-copy node-db node-db
-copy node    node
-copy vm-api  vm-api
-copy vm-asm  vm-asm
-copy vm      vm
-copy yopt    yopt
+COPY docker/images/pravda-cli/coin-distr.json /pravda-cli
+COPY docker/images/pravda-cli/entry.sh /pravda-cli
 
-copy project project
-copy build.sbt build.sbt
-
-run cd /build && SBT_OPTS="-Xmx2G -Xms2G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M" sbt cli/stage
-
-from openjdk:8u171
-
-workdir /pravda-cli
-
-copy --from=builder build/cli/target/universal/stage/lib lib
-copy --from=builder build/cli/target/universal/stage/bin bin
-
-copy docker/images/pravda-cli/coin-distr.json /pravda-cli
-copy docker/images/pravda-cli/entry.sh /pravda-cli
-
-entrypoint [ "/pravda-cli/entry.sh" ]
+ENTRYPOINT [ "/pravda-cli/entry.sh" ]

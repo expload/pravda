@@ -11,26 +11,25 @@ pipeline:
     pull: false
     commands:
       - git describe --tags | sed -e "s/^v//" > .tags
-  tests:
+#  tests:
+#    image: gcr.io/time-coin/sbt:latest
+#    pull: true
+#    volumes:
+#      - /var/lib/sbt-cache:/workdir/sbt
+#      - /var/lib/coursier-cache:/workdir/coursier
+#    commands:
+#      - export COURSIER_CACHE='/workdir/coursier/'
+#      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+#      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
+  package-zip:
     image: gcr.io/time-coin/sbt:latest
-    pull: true
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
       - /var/lib/coursier-cache:/workdir/coursier
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
-  package-zip-and-publish-to-bintray:
-    image: gcr.io/time-coin/sbt:latest
-    volumes:
-      - /var/lib/sbt-cache:/workdir/sbt
-      - /var/lib/coursier-cache:/workdir/coursier
-    commands:
-      - export COURSIER_CACHE='/workdir/coursier/'
-      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage node/docker:stage publish
-    secrets: [ bintray_user, bintray_pass ]
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage
     when:
       event: tag
   package-msi:
@@ -43,59 +42,47 @@ pipeline:
       - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
-  package-publish-nuget:
-    image: microsoft/dotnet:2.1-sdk
-    environment:
-      - PRAVDA_VERSION=${DRONE_TAG##v}
-    commands:
-      - cd /workdir/code/PravdaDotNet
-      - dotnet pack -c Release
-      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json      
-    secrets: [ nuget_key ]
-    when:
-      event: tag
-  publish-github-releases:
-    image: plugins/github-release
-    files:
-      - /workdir/code/win-installer/*.msi
-      - /workdir/code/cli/target/universal/*.tgz
-    secrets: [ GITHUB_RELEASE_API_KEY ]
-    when:
-      event: tag
+#  publish-to-bintray:
+#    group: publish
+#    image: gcr.io/time-coin/sbt:latest
+#    volumes:
+#    - /var/lib/sbt-cache:/workdir/sbt
+#    - /var/lib/coursier-cache:/workdir/coursier
+#    commands:
+#    - export COURSIER_CACHE='/workdir/coursier/'
+#    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+#    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
+#    secrets: [ bintray_user, bintray_pass ]
+#    when:
+#      event: tag
+#  package-publish-nuget:
+#    group: publish
+#    image: microsoft/dotnet:2.1-sdk
+#    environment:
+#      - PRAVDA_VERSION=${DRONE_TAG##v}
+#    commands:
+#      - cd /workdir/code/PravdaDotNet
+#      - dotnet pack -c Release
+#      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+#    secrets: [ nuget_key ]
+#    when:
+#      event: tag
+#  publish-github-releases:
+#    group: publish
+#    image: plugins/github-release
+#    files:
+#      - /workdir/code/win-installer/*.msi
+#      - /workdir/code/cli/target/universal/*.tgz
+#    secrets: [ GITHUB_RELEASE_API_KEY ]
+#    when:
+#      event: tag
   publish-docker-hub:
+    group: publish
     image: plugins/docker
     repo: expload/pravda
-    context: /workdir/code/node/target/docker/stage/
-    dockerfile: /workdir/code/node/target/docker/stage/Dockerfile
+    context: .
+    dockerfile: docker/images/pravda-cli/Dockerfile
     secrets: [ docker_username, docker_password ]
     auto_tag: true
-    when:
-      event: tag
-  publish-docker-image-private:
-    image: plugins/gcr
-    registry: gcr.io/time-coin
-    repo: gcr.io/time-coin/expload-pravda-node
-    context: .
-    dockerfile: ./docker/images/expload-pravda-node/Dockerfile
-    secrets: [ gcr_json_key ]
-    when:
-      event: push
-      branch: master
-  publish-docker-image-private-tagged:
-    image: plugins/gcr
-    registry: gcr.io/time-coin
-    repo: gcr.io/time-coin/expload-pravda-node
-    context: .
-    dockerfile: ./docker/images/expload-pravda-node/Dockerfile
-    secrets: [ gcr_json_key ]
-    when:
-      event: tag
-  redeploy-testnet-tagged:
-    image: gcr.io/time-coin/kubectl-update-image:0.5.5
-    prod: true
-    deployment: testnet-node
-    container: testnet-node
-    container_image_name: expload/pravda
-    secrets: [kubernetes_prod_token, kubernetes_prod_cluster, kubernetes_prod_server, kubernetes_prod_namespace]
     when:
       event: tag
