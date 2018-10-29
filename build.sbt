@@ -197,7 +197,7 @@ lazy val node = (project in file("node"))
       // UI
       "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
       // Other
-      "com.expload" %% "scala-abci-server" % "0.9.2",
+      "com.expload" %% "scala-abci-server" % "0.10.0",
       "com.github.pureconfig" %% "pureconfig" % "0.9.1",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.7.0.2",
