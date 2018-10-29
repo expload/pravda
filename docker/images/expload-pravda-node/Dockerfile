@@ -19,17 +19,16 @@ copy yopt    yopt
 copy project project
 copy build.sbt build.sbt
 
-run cd /build && SBT_OPTS="-Xmx2G -Xms2G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M" sbt cli/stage
+run cd /build && SBT_OPTS="-Xmx2G -Xms2G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss2M" sbt node/stage
 
 from openjdk:8u171
 
-workdir /pravda-cli
+workdir /node
 
-copy --from=builder build/cli/target/universal/stage/lib lib
-copy --from=builder build/cli/target/universal/stage/bin bin
+copy --from=builder build/node/target/universal/stage/lib lib
+copy --from=builder build/node/target/universal/stage/bin bin
 
-copy docker/images/expload-pravda-node/coin-distr.json /pravda-cli
-copy docker/images/expload-pravda-node/application.conf /pravda-cli
-copy docker/images/expload-pravda-node/entry.sh /pravda-cli
+copy docker/images/expload-pravda-node/application.conf /node
+copy docker/images/expload-pravda-node/entry.sh /node
 
-entrypoint [ "/pravda-cli/entry.sh" ]
+entrypoint [ "/node/entry.sh" ]
