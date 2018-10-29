@@ -69,8 +69,9 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case Not =>
         cast(Data.Type.Boolean) ++ (Operation(Opcodes.NOT) :: cast(Data.Type.Int32))
 
-      case Dup => List(Operation.Orphan(Opcodes.DUP))
+      case Dup => List(Operation(Opcodes.DUP))
 
+      case Pop => List(Operation(Opcodes.POP))
       case Nop => List()
       case Ret => List(Operation.Jump(Some(s"${ctx.name}_lvc")))
     }

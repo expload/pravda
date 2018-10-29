@@ -1,0 +1,151 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: Arithmetics.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Arithmetics.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestBasicOperations"
+  eq
+  jumpi @method_TestBasicOperations
+  push "Wrong method name"
+  throw
+  @method_TestBasicOperations:
+  meta method {
+  "name":"TestBasicOperations","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  add
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  mul
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  swap
+  div
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  swap
+  mod
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(46)
+  }
+  push int32(5)
+  dupn
+  push int32(5)
+  dupn
+  add
+  push int32(42)
+  add
+  push int32(4)
+  dupn
+  mul
+  push int32(3)
+  dupn
+  add
+  push int32(1337)
+  swap
+  div
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(6)
+  }
+  push int32(1)
+  dupn
+  jump @TestBasicOperations_lvc
+  @TestBasicOperations_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  meta source_mark {
+  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  }
+  push int32(10)
+  push "p_X"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

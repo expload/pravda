@@ -1,0 +1,213 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: Strings.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Strings.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestStrings"
+  eq
+  jumpi @method_TestStrings
+  push "Wrong method name"
+  throw
+  @method_TestStrings:
+  meta method {
+  "name":"TestStrings","returnTpe":int8(0)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/Strings.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/Strings.cs","ec":int32(40)
+  }
+  push "zauser1"
+  push int32(9)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Strings.cs","ec":int32(26)
+  }
+  push "us"
+  push int32(8)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/Strings.cs","ec":int32(28)
+  }
+  push "er2"
+  push int32(7)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Strings.cs","ec":int32(32)
+  }
+  push int32(7)
+  dupn
+  push int32(7)
+  dupn
+  swap
+  concat
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/Strings.cs","ec":int32(42)
+  }
+  push x537472696E67734D617070696E67
+  push int32(6)
+  dupn
+  push int32(10)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(44)
+  }
+  push x537472696E67734D617070696E67
+  push "user1"
+  push int8(14)
+  cast
+  swap
+  concat
+  sexist
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TestStrings_br87
+  meta source_mark {
+  "sl":int32(17),"sc":int32(45),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(46)
+  }
+  meta source_mark {
+  "sl":int32(18),"sc":int32(11),"el":int32(18),"src":"/tmp/pravda/Strings.cs","ec":int32(43)
+  }
+  push x537472696E67734D617070696E67
+  push "user2"
+  push ""
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  @TestStrings_br87:
+  meta source_mark {
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/Strings.cs","ec":int32(10)
+  }
+  push int32(8)
+  dupn
+  meta source_mark {
+  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/Strings.cs","ec":int32(29)
+  }
+  push int32(0)
+  array_get
+  push int32(5)
+  swapn
+  pop
+  push int32(5)
+  dupn
+  meta source_mark {
+  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/Strings.cs","ec":int32(27)
+  }
+  push int32(3)
+  array_get
+  push int32(4)
+  swapn
+  pop
+  push int32(5)
+  dupn
+  meta source_mark {
+  "sl":int32(23),"sc":int32(9),"el":int32(23),"src":"/tmp/pravda/Strings.cs","ec":int32(42)
+  }
+  push int32(1)
+  push int32(2)
+  push int32(2)
+  dupn
+  add
+  swap
+  slice
+  push int32(3)
+  swapn
+  pop
+  jump @TestStrings_lvc
+  @TestStrings_lvc:
+  pop
+  pop
+  pop
+  pop
+  pop
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  meta source_mark {
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/Strings.cs","ec":int32(83)
+  }
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

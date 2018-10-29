@@ -1,0 +1,125 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: Stdlib.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Stdlib.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "Ripemd160"
+  eq
+  jumpi @method_Ripemd160
+  dup
+  push "ValidateEd25519Signature"
+  eq
+  jumpi @method_ValidateEd25519Signature
+  push "Wrong method name"
+  throw
+  @method_Ripemd160:
+  meta method {
+  "name":"Ripemd160",int32(0):int8(11),"returnTpe":int8(14)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/Stdlib.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/Stdlib.cs","ec":int32(40)
+  }
+  push int32(3)
+  dupn
+  push int32(2)
+  scall
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/Stdlib.cs","ec":int32(6)
+  }
+  jump @Ripemd160_lvc
+  @Ripemd160_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ValidateEd25519Signature:
+  meta method {
+  "name":"ValidateEd25519Signature",int32(1):int8(11),int32(0):int8(14),"returnTpe":int8(9),int32(2):int8(14)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"/tmp/pravda/Stdlib.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Stdlib.cs","ec":int32(71)
+  }
+  push int32(5)
+  dupn
+  push int32(5)
+  dupn
+  push int32(5)
+  dupn
+  push int32(1)
+  scall
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/Stdlib.cs","ec":int32(6)
+  }
+  jump @ValidateEd25519Signature_lvc
+  @ValidateEd25519Signature_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

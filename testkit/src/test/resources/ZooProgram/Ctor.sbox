@@ -1,0 +1,32 @@
+stack:
+  [utf8.ctor]
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: ZooProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ZooProgram.cs
+---
+storage:
+  utf8.p_ZooCnt: int32.1
+  utf8.p_PetId: int32.1
+  utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_ZooCnt
+    value: int32.1
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.p_PetId
+    value: int32.1

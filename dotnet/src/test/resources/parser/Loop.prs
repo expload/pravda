@@ -1,0 +1,98 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: Loop.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Loop.cs
+    optimize: false
+---
+methods: |-
+  List(
+    Method(
+      List(
+        Nop,
+        LdcI40,
+        StLoc0,
+        LdcI40,
+        StLoc1,
+        BrS(10),
+        Nop,
+        LdLoc0,
+        LdcI42,
+        Add,
+        StLoc0,
+        Nop,
+        LdLoc1,
+        LdcI41,
+        Add,
+        StLoc1,
+        LdLoc1,
+        LdcI4S(10),
+        Clt,
+        StLoc2,
+        LdLoc2,
+        BrTrueS(-19),
+        BrS(6),
+        Nop,
+        LdLoc0,
+        LdcI42,
+        Mul,
+        StLoc0,
+        Nop,
+        LdLoc0,
+        LdcI4(10000),
+        Clt,
+        StLoc3,
+        LdLoc3,
+        BrTrueS(-18),
+        LdLoc0,
+        StLocS(4),
+        BrS(0),
+        LdLocS(4),
+        Ret
+      ),
+      2,
+      Some(16L)
+    ),
+    Method(List(Nop, Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      LocalVarSig(
+        List(
+          LocalVar(I4, false),
+          LocalVar(I4, false),
+          LocalVar(Boolean, false),
+          LocalVar(Boolean, false),
+          LocalVar(I4, false)
+        )
+      )
+    ),
+    (33L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (37L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

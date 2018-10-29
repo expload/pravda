@@ -1,0 +1,789 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ZooProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ZooProgram.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "BreedPets"
+  eq
+  jumpi @method_BreedPets
+  dup
+  push "NewPet"
+  eq
+  jumpi @method_NewPet
+  dup
+  push "NewZoo"
+  eq
+  jumpi @method_NewZoo
+  dup
+  push "TransferPet"
+  eq
+  jumpi @method_TransferPet
+  dup
+  push "TransferZoo"
+  eq
+  jumpi @method_TransferZoo
+  push "Wrong method name"
+  throw
+  @method_BreedPets:
+  meta method {
+  "name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
+  }
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(58),"sc":int32(5),"el":int32(58),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(59),"sc":int32(9),"el":int32(61),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(80)
+  }
+  push x506574546F4F776E6572
+  push int32(7)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @BreedPets_br79
+  push x506574546F4F776E6572
+  push int32(6)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @BreedPets_br79
+  push x506574546F5A6F6F
+  push int32(7)
+  dupn
+  push int32(-1)
+  call @stdlib_storage_get_default
+  push x506574546F5A6F6F
+  push int32(7)
+  dupn
+  push int32(-1)
+  call @stdlib_storage_get_default
+  eq
+  push int8(3)
+  cast
+  jump @BreedPets_br80
+  @BreedPets_br79:
+  push int32(0)
+  @BreedPets_br80:
+  push int32(4)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @BreedPets_br157
+  meta source_mark {
+  "sl":int32(61),"sc":int32(81),"el":int32(61),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(82)
+  }
+  push int32(6)
+  dupn
+  meta source_mark {
+  "sl":int32(63),"sc":int32(13),"el":int32(63),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(41)
+  }
+  push int32(6)
+  dupn
+  swap
+  concat
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(64),"sc":int32(13),"el":int32(64),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(51)
+  }
+  push x506574546F4F776E6572
+  push int32(3)
+  dupn
+  from
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(65),"sc":int32(13),"el":int32(65),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(93)
+  }
+  push x5065745369676E6174757265
+  push int32(3)
+  dupn
+  push x5065745369676E6174757265
+  push int32(9)
+  dupn
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  push x5065745369676E6174757265
+  push int32(9)
+  dupn
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  swap
+  concat
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  push int32(2)
+  dupn
+  meta source_mark {
+  "sl":int32(66),"sc":int32(13),"el":int32(66),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
+  }
+  push int32(2)
+  swapn
+  pop
+  jump @BreedPets_br166
+  @BreedPets_br157:
+  meta source_mark {
+  "sl":int32(67),"sc":int32(16),"el":int32(67),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(17)
+  }
+  meta source_mark {
+  "sl":int32(68),"sc":int32(13),"el":int32(68),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(23)
+  }
+  push ""
+  push int32(2)
+  swapn
+  pop
+  @BreedPets_br166:
+  push int32(1)
+  dupn
+  jump @BreedPets_lvc
+  @BreedPets_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_NewPet:
+  meta method {
+  "name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
+  }
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(38),"sc":int32(5),"el":int32(38),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(70)
+  }
+  push x5A6F6F546F4F776E6572
+  push int32(6)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int32(4)
+  swapn
+  pop
+  push int32(3)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @NewPet_br108
+  meta source_mark {
+  "sl":int32(39),"sc":int32(71),"el":int32(39),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
+  }
+  meta source_mark {
+  "sl":int32(40),"sc":int32(13),"el":int32(40),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(65)
+  }
+  push "pet"
+  push "p_PetId"
+  sget
+  push int8(11)
+  cast
+  swap
+  concat
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(41),"sc":int32(13),"el":int32(41),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(48)
+  }
+  push x506574546F4F776E6572
+  push int32(3)
+  dupn
+  from
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(42),"sc":int32(13),"el":int32(42),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(59)
+  }
+  push x5065745369676E6174757265
+  push int32(3)
+  dupn
+  push int32(4)
+  dupn
+  call @func_GenerateSignature
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(43),"sc":int32(13),"el":int32(43),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(24)
+  }
+  push "p_PetId"
+  sget
+  push int32(1)
+  add
+  push "p_PetId"
+  sput
+  push int32(2)
+  dupn
+  meta source_mark {
+  "sl":int32(44),"sc":int32(13),"el":int32(44),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(24)
+  }
+  push int32(2)
+  swapn
+  pop
+  jump @NewPet_br116
+  @NewPet_br108:
+  meta source_mark {
+  "sl":int32(46),"sc":int32(9),"el":int32(46),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(19)
+  }
+  push ""
+  push int32(2)
+  swapn
+  pop
+  @NewPet_br116:
+  push int32(1)
+  dupn
+  jump @NewPet_lvc
+  @NewPet_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_NewZoo:
+  meta method {
+  "name":"NewZoo","returnTpe":int8(3)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(24),"sc":int32(5),"el":int32(24),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(47)
+  }
+  push x5A6F6F546F4F776E6572
+  push "p_ZooCnt"
+  sget
+  from
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(21)
+  }
+  push "p_ZooCnt"
+  sget
+  push int32(1)
+  add
+  push "p_ZooCnt"
+  sput
+  meta source_mark {
+  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
+  }
+  push "p_ZooCnt"
+  sget
+  push int32(1)
+  push int32(-1)
+  mul
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(28),"sc":int32(5),"el":int32(28),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  jump @NewZoo_lvc
+  @NewZoo_lvc:
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_TransferPet:
+  meta method {
+  "name":"TransferPet",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0),int32(2):int8(11)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(50),"sc":int32(5),"el":int32(50),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(51),"sc":int32(9),"el":int32(51),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(119)
+  }
+  push x506574546F4F776E6572
+  push int32(4)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TransferPet_br47
+  push x5A6F6F546F4F776E6572
+  push int32(5)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  push int32(6)
+  dupn
+  eq
+  push int8(3)
+  cast
+  jump @TransferPet_br48
+  @TransferPet_br47:
+  push int32(0)
+  @TransferPet_br48:
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TransferPet_br82
+  meta source_mark {
+  "sl":int32(51),"sc":int32(120),"el":int32(51),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(121)
+  }
+  meta source_mark {
+  "sl":int32(52),"sc":int32(12),"el":int32(52),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(36)
+  }
+  push x506574546F4F776E6572
+  push int32(4)
+  dupn
+  push int32(7)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(53),"sc":int32(12),"el":int32(53),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(35)
+  }
+  push x506574546F5A6F6F
+  push int32(4)
+  dupn
+  push int32(6)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  @TransferPet_br82:
+  jump @TransferPet_lvc
+  @TransferPet_lvc:
+  pop
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @method_TransferZoo:
+  meta method {
+  "name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(31),"sc":int32(5),"el":int32(31),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(32),"sc":int32(9),"el":int32(32),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(70)
+  }
+  push x5A6F6F546F4F776E6572
+  push int32(4)
+  dupn
+  push x
+  call @stdlib_storage_get_default
+  from
+  eq
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @TransferZoo_br45
+  meta source_mark {
+  "sl":int32(32),"sc":int32(71),"el":int32(32),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
+  }
+  meta source_mark {
+  "sl":int32(33),"sc":int32(13),"el":int32(33),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(37)
+  }
+  push x5A6F6F546F4F776E6572
+  push int32(4)
+  dupn
+  push int32(6)
+  dupn
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  @TransferZoo_br45:
+  meta source_mark {
+  "sl":int32(34),"sc":int32(9),"el":int32(34),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(10)
+  }
+  jump @TransferZoo_lvc
+  @TransferZoo_lvc:
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  meta source_mark {
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(71)
+  }
+  meta source_mark {
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(79)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(77)
+  }
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(71)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
+  }
+  push int32(1)
+  push "p_ZooCnt"
+  sput
+  meta source_mark {
+  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(26)
+  }
+  push int32(1)
+  push "p_PetId"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @func_GenerateSignature:
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(36)
+  }
+  push int32(10)
+  push int8(1)
+  new_array
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(17),"sc":int32(14),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(23)
+  }
+  push int32(0)
+  push int32(4)
+  swapn
+  pop
+  jump @GenerateSignature_br43
+  @GenerateSignature_br13:
+  push int32(4)
+  dupn
+  meta source_mark {
+  "sl":int32(17),"sc":int32(38),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(39)
+  }
+  push int32(4)
+  dupn
+  meta source_mark {
+  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(63)
+  }
+  push int32(7)
+  dupn
+  push int32(6)
+  dupn
+  push int32(9)
+  dupn
+  length
+  swap
+  mod
+  array_get
+  push int32(2)
+  swap
+  div
+  push int8(1)
+  cast
+  swap
+  array_mut
+  push int32(3)
+  dupn
+  meta source_mark {
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(10)
+  }
+  push int32(1)
+  meta source_mark {
+  "sl":int32(17),"sc":int32(33),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(36)
+  }
+  add
+  push int32(4)
+  swapn
+  pop
+  @GenerateSignature_br43:
+  push int32(3)
+  dupn
+  meta source_mark {
+  "sl":int32(17),"sc":int32(25),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(31)
+  }
+  push int32(10)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  pop
+  push int32(2)
+  dupn
+  push int32(1)
+  eq
+  jumpi @GenerateSignature_br13
+  push int32(4)
+  dupn
+  meta source_mark {
+  "sl":int32(20),"sc":int32(9),"el":int32(20),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(32)
+  }
+  call @stdlib_array_to_bytes
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  jump @GenerateSignature_lvc
+  @GenerateSignature_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @stdlib_array_to_bytes:
+  dup
+  length
+  push x
+  push int32(0)
+  @array_to_bytes_loop:
+  push int32(4)
+  dupn
+  push int32(2)
+  dupn
+  array_get
+  push int8(14)
+  cast
+  push int32(3)
+  dupn
+  concat
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  add
+  dup
+  push int32(4)
+  dupn
+  gt
+  jumpi @array_to_bytes_loop
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @stdlib_storage_get_default:
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sexist
+  jumpi @get_default_if
+  swap
+  pop
+  swap
+  pop
+  ret
+  @get_default_if:
+  pop
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  ret
+  @stop:

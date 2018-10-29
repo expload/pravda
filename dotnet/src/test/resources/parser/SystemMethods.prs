@@ -1,0 +1,89 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: SystemMethods.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/SystemMethods.cs
+    optimize: false
+---
+methods: |-
+  List(
+    Method(
+      List(
+        Nop,
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 24L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Balance", 28L)),
+        StLoc0,
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", 24L)),
+        StLoc1,
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "ProgramAddress", 34L)),
+        StLoc2,
+        Ret
+      ),
+      1,
+      Some(16L)
+    ),
+    Method(List(Nop, Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      LocalVarSig(
+        List(
+          LocalVar(I8, false),
+          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
+          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false)
+        )
+      )
+    ),
+    (24L, FieldSig(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")))),
+    (
+      28L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(I8, false),
+        List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
+      )
+    ),
+    (
+      34L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
+        List()
+      )
+    ),
+    (48L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

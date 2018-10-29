@@ -1,0 +1,76 @@
+stack:
+  [bytes.01, bytes.02, bytes.03, bytes.04, bytes.05, bytes.06, bytes.07, bytes.08, bytes.09, utf8.Deal]
+storage:
+  utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: Poker.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Poker.cs
+---
+heap:
+  "ref.0": [int8, "8"]
+storage:
+  utf8.init: "null"
+  bytes.506c617965727300000006: bytes.07
+  bytes.506c617965727300000007: bytes.08
+  bytes.506c6179657273ffffffff: bytes.08
+  utf8.cardCombinations: bytes.1f2f4f3757673b5b6b733d5d6d75793e5e6e767a7c
+  bytes.506c617965727300000002: bytes.03
+  bytes.506c617965727300000001: bytes.02
+  bytes.506c617965727300000005: bytes.06
+  bytes.5461626c654361726473ffffffff: int32.0
+  bytes.506c617965727300000004: bytes.05
+  bytes.506c617965727300000000: bytes.01
+  bytes.506c617965727300000003: bytes.04
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.5461626c654361726473ffffffff
+    value: int32.0
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000000
+    value: bytes.01
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000001
+    value: bytes.02
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000002
+    value: bytes.03
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000003
+    value: bytes.04
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000004
+    value: bytes.05
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000005
+    value: bytes.06
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000006
+    value: bytes.07
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c617965727300000007
+    value: bytes.08
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: bytes.506c6179657273ffffffff
+    value: bytes.08
+

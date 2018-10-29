@@ -1,0 +1,241 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: SmartProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/SmartProgram.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "BalanceOf"
+  eq
+  jumpi @method_BalanceOf
+  dup
+  push "Transfer"
+  eq
+  jumpi @method_Transfer
+  push "Wrong method name"
+  throw
+  @method_BalanceOf:
+  meta method {
+  "name":"BalanceOf",int32(0):int8(14),"returnTpe":int8(3)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(51)
+  }
+  push x42616C616E636573
+  push int32(4)
+  dupn
+  push int32(0)
+  call @stdlib_storage_get_default
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(6)
+  }
+  jump @BalanceOf_lvc
+  @BalanceOf_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_Transfer:
+  meta method {
+  "name":"Transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
+  }
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(24)
+  }
+  push int32(4)
+  dupn
+  push int32(0)
+  swap
+  gt
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  pop
+  push int32(2)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Transfer_br104
+  meta source_mark {
+  "sl":int32(16),"sc":int32(25),"el":int32(16),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(26)
+  }
+  meta source_mark {
+  "sl":int32(17),"sc":int32(13),"el":int32(17),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(65)
+  }
+  push x42616C616E636573
+  from
+  push int32(0)
+  call @stdlib_storage_get_default
+  push int32(5)
+  dupn
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(1)
+  eq
+  jumpi @Transfer_br103
+  meta source_mark {
+  "sl":int32(17),"sc":int32(66),"el":int32(17),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(67)
+  }
+  meta source_mark {
+  "sl":int32(18),"sc":int32(17),"el":int32(18),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(93)
+  }
+  push x42616C616E636573
+  from
+  push x42616C616E636573
+  from
+  push int32(0)
+  call @stdlib_storage_get_default
+  push int32(7)
+  dupn
+  push int32(-1)
+  mul
+  add
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  meta source_mark {
+  "sl":int32(19),"sc":int32(17),"el":int32(19),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(71)
+  }
+  push x42616C616E636573
+  push int32(6)
+  dupn
+  push x42616C616E636573
+  push int32(8)
+  dupn
+  push int32(0)
+  call @stdlib_storage_get_default
+  push int32(7)
+  dupn
+  add
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sput
+  pop
+  pop
+  @Transfer_br103:
+  @Transfer_br104:
+  meta source_mark {
+  "sl":int32(20),"sc":int32(13),"el":int32(20),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(14)
+  }
+  jump @Transfer_lvc
+  @Transfer_lvc:
+  pop
+  pop
+  pop
+  pop
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  meta source_mark {
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/SmartProgram.cs","ec":int32(62)
+  }
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stdlib_storage_get_default:
+  push int32(2)
+  dupn
+  push int8(14)
+  cast
+  push int32(4)
+  dupn
+  concat
+  sexist
+  jumpi @get_default_if
+  swap
+  pop
+  swap
+  pop
+  ret
+  @get_default_if:
+  pop
+  push int8(14)
+  cast
+  swap
+  concat
+  sget
+  ret
+  @stop:

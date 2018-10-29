@@ -1,0 +1,68 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: VmOps.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/VmOps.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestThrow"
+  eq
+  jumpi @method_TestThrow
+  push "Wrong method name"
+  throw
+  @method_TestThrow:
+  meta method {
+  "name":"TestThrow","returnTpe":int8(0)
+  }
+  meta source_mark {
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/VmOps.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/VmOps.cs","ec":int32(30)
+  }
+  push "Oops!"
+  throw
+  meta source_mark {
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/VmOps.cs","ec":int32(6)
+  }
+  jump @TestThrow_lvc
+  @TestThrow_lvc:
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:
