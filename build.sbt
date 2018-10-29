@@ -172,15 +172,10 @@ lazy val `node-db` = (project in file("node-db"))
 lazy val node = (project in file("node"))
   .enablePlugins(UniversalPlugin)
   .enablePlugins(AshScriptPlugin)
-  .enablePlugins(DockerPlugin)
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings: _*)
   .settings(scalacheckOps:_*)
   .settings(
-    packageName in Docker := "pravda",
-    dockerExposedPorts := Seq(8080, 46656),
-    dockerUsername := Some("expload"),
-    dockerUpdateLatest := true,
     name := "pravda-node",
     normalizedName := "pravda-node",
     description := "Pravda network node",
