@@ -28,8 +28,7 @@ workdir /pravda-cli
 copy --from=builder build/cli/target/universal/stage/lib lib
 copy --from=builder build/cli/target/universal/stage/bin bin
 
-copy docker/images/expload-pravda-node/coin-distr.json /pravda-cli
-copy docker/images/expload-pravda-node/application.conf /pravda-cli
-copy docker/images/expload-pravda-node/entry.sh /pravda-cli
+copy docker/images/pravda-cli/coin-distr.json /pravda-cli
+copy docker/images/pravda-cli/entry.sh /pravda-cli
 
 entrypoint [ "/pravda-cli/entry.sh" ]
