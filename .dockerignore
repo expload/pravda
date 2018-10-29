@@ -1,2 +1,13 @@
 .idea/
-**/target/
+codegen/target/
+common/target/
+dotnet/target/
+node/target/
+node-db/target/
+plaintest/target/
+testkit/target/
+vm/target/
+vm-api/target/
+vm-asm/target/
+yaml4s/target/
+yopt/target/
