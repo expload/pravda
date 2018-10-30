@@ -21,5 +21,12 @@ public class SmartProgram
         }
     }
 
+    public void Emit(Bytes owner, int tokens)
+    {
+        if (tokens > 0) {
+            Balances.put(owner, Balances.getDefault(owner, 0) + tokens);
+        }
+    }
+
     public static void Main() {}
 }
