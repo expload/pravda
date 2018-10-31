@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using Expload.Unity.Codegen;
 
-namespace Expload.Pravda.Program
+namespace Expload.Pravda.ZooProgram
 {
     public class BreedPetsRequest: ProgramRequest<string>
     {

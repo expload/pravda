@@ -12,6 +12,7 @@ dotnet-compilation:
 ---
 translation: |-
   meta custom "CIL"
+  meta program_name "SystemMethods"
   dup
   push "ctor"
   eq

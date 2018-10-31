@@ -12,6 +12,7 @@ dotnet-compilation:
 ---
 translation: |-
   meta custom "CIL"
+  meta program_name "Object"
   dup
   push "ctor"
   eq

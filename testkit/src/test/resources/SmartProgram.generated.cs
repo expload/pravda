@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using Expload.Unity.Codegen;
 
-namespace Expload.Pravda.Program
+namespace Expload.Pravda.SmartProgram
 {
     public class BalanceOfRequest: ProgramRequest<int>
     {
