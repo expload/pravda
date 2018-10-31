@@ -49,3 +49,9 @@ public class IncrementRequest: ProgramRequest<int> // int is the type of result
     }
 }
 ```
+
+## Expload.Unity.Codegen
+
+Internally generated code uses auxiliary functionality from namespace called `Expload.Unity.Codegen`.
+Source file of this namespace situated [here](../codegen/src/main/resources/ExploadUnityCodegen.cs).
+
