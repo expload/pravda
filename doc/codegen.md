@@ -30,7 +30,7 @@ ProcessResult(req);
 ```
 
 Internally `IncrementRequest` class will look like this:
-```
+```c#
 public class IncrementRequest: ProgramRequest<int> // int is the type of result
 {
     public IncrementRequest(byte[] programAddress) : base(programAddress) { } // address of deployed program in the blockchain
