@@ -26,6 +26,7 @@ import pravda.vm.Meta.ProgramName
 import pravda.vm.asm
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 object DotnetCodegen {
 
@@ -166,8 +167,11 @@ object DotnetCodegen {
     sw.toString
   }
 
-  def generate(byteCode: ByteString): GeneratedFile = { // (BigInteger, Methods)
+  def generate(byteCode: ByteString): Seq[GeneratedFile] = {
     val (name, methods) = extractInfo(byteCode)
-    (name.capitalize + ".cs", generateMethods(name, methods.filter(_.name != "ctor")))
+    Seq(
+      (name.capitalize + ".cs", generateMethods(name, methods.filter(_.name != "ctor"))),
+      ("ExploadUnityCodegen.cs", Source.fromResource("ExploadUnityCodegen.cs").mkString)
+    )
   }
 }

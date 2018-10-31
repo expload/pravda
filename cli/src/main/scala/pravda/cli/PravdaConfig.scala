@@ -112,8 +112,6 @@ object PravdaConfig {
   }
 
   final case class Codegen(codegenMode: CodegenMode,
-                           input: Option[String] = None,
-                           outDir: Option[String] = None,
-                           excludeBigInteger: Boolean = false)
+                           input: Option[String] = None)
       extends PravdaConfig
 }
