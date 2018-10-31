@@ -1,0 +1,23 @@
+using System;
+using System.Collections;
+using Expload.Unity.Codegen;
+
+namespace Expload.Pravda.{{programName}}
+{
+    {{#methods}}
+    public class {{methodName}}Request: ProgramRequest<{{methodTpe}}>
+    {
+        public {{methodName}}Request(byte[] programAddress) : base(programAddress) { }
+
+        protected override {{methodTpe}} ParseResult(string elem)
+        {
+            return ExploadTypeConverters.{{methodParseResult}}(elem);
+        }
+
+        public IEnumerator {{methodName}}({{methodArgs}})
+        {
+            yield return SendRequest("{{methodName}}", new string[] { {{methodPrintArgs}} });
+        }
+    }
+    {{/methods}}
+}

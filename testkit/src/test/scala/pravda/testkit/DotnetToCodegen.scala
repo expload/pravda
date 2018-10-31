@@ -13,7 +13,7 @@ import scala.io.Source
 object DotnetToCodegen extends TestSuite {
 
   val tests = Tests {
-    'smart_program - {
+    'SmartProgram - {
       val Right(files) =
         steps(
           "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
@@ -23,10 +23,10 @@ object DotnetToCodegen extends TestSuite {
       val Right(asm) = Translator.translateAsm(List(ParsedDotnetFile(files.last.parsedPe, None)), None)
       val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
 
-      TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("smart_program.generated.cs").mkString))
+      TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("SmartProgram.generated.cs").mkString))
     }
 
-    'zoo_program - {
+    'ZooProgram - {
       val Right(files) =
         steps(
           "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
@@ -35,8 +35,7 @@ object DotnetToCodegen extends TestSuite {
 
       val Right(asm) = Translator.translateAsm(List(ParsedDotnetFile(files.last.parsedPe, None)), None)
       val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
-
-      TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("zoo_program.generated.cs").mkString))
+      TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("ZooProgram.generated.cs").mkString))
     }
   }
 }

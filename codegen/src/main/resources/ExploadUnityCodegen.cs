@@ -4,10 +4,40 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 
-namespace Expload.Pravda.{{programName}}
+namespace Expload.Unity.Codegen
 {
     public static class ExploadTypeConverters
     {
+        // signed integers
+
+        public static sbyte ParseInt8(string elem)
+        {
+            if (elem.StartsWith("int8.")) {
+                return sbyte.Parse(elem.Substring("int8.".Length));
+            } else {
+                throw new ArgumentException("Wrong format for int8 type: " + elem);
+            }
+        }
+
+        public static string PrintInt8(sbyte elem)
+        {
+            return "int8." + elem.ToString();
+        }
+
+        public static short ParseInt16(string elem)
+        {
+            if (elem.StartsWith("int16.")) {
+                return short.Parse(elem.Substring("int16.".Length));
+            } else {
+                throw new ArgumentException("Wrong format for int16 type: " + elem);
+            }
+        }
+
+        public static string PrintInt16(short elem)
+        {
+            return "int16." + elem.ToString();
+        }
+
         public static int ParseInt32(string elem)
         {
             if (elem.StartsWith("int32.")) {
@@ -22,19 +52,96 @@ namespace Expload.Pravda.{{programName}}
             return "int32." + elem.ToString();
         }
 
+        // unsigned integers
+
+        public static byte ParseUInt8(string elem)
+        {
+            if (elem.StartsWith("uint8.")) {
+                return byte.Parse(elem.Substring("uint8.".Length));
+            } else {
+                throw new ArgumentException("Wrong format for uint8 type: " + elem);
+            }
+        }
+
+        public static string PruintUInt8(byte elem)
+        {
+            return "uint8." + elem.ToString();
+        }
+
+        public static short ParseUInt16(string elem)
+        {
+            if (elem.StartsWith("uint16.")) {
+                return ushort.Parse(elem.Substring("uint16.".Length));
+            } else {
+                throw new ArgumentException("Wrong format for uint16 type: " + elem);
+            }
+        }
+
+        public static string PrintUInt16(ushort elem)
+        {
+            return "uint16." + elem.ToString();
+        }
+
+        public static uint ParseUInt32(string elem)
+        {
+            if (elem.StartsWith("uint32.")) {
+                return uint.Parse(elem.Substring("uint32.".Length));
+            } else {
+                throw new ArgumentException("Wrong format for uint32 type: " + elem);
+            }
+        }
+
+        public static string PrintUInt32(uint elem)
+        {
+            return "uint32." + elem.ToString();
+        }
+
+        // bool
+
+        public static bool ParseBool(string elem)
+        {
+            if (elem == "bool.true") {
+                return true;
+            } else if (elem == "bool.false") {
+                return false;
+            } else {
+                throw new ArgumentException("Wrong format for bool type: " + elem);
+            }
+        }
+
+        public static string PrintBool(bool elem)
+        {
+            return "bool." + (elem ? "true" : "false");
+        }
+
+        // utf8
+
+        public static string ParseUtf8(string elem)
+        {
+            if (elem.StartsWith("utf8.")) {
+                return elem.Substring("utf8.".Length);
+            } else {
+                throw new ArgumentException("Wrong format for utf8 type: " + elem);
+            }
+        }
+
+        public static string PrintUtf8(string elem)
+        {
+            return "utf8." + elem;
+        }
+
+        // bytes
+
         public static byte[] ParseBytes(string elem)
         {
-            if (elem.StartsWith("bytes."))
-            {
+            if (elem.StartsWith("bytes.")) {
                 string hex = elem.Substring("bytes.".Length);
                 byte[] bytes = new byte[hex.Length / 2];
                 for (int i = 0; i < hex.Length; i += 2) {
                     bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
                 }
                 return bytes;
-            }
-            else
-            {
+            } else {
                 throw new ArgumentException("Wrong format for int32 type: " + elem);
             }
         }
@@ -42,6 +149,22 @@ namespace Expload.Pravda.{{programName}}
         public static string PrintBytes(byte[] elem)
         {
             return "bytes." + BitConverter.ToString(elem).Replace("-", "");
+        }
+
+        // null
+
+        public static object ParseNull(string elem)
+        {
+            if (elem == "null") {
+                return null;
+            } else {
+                throw new ArgumentException("Wrong format for null type: " + elem);
+            }
+        }
+
+        public static string PrintNull(object elem)
+        {
+            return "null";
         }
     }
 
@@ -100,7 +223,6 @@ namespace Expload.Pravda.{{programName}}
         {
             var request = new ExploadMethodRequest(BitConverter.ToString(ProgramAddress).Replace("-", ""), method, args);
             string json = JsonConvert.SerializeObject(request);
-            Debug.Log(json);
             UnityWebRequest www = UnityWebRequest.Put("localhost:8087/api/program/method", json);
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
@@ -116,7 +238,6 @@ namespace Expload.Pravda.{{programName}}
             {
                 try
                 {
-                    Debug.Log(www.downloadHandler.text);
                     var response = JsonConvert.DeserializeObject<ExploadResponse>(www.downloadHandler.text);
                     if (response.error.Length != 0) {
                         IsError = true;
@@ -142,129 +263,4 @@ namespace Expload.Pravda.{{programName}}
             }
         }
     }
-
-    public class BalanceOfRequest : ProgramRequest<int>
-    {
-        public BalanceOfRequest(byte[] programAddress) : base(programAddress) { }
-
-        protected override int ParseResult(string elem)
-        {
-            return ExploadTypeConverters.ParseInt32(elem);
-        }
-
-        public IEnumerator BalanceOf(byte[] arg0)
-        {
-            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) });
-        }
-    }
-    public class EmitRequest : ProgramRequest<object>
-    {
-        public EmitRequest(byte[] programAddress) : base(programAddress) { }
-
-        protected override object ParseResult(string json)
-        {
-            return null;
-        }
-
-        public IEnumerator Emit(byte[] arg0, int arg1)
-        {
-            yield return SendRequest("Emit", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) });
-        }
-    }
-    public class TransferRequest : ProgramRequest<object>
-    {
-        public TransferRequest(byte[] programAddress) : base(programAddress) { }
-
-        protected override object ParseResult(string json)
-        {
-            return null;
-        }
-
-        public IEnumerator Transfer(byte[] arg0, int arg1)
-        {
-            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) });
-        }
-    }
-}
-
-using System;
-using System.Collections;
-using UnityEngine;
-using UnityEngine.Networking;
-
-namespace Expload.Pravda.{{programName}} {
-    {{#parseClasses}}
-    [System.Serializable]
-    class {{resultTpeClass}}Result {
-       public {{resultTpe}} value;
-       public string tpe;
-
-       public static {{resultTpeClass}}Result FromJson(string json) {
-           return JsonUtility.FromJson<{{resultTpeClass}}Result>(json);
-       }
-    }
-    {{/parseClasses}}
-
-    abstract class ProgramRequest<T>
-    {
-        public byte[] ProgramAddress { get; protected set; }
-
-        public T Result { get; protected set; }
-        public string Error { get; protected set; }
-        public bool IsError { get; protected set; }
-
-        protected ProgramRequest(byte[] programAddress)
-        {
-            ProgramAddress = programAddress;
-            IsError = false;
-            Error = "";
-        }
-
-        protected abstract T ParseResult(string json);
-
-        protected IEnumerator SendJson(string json)
-        {
-            UnityWebRequest www = UnityWebRequest.Put("{{client}}", json);
-            www.method = "POST";
-            www.SetRequestHeader("Content-Type", "application/json");
-
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError)
-            {
-                IsError = true;
-                Error = www.error;
-            }
-            else
-            {
-                try
-                {
-                    Result = ParseResult(www.downloadHandler.text);
-                }
-                catch (ArgumentException e)
-                {
-                    IsError = true;
-                    Error = "Invalid JSON: " + www.downloadHandler.text + "\n" + e.Message;
-                }
-            }
-        }
-    }
-
-    {{#methods}}
-    class {{methodName}}Request: ProgramRequest<{{methodTpe}}> {
-
-        public {{methodName}}Request(byte[] programAddress) : base(programAddress) { }
-
-        protected override {{methodTpe}} ParseResult(string json)
-        {
-            return {{methodParseResult}};
-        }
-
-        public IEnumerator {{methodName}}({{methodArgsDef}})
-        {
-            String json = String.Format("{{{jsonFormat}}}", {{{argsFormat}}});
-            yield return SendJson(json);
-        }
-    }
-    {{/methods}}
 }

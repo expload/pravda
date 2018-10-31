@@ -9,12 +9,12 @@ import scala.io.Source
 object BasicTests extends TestSuite {
 
   val tests = Tests {
-    'one_method - {
+    'OneMethod - {
       TestUtils.assertEqual(
         DotnetCodegen.generateMethods(
-          "ERC20",
+          "OneMethod",
           List(
-            Meta.MethodSignature("balanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes))
+            Meta.MethodSignature("BalanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes))
           )
         ),
         Source.fromResource("OneMethod.generated.cs").mkString
@@ -26,18 +26,18 @@ object BasicTests extends TestSuite {
         DotnetCodegen.generateMethods(
           "ERC20",
           List(
-            Meta.MethodSignature("balanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes)),
-            Meta.MethodSignature("allowance",
+            Meta.MethodSignature("BalanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes)),
+            Meta.MethodSignature("Allowance",
                                  Meta.TypeSignature.Uint32,
                                  List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes)),
-            Meta.MethodSignature("transfer",
+            Meta.MethodSignature("Transfer",
                                  Meta.TypeSignature.Null,
                                  List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)),
-            Meta.MethodSignature("approve",
+            Meta.MethodSignature("Approve",
                                  Meta.TypeSignature.Null,
                                  List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)),
             Meta.MethodSignature(
-              "transferFrom",
+              "TransferFrom",
               Meta.TypeSignature.Null,
               List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)
             )
