@@ -21,7 +21,7 @@ object DotnetToCodegen extends TestSuite {
         ).run
 
       val Right(asm) = Translator.translateAsm(List(ParsedDotnetFile(files.last.parsedPe, None)), None)
-      val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
+      val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false)).head
 
       TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("SmartProgram.generated.cs").mkString))
     }
@@ -34,7 +34,7 @@ object DotnetToCodegen extends TestSuite {
         ).run
 
       val Right(asm) = Translator.translateAsm(List(ParsedDotnetFile(files.last.parsedPe, None)), None)
-      val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false))
+      val unityMethods = DotnetCodegen.generate(PravdaAssembler.assemble(asm, false)).head
       TestUtils.assertEqual(unityMethods, ("Program.cs", Source.fromResource("ZooProgram.generated.cs").mkString))
     }
   }
