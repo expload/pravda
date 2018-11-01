@@ -1,0 +1,49 @@
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package pravda.evm.translate.opcode
+
+import pravda.evm.EVM
+import pravda.evm.EVM.JumpDest
+import pravda.vm.asm.Operation
+import pravda.vm.{Opcodes, asm}
+import pravda.vm.asm.Operation.PushOffset
+
+object JumpDestinationPrepare {
+
+  def jumpDestToOps(op: (EVM.JumpDest, Int)): List[asm.Operation] =
+    op match {
+      case (JumpDest(addr), ind) =>
+        List(
+          asm.Operation.Label(getNameByNumber(ind)),
+          asm.Operation(Opcodes.DUP),
+          pushBigInt(addr),
+          asm.Operation(Opcodes.EQ),
+          asm.Operation(Opcodes.NOT),
+          Operation.JumpI(Some(getNameByNumber(ind + 1))),
+          asm.Operation(Opcodes.POP),
+          PushOffset(getNameByAddress(addr)),
+          Operation.Jump(None)
+        )
+      case _ => List()
+    }
+
+  def addLastBranch(n: Int): List[asm.Operation] =
+    if (n > 0)
+      List(asm.Operation.Label(getNameByNumber(n)), pushString("Incorrect destination"), asm.Operation(Opcodes.THROW))
+    else Nil
+}
