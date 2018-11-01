@@ -68,7 +68,7 @@ namespace Expload.Unity.Codegen
             return "uint8." + elem.ToString();
         }
 
-        public static short ParseUInt16(string elem)
+        public static ushort ParseUInt16(string elem)
         {
             if (elem.StartsWith("uint16.")) {
                 return ushort.Parse(elem.Substring("uint16.".Length));
