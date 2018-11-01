@@ -111,7 +111,5 @@ object PravdaConfig {
     case object Dotnet extends CodegenMode
   }
 
-  final case class Codegen(codegenMode: CodegenMode,
-                           input: Option[String] = None)
-      extends PravdaConfig
+  final case class Codegen(codegenMode: CodegenMode, input: Option[String] = None) extends PravdaConfig
 }
