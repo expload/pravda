@@ -173,8 +173,13 @@ lazy val wallet = (project in file("wallet"))
   .enablePlugins(UniversalPlugin)
   .enablePlugins(AshScriptPlugin)
   .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(DockerPlugin)
   .settings(commonSettings: _*)
   .settings(scalacheckOps:_*)
+  .settings(
+    dockerBaseImage := "openjdk:8u171",
+    dockerExposedPorts := Seq(5000),
+  )
   .settings(
     name := "pravda-wallet",
     normalizedName := "pravda-wallet",
