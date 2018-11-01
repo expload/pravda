@@ -169,6 +169,29 @@ lazy val `node-db` = (project in file("node-db"))
     libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
   )
 
+lazy val wallet = (project in file("wallet"))
+  .enablePlugins(UniversalPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .enablePlugins(BuildInfoPlugin)
+  .settings(commonSettings: _*)
+  .settings(scalacheckOps:_*)
+  .settings(
+    name := "pravda-wallet",
+    normalizedName := "pravda-wallet",
+    description := "Pravda wallet api",
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "pravda.wallet",
+    libraryDependencies ++= Seq(
+      // Networking
+      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
+      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
+      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
+      "com.github.pureconfig" %% "pureconfig" % "0.9.1",
+    )
+  )
+  .dependsOn(node)
+  .dependsOn(cli)
+
 lazy val node = (project in file("node"))
   .enablePlugins(UniversalPlugin)
   .enablePlugins(AshScriptPlugin)
