@@ -41,37 +41,36 @@ class ApiRoute(api: NodeLanguageImpl, url: String, publicKey: Address, secretKey
     Unmarshaller.strict(hex => bytes.hex2byteString(hex))
 
   val route: Route =
-      post {
-        withoutRequestTimeout {
-          path("broadcast") {
-            parameters(
-              ('wattLimit.as[Long], 'wattPrice.as[Long])) { (wattLimit, wattPrice) =>
-                extractStrictEntity(1.second) { body =>
-                  bodyToTransactionData(body).fold(
-                    errorMessage => complete((StatusCodes.BadRequest, errorMessage)),
-                    program => {
-                      val future = api.singAndBroadcastTransaction(
-                        url,
-                        publicKey,
-                        secretKey,
-                        None,
-                        wattLimit,
-                        NativeCoin @@ wattPrice,
-                        None,
-                        program
-                      )
-
-                      onSuccess(future) {
-                        case Left(s)  => complete((StatusCodes.BadRequest, s))
-                        case Right(s) => complete(s)
-                      }
-                    }
+    post {
+      withoutRequestTimeout {
+        path("broadcast") {
+          parameters(('wattLimit.as[Long], 'wattPrice.as[Long])) { (wattLimit, wattPrice) =>
+            extractStrictEntity(1.second) { body =>
+              bodyToTransactionData(body).fold(
+                errorMessage => complete((StatusCodes.BadRequest, errorMessage)),
+                program => {
+                  val future = api.singAndBroadcastTransaction(
+                    url,
+                    publicKey,
+                    secretKey,
+                    None,
+                    wattLimit,
+                    NativeCoin @@ wattPrice,
+                    None,
+                    program
                   )
+
+                  onSuccess(future) {
+                    case Left(s)  => complete((StatusCodes.BadRequest, s))
+                    case Right(s) => complete(s)
+                  }
                 }
-              }
+              )
+            }
           }
         }
       }
+    }
 
   def bodyToTransactionData(body: HttpEntity.Strict): Either[String, ByteString] = {
     body.contentType.mediaType match {
