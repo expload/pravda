@@ -2,7 +2,7 @@
 THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 -->
 
-```pravda gen unity --dir <file> --input <file> --exclude-big-integer```
+```pravda gen unity --input <file>```
 
 ## Description
 Generate auxiliary code to call program's methods from Unity
@@ -10,6 +10,4 @@ Generate auxiliary code to call program's methods from Unity
 
 |Option|Description|
 |----|----|
-|`-d`, `--dir`|Output directory for generated sources.
 |`-i`, `--input`|Input file with assembly.
-|`--exclude-big-integer`|Exclude custom BigInteger class.

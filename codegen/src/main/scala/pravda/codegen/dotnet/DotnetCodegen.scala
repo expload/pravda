@@ -26,6 +26,7 @@ import pravda.vm.Meta.ProgramName
 import pravda.vm.asm
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 object DotnetCodegen {
 
@@ -34,49 +35,46 @@ object DotnetCodegen {
   final case class ParseClass(resultTpeClass: String, resultTpe: String)
   final case class MethodTemplate(methodName: String,
                                   methodTpe: String,
-                                  methodArgsDef: String,
+                                  methodParseResult: String,
                                   methodArgs: String,
-                                  jsonFormat: String,
-                                  argsFormat: String,
-                                  methodParseResult: String)
-  final case class DotnetTemplate(programName: String,
-                                  methods: java.util.List[MethodTemplate],
-                                  parseClasses: java.util.List[ParseClass],
-                                  client: String)
+                                  methodPrintArgs: String)
+  final case class DotnetTemplate(programName: String, methods: java.util.List[MethodTemplate])
 
-  private def tpeToDotnetFormat(tpe: Meta.TypeSignature): String => String = {
-    def primitiveFormat(p: Meta.TypeSignature.PrimitiveType): String => String = p match {
-      case Meta.TypeSignature.Null   => ???
-      case Meta.TypeSignature.Int8   => identity
-      case Meta.TypeSignature.Int16  => identity
-      case Meta.TypeSignature.Int32  => identity
-      case Meta.TypeSignature.BigInt => ???
-      case Meta.TypeSignature.Uint8  => identity
-      case Meta.TypeSignature.Uint16 => identity
-      case Meta.TypeSignature.Uint32 => identity
-      case Meta.TypeSignature.Number => identity
-      case Meta.TypeSignature.Boolean =>
-        arg =>
-          s"""$arg ? "true" : "false" """
-      case Meta.TypeSignature.Ref => ???
-      case Meta.TypeSignature.Utf8 =>
-        arg =>
-          s""" "\\"" + $arg + "\\"" """
-      case Meta.TypeSignature.Bytes =>
-        arg =>
-          s""" "\\"" + BitConverter.ToString($arg).Replace("-","") + "\\"" """
+  private def dotnetPrintArg(tpe: Meta.TypeSignature): String = {
+
+    def primitivePrint(p: Meta.TypeSignature.PrimitiveType): String = p match {
+      case Meta.TypeSignature.Null    => "PrintNull"
+      case Meta.TypeSignature.Int8    => "PrintInt8"
+      case Meta.TypeSignature.Int16   => "PrintInt16"
+      case Meta.TypeSignature.Int32   => "PrintInt32"
+      case Meta.TypeSignature.BigInt  => ??? //"PrintBigInt"
+      case Meta.TypeSignature.Uint8   => "PrintUInt8"
+      case Meta.TypeSignature.Uint16  => "PrintUInt16"
+      case Meta.TypeSignature.Uint32  => "PrintUInt32"
+      case Meta.TypeSignature.Number  => ??? //"PrintNumber"
+      case Meta.TypeSignature.Boolean => "PrintBool"
+      case Meta.TypeSignature.Ref     => ???
+      case Meta.TypeSignature.Utf8    => "PrintUtf8"
+      case Meta.TypeSignature.Bytes   => "PrintBytes"
     }
 
     tpe match {
-      case p: Meta.TypeSignature.PrimitiveType => primitiveFormat(p)
-      case Meta.TypeSignature.Array(p) =>
-        arg =>
-          s""" "[" + string.Join(",", $arg) + "]" """ // FIXME doesn't work for bool, utf8, bytes
-      case Meta.TypeSignature.Struct(name, fields) => ???
+      case p: Meta.TypeSignature.PrimitiveType      => primitivePrint(p)
+      case Meta.TypeSignature.Array(p)              => s"${primitivePrint(p)}Array"
+      case Meta.TypeSignature.Struct(sname, fields) => ???
     }
   }
 
-  private def tpeToDotnetTpe(tpe: Meta.TypeSignature): String = {
+  private def dotnetPringArgs(m: Meta.MethodSignature): String =
+    m.args
+      .zip(argsNames(m))
+      .map {
+        case (tpe, name) => s"ExploadTypeConverters.${dotnetPrintArg(tpe)}($name)"
+      }
+      .mkString(", ")
+
+  private def dotnetTpe(tpe: Meta.TypeSignature): String = {
+
     def primitiveToDotnetTpe(p: Meta.TypeSignature.PrimitiveType): String =
       p match {
         case Meta.TypeSignature.Null    => "object"
@@ -101,57 +99,51 @@ object DotnetCodegen {
     }
   }
 
+  private def dotnetParseResult(tpe: Meta.TypeSignature): String = {
+
+    def primitiveToDotnetTpe(p: Meta.TypeSignature.PrimitiveType): String =
+      p match {
+        case Meta.TypeSignature.Null    => "ParseNull"
+        case Meta.TypeSignature.Int8    => "ParseInt8"
+        case Meta.TypeSignature.Int16   => "ParseInt16"
+        case Meta.TypeSignature.Int32   => "ParseInt32"
+        case Meta.TypeSignature.BigInt  => "ParseBigInt"
+        case Meta.TypeSignature.Uint8   => "ParseUInt8"
+        case Meta.TypeSignature.Uint16  => "ParseUInt16"
+        case Meta.TypeSignature.Uint32  => "ParseUInt32"
+        case Meta.TypeSignature.Number  => "ParseNumber"
+        case Meta.TypeSignature.Boolean => "ParseBool"
+        case Meta.TypeSignature.Ref     => ???
+        case Meta.TypeSignature.Utf8    => "ParseUtf8"
+        case Meta.TypeSignature.Bytes   => "ParseBytes"
+      }
+
+    tpe match {
+      case p: Meta.TypeSignature.PrimitiveType      => primitiveToDotnetTpe(p)
+      case Meta.TypeSignature.Array(p)              => s"${primitiveToDotnetTpe(p)}Array"
+      case Meta.TypeSignature.Struct(sname, fields) => ???
+    }
+  }
+
   private def argsNames(method: Meta.MethodSignature): List[String] =
     method.args.indices.map(i => s"arg$i").toList
 
-  private def jsonArgsFormat(method: Meta.MethodSignature): (String, String) = {
-    val argsFormat = method.args.zipWithIndex
-      .map {
-        case (tpe, i) =>
-          s"""{{ \\"value\\": {${i + 1}}, \\"tpe\\": \\"${tpe.mnemonic}\\" }}"""
-      }
-      .mkString(", ")
+  private def dotnetArgs(method: Meta.MethodSignature) =
+    method.args.zip(argsNames(method)).map { case (tpe, name) => s"${dotnetTpe(tpe)} $name" }.mkString(", ")
 
-    val args = "ProgramAddress" +: argsNames(method)
-    val tpes = Meta.TypeSignature.Bytes +: method.args
-
-    (
-      s"""{{ \\"address\\": {0}, \\"method\\": \\"${method.name}\\", \\"args\\": [$argsFormat] }}""",
-      tpes.map(tpeToDotnetFormat).zip(args).map { case (formatF, arg) => formatF(arg) }.mkString(", ")
-    )
-  }
-
-  private def consturctTemplate(programName: String, methods: List[Meta.MethodSignature]): DotnetTemplate = {
-
-    def constructArgs(method: Meta.MethodSignature): (String, String) = {
-      (method.args.zip(argsNames(method)).map { case (tpe, name) => s"${tpeToDotnetTpe(tpe)} $name" }.mkString(", "),
-       argsNames(method).mkString(", "))
-    }
-
+  private def consturctTemplate(programName: String, methods: List[Meta.MethodSignature]) =
     DotnetTemplate(
-      programName.capitalize,
+      programName,
       methods
-        .map(m => {
-          val (jsonFormat, argsFormat) = jsonArgsFormat(m)
-          val (argsDef, args) = constructArgs(m)
-          val tpe = tpeToDotnetTpe(m.returnTpe)
-          val parseResult = if (m.returnTpe == Meta.TypeSignature.Null) {
-            "null"
-          } else {
-            s"${tpe.capitalize}Result.FromJson(json).value"
-          }
-          MethodTemplate(m.name.capitalize, tpe, argsDef, args, jsonFormat, argsFormat, parseResult)
-        })
-        .asJava,
-      methods
-        .filter(_.returnTpe != Meta.TypeSignature.Null)
-        .map(m => tpeToDotnetTpe(m.returnTpe))
-        .distinct
-        .map(t => ParseClass(t.capitalize, t))
-        .asJava,
-      "localhost:8087/api/program/method"
+        .map(
+          m =>
+            MethodTemplate(m.name,
+                           dotnetTpe(m.returnTpe),
+                           dotnetParseResult(m.returnTpe),
+                           dotnetArgs(m),
+                           dotnetPringArgs(m)))
+        .asJava
     )
-  }
 
   def extractInfo(bytecode: ByteString): (String, List[Meta.MethodSignature]) = {
     val ops = asm.PravdaAssembler.disassemble(bytecode)
@@ -169,14 +161,17 @@ object DotnetCodegen {
 
   def generateMethods(programName: String, methods: List[Meta.MethodSignature]): String = {
     val mf = new DefaultMustacheFactory
-    val mustache = mf.compile("DotnetHttpMethods.mustache.cs")
+    val mustache = mf.compile("ExploadPravdaProgram.cs.mustache")
     val sw = new StringWriter()
     mustache.execute(sw, consturctTemplate(programName, methods))
     sw.toString
   }
 
-  def generate(byteCode: ByteString): GeneratedFile = { // (BigInteger, Methods)
+  def generate(byteCode: ByteString): Seq[GeneratedFile] = {
     val (name, methods) = extractInfo(byteCode)
-    (name.capitalize + ".cs", generateMethods(name, methods.filter(_.name != "ctor")))
+    Seq(
+      (name.capitalize + ".cs", generateMethods(name, methods.filter(_.name != "ctor"))),
+      ("ExploadUnityCodegen.cs", Source.fromResource("ExploadUnityCodegen.cs").mkString)
+    )
   }
 }

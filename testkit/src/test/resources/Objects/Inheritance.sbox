@@ -17,12 +17,12 @@ stack:
 heap:
   ref.0:
     utf8.AVal: int32.100
-    utf8.Answer: offset.1250
-    utf8.AnswerPlus1: offset.2795
+    utf8.Answer: offset.1265
+    utf8.AnswerPlus1: offset.2810
   ref.1:
     utf8.BVal: int32.200
-    utf8.Answer: offset.1883
-    utf8.AnswerPlus1: offset.2795
+    utf8.Answer: offset.1898
+    utf8.AnswerPlus1: offset.2810
 storage:
     utf8.init: "null"
 effects:
