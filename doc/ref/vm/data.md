@@ -111,7 +111,7 @@ data := primitive
 
 ### Primitives
 
-All primitives encodes as JSON strings with prefix. It's easy to parse. Most of popular languages have `indexOf` and `substring` functions.  Type always before first dot, value after.
+All primitives encodes as JSON strings with prefix. It's easy to parse. Most of popular languages have `indexOf` and `substring` functions.  Type always situated before first dot, value after.
 
 ```json
 "int8.-100"
@@ -125,7 +125,7 @@ All primitives encodes as JSON strings with prefix. It's easy to parse. Most of 
 "ref.1"
 "bool.true"
 "utf8.i am cow"
-"bytes.01fca4e91"
+"bytes.01fca4e9"
 "null"
 ```
 
