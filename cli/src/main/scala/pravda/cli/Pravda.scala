@@ -20,7 +20,7 @@ package pravda.cli
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.implicits._
-import pravda.cli.languages.impl._
+import pravda.node.client.impl._
 import pravda.cli.programs._
 import pravda.yopt.CommandLine.{HelpNeeded, Ok, ParseError}
 

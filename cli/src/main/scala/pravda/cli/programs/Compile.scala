@@ -23,7 +23,7 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.cli.languages.{CompilersLanguage, IoLanguage}
+import pravda.node.client.{CompilersLanguage, IoLanguage}
 
 import scala.language.higherKinds
 

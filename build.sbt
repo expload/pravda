@@ -169,34 +169,6 @@ lazy val `node-db` = (project in file("node-db"))
     libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
   )
 
-lazy val wallet = (project in file("wallet"))
-  .enablePlugins(UniversalPlugin)
-  .enablePlugins(AshScriptPlugin)
-  .enablePlugins(BuildInfoPlugin)
-  .enablePlugins(DockerPlugin)
-  .settings(commonSettings: _*)
-  .settings(scalacheckOps:_*)
-  .settings(
-    dockerBaseImage := "openjdk:8u171",
-    dockerExposedPorts := Seq(5000),
-  )
-  .settings(
-    name := "pravda-wallet",
-    normalizedName := "pravda-wallet",
-    description := "Pravda wallet api",
-    buildInfoKeys := Seq[BuildInfoKey](version),
-    buildInfoPackage := "pravda.wallet",
-    libraryDependencies ++= Seq(
-      // Networking
-      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
-      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
-      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
-      "com.github.pureconfig" %% "pureconfig" % "0.9.1",
-    )
-  )
-  .dependsOn(node)
-  .dependsOn(cli)
-
 lazy val node = (project in file("node"))
   .enablePlugins(UniversalPlugin)
   .enablePlugins(AshScriptPlugin)
@@ -283,6 +255,53 @@ lazy val codegen = (project in file("codegen"))
   .dependsOn(`vm-asm`)
   .dependsOn(common % "test->test")
 
+lazy val `node-client` = (project in file("node-client"))
+  .enablePlugins(RevolverPlugin)
+  .settings(commonSettings: _*)
+  .settings(scalacheckOps:_*)
+  .settings(
+    name := "pravda-node-client",
+    normalizedName := "pravda-node-client",
+    description := "Pravda node client",
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "pravda.node.client",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
+      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1"
+    )
+  )
+  .dependsOn(common)
+  .dependsOn(vm)
+  .dependsOn(node)
+  .dependsOn(codegen)
+  .dependsOn(dotnet)
+
+lazy val `node-client-api` = (project in file("node-client-api"))
+  .enablePlugins(UniversalPlugin)
+  .enablePlugins(AshScriptPlugin)
+  .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(DockerPlugin)
+  .settings(commonSettings: _*)
+  .settings(scalacheckOps:_*)
+  .settings(
+    dockerBaseImage := "openjdk:8u171",
+    dockerExposedPorts := Seq(5000),
+  )
+  .settings(
+    name := "pravda-node-client-api",
+    normalizedName := "pravda-node-client-api",
+    description := "Pravda node client api",
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "pravda.node.client.api",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
+      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
+      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
+      "com.github.pureconfig" %% "pureconfig" % "0.9.1",
+    )
+  )
+  .dependsOn(`node-client`)
+
 lazy val cli = (project in file("cli"))
   .enablePlugins(ClasspathJarPlugin)
   .enablePlugins(BuildInfoPlugin)
@@ -300,12 +319,7 @@ lazy val cli = (project in file("cli"))
     bashScriptExtraDefines += """set -- -- "$@""""
   )
   .dependsOn(yopt)
-  .dependsOn(common)
-  .dependsOn(`vm-asm`)
-  .dependsOn(vm)
-  .dependsOn(node)
-  .dependsOn(dotnet)
-  .dependsOn(codegen)
+  .dependsOn(`node-client`)
 
 lazy val `gen-doc` = (project in file("doc") / "gen")
   .settings(commonSettings: _*)

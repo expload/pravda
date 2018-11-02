@@ -3,7 +3,7 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.cli.languages._
+import pravda.node.client._
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.{Data, ExecutionResult, FinalState}
 import utest._
