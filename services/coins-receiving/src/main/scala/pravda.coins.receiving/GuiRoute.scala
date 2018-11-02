@@ -1,25 +1,19 @@
 package pravda.coins.receiving
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import cats.data.OptionT
-import com.google.protobuf.ByteString
 import korolev.Context
-import korolev.akkahttp.{AkkaHttpServerConfig, akkaHttpService}
+import korolev.akkahttp._
+import korolev.execution._
 import korolev.server.{KorolevServiceConfig, ServerRouter}
 import korolev.state.StateStorage
-import pravda.common.domain.{Address, NativeCoin}
-import pravda.node.clients.AbciClient
-import pravda.node.data.cryptography
-import pravda.node.data.serialization.{Bson, transcode}
-import pravda.node.db.DB
-import pravda.node.persistence.FileStore
-import pravda.node.utils
-import pravda.vm.Data
-import pravda.vm.asm.{Operation, PravdaAssembler}
+import korolev.state.javaSerialization._
+import pravda.cli.languages.impl.{CompilersLanguageImpl, NodeLanguageImpl}
+import pravda.common.bytes
+import pravda.common.domain.NativeCoin
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
@@ -27,122 +21,18 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
   import globalContext._
   import symbolDsl._
 
-  private def effectsTable(table: List[Map[String, Node]]): Node = {
-    'table ('class /= "table is-striped is-hoverable is-fullwidth",
-      'thead ('tr (table.head.keys.map(k => 'td (k)))),
-      'tbody (
-        table.map { el =>
-          'tr (el.values.map(k => 'td (k)))
-        }
-      ))
-  }
-
-  private def showEffectName(effect: EnvironmentEffect) = effect match {
-    case _: EnvironmentEffect.ProgramCreate => "Create program"
-    case _: EnvironmentEffect.ProgramSeal   => "Make program sealed"
-    case _: EnvironmentEffect.StorageRemove => "Remove from storage"
-    case _: EnvironmentEffect.ProgramUpdate => "Update program"
-    case _: EnvironmentEffect.StorageRead   => "Read from storage"
-    case _: EnvironmentEffect.StorageWrite  => "Write to storage"
-    case _: EnvironmentEffect.Transfer      => "Transfer NC"
-    case _: EnvironmentEffect.ShowBalance   => "Read NC balance"
-  }
-
-  private def mono(s: ByteString): Node =
-    'span ('class /= "hash", byteUtils.byteString2hex(s))
-
-  private def mono(s: Data): Node =
-    'span ('class /= "hash", s.mkString(pretty = true))
-
-  private def effectToTableElement(effect: EnvironmentEffect): Map[String, Node] = {
-
-    def localKey(key: Data) = key.mkString(pretty = true)
-
-    def showOption(value: Option[Data]): Node = value match {
-      case None    => 'span ('fontStyle @= "italic", "None")
-      case Some(s) => mono(s)
-    }
-    effect match {
-      case EnvironmentEffect.ProgramCreate(address, program) =>
-        Map(
-          "Generated address" -> mono(address),
-          "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
-        )
-      case EnvironmentEffect.ProgramSeal(address) =>
-        Map(
-          "Program address" -> mono(address)
-        )
-      case EnvironmentEffect.ProgramUpdate(address, program) =>
-        Map(
-          "Program address" -> mono(address),
-          "Disassembled code" -> 'pre ('class /= "code", programToAsm(program))
-        )
-      case EnvironmentEffect.StorageRemove(program, key, value) =>
-        Map(
-          "Program" -> mono(program),
-          "Key" -> localKey(key),
-          "Removed value" -> showOption(value)
-        )
-      case EnvironmentEffect.StorageWrite(program, key, prev, value) =>
-        Map(
-          "Program" -> mono(program),
-          "Key" -> localKey(key),
-          "Written value" -> mono(value),
-          "Previous value" -> showOption(prev)
-        )
-      case EnvironmentEffect.StorageRead(program, key, value) =>
-        Map(
-          "Program" -> mono(program),
-          "Key" -> localKey(key),
-          "Readen value" -> showOption(value)
-        )
-      case EnvironmentEffect.Transfer(from, to, amount) =>
-        Map(
-          "From" -> mono(from),
-          "From" -> mono(to),
-          "Amount" -> 'span (amount.toString)
-        )
-      case EnvironmentEffect.ShowBalance(address, amount) =>
-        Map(
-          "Address" -> mono(address),
-          "Amount" -> 'span (amount.toString)
-        )
-
-    }
-  }
-
-  private def groupEffects(effects: List[EnvironmentEffect]) =
-    effects.reverse
-      .foldLeft(List.empty[(String, List[EnvironmentEffect])]) {
-        case (Nil, effect) => (showEffectName(effect), effect :: Nil) :: Nil
-        case ((acc @ ((lastName, lastGroup) :: xs)), effect) =>
-          val thisName = showEffectName(effect)
-          if (thisName == lastName) (lastName, effect :: lastGroup) :: xs
-          else (thisName, effect :: Nil) :: acc
-      }
-
-  private def asmAstToAsm(operations: Seq[Operation]) = {
-    PravdaAssembler.render(operations)
-  }
-
-  private def programToAsm(program: Data.Primitive.Bytes): String =
-    programToAsm(program.data)
-
-  private def programToAsm(program: ByteString): String =
-    asmAstToAsm(PravdaAssembler.disassemble(program))
-
-  private val codeArea = elementId()
-  private val wattLimitField = elementId()
-  private val wattPriceField = elementId()
   private val addressField = elementId()
-  private val pkField = elementId()
+  private val xcoinsField = elementId()
+
+  private val node = new NodeLanguageImpl()
+  private val compilers = new CompilersLanguageImpl()
 
   private val service = akkaHttpService(
     KorolevServiceConfig[Future, GuiState, Any](
       serverRouter = ServerRouter
         .empty[Future, GuiState]
         .withRootPath("/ui/"),
-      stateStorage = StateStorage.default(SendTransactionScreen(false, None)),
+      stateStorage = StateStorage.default(ReceiveCoins(None)),
       head = Seq(
         'link ('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),
         'link (
@@ -150,325 +40,84 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
           'rel         /= "stylesheet",
           'crossorigin /= "anonymous",
           'integrity   /= "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
-        ),
-        'link ('href /= "main.css", 'rel /= "stylesheet")
+        )
       ),
       render = {
-        case state: BlockExplorer =>
-          val block = state.currentBlock
-          mainLayout(
-            state,
-            'div (
-              'class  /= "columns",
-              'margin @= "0",
-              // Block number
-              'div (
-                'class /= "column is-narrow has-text-centered",
-                'div ('class /= "is-size-3", block.height.toString)
-              ),
-              // Block content
-              'div (
-                'class /= "column",
-                block.transactions.map {
-                  transaction =>
-                    val groupedEffects = groupEffects(transaction.effects)
-                    'div (
-                      'class /= "card",
-                      'header (
-                        'class /= "card-header",
-                        'p (
-                          'class /= "card-header-title",
-                          'span ('class /= "icon has-text-black", 'i ('class /= "fas fa-stream")),
-                          mono(transaction.id),
-                          event('click) { access =>
-                            access.maybeTransition {
-                              case s: BlockExplorer =>
-                                s.copy(currentTransactionId = Some(transaction.id), currentEffectsGroup = None)
-                            }
-                          }
-                        )
-                      ),
-                      if (state.currentTransactionId.contains(transaction.id)) {
-                        'div (
-                          'class /= "card-content",
-                          'div ('class /= "columns",
-                            'div ('class /= "column is-2", 'div ('class /= "title is-5", "From")),
-                            'div ('class /= "column", mono(transaction.from))),
-                          'div (
-                            'class /= "columns",
-                            'div ('class /= "column is-2", 'div ('class /= "title is-5", "Disassembled code")),
-                            'div ('class /= "column", 'pre ('class      /= "code", transaction.disassembledProgram))
-                          ),
-                          if (groupedEffects.nonEmpty) 'div ('class /= "title is-5", "World state effects") else void,
-                          'ul (
-                            'class /= "columns is-multiline",
-                            groupedEffects.zipWithIndex map {
-                              case ((name, effects), i) =>
-                                'li (
-                                  'class /= "column is-12",
-                                  'div (
-                                    'class /= "title is-6",
-                                    s"${i + 1}. $name",
-                                    'span ('marginLeft @= 5, 'class /= "tag is-blue", effects.length.toString),
-                                    event('click) { access =>
-                                      access.maybeTransition {
-                                        case s: BlockExplorer =>
-                                          s.copy(currentEffectsGroup = Some(i))
-                                      }
-                                    }
-                                  ),
-                                  if (state.currentEffectsGroup.contains(i)) {
-                                    effectsTable(effects.map(effectToTableElement))
-                                  } else void
-                                )
-                            }
-                          )
-                        )
-                      } else {
-                        void
-                      }
-                    )
-                }
-              )
-            )
-          )
-        case state @ ErrorScreen(error) =>
-          mainLayout(state, 'pre ('color @= "red", error))
-        case state @ SendTransactionScreen(inProgress, maybeResult) =>
-          mainLayout(
-            state,
+        case ReceiveCoins(msg) =>
+          'body (
             'form (
               'display       @= "flex",
               'flexDirection @= "column",
-              'textarea ('class  /= "textarea",
-                'margin @= 10,
-                'height @= 400,
-                codeArea,
-                'placeholder /= "Place your pravda-asm code here"),
-              'input ('class          /= "input", 'margin @= 10, wattLimitField, 'placeholder /= "Watt limit", 'value /= "300"),
-              'input ('class          /= "input", 'margin @= 10, wattPriceField, 'placeholder /= "Watt price", 'value /= "1"),
-              'input ('class          /= "input", 'margin @= 10, addressField, 'placeholder /= "Address", 'value /= ""), //byteUtils.byteString2hex(Config.pravdaConfig.validator.address)),
-              'input (
-                'class  /= "input",
-                'margin @= 10,
-                pkField,
-                'placeholder /= "Private key",
-                'type        /= "password",
-                'value       /= "" //byteUtils.byteString2hex(Config.pravdaConfig.validator.privateKey)
-              ),
+              'input ('class  /= "input", 'margin @= 10, addressField, 'placeholder /= "Address", 'value /= ""),
+              'input ('class  /= "input",
+                      'margin @= 10,
+                      xcoinsField,
+                      'placeholder /= "Number of XCoins",
+                      'value       /= "1000000"),
               'div (
                 'button (
                   'class  /= "button is-link",
                   'margin @= 10,
                   'width  @= 200,
-                  "Send transaction",
-                  if (inProgress) 'disabled /= "" else void,
+                  "Receive",
                   event('click) {
                     access =>
-                      val eventuallyErrorOrTransaction =
-                        for {
-                          code <- access.valueOf(codeArea)
-                          wattLimit <- access.valueOf(wattLimitField)
-                          wattPrice <- access.valueOf(wattPriceField)
-                          address <- access.valueOf(addressField)
-                          pk <- access.valueOf(pkField)
-                        } yield {
-                          val hackCode = code
-                            .replace("\\t", "\t")
-                            .replace("\\r", "\r")
-                            .replace("\\n", "\n")
-                            .replace("\\\"", "\"")
-                            .replace("\\\\", "\\") // FIXME HACK CODE
-                          PravdaAssembler.assemble(hackCode, saveLabels = true) map { data =>
-                            val unsignedTx = UnsignedTransaction(Address.fromHex(address),
-                              TransactionData @@ data,
-                              wattLimit.toLong,
-                              NativeCoin.amount(wattPrice),
-                              Random.nextInt())
-                            cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
-                          }
-                        }
-                      eventuallyErrorOrTransaction flatMap {
-                        case Left(error) =>
-                          access.transition(_ =>
-                            SendTransactionScreen(inProgress = false, maybeResult = Some(error.mkString)))
-                        case Right(tx) =>
-                          for {
-                            _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
-                            result <- abciClient.broadcastTransaction(tx)
-                            _ <- access.transition { _ =>
-                              SendTransactionScreen(
-                                inProgress = false,
-                                maybeResult = Some(result.fold(_.toString, utils.showExecInfo))
+                      for {
+                        address <- access.valueOf(addressField)
+                        xcoins <- access.valueOf(xcoinsField)
+                        codeOrError <- compilers.asm(s"push x$address push bigint($xcoins) transfer")
+                        resOrError <- codeOrError match {
+                          case Left(err) => Future.successful(Left(s"Error during request construction: $err"))
+                          case Right(code) =>
+                            node
+                              .singAndBroadcastTransaction(
+                                Config.coinsReceivingConfig.testnetEndpoint,
+                                bytes.hex2byteString(Config.coinsReceivingConfig.walletAddress),
+                                bytes.hex2byteString(Config.coinsReceivingConfig.walletPrivateKey),
+                                None,
+                                10000L,
+                                NativeCoin @@ 1L,
+                                None,
+                                code
                               )
-                            }
-                          } yield {
-                            ()
-                          }
-                      }
-                  }
-                ),
-                'button (
-                  'class  /= "button is-link is-danger",
-                  'margin @= 10,
-                  'width  @= 200,
-                  "Create program",
-                  if (inProgress) 'disabled /= "" else void,
-                  event('click) {
-                    access =>
-                      val eventuallyErrorOrTransaction =
-                        for {
-                          code <- access.valueOf(codeArea)
-                          wattLimit <- access.valueOf(wattLimitField)
-                          wattPrice <- access.valueOf(wattPriceField)
-                          address <- access.valueOf(addressField)
-                          pk <- access.valueOf(pkField)
-                        } yield {
-                          val hackCode = code
-                            .replace("\\t", "\t")
-                            .replace("\\r", "\r")
-                            .replace("\\n", "\n")
-                            .replace("\\\"", "\"")
-                            .replace("\\\\", "\\") // FIXME HACK CODE
-                          PravdaAssembler.assemble(hackCode, saveLabels = true) flatMap { data =>
-                            PravdaAssembler.assemble(s"push x${byteUtils.byteString2hex(data)} pcreate",
-                              saveLabels = false) map { data =>
-                              val unsignedTx = UnsignedTransaction(Address.fromHex(address),
-                                TransactionData @@ data,
-                                wattLimit.toLong,
-                                NativeCoin.amount(wattPrice),
-                                Random.nextInt())
-                              cryptography.signTransaction(PrivateKey.fromHex(pk), unsignedTx)
-                            }
-                          }
+                              .map(_.left.map(e => s"Error during http request: $e"))
                         }
-                      eventuallyErrorOrTransaction flatMap {
-                        case Left(error) =>
-                          access.transition(_ =>
-                            SendTransactionScreen(inProgress = false, maybeResult = Some(error.mkString)))
-                        case Right(tx) =>
-                          for {
-                            _ <- access.transition(_ => SendTransactionScreen(inProgress = true, maybeResult = None))
-                            execInfo <- abciClient.broadcastTransaction(tx)
-                            _ <- access.transition { _ =>
-                              SendTransactionScreen(
-                                inProgress = false,
-                                maybeResult = Some(execInfo.fold(_.toString, utils.showExecInfo))
-                              )
+                        _ <- resOrError match {
+                          case Left(err) => access.transition(_ => ErrorScreen(err))
+                          case Right(res) =>
+                            res.executionResult match {
+                              case Left(runtimeError) =>
+                                access.transition(_ =>
+                                  ErrorScreen(s"Runtime error during transferring: ${runtimeError.error}"))
+                              case Right(finalState) =>
+                                access.transition(_ =>
+                                  ReceiveCoins(Some(s"Successfully transferred $xcoins to $address")))
                             }
-                          } yield {
-                            ()
-                          }
-                      }
+                        }
+                      } yield {}
                   }
                 )
-              ),
-              maybeResult.map(x => 'pre (x))
-            )
+              )
+            ),
+            msg match {
+              case Some(m) => 'div ('class /= "notification is-success", m)
+              case None    => void
+            }
           )
+        case ErrorScreen(error) => 'div ('class /= "notification is-danger", error)
       }
     )
   )
-
-  private def loadBlock(height: Long) = {
-    val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
-    for {
-      blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
-        transcode(Bson @@ r.bytes).to[Map[TransactionId, Seq[EnvironmentEffect]]])
-      eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
-      transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
-    } yield {
-      Block(
-        height,
-        transactions.toList.map {
-          case (id, transaction) =>
-            val asm = programToAsm(transaction.program)
-            Transaction(id, transaction.from, blockInfo(id).toList, asm)
-        }
-      )
-    }
-  }
-
-  private def mainLayout(state: GuiState, content: Node*) = {
-    'body (
-      'div (
-        'class /= "column",
-        'div (
-          'class /= "tabs",
-          'ul (
-            'li (
-              if (state.isInstanceOf[BlockExplorer]) 'class /= "is-active" else void,
-              'a ("Block Explorer"),
-              event('click) { access =>
-                val eventuallyTransactions =
-                  OptionT(FileStore.readApplicationStateInfoAsync()).flatMap { asi =>
-                    val height = asi.blockHeight - 1
-                    loadBlock(height)
-                  }
-                val eventuallyNewScreen = eventuallyTransactions.value.map {
-                  case None =>
-                    ErrorScreen("Inconsistent state: Identifier of transaction " +
-                      "mentioned in state effects is not found on blockchain.")
-                  case Some(block) =>
-                    BlockExplorer(
-                      currentTransactionId = None,
-                      currentEffectsGroup = None,
-                      currentBlock = block
-                    )
-                }
-                eventuallyNewScreen
-                  .recover {
-                    case e: Throwable => ErrorScreen(e)
-                  }
-                  .flatMap { newScreen =>
-                    access.maybeTransition {
-                      case _ => newScreen
-                    }
-                  }
-              }
-            ),
-            'li (
-              if (state.isInstanceOf[SendTransactionScreen]) 'class /= "is-active" else void,
-              'a ("Transacton Composer"),
-              event('click) { access =>
-                access.transition(_ => SendTransactionScreen(inProgress = false, maybeResult = None))
-              }
-            )
-          )
-        )
-      ),
-      content
-    )
-  }
 
   val route: Route = service(AkkaHttpServerConfig())
 }
 
 object GuiRoute {
 
-  final case class Transaction(id: TransactionId,
-                               from: Address,
-                               effects: List[EnvironmentEffect],
-                               disassembledProgram: String)
-
-  final case class Block(height: Long, transactions: List[Transaction])
-
   sealed trait GuiState
 
-  final case class BlockExplorer(currentBlock: Block,
-                                 currentTransactionId: Option[TransactionId],
-                                 currentEffectsGroup: Option[Int] = None)
-    extends GuiState
-
-  final case class SendTransactionScreen(inProgress: Boolean, maybeResult: Option[String]) extends GuiState
-
-  final case class ErrorScreen(error: String) extends GuiState
-
-  object ErrorScreen {
-
-    def apply(e: Throwable): ErrorScreen =
-      ErrorScreen(s"${e.getMessage}:\n  ${e.getStackTrace.mkString("\n  ")}")
-  }
+  final case class ReceiveCoins(successMessage: Option[String]) extends GuiState
+  final case class ErrorScreen(error: String)                   extends GuiState
 
   val globalContext: Context[Future, GuiState, Any] =
     Context[Future, GuiState, Any]

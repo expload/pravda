@@ -358,6 +358,8 @@ lazy val plaintest = (project in file("plaintest"))
   )
 
 lazy val `coins-receiving` = (project in file("services/coins-receiving"))
+  .dependsOn(common)
+  .dependsOn(cli)
   .settings(commonSettings: _*)
   .settings(
     skip in publish := true,
