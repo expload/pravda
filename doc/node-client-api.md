@@ -11,7 +11,7 @@ Requires environment variables:
 
 Run on docker:
 
-`docker run expload/pravda/node-client-api`
+`docker run expload/pravda-node-client-api`
 
 ### Request
 

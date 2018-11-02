@@ -16,6 +16,8 @@ git.gitTagToVersionNumber := { tag: String =>
 
 val `tendermint-version` = "0.16.0"
 
+lazy val envDockerUsername = sys.env.get("docker_username")
+
 val scalacheckOps = Seq(
   libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
   testOptions in Test ++= Seq(
@@ -263,12 +265,6 @@ lazy val `node-client` = (project in file("node-client"))
     name := "pravda-node-client",
     normalizedName := "pravda-node-client",
     description := "Pravda node client",
-    buildInfoKeys := Seq[BuildInfoKey](version),
-    buildInfoPackage := "pravda.node.client",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
-      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1"
-    )
   )
   .dependsOn(common)
   .dependsOn(vm)
@@ -284,21 +280,17 @@ lazy val `node-client-api` = (project in file("node-client-api"))
   .settings(commonSettings: _*)
   .settings(scalacheckOps:_*)
   .settings(
+    packageName := "pravda-node-client-api",
     dockerBaseImage := "openjdk:8u171",
     dockerExposedPorts := Seq(5000),
+    dockerRepository := Some("index.docker.io"),
+    dockerUsername := envDockerUsername,
+    dockerUpdateLatest := true
   )
   .settings(
     name := "pravda-node-client-api",
     normalizedName := "pravda-node-client-api",
     description := "Pravda node client api",
-    buildInfoKeys := Seq[BuildInfoKey](version),
-    buildInfoPackage := "pravda.node.client.api",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
-      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
-      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
-      "com.github.pureconfig" %% "pureconfig" % "0.9.1",
-    )
   )
   .dependsOn(`node-client`)
 
@@ -319,7 +311,7 @@ lazy val cli = (project in file("cli"))
     bashScriptExtraDefines += """set -- -- "$@""""
   )
   .dependsOn(yopt)
-  .dependsOn(`node-client`)
+  .dependsOn(`node-client` % "compile->compile;test->test")
 
 lazy val `gen-doc` = (project in file("doc") / "gen")
   .settings(commonSettings: _*)
