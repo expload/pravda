@@ -2,7 +2,7 @@ package pravda.coins.receiving
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives.pathPrefix
+import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
 import scala.concurrent.duration._
@@ -18,7 +18,10 @@ object CoinsReceiving extends App {
   val config = Config.coinsReceivingConfig
 
   val httpServer = {
-    Http().bindAndHandle(pathPrefix("ui")(new GuiRoute().route), config.host, config.port) andThen {
+    val healthz = pathPrefix("healthz")(complete("xcoins-receiving-service: OK"))
+    val gui = pathPrefix("ui")(new GuiRoute().route)
+
+    Http().bindAndHandle(healthz ~ gui, config.host, config.port) andThen {
       case Success(_) => println(s"API server started at ${config.host}:${config.port}")
     }
   }
