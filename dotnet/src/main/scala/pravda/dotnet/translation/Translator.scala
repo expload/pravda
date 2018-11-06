@@ -268,14 +268,17 @@ object Translator {
         }
       }
 
-      (translations.sequence: Either[TranslationError, List[Translation]]).map(_.reduce[Translation] {
-        case (Translation(methods1, funcs1), Translation(methods2, funcs2)) =>
-          Translation(methods1 ++ methods2, funcs1 ++ funcs2)
-      })
+      val file =
+        (translations.sequence: Either[TranslationError, List[FileTranslation]]).map(_.reduce[FileTranslation] {
+          case (FileTranslation(methods1, funcs1), FileTranslation(methods2, funcs2)) =>
+            FileTranslation(methods1 ++ methods2, funcs1 ++ funcs2)
+        })
+
+      file.map(Translation(_, CallsTranslation.fullTypeDefName(mainCls).replace(".", "")))
     }
   }
 
-  def translateAllMethods(methods: List[Method], tctx: TranslationCtx): Either[TranslationError, Translation] = {
+  def translateAllMethods(methods: List[Method], tctx: TranslationCtx): Either[TranslationError, FileTranslation] = {
 
     def withMethodTable(isFunc: MethodDefData => Boolean): Int => Boolean =
       i => isFunc(tctx.methodRow(i))
@@ -548,13 +551,13 @@ object Translator {
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
       val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
-      Translation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
+      FileTranslation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
     }
   }
 
   def translationToAsm(t: Translation): List[Operation] = {
 
-    val jumpToMethods = t.methods
+    val jumpToMethods = t.file.methods
       .filter(_.name != "ctor")
       .sortBy(_.name)
       .flatMap(
@@ -578,7 +581,7 @@ object Translator {
       Operation(Opcodes.THROW)
     )
 
-    val prefix = Operation.Meta(CILMark) :: ctorCheck ++
+    val prefix = Operation.Meta(CILMark) :: Operation.Meta(Meta.ProgramName(t.programName)) :: ctorCheck ++
       List(Operation.Label("methods")) ++ jumpToMethods ++ List(
       Operation.Push(Data.Primitive.Utf8("Wrong method name")),
       Operation(Opcodes.THROW)
@@ -590,8 +593,8 @@ object Translator {
     }
 
     prefix ++
-      t.methods.sortBy(_.name).flatMap(m => Operation.Label(m.label) :: m.opcodes.flatMap(opcodeToAsm)) ++
-      t.funcs.sortBy(_.label).flatMap(f => Operation.Label(f.label) :: f.opcodes.flatMap(opcodeToAsm)) ++
+      t.file.methods.sortBy(_.name).flatMap(m => Operation.Label(m.label) :: m.opcodes.flatMap(opcodeToAsm)) ++
+      t.file.funcs.sortBy(_.label).flatMap(f => Operation.Label(f.label) :: f.opcodes.flatMap(opcodeToAsm)) ++
       List(Operation.Label("stop"))
   }
 

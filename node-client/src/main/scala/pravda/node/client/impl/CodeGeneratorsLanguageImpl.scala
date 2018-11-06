@@ -25,8 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 final class CodeGeneratorsLanguageImpl(implicit executionContext: ExecutionContext)
     extends CodeGeneratorsLanguage[Future] {
-  override def dotnet(input: ByteString, excludeBigInteger: Boolean): Future[List[(String, String)]] = Future {
-    val methods = DotnetCodegen.generate(input)
-    List(methods)
+  override def dotnet(input: ByteString): Future[List[(String, String)]] = Future {
+    DotnetCodegen.generate(input).toList
   }
 }

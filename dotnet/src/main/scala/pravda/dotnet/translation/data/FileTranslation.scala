@@ -25,4 +25,6 @@ final case class MethodTranslation(kind: String, name: String, forceAdd: Boolean
   lazy val label: String = s"${kind}_$name"
 }
 
-final case class Translation(methods: List[MethodTranslation], funcs: List[MethodTranslation])
+final case class FileTranslation(methods: List[MethodTranslation], funcs: List[MethodTranslation])
+
+final case class Translation(file: FileTranslation, programName: String)

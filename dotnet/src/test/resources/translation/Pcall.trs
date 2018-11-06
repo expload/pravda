@@ -19,6 +19,7 @@ dotnet-compilation:
 ---
 translation: |-
   meta custom "CIL"
+  meta program_name "PcallNamespacePcall"
   dup
   push "ctor"
   eq
