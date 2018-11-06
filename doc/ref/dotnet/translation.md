@@ -27,7 +27,7 @@ csc your_program.cs /reference:Pravda.dll /debug:portable
 
 Pravda CLI has special command to run translation of `.exe` file produced by C# compiler.
 ```
-pravda compile dotnet --input input.exe --output output.pravda --pdb input.pdb
+pravda compile dotnet --input input.exe,input.pdb --output output.pravda
 ```
 `pdb` file is optional, but it's strongly recommended to provide it (see [Compile](#how-to-compile-program) section for instructions). 
 
