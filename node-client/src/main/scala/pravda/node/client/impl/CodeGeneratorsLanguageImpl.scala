@@ -15,12 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
+package pravda.node.client.impl
 
 import com.google.protobuf.ByteString
+import pravda.codegen.dotnet.DotnetCodegen
+import pravda.node.client.CodeGeneratorsLanguage
 
-import scala.language.higherKinds
+import scala.concurrent.{ExecutionContext, Future}
 
-trait RandomLanguage[F[_]] {
-  def secureBytes64(): F[ByteString]
+final class CodeGeneratorsLanguageImpl(implicit executionContext: ExecutionContext)
+    extends CodeGeneratorsLanguage[Future] {
+  override def dotnet(input: ByteString): Future[List[(String, String)]] = Future {
+    DotnetCodegen.generate(input).toList
+  }
 }

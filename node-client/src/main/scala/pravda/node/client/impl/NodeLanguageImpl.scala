@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages.impl
+package pravda.node.client.impl
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -23,9 +23,9 @@ import akka.http.scaladsl.model.{HttpEntity, HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import akka.util.{ByteString => AkkaByteString}
 import com.google.protobuf.ByteString
-import pravda.cli.languages.NodeLanguage
 import pravda.common.bytes
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.client.NodeLanguage
 import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData

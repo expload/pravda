@@ -22,7 +22,7 @@ import cats.data.EitherT
 import cats.implicits._
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CodegenMode.Dotnet
-import pravda.cli.languages.{CodeGeneratorsLanguage, IoLanguage}
+import pravda.node.client.{CodeGeneratorsLanguage, IoLanguage}
 
 import scala.language.higherKinds
 

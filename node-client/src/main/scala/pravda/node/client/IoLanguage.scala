@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
+package pravda.node.client
 
 import com.google.protobuf.ByteString
 

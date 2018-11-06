@@ -15,15 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
-
-package impl
+package pravda.node.client.impl
 
 import com.google.protobuf.ByteString
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.{Translator => DotnetTranslator}
 import pravda.vm.asm.{Operation, PravdaAssembler}
 import cats.implicits._
+import pravda.node.client.CompilersLanguage
 
 import scala.concurrent.{ExecutionContext, Future}
 

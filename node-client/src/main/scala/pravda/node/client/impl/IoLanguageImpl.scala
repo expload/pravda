@@ -15,9 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
-
-package impl
+package pravda.node.client.impl
 
 import java.io.File
 import java.nio.file.{Files, Paths}
@@ -26,6 +24,7 @@ import java.nio.channels.Channels
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
+import pravda.node.client.IoLanguage
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.sys.process.stdin

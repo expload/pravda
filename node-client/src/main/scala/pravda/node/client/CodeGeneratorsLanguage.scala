@@ -15,24 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
+package pravda.node.client
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
-import pravda.node.servers.Abci.TransactionResult
 
 import scala.language.higherKinds
 
-trait NodeLanguage[F[_]] {
-
-  def launch(configPath: String): F[Unit]
-
-  def singAndBroadcastTransaction(uriPrefix: String,
-                                  address: ByteString,
-                                  privateKey: ByteString,
-                                  wattPayerPrivateKey: Option[ByteString],
-                                  wattLimit: Long,
-                                  wattPrice: NativeCoin,
-                                  wattPayer: Option[Address],
-                                  data: ByteString): F[Either[String, TransactionResult]]
+trait CodeGeneratorsLanguage[F[_]] {
+  def dotnet(input: ByteString): F[List[(String, String)]]
 }

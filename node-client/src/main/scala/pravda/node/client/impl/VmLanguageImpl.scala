@@ -15,12 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
-
-package impl
+package pravda.node.client.impl
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.Address
+import pravda.node.client.VmLanguage
 import pravda.node.data.common.TransactionId
 import pravda.node.db.DB
 import pravda.node.servers

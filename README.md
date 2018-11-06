@@ -16,6 +16,7 @@ Network node is build on top of [Tendermint](http://tendermint.com/), is written
   * [Meta information](doc/ref/vm/meta.md)
 * [DApp API specification](doc/dapp-api.md)
 * [Node API specification](doc/node-api.md)
+* [Node Client API Service](doc/node-client-api.md)
 * [Dotnet](doc/ref/dotnet)
   * [Dotnet translation](doc/ref/dotnet/translation.md)
     * [Dotnet classes translation](doc/ref/dotnet/classes-translation.md)

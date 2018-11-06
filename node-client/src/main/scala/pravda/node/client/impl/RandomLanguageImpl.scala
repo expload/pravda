@@ -15,12 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
+package pravda.node.client.impl
+
+import java.security.SecureRandom
 
 import com.google.protobuf.ByteString
+import pravda.node.client.RandomLanguage
 
-import scala.language.higherKinds
+import scala.concurrent.Future
 
-trait CodeGeneratorsLanguage[F[_]] {
-  def dotnet(input: ByteString): F[List[(String, String)]]
+final class RandomLanguageImpl extends RandomLanguage[Future] {
+
+  private val secureRandom = new SecureRandom()
+
+  def secureBytes64(): Future[ByteString] = Future.successful {
+    val bytes = new Array[Byte](64)
+    secureRandom.nextBytes(bytes)
+    ByteString.copyFrom(bytes)
+  }
 }

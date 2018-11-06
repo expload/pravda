@@ -1,4 +1,4 @@
-package pravda.cli.languages
+package pravda.node.client
 
 import cats.Id
 import com.google.protobuf.ByteString

@@ -15,23 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages
-
-package impl
-
-import java.security.SecureRandom
+package pravda.node.client
 
 import com.google.protobuf.ByteString
+import pravda.vm.ExecutionResult
 
-import scala.concurrent.Future
+import scala.language.higherKinds
 
-final class RandomLanguageImpl extends RandomLanguage[Future] {
+trait VmLanguage[F[_]] {
 
-  private val secureRandom = new SecureRandom()
-
-  def secureBytes64(): Future[ByteString] = Future.successful {
-    val bytes = new Array[Byte](64)
-    secureRandom.nextBytes(bytes)
-    ByteString.copyFrom(bytes)
-  }
+  def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): F[ExecutionResult]
 }

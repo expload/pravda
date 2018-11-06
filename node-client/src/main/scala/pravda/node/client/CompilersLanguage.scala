@@ -15,17 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.cli.languages.impl
+package pravda.node.client
 
 import com.google.protobuf.ByteString
-import pravda.cli.languages.CodeGeneratorsLanguage
-import pravda.codegen.dotnet.DotnetCodegen
+import pravda.vm.asm.Operation
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.language.higherKinds
 
-final class CodeGeneratorsLanguageImpl(implicit executionContext: ExecutionContext)
-    extends CodeGeneratorsLanguage[Future] {
-  override def dotnet(input: ByteString): Future[List[(String, String)]] = Future {
-    DotnetCodegen.generate(input).toList
-  }
+trait CompilersLanguage[F[_]] {
+  def asm(fileName: String, source: String): F[Either[String, ByteString]]
+  def asm(source: String): F[Either[String, ByteString]]
+  def disasm(source: ByteString): F[String]
+  def disasmToOps(source: ByteString): F[Seq[(Int, Operation)]]
+  def dotnet(sources: Seq[(ByteString, Option[ByteString])], mainClass: Option[String]): F[Either[String, ByteString]]
 }

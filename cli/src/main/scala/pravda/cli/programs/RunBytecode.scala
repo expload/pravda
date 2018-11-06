@@ -21,7 +21,7 @@ import cats._
 import cats.data.EitherT
 import cats.implicits._
 import pravda.cli.PravdaConfig
-import pravda.cli.languages.{IoLanguage, VmLanguage}
+import pravda.node.client.{IoLanguage, VmLanguage}
 import pravda.common.bytes
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._

@@ -86,3 +86,14 @@ pipeline:
     auto_tag: true
     when:
       event: tag
+  publish-node-client-api:
+    image: gcr.io/time-coin/sbt:latest
+    volumes:
+    - /var/lib/sbt-cache:/workdir/sbt
+    - /var/lib/coursier-cache:/workdir/coursier
+    commands:
+    - export COURSIER_CACHE='/workdir/coursier/'
+    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 node-client-api/docker:publish
+    when:
+      event: tag

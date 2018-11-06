@@ -1,4 +1,4 @@
-package pravda.cli.languages
+package pravda.node.client
 
 import java.nio.charset.StandardCharsets
 
