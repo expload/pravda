@@ -86,12 +86,12 @@ pipeline:
     auto_tag: true
     when:
       event: tag
-  publish-xcoins-receiving:
+  publish-pravda-faucet:
     group: publish
     image: plugins/docker
-    repo: expload/xcoins-receiving
+    repo: expload/pravda-faucet
     context: .
-    dockerfile: docker/images/xcoins-receiving/Dockerfile
+    dockerfile: docker/images/pravda-faucet/Dockerfile
     secrets: [ docker_username, docker_password ]
     auto_tag: true
     when:
