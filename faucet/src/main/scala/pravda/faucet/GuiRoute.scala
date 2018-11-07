@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.coins.receiving
+package pravda.faucet
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Route
@@ -49,7 +49,7 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
       serverRouter = ServerRouter
         .empty[Future, GuiState]
         .withRootPath("/ui/"),
-      stateStorage = StateStorage.default(ReceiveCoins(None)),
+      stateStorage = StateStorage.default(AccrueCoins(None)),
       head = Seq(
         'link ('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),
         'link (
@@ -60,7 +60,7 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
         )
       ),
       render = {
-        case ReceiveCoins(msg) =>
+        case AccrueCoins(msg) =>
           'body (
             'div (
               'class /= "container",
@@ -71,28 +71,28 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
                 'input ('class  /= "input",
                         'margin @= 10,
                         xcoinsField,
-                        'placeholder /= "Number of XCoins",
+                        'placeholder /= "Number of Native Coins",
                         'value       /= "1000000"),
                 'div (
                   'button (
                     'class  /= "button is-link",
                     'margin @= 10,
                     'width  @= 200,
-                    "Receive",
+                    "Accrue",
                     event('click) {
                       access =>
                         for {
                           address <- access.valueOf(addressField)
-                          xcoins <- access.valueOf(xcoinsField)
-                          codeOrError <- compilers.asm(s"push x$address push bigint($xcoins) transfer")
+                          coins <- access.valueOf(xcoinsField)
+                          codeOrError <- compilers.asm(s"push x$address push bigint($coins) transfer")
                           resOrError <- codeOrError match {
                             case Left(err) => Future.successful(Left(s"Error during request construction: $err"))
                             case Right(code) =>
                               node
                                 .singAndBroadcastTransaction(
-                                  Config.coinsReceivingConfig.testnetEndpoint,
-                                  bytes.hex2byteString(Config.coinsReceivingConfig.walletAddress),
-                                  bytes.hex2byteString(Config.coinsReceivingConfig.walletPrivateKey),
+                                  Config.faucetConfig.testnetEndpoint,
+                                  bytes.hex2byteString(Config.faucetConfig.walletAddress),
+                                  bytes.hex2byteString(Config.faucetConfig.walletPrivateKey),
                                   None,
                                   10000L,
                                   NativeCoin @@ 1L,
@@ -110,7 +110,7 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
                                     ErrorScreen(s"Runtime error during transferring: ${runtimeError.error}"))
                                 case Right(finalState) =>
                                   access.transition(_ =>
-                                    ReceiveCoins(Some(s"Successfully transferred $xcoins to $address")))
+                                    AccrueCoins(Some(s"Successfully transferred $coins to $address")))
                               }
                           }
                         } yield {}
@@ -139,8 +139,8 @@ object GuiRoute {
 
   sealed trait GuiState
 
-  final case class ReceiveCoins(successMessage: Option[String]) extends GuiState
-  final case class ErrorScreen(error: String)                   extends GuiState
+  final case class AccrueCoins(successMessage: Option[String]) extends GuiState
+  final case class ErrorScreen(error: String)                  extends GuiState
 
   val globalContext: Context[Future, GuiState, Any] =
     Context[Future, GuiState, Any]

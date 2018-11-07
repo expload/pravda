@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.coins.receiving
+package pravda.faucet
 
-final case class CoinsReceivingConfig(host: String,
-                                      port: Int,
-                                      testnetEndpoint: String,
-                                      walletAddress: String,
-                                      walletPrivateKey: String)
+final case class FaucetConfig(host: String,
+                              port: Int,
+                              testnetEndpoint: String,
+                              walletAddress: String,
+                              walletPrivateKey: String)
 
 object Config {
-  val coinsReceivingConfig = pureconfig.loadConfigOrThrow[CoinsReceivingConfig]("receiving")
+  val faucetConfig = pureconfig.loadConfigOrThrow[FaucetConfig]("faucet")
 }
