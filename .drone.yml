@@ -86,6 +86,16 @@ pipeline:
     auto_tag: true
     when:
       event: tag
+  publish-xcoins-receiving:
+    group: publish
+    image: plugins/docker
+    repo: expload/xcoins-receiving
+    context: .
+    dockerfile: docker/images/xcoins-receiving/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    auto_tag: true
+    when:
+      event: tag
   publish-node-client-api:
     image: gcr.io/time-coin/sbt:latest
     volumes:

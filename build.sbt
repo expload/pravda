@@ -356,3 +356,21 @@ lazy val plaintest = (project in file("plaintest"))
       "com.lihaoyi" %% "utest" % "0.6.3"
     )
   )
+
+lazy val `xcoins-receiving` = (project in file("services/xcoins-receiving"))
+  .enablePlugins(ClasspathJarPlugin)
+  .dependsOn(common)
+  .dependsOn(`node-client`)
+  .settings(commonSettings: _*)
+  .settings(
+    skip in publish := true,
+    normalizedName := "pravda-services-xcoins-receiving",
+    libraryDependencies ++= Seq(
+      // Networking
+      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
+      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
+      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
+      // UI
+      "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0"
+    )
+  )
