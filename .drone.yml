@@ -29,7 +29,7 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage xcoins-receiving/universal:stage
     when:
       event: tag
   package-msi:
