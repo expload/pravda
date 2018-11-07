@@ -1,10 +1,10 @@
 FROM openjdk:8u171
 
-WORKDIR /xcoins-receiving
+WORKDIR /faucet
 
-COPY ./services/xcoins-receiving/target/universal/stage/lib lib
-COPY ./services/xcoins-receiving/target/universal/stage/bin bin
+COPY ./faucet/target/universal/stage/lib lib
+COPY ./faucet/target/universal/stage/bin bin
 
-COPY docker/images/xcoins-receiving/entry.sh /xcoins-receiving
+COPY docker/images/pravda-faucet/entry.sh /faucet
 
-ENTRYPOINT [ "/xcoins-receiving/entry.sh" ]
+ENTRYPOINT [ "/faucet/entry.sh" ]

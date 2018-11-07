@@ -357,14 +357,14 @@ lazy val plaintest = (project in file("plaintest"))
     )
   )
 
-lazy val `xcoins-receiving` = (project in file("services/xcoins-receiving"))
+lazy val faucet = (project in file("faucet"))
   .enablePlugins(ClasspathJarPlugin)
   .dependsOn(common)
   .dependsOn(`node-client`)
   .settings(commonSettings: _*)
   .settings(
     skip in publish := true,
-    normalizedName := "pravda-services-xcoins-receiving",
+    normalizedName := "pravda-faucet",
     libraryDependencies ++= Seq(
       // Networking
       "com.typesafe.akka" %% "akka-actor" % "2.5.8",
