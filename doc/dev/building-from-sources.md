@@ -1,6 +1,6 @@
 # Building from sources
 
-Ensure that JDK 1.8 or higher is installer in your system. We use SBT native packager to produce runnable distros for each tool packed in
+Ensure that JDK 1.8 or higher is installed in your system. We use SBT native packager to produce runnable distros for each tool packed in
 compressed archives.
 
 ```

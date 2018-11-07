@@ -66,4 +66,4 @@ pravda broadcast transfer \
   --amount 1000000
 ```
 
-Now the poor guy is not so poor. We have done a good deed.
+Now the poor guy is not so poor. Great job!
