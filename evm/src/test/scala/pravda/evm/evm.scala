@@ -111,4 +111,7 @@ package object evm {
     // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
     // we just drop auxdata
   }
+
+  def readSolidityABI(filename: String): String = Source.fromResource(filename).mkString
+
 }

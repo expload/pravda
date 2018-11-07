@@ -19,6 +19,7 @@ package pravda.evm.translate.opcode
 
 import pravda.evm.EVM
 import pravda.evm.EVM.JumpDest
+import pravda.evm.translate.Translator.startLabelName
 import pravda.vm.asm.Operation
 import pravda.vm.{Opcodes, asm}
 import pravda.vm.asm.Operation.PushOffset
@@ -42,8 +43,16 @@ object JumpDestinationPrepare {
       case _ => List()
     }
 
-  def addLastBranch(n: Int): List[asm.Operation] =
+  def lastBranch(n: Int): List[asm.Operation] =
     if (n > 0)
       List(asm.Operation.Label(getNameByNumber(n)), pushString("Incorrect destination"), asm.Operation(Opcodes.THROW))
     else Nil
+
+  def jumpDestToAddressed(indexed: (Int, EVM.Op)): EVM.Op = indexed match {
+    case (ind, JumpDest) => JumpDest(ind)
+    case (_, op)         => op
+  }
+
+  def prepared(jumpDests: List[(JumpDest, Int)]): List[asm.Operation] =
+    Operation.Jump(Some(startLabelName)) :: jumpDests.flatMap(jumpDestToOps) ::: lastBranch(jumpDests.size)
 }

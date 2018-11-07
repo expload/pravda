@@ -23,19 +23,29 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
-import pravda.evm.translate.opcode.JumpDestinationPrepare.addLastBranch
-import pravda.evm.translate.opcode.{JumpDestinationPrepare, SimpleTranslation}
-import pravda.vm.asm.Operation
+import pravda.evm.abi.parse.ABIParser.{ABIObject}
+import pravda.evm.translate.opcode.{FunctionCheckerTranslator, JumpDestinationPrepare, SimpleTranslation}
 
 object Translator {
 
-  private val startLabelName = "__start_evm_program"
+  type Converted = Either[EVM.Op, List[asm.Operation]]
 
-  def apply(ops: List[EVM.Op]): Either[String, List[asm.Operation]] = {
-    ops.map(SimpleTranslation.evmOpToOps).sequence.map(_.flatten)
+  val startLabelName = "__start_evm_program"
+
+  def apply(ops: List[EVM.Op], abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
+    val (funcs, _, _) = ABIObject.split(abi)
+    FunctionCheckerTranslator
+      .evmToOps(ops, funcs)
+      .map({
+        case Left(op)     => SimpleTranslation.evmOpToOps(op)
+        case Right(value) => Right(value)
+      })
+      .map(_.left.map(op => s"incorrect op: ${op.toString}"))
+      .sequence
+      .map(_.flatten)
   }
 
-  def translateActualContract(ops: List[(Int, EVM.Op)]): Either[String, List[asm.Operation]] = {
+  def removeDeployCode(ops: List[(Int, EVM.Op)]): Either[String, List[(Int, EVM.Op)]] = {
     ops
       .takeWhile({
         case (_, CodeCopy) => false
@@ -46,24 +56,23 @@ object Translator {
       .headOption match {
       case Some((_, Push(address))) =>
         val offset = BigInt(1, address.toArray).intValue()
-
-        val filteredOps = ops
-          .map({ case (ind, op) => ind - offset -> op })
-          .filterNot(_._1 < 0)
-          .map({
-            case (ind, JumpDest) => JumpDest(ind)
-            case (_, op)         => op
-          })
-
-        import JumpDestinationPrepare._
-        val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
-        val prepare = Operation.Jump(Some(startLabelName)) :: jumpDests.flatMap(jumpDestToOps) ::: addLastBranch(
-          jumpDests.size)
-        Translator(filteredOps).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
-
+        Right(
+          ops
+            .map({ case (ind, op) => ind - offset -> op })
+            .filterNot(_._1 < 0))
       case _ => Left("Parse error")
     }
+  }
 
+  def translateActualContract(ops: List[(Int, EVM.Op)], abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
+    import JumpDestinationPrepare._
+
+    removeDeployCode(ops).flatMap({ actualContract =>
+      val filteredOps = actualContract.map(jumpDestToAddressed)
+      val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
+      val prepare = prepared(jumpDests)
+      Translator(filteredOps, abi).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
+    })
   }
 
 }

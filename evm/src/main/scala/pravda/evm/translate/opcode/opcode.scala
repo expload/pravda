@@ -18,6 +18,7 @@
 package pravda.evm.translate
 
 import com.google.protobuf.ByteString
+import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}
 
 //TODO merge with pravda.dotnet.translation.opcode.opcode
@@ -63,5 +64,19 @@ package object opcode {
     List(pushInt(n), asm.Operation(Opcodes.SWAPN))
 
   def codeToOps(codes: Int*): List[asm.Operation] = codes.map(asm.Operation(_)).toList
+
+  def splitBy[T](list: List[T], splitter: T => Boolean): List[List[T]] = {
+    list
+      .foldLeft((List.empty[T], List.empty[List[T]]))({
+        case ((current, acc), t) =>
+          if (splitter(t)) (List.empty, current :: acc)
+          else (t :: current, acc)
+      })
+      ._2
+
+  }
+
+  val jumpi: List[asm.Operation] = codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(
+    Some(getNameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
 
 }

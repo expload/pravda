@@ -30,6 +30,10 @@ object Parser {
     ops.parse(bytes).get.value
   }
 
+  def parseWithIndices(bytes: Bytes): Either[String, List[(Int, EVM.Op)]] = {
+    opsWithIndices.parse(bytes).get.value.toList.map({ case (i, e) => e.map(op => (i, op)) }).sequence
+  }
+
   private def push(cnt: Int): P[Push] = AnyByte.rep(exactly = cnt).!.map(Push)
   // FIXME the bytes default to zero if they extend past the limits
 
