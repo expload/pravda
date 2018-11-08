@@ -1,6 +1,6 @@
-# Node Client API Service
+# Broadcaster
 
-Service provides REST API to sent transactions to the network.
+The service provides REST API to send transactions to the network. Dedicated service is required because Pravda Node API takes already compiled bytecode with signature. It means you can't send transaction without knowledge of transaction binary format. This service can take Pravda Assembler, compile it, sign with given `PRAVDA_BROADCAST_SK` and send to `PRAVDA_BROADCAST_ENPOINT` endpoint. It allows to send transactions from any programing language which supports HTTP.  
 
 ### Install
 Requires environment variables:
@@ -11,7 +11,14 @@ Requires environment variables:
 
 Run on docker:
 
-`docker run expload/pravda-node-client-api`
+```
+docker run \ 
+  -p 127.0.0.1:5000:5000 \
+  -e PRAVDA_BROADCAST_PK=<sender public key> \
+  -e PRAVDA_BROADCAST_SK=<sender private key> \
+  -e PRAVDA_BROADCAST_ENDPOINT=https://publicnode.expload.com/api/public/broadcast \
+  expload/pravda-broadcaster
+```
 
 ### Request
 
