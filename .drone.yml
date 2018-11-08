@@ -29,7 +29,7 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage
     when:
       event: tag
   package-msi:
@@ -96,14 +96,13 @@ pipeline:
     auto_tag: true
     when:
       event: tag
-  publish-node-client-api:
-    image: gcr.io/time-coin/sbt:latest
-    volumes:
-    - /var/lib/sbt-cache:/workdir/sbt
-    - /var/lib/coursier-cache:/workdir/coursier
-    commands:
-    - export COURSIER_CACHE='/workdir/coursier/'
-    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 node-client-api/docker:publish
+  publish-broadcaster-to-docker:
+    group: publish
+    image: plugins/docker
+    repo: expload/pravda-broadcaster
+    context: .
+    dockerfile: docker/images/broadcaster/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    auto_tag: true
     when:
       event: tag
