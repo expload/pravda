@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.client.api
-
+package pravda.broadcaster
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
@@ -27,7 +26,7 @@ import pravda.node.data.cryptography.PrivateKey
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Success
 
-object launcher extends App {
+object Application extends App {
 
   implicit val system: ActorSystem = ActorSystem("pravda-node-client-api")
   implicit val materializer: ActorMaterializer = ActorMaterializer()

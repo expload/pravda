@@ -272,26 +272,14 @@ lazy val `node-client` = (project in file("node-client"))
   .dependsOn(codegen)
   .dependsOn(dotnet)
 
-lazy val `node-client-api` = (project in file("node-client-api"))
+// A service for build, sign and broadcast transactions
+// within authorized environment
+lazy val `broadcaster` = (project in file("services/broadcaster"))
   .enablePlugins(UniversalPlugin)
-  .enablePlugins(AshScriptPlugin)
-  .enablePlugins(BuildInfoPlugin)
-  .enablePlugins(DockerPlugin)
+  .enablePlugins(ClasspathJarPlugin)
   .settings(commonSettings: _*)
   .settings(scalacheckOps:_*)
-  .settings(
-    packageName := "pravda-node-client-api",
-    dockerBaseImage := "openjdk:8u171",
-    dockerExposedPorts := Seq(5000),
-    dockerRepository := Some("index.docker.io"),
-    dockerUsername := envDockerUsername,
-    dockerUpdateLatest := true
-  )
-  .settings(
-    name := "pravda-node-client-api",
-    normalizedName := "pravda-node-client-api",
-    description := "Pravda node client api",
-  )
+  .settings(normalizedName := "pravda-broadcaster")
   .dependsOn(`node-client`)
 
 lazy val cli = (project in file("cli"))

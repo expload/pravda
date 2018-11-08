@@ -96,7 +96,7 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
       .singleRequest(request)
       .flatMap { response =>
         response.entity.dataBytes
-          .runFold(AkkaByteString(""))(_ ++ _)
+          .runFold(AkkaByteString.empty)(_ ++ _)
           .map { x =>
             val txr = transcode(Json @@ x.utf8String).to[Either[RpcError, TransactionResult]]
             txr.left.map(_.message)

@@ -11,16 +11,16 @@ get balance by address, sign binary data and transfer money from one address to 
 
 ## Login
 
-Before using API, the user should be logged in app. User can sign up using its own public/private keys pair
+Before using API the user should be logged in app. User can sign up using its own public/private keys pair
 or it can use automatically generated keys pair.
 
-If the user has not logged, the `NoKeysError` will be returned for any API call.
+If the user has not logged the `NoKeysError` will be returned for any API call.
 
-To run the API, use `bin/expload-desktop` from http://download.expload.com/expload-desktop/. 
+To run the app use `bin/expload-desktop` from https://download.expload.com/expload-desktop/. 
 
 ## API Endpoint
 
-API server can be found at this address: `http://localhost:8087`.
+API server can be found at `http://localhost:8087`.
 
 ## Response format
 
@@ -43,7 +43,7 @@ The response should be a JSON object with the following structure:
 }
 ```
 
-If the `errorCode` field is empty, then it means no errors have happened and the `data` field contains the result. Otherwise, the `errorCode` has a predefined error code and the `error` field high likely contains error description.
+If the `errorCode` field is empty then it means no errors have happened and the `data` field contains the result. Otherwise, the `errorCode` has a predefined error code and the `error` field contains error description.
 
 For example, if the user has not logged into the app, the caller should receive a response like this:
 
@@ -62,25 +62,25 @@ Every API method may return error. If that happened the `errorCode` should not b
 
 Basic error codes are:
 
-- `ActionNotConfirmedError` - means current user did not confirm the transaction
+- `ActionNotConfirmedError` - means current user hasn't confirm the transaction
 - `NoKeysError` - means there is no current user, so there is no keys for signing transactions
 - `PravdaNodeHttpError` - means there is a connection problem with the Pravda Node.
-- `UserErrorPravdaVmError` - means there was an error (like user-defined exception or system exception) in some Program happened
+- `UserErrorPravdaVmError` - means there was an error (like user-defined exception or system exception) in some Program
 - `InsufficientFundsGameTokenProgramError` - means the user has not enough GameTokens
 
-## JSON representation of the primitive data
+## JSON representation of the data
 
-If you want to pass or receive values in JSON representation then you should follow
-[this description](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation) of how to do it.
+If you want to handle values in JSON representation then consider the following
+[description of data representation in JSON format](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
 
 
 # API Methods
 
 ## Get current user address
 
-You can get the _current user_ address. The _current user_ is the user who able to sign a Pravda transaction by using its private key.
+You can get the _current user_ address. The _current user_ is the user who is able to sign a Pravda transaction by using its private key.
 
-If there is no current user (for instance, if the user has not logged into app) an API implemenation should return `NoKeysError` error.
+If there is no current user (for instance, if the user has not logged into app) an API implementation should return `NoKeysError` error.
 
 ### Request
 
@@ -108,7 +108,7 @@ should return:
 
 ## Get balance by Pravda address
 
-You can get balance of the Pravda user by its address. Absent address parameter means the current user.
+You can get balance of the Pravda user by its address. Blank address parameter indicates the current user`s address should be used.
 
 ### Request
 
@@ -135,20 +135,18 @@ the following result:
 }
 ```
 
-The same is equal for an arbitrary address.
-
 ## Call program method
 
 DApps API Specification introduces __method__ entity. This entity is similar to [Solidity](http://solidity.readthedocs.io/en/v0.4.24/) methods from Ethereum ecosystem.
 
 DApp API specification establishes REST API for calling methods of the program with a given address.
 
-An implementaion of the Standard should ask the current user if he confirms this transaction or not.
-An implementaion of the Standard should show the user the programm address, program's method and arguments to be executed.
+An implementation of the Standard should ask the current user if they confirm this transaction or not.
+An implementation of the Standard should show the user the program address, program's method and arguments for the method.
 If this transaction is not confirmed, `ActionNotConfirmedError` error should be sent.
 Otherwise it should be signed with the current user private key and broadcasted to the Pravda blockchain.
 
-If there is no current user, an implemenation of the Standard should return `NoKeysError` error.
+If there is no current user, an implementation of the Standard should return `NoKeysError` error.
 
 ### Request
 
@@ -158,11 +156,11 @@ If there is no current user, an implemenation of the Standard should return `NoK
 {
     "address": "<hex formatted string of program's address>",
     "method": "<name of the method>",
-    "args": [ <array of arguments> ]
+    "args": [ <list of arguments> ]
 }
 ```
 
-Arguments should have properly encoded according to their JSON representation (see corresponding section of that document).
+Arguments should be properly encoded according to their [JSON representation](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
 
 ### Response
 
@@ -190,18 +188,18 @@ Arguments should have properly encoded according to their JSON representation (s
 
 ### Examples
 
-For example if we want to call `balanceOf` method for user with `0xABCDEF` address
+For example if we want to call `BalanceOf` method for user with `0xABCDEF` address
 of some program with `0xe1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0` address we should pass:
 
 ```
 curl -X POST -H "Content-Type: application/json" \
   --data '{"address": "e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0", 
-           "method": "balanceOf", 
+           "method": "BalanceOf", 
            "args": ["bytes.ABCDEF"] }'
   <api url>/api/program/method
 ```
 
-As result we might receive the response like that:
+As result we will receive the response like that:
 
 ```
 {
@@ -225,12 +223,12 @@ As result we might receive the response like that:
 }
 ```
 
-Balance can be found in "data \ finalState \ stack" field.
+Balance is placed in `"data" \ "finalState" \ "stack"` field.
 
 
 ## Transfer money
 
-This method allows you to transfer money from current user to any Pravda address
+This method allows you to transfer XCoins from current user to any Pravda address
 
 ### Request
 
@@ -238,8 +236,8 @@ This method allows you to transfer money from current user to any Pravda address
 
 ```
 {
-    "to": "<hex formatted string of the receiver address>",
-    "amount": <amount of coins you are going to transer>
+    "to": "<hex formatted string of the receiver's address>",
+    "amount": <amount of coins you are going to transfer>
 }
 ```
 
@@ -255,7 +253,7 @@ curl -X POST -H "Content-Type: application/json" --data '{ "to": "e1941077e00b3c
 
 ## Execute VM bytecode
 
-This method allows you to execute any Pravda bytecode
+This method allows you to execute arbitrary Pravda bytecode
 
 ### Request
 
@@ -316,7 +314,7 @@ or with error
 
 ## Sign binary data
 
-This method allows you to execute any Pravda bytecode
+This method allows you to sign arbitrary binary data
 
 ### Request
 
@@ -335,8 +333,3 @@ This method allows you to execute any Pravda bytecode
   "signedBytes": "<hex formatted signed binary data>"
 }
 ```
-
-### Additional information 
-
-You can also sign binary data with `application/octet-stream` or `application/base64`
-http content types by using `api/binary/sign?app=<application name>` url with corresponding type.
