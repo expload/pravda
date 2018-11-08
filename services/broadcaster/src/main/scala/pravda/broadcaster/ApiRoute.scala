@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.client.api
+package pravda.broadcaster
 
 import java.util.Base64
 
