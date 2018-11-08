@@ -230,7 +230,7 @@ final class SystemOperations(program: ByteBuffer,
                           "create new event with name as given string and with given data.")
   def event(): Unit = {
 
-    def marshalData(data: Data) = {
+    def marshalData(data: Data) : (Data, Map[Data.Primitive.Ref, Data]) = {
       // (Original -> (UpdatedData, AssignedRef))
       val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
       def extract(ref: Data.Primitive.Ref) = {

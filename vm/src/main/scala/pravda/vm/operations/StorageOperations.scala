@@ -63,26 +63,59 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   @OpcodeImplementation(
     opcode = SGET,
     description =
-      "Pops first item from stack, interprets it as key, retrieves corresponding record from a storage of the program and pushes the record to the stack. Otherwise throws an exception. "
+      "Pops first item from stack, interprets it as key, retrieves corresponding" +
+        " record from a storage of the program and pushes the record to the " +
+        "stack. Otherwise throws an exception. "
   )
   def get(): Unit = ifStorage { storage =>
-    val data = storage
-      .get(memory.pop())
-      .collect { case p: Data.Primitive => p }
-      .getOrElse(Data.Primitive.Null)
     wattCounter.cpuUsage(CpuStorageUse)
-    wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(data)
+    storage.get(memory.pop()) match {
+      case None =>
+        wattCounter.memoryUsage(1l)
+        memory.push(Data.Primitive.Null)
+      case Some(p: Data.Primitive) =>
+        wattCounter.memoryUsage(p.volume.toLong)
+        memory.push(p)
+      case Some(s) =>
+        wattCounter.memoryUsage(s.volume.toLong)
+        memory.push(memory.heapPut(s))
+    }
   }
 
   @OpcodeImplementation(
     opcode = SPUT,
     description =
-      "Pops first item from stack, interprets it as key. Pops second item from stack, interprets it as value. Puts (key -> value) record to program's storage. "
+      "Pops first item from stack, interprets it as key. Pops second item from stack, " +
+        "interprets it as value. Puts (key -> value) record to program's storage. " +
+        "If value is a ref, correspondent value will be taken from heap. " +
+        "Referenced value shouldn't be RefArray and shouldn't be Struct with refs in " +
+        "field values."
   )
   def put(): Unit = ifStorage { storage =>
     val key = memory.pop()
-    val value = memory.pop()
+    val value = memory.pop() match {
+      case ref:Data.Primitive.Ref =>
+        memory.heapGet(ref) match {
+          case _: Data.Array.RefArray =>
+            throw ThrowableVmError(Error.WrongType)
+          case _: Data.Primitive.Ref =>
+            throw ThrowableVmError(Error.WrongType)
+          case _: Data.Primitive.Offset =>
+            throw ThrowableVmError(Error.WrongType)
+          case struct: Data.Struct =>
+            // Flat object
+            val isFlat = struct.data.forall {
+              case (_, _: Data.Primitive.Ref) => false
+              case (_, _: Data.Primitive.Offset) => false
+              case _ => true
+            }
+            if (isFlat) struct
+            else throw ThrowableVmError(Error.WrongType)
+          case x => x
+        }
+      case x:Data.Primitive => x
+      case _ => throw ThrowableVmError(Error.WrongType)
+    }
     val bytesTotal = value.volume + key.volume
     val maybePrevious = storage.put(key, value)
 
