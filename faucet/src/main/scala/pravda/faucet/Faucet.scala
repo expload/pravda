@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.coins.receiving
+package pravda.faucet
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -26,16 +26,16 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.util.Success
 
-object CoinsReceiving extends App {
+object Faucet extends App {
 
   private implicit val system: ActorSystem = ActorSystem("pravda-system")
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  val config = Config.coinsReceivingConfig
+  val config = Config.faucetConfig
 
   val httpServer = {
-    val healthz = pathPrefix("healthz")(complete("xcoins-receiving-service: OK"))
+    val healthz = pathPrefix("healthz")(complete("faucet-service: OK"))
     val gui = pathPrefix("ui")(new GuiRoute().route)
 
     Http().bindAndHandle(healthz ~ gui, config.host, config.port) andThen {

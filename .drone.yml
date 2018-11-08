@@ -29,7 +29,7 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage faucet/universal:stage
     when:
       event: tag
   package-msi:
@@ -86,12 +86,12 @@ pipeline:
     auto_tag: true
     when:
       event: tag
-  publish-xcoins-receiving:
+  publish-pravda-faucet:
     group: publish
     image: plugins/docker
-    repo: expload/xcoins-receiving
+    repo: expload/pravda-faucet
     context: .
-    dockerfile: docker/images/xcoins-receiving/Dockerfile
+    dockerfile: docker/images/pravda-faucet/Dockerfile
     secrets: [ docker_username, docker_password ]
     auto_tag: true
     when:
