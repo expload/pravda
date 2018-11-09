@@ -72,10 +72,11 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
       )
 
       val stx = {
-        val one = cryptography.signTransaction(PrivateKey @@ privateKey, tx)
         wattPayerPrivateKey match {
-          case Some(pk) => cryptography.addWattPayerSignature(PrivateKey @@ pk, one.copy(wattPayer = wattPayer))
-          case None     => one
+          case Some(pk) =>
+            val one = cryptography.signTransaction(PrivateKey @@ privateKey, tx.copy(wattPayer = wattPayer))
+            cryptography.addWattPayerSignature(PrivateKey @@ pk, one)
+          case None => cryptography.signTransaction(PrivateKey @@ privateKey, tx)
         }
       }
 
