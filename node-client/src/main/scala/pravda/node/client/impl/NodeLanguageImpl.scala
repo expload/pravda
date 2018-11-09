@@ -76,7 +76,7 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
           case Some(pk) =>
             val one = cryptography.signTransaction(PrivateKey @@ privateKey, tx.copy(wattPayer = wattPayer))
             cryptography.addWattPayerSignature(PrivateKey @@ pk, one)
-          case None     => cryptography.signTransaction(PrivateKey @@ privateKey, tx)
+          case None => cryptography.signTransaction(PrivateKey @@ privateKey, tx)
         }
       }
 
