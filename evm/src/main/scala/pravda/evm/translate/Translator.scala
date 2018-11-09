@@ -24,17 +24,24 @@ import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.abi.parse.ABIParser.{ABIObject}
-import pravda.evm.translate.opcode.{FunctionCheckerTranslator, JumpDestinationPrepare, SimpleTranslation}
+import pravda.evm.translate.opcode.{FunctionSelectorTranslator, JumpDestinationPrepare, SimpleTranslation}
 
 object Translator {
 
+  trait EvmCode
+
+  case class CreationCode(code: List[Addressed[EVM.Op]]) extends EvmCode
+  case class ActualCode(code: List[Addressed[EVM.Op]])   extends EvmCode
+
   type Converted = Either[EVM.Op, List[asm.Operation]]
+  type Addressed[T] = (Int, T)
+  type ContractCode = (CreationCode, ActualCode)
 
   val startLabelName = "__start_evm_program"
 
   def apply(ops: List[EVM.Op], abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
     val (funcs, _, _) = ABIObject.split(abi)
-    FunctionCheckerTranslator
+    FunctionSelectorTranslator
       .evmToOps(ops, funcs)
       .map({
         case Left(op)     => SimpleTranslation.evmOpToOps(op)
@@ -45,7 +52,7 @@ object Translator {
       .map(_.flatten)
   }
 
-  def removeDeployCode(ops: List[(Int, EVM.Op)]): Either[String, List[(Int, EVM.Op)]] = {
+  def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
     ops
       .takeWhile({
         case (_, CodeCopy) => false
@@ -56,22 +63,25 @@ object Translator {
       .headOption match {
       case Some((_, Push(address))) =>
         val offset = BigInt(1, address.toArray).intValue()
-        Right(
-          ops
-            .map({ case (ind, op) => ind - offset -> op })
-            .filterNot(_._1 < 0))
+
+        val (creationCode, actualCode) = ops
+          .map({ case (ind, op) => ind - offset -> op })
+          .partition(_._1 < 0)
+        Right((CreationCode(creationCode), ActualCode(actualCode)))
       case _ => Left("Parse error")
     }
   }
 
-  def translateActualContract(ops: List[(Int, EVM.Op)], abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
+  def translateActualContract(ops: List[Addressed[EVM.Op]],
+                              abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
     import JumpDestinationPrepare._
 
-    removeDeployCode(ops).flatMap({ actualContract =>
-      val filteredOps = actualContract.map(jumpDestToAddressed)
-      val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
-      val prepare = prepared(jumpDests)
-      Translator(filteredOps, abi).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
+    split(ops).flatMap({
+      case (creationCode, actualContract) =>
+        val filteredOps = actualContract.code.map(jumpDestToAddressed)
+        val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
+        val prepare = prepared(jumpDests)
+        Translator(filteredOps, abi).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
     })
   }
 

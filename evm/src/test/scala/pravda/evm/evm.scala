@@ -3,6 +3,7 @@ package pravda.evm
 import com.google.protobuf.ByteString
 import fastparse.byte.all._
 import pravda.common.domain.Address
+import pravda.evm.abi.parse.ABIParser.{ABIConstructor, ABIEvent, ABIFunction, ABIObject, Variable}
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
 import pravda.vm.VmSuiteData.Expectations
@@ -114,4 +115,34 @@ package object evm {
 
   def readSolidityABI(filename: String): String = Source.fromResource(filename).mkString
 
+  def printSeq(vars: Seq[Variable]): Seq[String] = {
+    vars.map(
+      { case Variable(name, t, indexed) => s"""Variable("$name","$t",$indexed)""" }
+    )
+  }
+
+  def printOpt(vars: Option[String]): String = {
+    vars match {
+      case Some(s) => s"""Option("$s")"""
+      case None    => "None"
+    }
+  }
+
+  def printToTest(fs: List[ABIObject]): List[String] = {
+    fs.map({
+      case ABIFunction(const, name, in, out, payable, statemut, newName) =>
+        val input = s"Vector(${printSeq(in).mkString(",")})"
+        val output = s"Vector(${printSeq(out).mkString(",")})"
+        val newNam = printOpt(newName)
+        s"""ABIFunction($const,"$name",$input,$output,$payable,"$statemut",$newNam)"""
+      case ABIEvent(name, in, anon) =>
+        val input = s"Vector(${printSeq(in).mkString(",")})"
+        s"""ABIEvent("$name",$input,$anon)"""
+
+      case ABIConstructor(in, pay, stat) =>
+        val input = s"Vector(${printSeq(in).mkString(",")})"
+        s"""ABIConstructor($input,$pay,"$stat")"""
+
+    })
+  }
 }

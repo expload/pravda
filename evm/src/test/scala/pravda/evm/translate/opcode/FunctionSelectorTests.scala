@@ -11,7 +11,7 @@ import pravda.vm.Error.UserError
 
 import scala.collection.mutable.ArrayBuffer
 
-object FunctionCheckerTests extends TestSuite {
+object FunctionSelectorTests extends TestSuite {
 
   val tests = Tests {
     import pravda.vm.Data.Primitive._

@@ -25,7 +25,7 @@ import pravda.vm.Opcodes
 
 import scala.annotation.tailrec
 
-object FunctionCheckerTranslator {
+object FunctionSelectorTranslator {
 
   def evmToOps(ops: List[EVM.Op], abi: List[ABIFunction]): List[Converted] = {
     val destinations = ops
