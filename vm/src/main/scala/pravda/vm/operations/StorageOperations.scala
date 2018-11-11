@@ -94,7 +94,7 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   def put(): Unit = ifStorage { storage =>
     val key = memory.pop()
     val value = memory.pop() match {
-      case ref:Data.Primitive.Ref =>
+      case ref: Data.Primitive.Ref =>
         memory.heapGet(ref) match {
           case _: Data.Array.RefArray =>
             throw ThrowableVmError(Error.WrongType)
@@ -105,16 +105,16 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
           case struct: Data.Struct =>
             // Flat object
             val isFlat = struct.data.forall {
-              case (_, _: Data.Primitive.Ref) => false
+              case (_, _: Data.Primitive.Ref)    => false
               case (_, _: Data.Primitive.Offset) => false
-              case _ => true
+              case _                             => true
             }
             if (isFlat) struct
             else throw ThrowableVmError(Error.WrongType)
           case x => x
         }
-      case x:Data.Primitive => x
-      case _ => throw ThrowableVmError(Error.WrongType)
+      case x: Data.Primitive => x
+      case _                 => throw ThrowableVmError(Error.WrongType)
     }
     val bytesTotal = value.volume + key.volume
     val maybePrevious = storage.put(key, value)
