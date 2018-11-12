@@ -104,7 +104,8 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
     e <- error
     fs <- finalState
     cs <- Gen.listOf {
-      Gen.option(address).flatMap { address => Gen.listOf(arbitrary[Int]).map(xs => (address, xs))
+      Gen.option(address).flatMap { address =>
+        Gen.listOf(arbitrary[Int]).map(xs => (address, xs))
       }
     }
     lp <- arbitrary[Int]
