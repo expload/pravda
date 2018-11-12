@@ -5,6 +5,7 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.{Gen, Properties}
 import pravda.common.domain
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 import pravda.node.servers.Abci.TransactionResult
@@ -103,8 +104,7 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
     e <- error
     fs <- finalState
     cs <- Gen.listOf {
-      Gen.option(address).flatMap { address =>
-        Gen.listOf(arbitrary[Int]).map(xs => (address, xs))
+      Gen.option(address).flatMap { address => Gen.listOf(arbitrary[Int]).map(xs => (address, xs))
       }
     }
     lp <- arbitrary[Int]
@@ -113,9 +113,15 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
   val executionResult: Gen[ExecutionResult] =
     Gen.oneOf(runtimeException.map(Left(_)), finalState.map(Right(_)))
 
+  val transactionId: Gen[TransactionId] =
+    byteString.map(TransactionId @@ _)
+
   val transactionResult: Gen[TransactionResult] =
-    for (er <- executionResult; es <- Gen.listOf(effect))
-      yield TransactionResult(er, es)
+    for {
+      id <- transactionId
+      er <- executionResult
+      es <- Gen.listOf(effect)
+    } yield TransactionResult(id, er, es)
 
   property("TransactionResult/write->read") = forAll(transactionResult) { txr =>
     val json = transcode(txr).to[Json]

@@ -127,7 +127,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       val remaining = tx.wattLimit - total
       ep.accrue(wattPayer, NativeCoin(tx.wattPrice * remaining))
       ep.appendFee(NativeCoin(tx.wattPrice * total))
-      TransactionResult(execResult, env.collectEffects)
+      TransactionResult(id, execResult, env.collectEffects)
     }
   }
 
@@ -201,6 +201,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 object Abci {
 
   final case class TransactionResult(
+      id: TransactionId,
       executionResult: ExecutionResult,
       effects: Seq[Effect]
   )
