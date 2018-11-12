@@ -86,6 +86,7 @@ object Opcodes {
   final val SEAL = 0xa8
   final val THROW = 0xa9
   final val EVENT = 0xaa
+  final val CALLERS = 0xab
 
   // Native coins
   final val TRANSFER = 0xc0
