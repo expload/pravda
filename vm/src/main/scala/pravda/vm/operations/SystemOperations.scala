@@ -277,6 +277,20 @@ final class SystemOperations(program: ByteBuffer,
       case None       => throw ThrowableVmError(OperationDenied)
     }
   }
+
+  @OpcodeImplementation(
+    opcode = CALLERS,
+    description = "Gets caller's 'call stack' (see CALL opcode) " +
+      "and pushes it to the stack"
+  )
+  def callers(): Unit = {
+    val cs = Data.Array.BytesArray(
+      memory.callStack.flatMap(_._1).toBuffer
+    )
+    wattCounter.memoryUsage(cs.volume.toLong)
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(memory.heapPut(cs))
+  }
 }
 
 object SystemOperations {

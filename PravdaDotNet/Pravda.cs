@@ -25,6 +25,9 @@ namespace Expload.Pravda {
 
         // Get program address
         public static Bytes ProgramAddress() { return null; }
+
+        // Get list of contract's callers' addresses
+        public static Bytes[] Callers() { return null; }
     }
 
     public class Log {

@@ -39,6 +39,7 @@ For the moment it supports the following:
 - Access to the _storage_ via class fields;
 - Access to the _storage_ via `Mapping<K, V>` (`get`, `getDefault`, `put`, `exists` methods);
 - Access to sender address via `Info.Sender()` method;
+- Access to list of contract's callers' addresses via `Info.Callers()` method;
 - Class methods that are translated to program methods; 
 - Integer primitive types (`int`, `short`, `byte`, `uint`) and `bool`;
 - Basic arithmetics and logical operations; 

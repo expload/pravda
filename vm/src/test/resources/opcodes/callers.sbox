@@ -1,0 +1,25 @@
+watts-limit: 300
+storage:
+  utf8.init: "null"
+program-storage:
+  "1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f":
+    utf8.init: "null"
+  "eeeae019052822f37d6ecac34ff7f2c6b98d500a14da1ff968366aa552d2ef4c":
+    utf8.init: "null"
+programs:
+  "1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f": bytes.ab
+  "eeeae019052822f37d6ecac34ff7f2c6b98d500a14da1ff968366aa552d2ef4c": bytes.110e601eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f11050006
+code: |-
+  push xeeeae019052822f37d6ecac34ff7f2c6b98d500a14da1ff968366aa552d2ef4c
+  push 0
+  pcall
+---
+watts-spent: 227
+stack:
+  - ref.0
+heap:
+  ref.0:
+    - bytes
+    - '0000000000000000000000000000000000000000000000000000000000000000'
+    - eeeae019052822f37d6ecac34ff7f2c6b98d500a14da1ff968366aa552d2ef4c
+    - 1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f
