@@ -1,3 +1,4 @@
+
 # Node API
 
 Node provides REST API to access the current blockchain status.
@@ -7,7 +8,17 @@ You can get the generated events by name and the address of the program where th
 
 ### Request
 
-`GET api/events?address=<hex formatted address>&name=<name of event>[&offset=<integer>&count=<integer>]`
+`GET api/events`
+
+#### Parameters
+
+|Parameter|Optional|Type|
+|---|--|---|
+|program|No|hex|
+|name|No|string|
+|transactionId|Yes|hex|
+|offset|Yes|integer|
+|count|Yes|integer|
 
 ### Response
 
@@ -16,10 +27,12 @@ The list of data from events with given name at the given address:
 [
     {
         "data": "<some data from the first event>",
+        "transactionId": 0000000,
         "offset": 0
     },
     {
         "data": "<some data from the second event>",
+        "transactionId": 1111111,
         "offset": 1
     }
     ...

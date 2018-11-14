@@ -198,17 +198,18 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                 'offset.as(intUnmarshaller).?,
                 'count.as(intUnmarshaller).?
               )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
-
               val offset = maybeOffset.getOrElse(0)
               val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
               val eventuallyResult = db
                 .startsWith(
                   bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
                   bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
-                  count.toLong)
+                  count.toLong
+                )
                 .map { records =>
-                  records.map(value => transcode(BJson @@ value.bytes)
-                    .to[(TransactionId, MarshalledData)])
+                  records.map(value =>
+                    transcode(BJson @@ value.bytes)
+                      .to[(TransactionId, MarshalledData)])
                 }
 
               onSuccess(eventuallyResult) { result =>

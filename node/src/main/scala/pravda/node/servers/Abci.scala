@@ -397,8 +397,8 @@ object Abci {
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
-      effectsMap.
-        flatMap {
+      effectsMap
+        .flatMap {
           case (tx, buffer) =>
             buffer collect {
               case event: Effect.Event =>

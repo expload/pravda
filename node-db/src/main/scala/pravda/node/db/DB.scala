@@ -287,7 +287,8 @@ class DB(
       it.seek(prefix)
       def next(): Stream[(Array[Byte], Array[Byte])] = {
         try {
-          if (!it.hasNext) Stream.empty else {
+          if (!it.hasNext) Stream.empty
+          else {
             val record = it.peekNext()
             val key = record.getKey
             if (key.startsWith(prefix)) {

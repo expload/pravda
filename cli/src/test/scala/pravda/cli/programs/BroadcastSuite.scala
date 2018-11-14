@@ -16,7 +16,7 @@ object BroadcastSuite extends TestSuite {
 
   final val expectedResult =
     s"""{
-       |  "id" : "",
+       |  "transactionId" : "",
        |  "executionResult" : {
        |    "success" : {
        |      "spentWatts" : 0,
