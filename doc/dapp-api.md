@@ -166,23 +166,35 @@ Arguments should be properly encoded according to their [JSON representation](ht
 
 ```
 {
-  "error: "",
-  "errorCode: "",
-  "data" : {
-    "finalState" : {
-      "spentWatts" : <spent-watts>,
-      "refundWatts" : <refunded-watts>,
-      "totalWatts" : <total-watts>,
-      "stack" : [<stack-data>],
-      "heap" : [<heap-data>]
-    },
-    "effects" : [ {
-      "eventType" : "<effect-type>",
-      ...
-      <event-dependent-fields>
-      ...
-    }, ...]
-  }
+  "transactionId" : "7888cd062c5ec12946fb4327ffc379f6cdf4beca",
+  "executionResult" : {
+    "success" : {
+      "spentWatts" : 12137,
+      "refundWatts" : 0,
+      "totalWatts" : 12137,
+      "stack" : [ ],
+      "heap" : [ ]
+    }
+  },
+  "effects" : [ {
+    "eventType" : "StorageRead",
+    "program" : "5060cec8dfd34ba2dea5588ea416a3a76567d8aff8dd45b8bc50e500e7466f3f",
+    "key" : "utf8.init"
+  }, {
+    "eventType" : "StorageWrite",
+    "program" : "5060cec8dfd34ba2dea5588ea416a3a76567d8aff8dd45b8bc50e500e7466f3f",
+    "key" : "utf8.init",
+    "value" : "null"
+  }, {
+    "eventType" : "Event",
+    "program" : "5060cec8dfd34ba2dea5588ea416a3a76567d8aff8dd45b8bc50e500e7466f3f",
+    "name" : "myevent",
+    "data" : {
+      "simple" : {
+        "data" : "utf8.hello world"
+      }
+    }
+  } ]
 }
 ```
 
@@ -203,22 +215,16 @@ As result we will receive the response like that:
 
 ```
 {
-  "error: "",
-  "errorCode: "",
-  "data" : {
-    "finalState" : {
+  "transactionId" : "7888cd062c5ec12946fb4327ffc379f6cdf4beca",
+  "executionResult" : {
+    "success" : {
       "spentWatts" : <spent-watts>,
       "refundWatts" : <refunded-watts>,
       "totalWatts" : <total-watts>,
       "stack" : ["bigint.555"],
       "heap" : [<heap-data>]
     },
-    "effects" : [ {
-      "eventType" : "<effect-type>",
-      ...
-      <event-dependent-fields>
-      ...
-    }, ...]
+    "effects" : [ ... ]
   }
 }
 ```
@@ -270,45 +276,61 @@ This method allows you to execute arbitrary Pravda bytecode
 
 ```
 {
-  "finalState" : {
-    "spentWatts" : <spent-watts>,
-    "refundWatts" : <refunded-watts>,
-    "totalWatts" : <total-watts>,
-    "stack" : [<stack-data>],
-    "heap" : [<heap-data>]
+  "transactionId" : "7888cd062c5ec12946fb4327ffc379f6cdf4beca",
+  "executionResult" : {
+    "success" : {
+      "spentWatts" : 12137,
+      "refundWatts" : 0,
+      "totalWatts" : 12137,
+      "stack" : [ ],
+      "heap" : [ ]
+    }
   },
   "effects" : [ {
-    "eventType" : "<effect-type>",
-    ...
-    <event-dependent-fields>
-    ...
-  }, ...]
+    "eventType" : "StorageRead",
+    "program" : "5060cec8dfd34ba2dea5588ea416a3a76567d8aff8dd45b8bc50e500e7466f3f",
+    "key" : "utf8.init"
+  }, {
+    "eventType" : "StorageWrite",
+    "program" : "5060cec8dfd34ba2dea5588ea416a3a76567d8aff8dd45b8bc50e500e7466f3f",
+    "key" : "utf8.init",
+    "value" : "null"
+  }, {
+    "eventType" : "Event",
+    "program" : "5060cec8dfd34ba2dea5588ea416a3a76567d8aff8dd45b8bc50e500e7466f3f",
+    "name" : "myevent",
+    "data" : {
+      "simple" : {
+        "data" : "utf8.hello world"
+      }
+    }
+  } ]
 }
 ```
+
 or with error
 
 ```
 {
+  "transactionId" : "266b0bebf4a14b50183a6bd95375f454cac0e73e",
   "executionResult" : {
-    "error" : {
-      "error" : <error-code-or-string>,
-      "finalState" : {
-        "spentWatts" : <spent-watts>,
-        "refundWatts" : <refunded-watts>,
-        "totalWatts" : <total-watts>,
-        "stack" : [<stack-data>],
-        "heap" : [<heap-data>]
+    "failure" : {
+      "error" : {
+        "code" : 101,
+        "message" : "StackUnderflow"
       },
-      "callStack" : [<call-stack-data>],
-      "lastPosition" : <last-position>
+      "finalState" : {
+        "spentWatts" : 1,
+        "refundWatts" : 0,
+        "totalWatts" : 1,
+        "stack" : [ ],
+        "heap" : [ ]
+      },
+      "callStack" : [ ],
+      "lastPosition" : 1
     }
   },
-  "effects" : [ {
-    "eventType" : "<effect-type>",
-    ...
-    <event-dependent-fields>
-    ...
-  }, ...]
+  "effects" : [ ]
 }
 ```
 

@@ -192,23 +192,34 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
           path("events") {
             parameters(
               (
-                'address.as(hexUnmarshaller),
+                'program.as(hexUnmarshaller),
                 'name,
+                'transactionId.?,
                 'offset.as(intUnmarshaller).?,
                 'count.as(intUnmarshaller).?
-              )) { (address, name, offsetO, countO) =>
-              val offset = offsetO.getOrElse(0)
-              val count = countO.map(c => math.min(c, ApiRoute.MaxEventCount)).getOrElse(ApiRoute.MaxEventCount)
-              val f = db
+              )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
+              val offset = maybeOffset.getOrElse(0)
+              val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
+              val eventuallyResult = db
                 .startsWith(
                   bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
                   bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
                   count.toLong
                 )
-                .map(_.map(r => transcode(BJson @@ r.bytes).to[MarshalledData]))
+                .map { records =>
+                  records.map(value =>
+                    transcode(BJson @@ value.bytes)
+                      .to[(TransactionId, MarshalledData)])
+                }
 
-              onSuccess(f) { res =>
-                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d) })
+              onSuccess(eventuallyResult) { result =>
+                val items = {
+                  val xs = result.zipWithIndex.map {
+                    case ((tid, d), n) => ApiRoute.EventItem(n + offset, tid, d)
+                  }
+                  maybeTransaction.fold(xs)(tid => xs.filter(_.transactionId == tid))
+                }
+                complete(items)
               }
             }
           }
@@ -220,5 +231,5 @@ object ApiRoute {
 
   final val MaxEventCount = 1000
 
-  final case class EventItem(offset: Int, data: MarshalledData)
+  final case class EventItem(offset: Int, transactionId: TransactionId, data: MarshalledData)
 }
