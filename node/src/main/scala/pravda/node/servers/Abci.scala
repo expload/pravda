@@ -201,7 +201,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 object Abci {
 
   final case class TransactionResult(
-      id: TransactionId,
+      transactionId: TransactionId,
       executionResult: ExecutionResult,
       effects: Seq[Effect]
   )
@@ -228,7 +228,6 @@ object Abci {
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[Effect])]
-    private val events = mutable.Buffer.empty[Effect.Event]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
@@ -260,7 +259,6 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
-        events ++= transactionEffects.collect { case ev: Effect.Event => ev }
       }
 
       import Effect._
@@ -361,7 +359,6 @@ object Abci {
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
-      events.clear()
       cache.clear()
       fee = NativeCoin.zero
     }
@@ -400,20 +397,26 @@ object Abci {
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
-      events
+      effectsMap.
+        flatMap {
+          case (tx, buffer) =>
+            buffer collect {
+              case event: Effect.Event =>
+                tx -> event
+            }
+        }
         .groupBy {
-          case Effect.Event(address, name, data) => (address, name)
+          case (_, Effect.Event(address, name, _)) => (address, name)
         }
         .foreach {
           case ((address, name), evs) =>
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
-              case (Effect.Event(_, _, data), i) =>
-                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data)
+              case ((tx, Effect.Event(_, _, data)), i) =>
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), (tx, data))
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
         }
-
       db.syncBatch(operations: _*)
       clear()
     }
