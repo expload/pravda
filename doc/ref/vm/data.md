@@ -9,7 +9,7 @@ Human-readable representation of `vm.Data`. Supported by assembler for PravdaVM.
 ```
 int8, int16, int32,
 uint8, uint16, uint32
-bitint, number
+bigint, number
 ref,
 boolean,
 utf8, bytes
@@ -84,7 +84,7 @@ type := primitive_type
 primitive := int8 bytes~1
            | int16 bytes~2
            | int32 bytes~4
-           | bitint length bytes[&length]
+           | bigint length bytes[&length]
            | uint8 bytes~1
            | uint16 bytes~2
            | uint32 bytes~4
@@ -120,7 +120,7 @@ All primitives encodes as JSON strings with prefix. It's easy to parse. Most of 
 "uint8.100"
 "uint16.100"
 "uint32.1000"
-"bitint.9999999999999"
+"bigint.9999999999999"
 "number.2.0"
 "ref.1"
 "bool.true"
