@@ -42,6 +42,12 @@ pipeline:
       - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
+  sign-msi:
+    image: byrnedo/alpine-curl
+    commands:
+      - find . -name *.msi -exec curl -F msi=@{} http://35.246.239.138:8080/sign-msi -o {} \;
+    when:
+      event: tag
   publish-to-bintray:
     group: publish
     image: gcr.io/time-coin/sbt:latest
