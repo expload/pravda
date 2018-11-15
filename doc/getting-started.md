@@ -1,5 +1,18 @@
 # Getting started
 
+## Table of Contents
+
+- [Installation](#Installation)
+  - [Windows](#Windows)
+  - [Linux and macOS](#Linux-and-macOS)
+- [Getting started with CLI](#Getting-started-with-CLI)
+  - [Run node](#Run-node)
+  - [Transfer coins](#Transfer-coins)
+- [Getting started with Pravda Programs](#Getting-started-with-Pravda-Programs)
+  - [Importing Project Template](#Importing-Project-Template)
+  - [Compiling the Program](#Compiling-the-Program)
+  - [Deploying to Testnet](#Deploying-to-Testnet)
+
 ## Installation
 
 Ensure that JRE 1.8 or higher is installed in your system. Also ensure that 8080 TCP port is free.
@@ -16,8 +29,10 @@ We've prepared universal installation script. Just run this command in your term
 curl -sL https://git.io/pravda-for-unix | bash
 ```
 
-## Run node
-  
+## Getting started with CLI
+
+### Run node
+
 Then we need to run local node. First of all lets build initial coin distribution config. 
 
 ```bash
@@ -49,7 +64,7 @@ pravda node run
 
 Now you have our own Pravda network with one validator, and one billion coins on your account. Check out `http://localhost:8080/ui`. 
 
-## Transfer coins
+### Transfer coins
 
 You are very rich! Now you want to donate a part of your wealth to some poor guy. Let's generate wallet for him.
 
@@ -67,3 +82,46 @@ pravda broadcast transfer \
 ```
 
 Now the poor guy is not so poor. Great job!
+
+## Getting started with Pravda Programs
+
+### Importing Project Template
+
+To use project template you will need [.NET Core SDK 2.1](https://www.microsoft.com/net/download/dotnet-core/2.1).  
+Create a directory for your project and run inside it:  
+```bash
+dotnet new -i Expload.PravdaProgramTemplate --name MyProject
+dotnet new pravdaprogram
+```
+Now your directory contains:
+ - `MyProject.cs` - main program file. By default it contains simple program with `HelloWorld` method
+ - `MyProject.csproj` - project configuration. It includes scripts for compiling and deployment, as well as .NET dependencies & metadata
+ - `README.md` - feel free to consult it whenever you feel confused
+
+### Compiling the Program
+
+To compile C# code into pravda binary run:
+```
+dotnet publish -c Debug
+```
+Now you have `MyProject.pravda` in your project directory.  
+You can use [local node](#Getting-started-with-CLI) and [Pravda CLI commands](https://github.com/expload/pravda/blob/master/doc/ref/cli/pravda-broadcast-deploy.md) to deploy to a local node or proceed further to work with Pravda Testnet.
+
+### Deploying to Testnet
+
+Let us generate a Pravda Wallet:
+```bash
+pravda gen address -o wallet.json
+```
+If you already have a Pravda Wallet, move it to project folder and 
+rename it to `wallet.json`.  
+Go to [Testnet Faucet](https://faucet.dev.expload.com/ui) to get some EXP, as you have to pay for deployment transaction.  
+  
+Finally, run:
+```
+dotnet publish -c Release
+```
+Now your program is on the Testchain!  
+Your project directory includes `program-wallet.json` which has your program's address.  
+  
+For more information on working with the template, see `README.md` in your project directory.
