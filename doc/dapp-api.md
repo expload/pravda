@@ -121,7 +121,7 @@ Requsted user balance as integer value
 ### Examples
 
 ```
-curl <api url>/api/address
+curl <api url>/api/balance
 ```
 
 will return balance of the current user. For instance, if the current user has 100 XCoins you will get
@@ -169,6 +169,7 @@ Arguments should be properly encoded according to their [JSON representation](ht
   "error: "",
   "errorCode: "",
   "data" : {
+    "transactionId": "<transaction-id>",
     "finalState" : {
       "spentWatts" : <spent-watts>,
       "refundWatts" : <refunded-watts>,
@@ -206,6 +207,7 @@ As result we will receive the response like that:
   "error: "",
   "errorCode: "",
   "data" : {
+    "transactionId": "<transaction-id>",
     "finalState" : {
       "spentWatts" : <spent-watts>,
       "refundWatts" : <refunded-watts>,
@@ -261,7 +263,7 @@ This method allows you to execute arbitrary Pravda bytecode
 
 ```
 {
-    "transaction": "<hex formatted transaction>",
+    "program": "<hex formatted transaction>",
     "wattLimit": <watt limit> // Optional
 }
 ```
@@ -270,45 +272,35 @@ This method allows you to execute arbitrary Pravda bytecode
 
 ```
 {
-  "finalState" : {
-    "spentWatts" : <spent-watts>,
-    "refundWatts" : <refunded-watts>,
-    "totalWatts" : <total-watts>,
-    "stack" : [<stack-data>],
-    "heap" : [<heap-data>]
-  },
-  "effects" : [ {
-    "eventType" : "<effect-type>",
-    ...
-    <event-dependent-fields>
-    ...
-  }, ...]
+  "error: "",
+  "errorCode: "",
+  "data" : {
+    "transactionId": "<transaction-id>",
+    "finalState" : {
+      "spentWatts" : <spent-watts>,
+      "refundWatts" : <refunded-watts>,
+      "totalWatts" : <total-watts>,
+      "stack" : [<stack-data>],
+      "heap" : [<heap-data>]
+    },
+    "effects" : [ {
+      "eventType" : "<effect-type>",
+      ...
+      <event-dependent-fields>
+      ...
+    }, ...]
+  }
 }
 ```
 or with error
 
 ```
 {
-  "executionResult" : {
-    "error" : {
-      "error" : <error-code-or-string>,
-      "finalState" : {
-        "spentWatts" : <spent-watts>,
-        "refundWatts" : <refunded-watts>,
-        "totalWatts" : <total-watts>,
-        "stack" : [<stack-data>],
-        "heap" : [<heap-data>]
-      },
-      "callStack" : [<call-stack-data>],
-      "lastPosition" : <last-position>
-    }
-  },
-  "effects" : [ {
-    "eventType" : "<effect-type>",
+  "error: "<error>",
+  "errorCode: "<error-code>",
+  "data" : {
     ...
-    <event-dependent-fields>
-    ...
-  }, ...]
+  }
 }
 ```
 
@@ -322,7 +314,7 @@ This method allows you to sign arbitrary binary data
 
 ```
 {
-  "app": "<application name>",
+  "app": "<name of your application>",
   "bytes": "<hex formatted binary data>"
 }
 ```
@@ -330,6 +322,10 @@ This method allows you to sign arbitrary binary data
 ### Response
 ```
 {
-  "signedBytes": "<hex formatted signed binary data>"
+  "error": "",
+  "errorCode": "",
+  "data": { 
+    "signedData": "<hex formatted signed binary data>"
+  }
 }
 ```
