@@ -13,9 +13,21 @@ namespace Expload.Pravda.ERC20
             return ExploadTypeConverters.ParseUInt32(elem);
         }
 
+        public IEnumerator Test(byte[] arg0)
+        {
+            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0)
+        {
+            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator BalanceOf(byte[] arg0)
         {
-            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) });
+            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) }, false);
         }
     }
     public class AllowanceRequest: ProgramRequest<uint>
@@ -27,9 +39,21 @@ namespace Expload.Pravda.ERC20
             return ExploadTypeConverters.ParseUInt32(elem);
         }
 
+        public IEnumerator Test(byte[] arg0, byte[] arg1)
+        {
+            yield return SendRequest("Allowance", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, byte[] arg1)
+        {
+            yield return SendRequest("Allowance", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator Allowance(byte[] arg0, byte[] arg1)
         {
-            yield return SendRequest("Allowance", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1) });
+            yield return SendRequest("Allowance", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1) }, false);
         }
     }
     public class TransferRequest: ProgramRequest<object>
@@ -41,9 +65,21 @@ namespace Expload.Pravda.ERC20
             return ExploadTypeConverters.ParseNull(elem);
         }
 
+        public IEnumerator Test(byte[] arg0, uint arg1)
+        {
+            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, uint arg1)
+        {
+            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator Transfer(byte[] arg0, uint arg1)
         {
-            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) });
+            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) }, false);
         }
     }
     public class ApproveRequest: ProgramRequest<object>
@@ -55,9 +91,21 @@ namespace Expload.Pravda.ERC20
             return ExploadTypeConverters.ParseNull(elem);
         }
 
+        public IEnumerator Test(byte[] arg0, uint arg1)
+        {
+            yield return SendRequest("Approve", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, uint arg1)
+        {
+            yield return SendRequest("Approve", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator Approve(byte[] arg0, uint arg1)
         {
-            yield return SendRequest("Approve", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) });
+            yield return SendRequest("Approve", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintUInt32(arg1) }, false);
         }
     }
     public class TransferFromRequest: ProgramRequest<object>
@@ -69,9 +117,21 @@ namespace Expload.Pravda.ERC20
             return ExploadTypeConverters.ParseNull(elem);
         }
 
+        public IEnumerator Test(byte[] arg0, byte[] arg1, uint arg2)
+        {
+            yield return SendRequest("TransferFrom", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1), ExploadTypeConverters.PrintUInt32(arg2) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, byte[] arg1, uint arg2)
+        {
+            yield return SendRequest("TransferFrom", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1), ExploadTypeConverters.PrintUInt32(arg2) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator TransferFrom(byte[] arg0, byte[] arg1, uint arg2)
         {
-            yield return SendRequest("TransferFrom", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1), ExploadTypeConverters.PrintUInt32(arg2) });
+            yield return SendRequest("TransferFrom", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintBytes(arg1), ExploadTypeConverters.PrintUInt32(arg2) }, false);
         }
     }
 }

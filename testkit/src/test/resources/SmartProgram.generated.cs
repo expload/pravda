@@ -13,9 +13,21 @@ namespace Expload.Pravda.SmartProgram
             return ExploadTypeConverters.ParseInt32(elem);
         }
 
+        public IEnumerator Test(byte[] arg0)
+        {
+            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0)
+        {
+            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator BalanceOf(byte[] arg0)
         {
-            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) });
+            yield return SendRequest("BalanceOf", new string[] { ExploadTypeConverters.PrintBytes(arg0) }, false);
         }
     }
     public class EmitRequest: ProgramRequest<object>
@@ -27,9 +39,21 @@ namespace Expload.Pravda.SmartProgram
             return ExploadTypeConverters.ParseNull(elem);
         }
 
+        public IEnumerator Test(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("Emit", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("Emit", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator Emit(byte[] arg0, int arg1)
         {
-            yield return SendRequest("Emit", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) });
+            yield return SendRequest("Emit", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
         }
     }
     public class TransferRequest: ProgramRequest<object>
@@ -41,9 +65,21 @@ namespace Expload.Pravda.SmartProgram
             return ExploadTypeConverters.ParseNull(elem);
         }
 
+        public IEnumerator Test(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator Transfer(byte[] arg0, int arg1)
         {
-            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) });
+            yield return SendRequest("Transfer", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
         }
     }
 }

@@ -222,6 +222,14 @@ As result we will receive the response like that:
 
 Balance is placed in `"data" \ "finalState" \ "stack"` field.
 
+### Test/read requests
+
+Also you can call method without producing effects on blockchain. It may 
+be useful when you want to require some data from storage of a program. 
+
+`POST api/program/method-test`
+
+Everything else is a same. 
 
 ## Transfer money
 
