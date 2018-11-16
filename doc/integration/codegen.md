@@ -1,7 +1,7 @@
 # Code generation for Unity3D
 
 Pravda project is able to generate auxiliary code for [Unity](https://unity3d.com/) that provides convenient way to call _program's_ methods.  
-It uses [`meta`](ref/vm/meta.md) information from the given bytecode to detect and analyse methods of the _program_. 
+It uses [`meta`](../virtual-machine/meta.md) information from the given bytecode to detect and analyse methods of the _program_. 
 
 ## Dependecies
 **Important note:**
@@ -53,5 +53,5 @@ public class IncrementRequest: ProgramRequest<int> // int is the type of result
 ## Expload.Unity.Codegen
 
 Internally generated code uses auxiliary functionality from namespace called `Expload.Unity.Codegen`.
-Source file of this namespace situated [here](../codegen/src/main/resources/ExploadUnityCodegen.cs).
+Source file of this namespace situated [here](../../codegen/src/main/resources/ExploadUnityCodegen.cs).
 

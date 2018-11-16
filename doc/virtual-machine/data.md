@@ -1,4 +1,4 @@
-# Pravda internal data format  
+# Internal data format  
 
 ## String representation
 

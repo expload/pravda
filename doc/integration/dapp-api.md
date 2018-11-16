@@ -6,9 +6,6 @@ This API allows client to execute different action on the Pravda blockchain,
 such as run arbitrary code, call methods from existing programs,
 get balance by address, sign binary data and transfer money from one address to another.
 
-
-# General information
-
 ## Login
 
 Before using API the user should be logged in app. User can sign up using its own public/private keys pair
@@ -73,8 +70,6 @@ Basic error codes are:
 If you want to handle values in JSON representation then consider the following
 [description of data representation in JSON format](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
 
-
-# API Methods
 
 ## Get current user address
 

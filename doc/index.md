@@ -1,18 +1,5 @@
 # Getting started
 
-## Table of Contents
-
-- [Installation](#Installation)
-  - [Windows](#Windows)
-  - [Linux and macOS](#Linux-and-macOS)
-- [Getting started with CLI](#Getting-started-with-CLI)
-  - [Run node](#Run-node)
-  - [Transfer coins](#Transfer-coins)
-- [Getting started with Pravda Programs](#Getting-started-with-Pravda-Programs)
-  - [Importing Project Template](#Importing-Project-Template)
-  - [Compiling the Program](#Compiling-the-Program)
-  - [Deploying to Testnet](#Deploying-to-Testnet)
-
 ## Installation
 
 Ensure that JRE 1.8 or higher is installed in your system. Also ensure that 8080 TCP port is free.
@@ -83,7 +70,7 @@ pravda broadcast transfer \
 
 Now the poor guy is not so poor. Great job!
 
-## Getting started with Pravda Programs
+## Write your Pravda Program
 
 ### Importing Project Template
 
