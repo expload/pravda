@@ -14,9 +14,21 @@ namespace Expload.Pravda.{{programName}}
             return ExploadTypeConverters.{{methodParseResult}}(elem);
         }
 
+        public IEnumerator Test({{methodArgs}})
+        {
+            yield return SendRequest("{{methodName}}", new string[] { {{methodPrintArgs}} }, true);
+        }
+
+        public IEnumerator Call({{methodArgs}})
+        {
+            yield return SendRequest("{{methodName}}", new string[] { {{methodPrintArgs}} }, false);
+        }
+
+        // Same as Call
+        // Deprecated
         public IEnumerator {{methodName}}({{methodArgs}})
         {
-            yield return SendRequest("{{methodName}}", new string[] { {{methodPrintArgs}} });
+            yield return SendRequest("{{methodName}}", new string[] { {{methodPrintArgs}} }, false);
         }
     }
     {{/methods}}

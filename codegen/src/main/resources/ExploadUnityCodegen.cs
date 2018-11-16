@@ -221,11 +221,19 @@ namespace Expload.Unity.Codegen
 
         protected abstract T ParseResult(string elem);
 
-        protected IEnumerator SendRequest(string method, string[] args)
+        protected IEnumerator SendRequest(string method, string[] args, bool test)
         {
             var request = new ExploadMethodRequest(BitConverter.ToString(ProgramAddress).Replace("-", ""), method, args);
             string json = JsonConvert.SerializeObject(request);
-            UnityWebRequest www = UnityWebRequest.Put("localhost:8087/api/program/method", json);
+
+            string uri = "";
+            if (test) {
+                uri = "localhost:8087/api/program/method-test";
+            } else {
+                uri = "localhost:8087/api/program/method";
+            }
+
+            UnityWebRequest www = UnityWebRequest.Put(uri, json);
             www.method = "POST";
             www.SetRequestHeader("Content-Type", "application/json");
 
