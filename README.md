@@ -4,4 +4,4 @@ Pravda is a general purpose blockchain with PoA consensus (PoW in future). It's 
 
 Network node is build on top of [Tendermint](http://tendermint.com/), is written in Scala and runs on JVM. We have our own virtual machine for "smart contracts" (not exactly) and translators from [.NET](https://en.wikipedia.org/wiki/Common_Intermediate_Language) (and [EVM](https://ethereum.github.io/yellowpaper/paper.pdf) in future) bytecode.
 
-[Documentation](https://expload.com/developers/documentation/pravda/getting-started/)
+[Documentation](https://expload.com/developers/documentation/pravda/)
