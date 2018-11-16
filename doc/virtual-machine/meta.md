@@ -1,9 +1,7 @@
-# Meta information in Pravda bytecode
+# Meta in bytecode
 
 Pravda bytecode may contain additional information for disassembler, code generator and other tools that read and interpreter Pravda bytecode.  
 This information is called `meta`. 
-
-## Meta
 
 There're 5 kinds of `meta` for the moment:
 - `label_def "<string>"` that marks definition of a label;

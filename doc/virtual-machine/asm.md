@@ -1,4 +1,4 @@
-# Pravda Assembler
+# Assembler
 
 Pravda assembler (pasm) is a text representation of Pravda VM bytecode.
  
