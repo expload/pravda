@@ -4,6 +4,7 @@ import java.io.File
 
 import com.google.protobuf.ByteString
 import org.json4s.DefaultFormats
+import pravda.common.bytes
 import pravda.common.domain.Address
 import pravda.common.json._
 import pravda.plaintest._
@@ -20,15 +21,19 @@ import scala.util.Try
 
 object VmSuiteData {
 
-  final case class Preconditions(`watts-limit`: Long = 0,
-                                 balances: Map[Address, Primitive.BigInt] = Map.empty,
-                                 stack: Seq[Primitive] = Nil,
-                                 heap: Map[Primitive.Ref, Data] = Map.empty,
-                                 storage: Map[Primitive, Data] = Map.empty,
-                                 `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
-                                 programs: Map[Address, Primitive.Bytes] = Map.empty,
-                                 executor: Option[Address] = None,
-                                 code: String)
+  final case class Preconditions(
+      `watts-limit`: Long = 0,
+      balances: Map[Address, Primitive.BigInt] = Map.empty,
+      stack: Seq[Primitive] = Nil,
+      heap: Map[Primitive.Ref, Data] = Map.empty,
+      storage: Map[Primitive, Data] = Map.empty,
+      `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
+      programs: Map[Address, Primitive.Bytes] = Map.empty,
+      executor: Option[Address] = None,
+      code: String,
+      `app-state-info`: AppStateInfo = AppStateInfo(
+        `app-hash` = bytes.hex2byteString("0000000000000000000000000000000000000000000000000000000000000000"),
+        height = 1L))
 
   final case class Expectations(`watts-spent`: Long,
                                 stack: Seq[Primitive] = Nil,
@@ -48,6 +53,7 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
       json4sFormat[Primitive] +
       json4sFormat[Primitive.BigInt] +
       json4sFormat[Primitive.Bytes] +
+      json4sFormat[ByteString] +
       json4sFormat[vm.Effect] +
       json4sFormat[vm.Error] +
       json4sKeyFormat[ByteString] +
@@ -80,7 +86,8 @@ object VmSuite extends Plaintest[Preconditions, Expectations] {
       input.`program-storage`,
       input.balances.toSeq,
       input.programs.toSeq,
-      pExecutor
+      pExecutor,
+      input.`app-state-info`
     )
     val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 

@@ -349,6 +349,18 @@ object Abci {
         }
 
       def collectEffects: Seq[Effect] = transactionEffects
+
+      def chainHeight: Long = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.blockHeight)
+      }
+
+      def lastBlockHash: ByteString = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.appHash)
+      }
     }
 
     def appendFee(coins: NativeCoin): Unit = {

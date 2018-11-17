@@ -4,6 +4,7 @@ import java.io.File
 
 import com.google.protobuf.ByteString
 import org.json4s.DefaultFormats
+import pravda.common.bytes
 import pravda.common.domain.Address
 import pravda.common.json._
 import pravda.dotnet.DotnetCompilation
@@ -22,14 +23,18 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 
 object DotnetSuiteData {
-  final case class Preconditions(balances: Map[Address, Primitive.BigInt] = Map.empty,
-                                 stack: Seq[Primitive] = Nil,
-                                 heap: Map[Primitive.Ref, Data] = Map.empty,
-                                 storage: Map[Primitive, Data] = Map.empty,
-                                 `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
-                                 programs: Map[Address, Primitive.Bytes] = Map.empty,
-                                 executor: Option[Address] = None,
-                                 `dotnet-compilation`: DotnetCompilation)
+  final case class Preconditions(
+      balances: Map[Address, Primitive.BigInt] = Map.empty,
+      stack: Seq[Primitive] = Nil,
+      heap: Map[Primitive.Ref, Data] = Map.empty,
+      storage: Map[Primitive, Data] = Map.empty,
+      `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
+      programs: Map[Address, Primitive.Bytes] = Map.empty,
+      executor: Option[Address] = None,
+      `dotnet-compilation`: DotnetCompilation,
+      `app-state-info`: AppStateInfo = AppStateInfo(
+        `app-hash` = bytes.hex2byteString("0000000000000000000000000000000000000000000000000000000000000000"),
+        height = 1L))
 
   final case class Expectations(stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
@@ -51,6 +56,7 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
       json4sFormat[Primitive.Bytes] +
       json4sFormat[vm.Effect] +
       json4sFormat[vm.Error] +
+      json4sFormat[ByteString] +
       json4sKeyFormat[ByteString] +
       json4sKeyFormat[Primitive.Ref] +
       json4sKeyFormat[Primitive]
@@ -87,7 +93,8 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
       initStorages = input.`program-storage`,
       initBalances = input.balances.toSeq,
       initPrograms = input.programs.toSeq,
-      pExecutor = pExecutor
+      pExecutor = pExecutor,
+      input.`app-state-info`
     )
 
     val storage = new VmSandbox.StorageSandbox(

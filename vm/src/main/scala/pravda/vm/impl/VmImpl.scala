@@ -180,6 +180,8 @@ class VmImpl extends Vm {
         case THROW   => systemOperations.`throw`()
         case EVENT   => systemOperations.event()
         case CALLERS => systemOperations.callers()
+        case HEIGHT  => systemOperations.chainHeight()
+        case HASH    => systemOperations.lastBlockHash()
         case CODE    => systemOperations.code()
         case META    => Meta.readFromByteBuffer(program)
         case _       =>

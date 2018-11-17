@@ -291,6 +291,26 @@ final class SystemOperations(program: ByteBuffer,
     wattCounter.cpuUsage(CpuStorageUse)
     memory.push(memory.heapPut(cs))
   }
+
+  @OpcodeImplementation(
+    opcode = HEIGHT,
+    description = "Gets current height of the blockchain and pushes it to the stack."
+  )
+  def chainHeight(): Unit = {
+    val data = env.chainHeight
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Uint32(data))
+  }
+
+  @OpcodeImplementation(
+    opcode = HASH,
+    description = "Gets hash of the last block and pushes it to the stack."
+  )
+  def lastBlockHash(): Unit = {
+    val data = env.lastBlockHash
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Bytes(data))
+  }
 }
 
 object SystemOperations {

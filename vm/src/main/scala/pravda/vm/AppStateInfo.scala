@@ -18,27 +18,5 @@
 package pravda.vm
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
 
-trait Environment {
-
-  /**
-    * Current executor
-    */
-  def executor: Address
-
-  def chainHeight: Long
-  def lastBlockHash: ByteString
-
-  // Programs
-  def sealProgram(address: Address): Unit
-  def updateProgram(address: Address, code: ByteString): Unit
-  def createProgram(address: Address, code: ByteString): Unit
-  def getProgram(address: Address): Option[ProgramContext]
-
-  def event(address: Address, name: String, data: MarshalledData): Unit
-
-  // Balance
-  def balance(address: Address): NativeCoin
-  def transfer(from: Address, to: Address, amount: NativeCoin): Unit
-}
+case class AppStateInfo(`app-hash`: ByteString, height: Long)
