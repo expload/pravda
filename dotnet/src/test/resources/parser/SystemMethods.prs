@@ -15,16 +15,26 @@ methods: |-
     Method(
       List(
         Nop,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 24L)),
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", 24L)),
         Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Balance", 28L)),
         StLoc0,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", 24L)),
-        StLoc1,
         Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "ProgramAddress", 34L)),
+        StLoc1,
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", 24L)),
+        LdcI4S(100),
+        ConvI8,
+        Call(MemberRefData(TypeRefData(10L, "Actions", "Expload.Pravda"), "Transfer", 39L)),
+        Nop,
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "VOID_ADDRESS", 24L)),
+        LdcI4(200),
+        ConvI8,
+        Call(MemberRefData(TypeRefData(10L, "Actions", "Expload.Pravda"), "TransferFromProgram", 39L)),
+        Nop,
+        LdNull,
         StLoc2,
         Ret
       ),
-      1,
+      2,
       Some(16L)
     ),
     Method(List(Nop, Ret), 0, None),
@@ -85,5 +95,17 @@ signatures: |-
         List()
       )
     ),
-    (48L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (
+      39L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false), Tpe(I8, false))
+      )
+    ),
+    (55L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

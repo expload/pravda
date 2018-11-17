@@ -84,6 +84,8 @@ case object CallsTranslation extends OneToManyTranslator {
 
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(-1) else Right(0)
+      case Call(MemberRefData(TypeRefData(_, "Actions", "Expload.Pravda"), "Transfer", _))                => Right(-2)
+      case Call(MemberRefData(TypeRefData(_, "Actions", "Expload.Pravda"), "TransferFromProgram", _))     => Right(-2)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Sender", _))                     => Right(1)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Balance", _))                    => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "ProgramAddress", _))             => Right(1)
@@ -219,6 +221,10 @@ case object CallsTranslation extends OneToManyTranslator {
                               Operation(Opcodes.PCALL)))
       case Call(MemberRefData(TypeRefData(_, "Object", "System"), ".ctor", _)) =>
         if (ctx.struct.isDefined) Right(List(Operation(Opcodes.POP))) else Right(List.empty)
+      case Call(MemberRefData(TypeRefData(_, "Actions", "Expload.Pravda"), "Transfer", _)) =>
+        Right(List(Operation(Opcodes.TRANSFER)))
+      case Call(MemberRefData(TypeRefData(_, "Actions", "Expload.Pravda"), "TransferFromProgram", _)) =>
+        Right(List(Operation(Opcodes.PTRANSFER)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Sender", _)) =>
         Right(List(Operation(Opcodes.FROM)))
       case Call(MemberRefData(TypeRefData(_, "Info", "Expload.Pravda"), "Balance", _)) =>

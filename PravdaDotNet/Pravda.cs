@@ -33,6 +33,14 @@ namespace Expload.Pravda {
         public static Bytes LastBlockHash() { return null; }
     }
 
+    public class Actions {
+        // Transfer native coins from executor account
+        public static void Transfer(Bytes to, long amount) { return; }
+
+        // Transfer native coins from program account
+        public static void TransferFromProgram(Bytes to, long amount) { return; }
+    }
+
     public class Log {
         public static void Event<T>(string name, T data) { return; }
     }
