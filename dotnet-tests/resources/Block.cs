@@ -4,10 +4,14 @@ using Expload.Pravda;
 [Program]
 public class Block
 {
-    public void TestBlockMethods()
+    public long TestHeightMethod()
     {
-        long height = Info.Height();
-        Bytes hash = Info.LastBlockHash();
+        return Info.Height();
+    }
+
+    public Bytes TestLastBlockHash()
+    {
+        return Info.LastBlockHash();
     }
 
     public static void Main() {}

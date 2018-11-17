@@ -15,14 +15,26 @@ methods: |-
     Method(
       List(
         Nop,
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Height", 22L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Height", 20L)),
         StLoc0,
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "LastBlockHash", 26L)),
-        StLoc1,
+        BrS(0),
+        LdLoc0,
         Ret
       ),
       1,
       Some(16L)
+    ),
+    Method(
+      List(
+        Nop,
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "LastBlockHash", 29L)),
+        StLoc0,
+        BrS(0),
+        LdLoc0,
+        Ret
+      ),
+      1,
+      Some(24L)
     ),
     Method(List(Nop, Ret), 0, None),
     Method(
@@ -47,15 +59,11 @@ signatures: |-
         List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
       )
     ),
+    (16L, LocalVarSig(List(LocalVar(I8, false)))),
+    (20L, MethodRefDefSig(false, false, false, false, 0, Tpe(I8, false), List())),
+    (24L, LocalVarSig(List(LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false)))),
     (
-      16L,
-      LocalVarSig(
-        List(LocalVar(I8, false), LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
-      )
-    ),
-    (22L, MethodRefDefSig(false, false, false, false, 0, Tpe(I8, false), List())),
-    (
-      26L,
+      29L,
       MethodRefDefSig(
         false,
         false,
@@ -66,5 +74,18 @@ signatures: |-
         List()
       )
     ),
-    (40L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (43L, MethodRefDefSig(true, false, false, false, 0, Tpe(I8, false), List())),
+    (
+      47L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
+        List()
+      )
+    ),
+    (52L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )
