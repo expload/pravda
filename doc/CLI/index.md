@@ -2,7 +2,7 @@
 THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 -->
 
-```pravda [gen|run|compile|broadcast|node]```
+```pravda [gen|run|compile|broadcast|execute|node]```
 
 ## Description
 Pravda Command Line Interface
@@ -25,5 +25,6 @@ No options available
 |[`broadcast deploy`](pravda-broadcast-deploy.md)|Deploy Pravda program to the blockchain.|
 |[`broadcast seal`](pravda-broadcast-seal.md)|Seal existing Pravda program in the blockchain.|
 |[`broadcast update`](pravda-broadcast-update.md)|Update existing Pravda program in the blockchain.|
+|[`execute`](pravda-execute.md)|Executes program without side-effects. No watt-limit is required.|
 |[`node init`](pravda-node-init.md)|Create data directory and configuration for a new node.|
 |[`node run`](pravda-node-run.md)|Run initialized node.|

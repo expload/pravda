@@ -17,4 +17,5 @@ class NodeLanguageStub(result: Either[String, TransactionResult]) extends NodeLa
                                   wattPrice: NativeCoin,
                                   wattPayer: Option[Address],
                                   data: ByteString): Id[Either[String, TransactionResult]] = result
+  def execute(data: ByteString, address: Address, endpoint: String) = result
 }

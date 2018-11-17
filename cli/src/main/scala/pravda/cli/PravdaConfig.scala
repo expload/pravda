@@ -58,6 +58,11 @@ object PravdaConfig {
                              endpoint: String = DefaultValues.Broadcast.ENDPOINT)
       extends PravdaConfig
 
+  final case class Execute(input: Option[String] = None,
+                           wallet: Option[String] = None,
+                           endpoint: String = DefaultValues.Broadcast.ENDPOINT)
+      extends PravdaConfig
+
   object Broadcast {
 
     sealed trait Mode

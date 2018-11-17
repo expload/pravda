@@ -42,12 +42,13 @@ import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
 import pravda.node.servers.Abci.TransactionResult
+import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Random, Success, Try}
 
 /**
   * @param abci Direct access to transaction processing. Required by dry-run
@@ -55,6 +56,8 @@ import scala.util.{Failure, Random, Success}
 class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
+
+  type R = Either[RpcError, TransactionResult]
 
   val hexUnmarshaller: Unmarshaller[String, ByteString] =
     Unmarshaller.strict(hex => bytes.hex2byteString(hex))
@@ -137,6 +140,33 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
           }
         }
       } ~
+        path("execute") {
+          parameters('from.as(hexUnmarshaller)) { from =>
+            extractStrictEntity(1.second) { body =>
+              val bde = new node.servers.Abci.BlockDependentEnvironment(db)
+              val program = bodyToTransactionData(body)
+              val wattLimit = Long.MaxValue
+              val transactionId = TransactionId.Empty
+              val vm = new VmImpl()
+              val env = bde.transactionEnvironment(Address @@ from, transactionId)
+
+              val result = for {
+                execResult <- Try(vm.spawn(program, env, wattLimit))
+              } yield TransactionResult(transactionId, execResult, env.collectEffects)
+
+              result match {
+                case Success(x) =>
+                  complete(Right(x): R)
+                case Failure(e: ThrowableVmError) =>
+                  complete(Left(RpcError(-1, e.error.toString, "")): R)
+                case Failure(e: Abci.TransactionValidationException) =>
+                  complete(Left(RpcError(-1, e.getMessage, "")): R)
+                case Failure(e) =>
+                  failWith(e)
+              }
+            }
+          }
+        } ~
         post {
           withoutRequestTimeout {
             path("broadcast") {

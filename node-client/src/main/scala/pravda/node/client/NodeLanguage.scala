@@ -35,4 +35,6 @@ trait NodeLanguage[F[_]] {
                                   wattPrice: NativeCoin,
                                   wattPayer: Option[Address],
                                   data: ByteString): F[Either[String, TransactionResult]]
+
+  def execute(data: ByteString, address: Address, endpoint: String): F[Either[String, TransactionResult]]
 }
