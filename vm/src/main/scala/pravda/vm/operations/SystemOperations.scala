@@ -291,6 +291,26 @@ final class SystemOperations(program: ByteBuffer,
     wattCounter.cpuUsage(CpuStorageUse)
     memory.push(memory.heapPut(cs))
   }
+
+  @OpcodeImplementation(
+    opcode = HEIGHT,
+    description = "Returns chain's height."
+  )
+  def chainHeight(): Unit = {
+    val data = env.chainHeight
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Uint32(data))
+  }
+
+  @OpcodeImplementation(
+    opcode = HASH,
+    description = "Return hash of last block."
+  )
+  def lastBlockHash(): Unit = {
+    val data = env.lastBlockHash
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Bytes(data))
+  }
 }
 
 object SystemOperations {
