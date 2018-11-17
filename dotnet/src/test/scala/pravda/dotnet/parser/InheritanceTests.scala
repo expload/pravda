@@ -45,7 +45,7 @@ object InheritanceTests extends TestSuite {
             "A",
             "",
             parentCls,
-            Vector(FieldData(1, "AVal", 40)),
+            Vector(FieldData(0, 1, "AVal", 40)),
             Vector(MethodDefData(3, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
                    MethodDefData(4, 0, 198, "Answer", 43, Vector()))
           ),
@@ -55,7 +55,7 @@ object InheritanceTests extends TestSuite {
             "B",
             "",
             parentCls,
-            Vector(FieldData(1, "BVal", 40)),
+            Vector(FieldData(1, 1, "BVal", 40)),
             Vector(MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
                    MethodDefData(6, 0, 198, "Answer", 43, Vector()))
           ),

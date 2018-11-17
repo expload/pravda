@@ -1,0 +1,201 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ObjectGetSet.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ObjectGetSet.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "ObjectGetSet"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestObjectGetSet"
+  eq
+  jumpi @method_TestObjectGetSet
+  push "Wrong method name"
+  throw
+  @method_TestObjectGetSet:
+  meta method {
+  "name":"TestObjectGetSet","returnTpe":int8(3)
+  }
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(25),"sc":int32(5),"el":int32(25),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(35)
+  }
+  new {}
+  call @vtable_SomeClass
+  call @func_SomeClass.ctor
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(24)
+  }
+  push int32(2)
+  dupn
+  push int32(3)
+  struct_mut "field1"
+  meta source_mark {
+  "sl":int32(28),"sc":int32(9),"el":int32(28),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(25)
+  }
+  push int32(2)
+  dupn
+  push int32(20)
+  call @func_SomeClass.set_field2_int32
+  pop
+  meta source_mark {
+  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(28)
+  }
+  push int32(2)
+  dupn
+  push int32(100)
+  call @func_SomeClass.SetField3_int32
+  pop
+  meta source_mark {
+  "sl":int32(31),"sc":int32(9),"el":int32(31),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(58)
+  }
+  push int32(2)
+  dupn
+  struct_get "field1"
+  push int32(3)
+  dupn
+  call @func_SomeClass.get_field2
+  swap
+  pop
+  add
+  push int32(3)
+  dupn
+  call @func_SomeClass.GetField3
+  swap
+  pop
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(32),"sc":int32(5),"el":int32(32),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  }
+  jump @TestObjectGetSet_lvc
+  @TestObjectGetSet_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @func_SomeClass.GetField3:
+  push null
+  meta source_mark {
+  "sl":int32(16),"sc":int32(5),"el":int32(16),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(23)
+  }
+  push int32(2)
+  dupn
+  struct_get "field3"
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(18),"sc":int32(5),"el":int32(18),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  }
+  jump @SomeClass.GetField3_lvc
+  @SomeClass.GetField3_lvc:
+  swap
+  pop
+  ret
+  @func_SomeClass.SetField3_int32:
+  meta source_mark {
+  "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(30)
+  }
+  push int32(2)
+  dupn
+  push int32(2)
+  dupn
+  struct_mut "field3"
+  meta source_mark {
+  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  }
+  jump @SomeClass.SetField3_int32_lvc
+  @SomeClass.SetField3_int32_lvc:
+  pop
+  ret
+  @func_SomeClass.ctor:
+  push int32(1)
+  dupn
+  pop
+  jump @SomeClass.ctor_lvc
+  @SomeClass.ctor_lvc:
+  ret
+  @func_SomeClass.get_field2:
+  meta source_mark {
+  "sl":int32(7),"sc":int32(25),"el":int32(7),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(29)
+  }
+  push int32(1)
+  dupn
+  struct_get "<field2>k__BackingField"
+  jump @SomeClass.get_field2_lvc
+  @SomeClass.get_field2_lvc:
+  ret
+  @func_SomeClass.set_field2_int32:
+  meta source_mark {
+  "sl":int32(7),"sc":int32(30),"el":int32(7),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(34)
+  }
+  push int32(2)
+  dupn
+  push int32(2)
+  dupn
+  struct_mut "<field2>k__BackingField"
+  jump @SomeClass.set_field2_int32_lvc
+  @SomeClass.set_field2_int32_lvc:
+  pop
+  ret
+  @vtable_SomeClass:
+  ret
+  @stop:

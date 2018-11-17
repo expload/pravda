@@ -46,7 +46,7 @@ object SmartProgramTests extends TestSuite {
               "SmartProgram",
               "",
               TypeRefData(6, "Object", "System"),
-              Vector(FieldData(1, "Balances", 68)),
+              Vector(FieldData(0, 1, "Balances", 68)),
               Vector(
                 MethodDefData(0, 0, 134, "BalanceOf", 77, Vector(ParamData(0, 1, "tokenOwner"))),
                 MethodDefData(1, 0, 134, "Transfer", 83, Vector(ParamData(0, 1, "to"), ParamData(0, 2, "tokens"))),

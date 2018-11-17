@@ -39,7 +39,7 @@ methods: |-
         LdcI4S(32),
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 73L)),
+        LdToken(FieldData(0, 307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 73L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),

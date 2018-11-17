@@ -17,10 +17,10 @@
 
 package pravda.dotnet.translation.opcode
 import pravda.dotnet.data.TablesData.{MemberRefData, TypeRefData}
-import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.{CIL, Signatures}
 import pravda.dotnet.parser.CIL._
-import pravda.dotnet.parser.Signatures.MethodRefDefSig
-import pravda.dotnet.translation.data.{InternalError, MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
+import pravda.dotnet.parser.Signatures.{MethodRefDefSig, SigType}
+import pravda.dotnet.translation.data.{InnerTranslationError, InternalError, MethodTranslationCtx, UnknownOpcode}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
@@ -34,17 +34,17 @@ case object StringTranslation extends OneToManyTranslatorOnlyAsm {
     case LdStr(s) =>
       Right(List(Operation.Push(Data.Primitive.Utf8(s))))
     case Call(MemberRefData(TypeRefData(_, "String", "System"), "Concat", signatureIdx)) =>
-      val strsCntE = (for {
+      (for {
         sign <- ctx.tctx.signatures.get(signatureIdx)
       } yield
         sign match {
-          case MethodRefDefSig(_, _, _, _, _, _, params) => Right(params.length)
-          case _                                         => Left(UnknownOpcode)
+          case MethodRefDefSig(_, _, _, _, _, _, params) if params.forall(_.tpe == SigType.String) =>
+            Right(List.fill(params.length - 1)(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT))).flatten)
+          case MethodRefDefSig(_, _, _, _, _, _, List(Signatures.Tpe(SigType.Arr(SigType.String, _), _))) =>
+            Right(List(Operation.Call(Some("stdlib_concat_all_string"))))
+          case _ =>
+            Left(UnknownOpcode)
         }).getOrElse(Left(InternalError("Invalid signatures")))
-
-      for {
-        strsCnt <- strsCntE
-      } yield List.fill(strsCnt - 1)(List(Operation(Opcodes.SWAP), Operation(Opcodes.CONCAT))).flatten
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "get_Chars", _)) =>
       Right(List(Operation(Opcodes.ARRAY_GET)))
     case CallVirt(MemberRefData(TypeRefData(_, "String", "System"), "Substring", signatureIdx)) => // FIXME more accurate method detection

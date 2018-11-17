@@ -31,6 +31,9 @@ final case class TranslationCtx(
     pdbTables: Option[TablesData]
 ) {
 
+  def typeDefByField(idx: Int): Option[TypeDefData] =
+    cilData.tables.typeDefTable.find(_.fields.exists(_.id == idx))
+
   def tpeByMethodDef(m: TablesData.MethodDefData): Option[TypeDefData] = {
     val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
     if (idx == -1) {

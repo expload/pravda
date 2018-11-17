@@ -28,7 +28,7 @@ object MappingInitializationTranslation extends OpcodeTranslatorOnlyAsm {
                       stackOffsetO: Option[Int],
                       ctx: MethodTranslationCtx): Either[InnerTranslationError, (Taken, List[Operation])] =
     ops.take(2) match {
-      case List(NewObj(MemberRefData(TypeSpecData(signIdx), ".ctor", _)), StFld(FieldData(_, name, _))) =>
+      case List(NewObj(MemberRefData(TypeSpecData(signIdx), ".ctor", _)), StFld(FieldData(_, _, name, _))) =>
         val res = for {
           parentSig <- ctx.tctx.signatures.get(signIdx)
         } yield {

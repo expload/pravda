@@ -1,0 +1,634 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ConcatStrings.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ConcatStrings.cs
+    optimize: false
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "ConcatStrings"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestConcatStrings"
+  eq
+  jumpi @method_TestConcatStrings
+  push "Wrong method name"
+  throw
+  @method_TestConcatStrings:
+  meta method {
+  "name":"TestConcatStrings","returnTpe":int8(11)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(24)
+  }
+  push "s"
+  push int32(12)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(33)
+  }
+  push int32(11)
+  dupn
+  push int32(12)
+  dupn
+  push "2"
+  swap
+  concat
+  swap
+  concat
+  push int32(11)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(37)
+  }
+  push int32(11)
+  dupn
+  push int32(12)
+  dupn
+  push int32(13)
+  dupn
+  push "3"
+  swap
+  concat
+  swap
+  concat
+  swap
+  concat
+  push int32(10)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(41)
+  }
+  push int32(5)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push "4"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(9)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(45)
+  }
+  push int32(6)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push "5"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(8)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(49)
+  }
+  push int32(7)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(6)
+  push "6"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(7)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(53)
+  }
+  push int32(8)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(6)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(7)
+  push "7"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(57)
+  }
+  push int32(9)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(6)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(7)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(8)
+  push "8"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(61)
+  }
+  push int32(10)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(6)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(7)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(8)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(9)
+  push "9"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(18),"sc":int32(9),"el":int32(18),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(67)
+  }
+  push int32(11)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(6)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(7)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(8)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(9)
+  push int32(14)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(10)
+  push "10"
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(20),"sc":int32(9),"el":int32(20),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(60)
+  }
+  push int32(9)
+  push int8(11)
+  new_array
+  dup
+  push int32(0)
+  push int32(13)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(1)
+  push int32(12)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(2)
+  push int32(11)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(3)
+  push int32(10)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(4)
+  push int32(9)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(5)
+  push int32(8)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(6)
+  push int32(7)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(7)
+  push int32(6)
+  dupn
+  swap
+  array_mut
+  dup
+  push int32(8)
+  push int32(5)
+  dupn
+  swap
+  array_mut
+  call @stdlib_concat_all_string
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(21),"sc":int32(5),"el":int32(21),"src":"/tmp/pravda/ConcatStrings.cs","ec":int32(6)
+  }
+  push int32(1)
+  dupn
+  jump @TestConcatStrings_lvc
+  @TestConcatStrings_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stdlib_concat_all_string:
+  dup
+  length
+  push ""
+  push int32(0)
+  @concat_all_string_loop:
+  push int32(4)
+  dupn
+  push int32(2)
+  dupn
+  array_get
+  push int32(3)
+  dupn
+  concat
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  add
+  dup
+  push int32(4)
+  dupn
+  gt
+  jumpi @concat_all_string_loop
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @stop:

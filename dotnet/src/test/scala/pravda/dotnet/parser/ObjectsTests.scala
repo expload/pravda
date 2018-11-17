@@ -29,7 +29,7 @@ object ObjectsTests extends TestSuite {
             "A",
             "",
             TypeRefData(6, "Object", "System"),
-            Vector(FieldData(1, "AVal", 38)),
+            Vector(FieldData(0, 1, "AVal", 38)),
             Vector(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
                    MethodDefData(1, 0, 134, "AnswerA", 41, Vector()))
           ),
@@ -39,7 +39,7 @@ object ObjectsTests extends TestSuite {
             "B",
             "",
             TypeRefData(6, "Object", "System"),
-            Vector(FieldData(1, "BVal", 38)),
+            Vector(FieldData(1, 1, "BVal", 38)),
             Vector(MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
                    MethodDefData(3, 0, 134, "AnswerB", 41, Vector()))
           ),

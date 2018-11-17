@@ -71,7 +71,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           OpcodeDetectors.IntLoad(arraySize),
           NewArr(TypeRefData(_, typeName, namespaceName)),
           Dup,
-          LdToken(FieldData(_, fieldName, tokenSignIdx)),
+          LdToken(FieldData(_, _, fieldName, tokenSignIdx)),
           Call(MemberRefData(TypeRefData(_, "RuntimeHelpers", "System.Runtime.CompilerServices"), "InitializeArray", _))
           ) =>
         def bytesRva =

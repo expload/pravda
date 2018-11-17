@@ -48,7 +48,7 @@ methods: |-
         Nop,
         LdArg0,
         LdArg1,
-        StFld(FieldData(1, "AVal", 40L)),
+        StFld(FieldData(0, 1, "AVal", 40L)),
         Ret
       ),
       0,
@@ -58,7 +58,7 @@ methods: |-
       List(
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "AVal", 40L)),
+        LdFld(FieldData(0, 1, "AVal", 40L)),
         LdcI4S(42),
         Add,
         StLoc0,
@@ -78,7 +78,7 @@ methods: |-
         Nop,
         LdArg0,
         LdArg1,
-        StFld(FieldData(1, "BVal", 40L)),
+        StFld(FieldData(1, 1, "BVal", 40L)),
         Ret
       ),
       0,
@@ -88,7 +88,7 @@ methods: |-
       List(
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "BVal", 40L)),
+        LdFld(FieldData(1, 1, "BVal", 40L)),
         LdcI4S(43),
         Add,
         StLoc0,

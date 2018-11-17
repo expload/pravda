@@ -35,75 +35,93 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
 
-    def loadField(name: String, sigIdx: Long, static: Boolean): List[asm.Operation] = {
-      lazy val defaultLoadForProgram = List(
-        pushString(s"p_$name"),
-        asm.Operation(Opcodes.SGET)
-      )
+    def loadField(id: Int,
+                  name: String,
+                  sigIdx: Long,
+                  static: Boolean): Either[InnerTranslationError, List[asm.Operation]] = {
+      lazy val defaultLoad = Right(
+        List(
+          pushString(s"p_$name"),
+          asm.Operation(Opcodes.SGET)
+        ))
 
-      ctx.struct match {
-        case Some(structName) =>
-          if (static) {
-            List(
-              pushString(s"s_${structName}_$name"),
-              asm.Operation(Opcodes.SGET)
-            )
-          } else {
-            List(asm.Operation.StructGet(Some(Data.Primitive.Utf8(name))))
-          }
-        case None =>
+      ctx.tctx.typeDefByField(id) match {
+        case Some(typeDef) if typeDef == ctx.tctx.mainProgramClass =>
           ctx.tctx.signatures.get(sigIdx) match {
             case Some(FieldSig(tpe)) =>
               tpe match {
                 case SigType.Generic(TypeDetectors.Mapping(), _) =>
-                  List(pushBytes(name.getBytes(StandardCharsets.UTF_8)))
-                case _ => defaultLoadForProgram
+                  Right(List(pushBytes(name.getBytes(StandardCharsets.UTF_8))))
+                case _ =>
+                  defaultLoad
               }
-            case _ => defaultLoadForProgram
+            case _ => defaultLoad
           }
+        case Some(typeDef) if ctx.tctx.programClasses.contains(typeDef) =>
+          Left(InternalError("Reading fields from other [Program] classes is forbidden"))
+        case Some(typeDef) =>
+          if (static) {
+            Right(
+              List(
+                pushString(s"s_${CallsTranslation.fullTypeDefName(typeDef)}_$name"),
+                asm.Operation(Opcodes.SGET)
+              ))
+          } else {
+            Right(List(asm.Operation.StructGet(Some(Data.Primitive.Utf8(name)))))
+          }
+        case _ => Left(UnknownOpcode)
       }
     }
 
-    def storeField(name: String, sigIdx: Long, static: Boolean): List[asm.Operation] = {
-      lazy val defaultStore = List(
-        pushString(s"p_$name"),
-        asm.Operation(Opcodes.SPUT)
-      )
+    def storeField(id: Int,
+                   name: String,
+                   sigIdx: Long,
+                   static: Boolean): Either[InnerTranslationError, List[asm.Operation]] = {
+      lazy val defaultStore = Right(
+        List(
+          pushString(s"p_$name"),
+          asm.Operation(Opcodes.SPUT)
+        ))
 
-      ctx.struct match {
-        case Some(structName) =>
-          if (static) {
-            List(
-              pushString(s"s_${structName}_$name"),
-              asm.Operation(Opcodes.SPUT)
-            )
-          } else {
-            List(asm.Operation.StructMut(Some(Data.Primitive.Utf8(name))))
-          }
-        case None =>
+      ctx.tctx.typeDefByField(id) match {
+        case Some(typeDef) if typeDef == ctx.tctx.mainProgramClass =>
           ctx.tctx.signatures.get(sigIdx) match {
             case Some(FieldSig(tpe)) =>
               tpe match {
                 case SigType.Generic(TypeDetectors.Mapping(), _) =>
-                  List(
-                    asm.Operation(Opcodes.POP),
-                    asm.Operation(Opcodes.POP),
-                    pushString("Mapping modification is forbidden"),
-                    asm.Operation(Opcodes.THROW)
-                  )
+                  Right(
+                    List(
+                      asm.Operation(Opcodes.POP),
+                      asm.Operation(Opcodes.POP),
+                      pushString("Mapping modification is forbidden"),
+                      asm.Operation(Opcodes.THROW)
+                    ))
                 case _ => defaultStore
               }
             case _ => defaultStore
           }
+        case Some(typeDef) if ctx.tctx.programClasses.contains(typeDef) =>
+          Left(InternalError("Writing fields from other [Program] classes is forbidden"))
+        case Some(typeDef) =>
+          if (static) {
+            Right(
+              List(
+                pushString(s"s_${CallsTranslation.fullTypeDefName(typeDef)}_$name"),
+                asm.Operation(Opcodes.SPUT)
+              ))
+          } else {
+            Right(List(asm.Operation.StructMut(Some(Data.Primitive.Utf8(name)))))
+          }
+        case _ => Left(UnknownOpcode)
       }
     }
 
     op match {
-      case LdSFld(FieldData(flags, name, sig)) => Right(loadField(name, sig, isStatic(flags)))
-      case LdFld(FieldData(flags, name, sig))  => Right(loadField(name, sig, isStatic(flags)))
-      case StSFld(FieldData(flags, name, sig)) => Right(storeField(name, sig, isStatic(flags)))
-      case StFld(FieldData(flags, name, sig))  => Right(storeField(name, sig, isStatic(flags)))
-      case _                                   => Left(UnknownOpcode)
+      case LdSFld(FieldData(id, flags, name, sig)) => loadField(id, name, sig, isStatic(flags))
+      case LdFld(FieldData(id, flags, name, sig))  => loadField(id, name, sig, isStatic(flags))
+      case StSFld(FieldData(id, flags, name, sig)) => storeField(id, name, sig, isStatic(flags))
+      case StFld(FieldData(id, flags, name, sig))  => storeField(id, name, sig, isStatic(flags))
+      case _                                       => Left(UnknownOpcode)
     }
   }
 }

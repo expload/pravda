@@ -20,7 +20,7 @@ methods: |-
         Nop,
         LdArg0,
         LdArg1,
-        StFld(FieldData(1, "AVal", 38L)),
+        StFld(FieldData(0, 1, "AVal", 38L)),
         Ret
       ),
       0,
@@ -30,7 +30,7 @@ methods: |-
       List(
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "AVal", 38L)),
+        LdFld(FieldData(0, 1, "AVal", 38L)),
         LdcI4S(42),
         Add,
         StLoc0,
@@ -49,7 +49,7 @@ methods: |-
         Nop,
         LdArg0,
         LdArg1,
-        StFld(FieldData(1, "BVal", 38L)),
+        StFld(FieldData(1, 1, "BVal", 38L)),
         Ret
       ),
       0,
@@ -59,7 +59,7 @@ methods: |-
       List(
         Nop,
         LdArg0,
-        LdFld(FieldData(1, "BVal", 38L)),
+        LdFld(FieldData(1, 1, "BVal", 38L)),
         LdcI4S(43),
         Add,
         StLoc0,
@@ -130,7 +130,7 @@ signatures: |-
                 "A",
                 "",
                 TypeRefData(6L, "Object", "System"),
-                Vector(FieldData(1, "AVal", 38L)),
+                Vector(FieldData(0, 1, "AVal", 38L)),
                 Vector(
                   MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "aVal"))),
                   MethodDefData(1, 0, 134, "AnswerA", 41L, Vector())
@@ -147,7 +147,7 @@ signatures: |-
                 "B",
                 "",
                 TypeRefData(6L, "Object", "System"),
-                Vector(FieldData(1, "BVal", 38L)),
+                Vector(FieldData(1, 1, "BVal", 38L)),
                 Vector(
                   MethodDefData(2, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal"))),
                   MethodDefData(3, 0, 134, "AnswerB", 41L, Vector())

@@ -18,7 +18,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "7037807198C22A7D2B0807371D763779A84FDFCF", 119L)),
+        LdToken(FieldData(3, 307, "7037807198C22A7D2B0807371D763779A84FDFCF", 119L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -30,7 +30,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "E809C5D1CEA47B45E34701D23F608A9A58034DC9", 119L)),
+        LdToken(FieldData(8, 307, "E809C5D1CEA47B45E34701D23F608A9A58034DC9", 119L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -43,7 +43,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 119L)),
+        LdToken(FieldData(6, 307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 119L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -75,17 +75,17 @@ methods: |-
         CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Slice", 52L)),
         StLocS(7),
         LdArg0,
-        LdFld(FieldData(6, "BytesMapping", 109L)),
+        LdFld(FieldData(0, 6, "BytesMapping", 109L)),
         LdLoc1,
         LdLoc2,
         CallVirt(MemberRefData(TypeSpecData(59L), "put", 68L)),
         Nop,
         LdArg0,
-        LdFld(FieldData(6, "BytesMapping", 109L)),
+        LdFld(FieldData(0, 6, "BytesMapping", 109L)),
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "1EAFE5ED57A26A58369E0ECC65DD21A143D475E1", 119L)),
+        LdToken(FieldData(1, 307, "1EAFE5ED57A26A58369E0ECC65DD21A143D475E1", 119L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -100,12 +100,12 @@ methods: |-
         BrFalseS(37),
         Nop,
         LdArg0,
-        LdFld(FieldData(6, "BytesMapping", 109L)),
+        LdFld(FieldData(0, 6, "BytesMapping", 109L)),
         LdLoc1,
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 119L)),
+        LdToken(FieldData(6, 307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 119L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -139,7 +139,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "Char", "System")),
         Dup,
-        LdToken(FieldData(307, "9F04F41A848514162050E3D68C1A7ABB441DC2B5", 131L)),
+        LdToken(FieldData(5, 307, "9F04F41A848514162050E3D68C1A7ABB441DC2B5", 131L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -151,7 +151,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "Int32", "System")),
         Dup,
-        LdToken(FieldData(307, "E429CCA3F703A39CC5954A6572FEC9086135B34E", 127L)),
+        LdToken(FieldData(7, 307, "E429CCA3F703A39CC5954A6572FEC9086135B34E", 127L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -163,7 +163,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "Double", "System")),
         Dup,
-        LdToken(FieldData(307, "380E84549CB845604C318E8E14B73622CC10AF42", 123L)),
+        LdToken(FieldData(2, 307, "380E84549CB845604C318E8E14B73622CC10AF42", 123L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -190,7 +190,7 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "UInt32", "System")),
         Dup,
-        LdToken(FieldData(307, "8CFA957D76B6E190580D284C12F31AA6E3E2D41C", 127L)),
+        LdToken(FieldData(4, 307, "8CFA957D76B6E190580D284C12F31AA6E3E2D41C", 127L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
@@ -233,7 +233,7 @@ methods: |-
       List(
         LdArg0,
         NewObj(MemberRefData(TypeSpecData(59L), ".ctor", 6L)),
-        StFld(FieldData(6, "BytesMapping", 109L)),
+        StFld(FieldData(0, 6, "BytesMapping", 109L)),
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
         Nop,

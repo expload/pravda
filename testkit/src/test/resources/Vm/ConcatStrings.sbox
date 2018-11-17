@@ -1,0 +1,113 @@
+stack:
+  [utf8.TestConcatStrings]
+storage:
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ConcatStrings.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ConcatStrings.cs
+    optimize: false
+---
+stack: 
+  - utf8.ss2sss3ssss4sssss5ssssss6sssssss7ssssssss8sssssssss9ssssssssss10
+heap:
+  ref.0:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - "4"
+             
+  ref.4:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - "8"
+             
+  ref.6:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - "10"
+             
+  ref.1:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - s
+    - "5"
+             
+  ref.3:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - "7"
+             
+  ref.5:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - "9"
+             
+  ref.2:
+    - utf8
+    - s
+    - s
+    - s
+    - s
+    - s
+    - s
+    - "6"
+             
+  ref.7:
+    - utf8
+    - ss2
+    - sss3
+    - ssss4
+    - sssss5
+    - ssssss6
+    - sssssss7
+    - ssssssss8
+    - sssssssss9
+    - ssssssssss10                     
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+

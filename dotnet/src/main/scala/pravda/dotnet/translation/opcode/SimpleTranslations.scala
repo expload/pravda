@@ -55,11 +55,18 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case ConvI8 => cast(Data.Type.BigInt)
       case ConvU8 => cast(Data.Type.BigInt)
 
+      case ConvR4 => cast(Data.Type.Number)
+      case ConvR8 => cast(Data.Type.Number)
+
       case Add => List(Operation(Opcodes.ADD))
       case Mul => List(Operation(Opcodes.MUL))
       case Div => List(Operation(Opcodes.SWAP), Operation(Opcodes.DIV))
       case Rem => List(Operation(Opcodes.SWAP), Operation(Opcodes.MOD))
       case Sub => List(pushInt(-1), Operation(Opcodes.MUL), Operation(Opcodes.ADD))
+
+      case Or => Operation(Opcodes.OR) :: cast(Data.Type.Int32)
+      case And => Operation(Opcodes.AND) :: cast(Data.Type.Int32)
+      case Xor => Operation(Opcodes.XOR) :: cast(Data.Type.Int32)
 
       case Clt   => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
       case CltUn => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)

@@ -33,7 +33,6 @@ methods: |-
       None
     )
   )
-
 signatures: |-
   List(
     (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
