@@ -40,29 +40,45 @@ translation: |-
   "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(50)
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(57)
   }
-  push x
+  push x0000000000000000000000000000000000000000000000000000000000000000
   balance
   push int32(4)
   swapn
   pop
   meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(48)
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(54)
   }
-  push x0000000000000000000000000000000000000000000000000000000000000000
+  paddr
   push int32(3)
   swapn
   pop
   meta source_mark {
-  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(54)
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(52)
   }
-  paddr
+  push x0000000000000000000000000000000000000000000000000000000000000000
+  push int32(100)
+  push int8(4)
+  cast
+  transfer
+  meta source_mark {
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(63)
+  }
+  push x0000000000000000000000000000000000000000000000000000000000000000
+  push int32(200)
+  push int8(4)
+  cast
+  ptransfer
+  meta source_mark {
+  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(32)
+  }
+  push null
   push int32(2)
   swapn
   pop
   meta source_mark {
-  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(6)
+  "sl":int32(16),"sc":int32(5),"el":int32(16),"src":"/tmp/pravda/SystemMethods.cs","ec":int32(6)
   }
   jump @TestSystemMethods_lvc
   @TestSystemMethods_lvc:
