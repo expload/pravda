@@ -294,7 +294,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = HEIGHT,
-    description = "Returns chain's height."
+    description = "Gets current height of the blockchain and pushes it to the stack."
   )
   def chainHeight(): Unit = {
     val data = env.chainHeight
@@ -304,7 +304,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = HASH,
-    description = "Return hash of last block."
+    description = "Gets hash of the last block and pushes it to the stack."
   )
   def lastBlockHash(): Unit = {
     val data = env.lastBlockHash

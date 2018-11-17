@@ -23,17 +23,18 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 
 object DotnetSuiteData {
-  final case class Preconditions(balances: Map[Address, Primitive.BigInt] = Map.empty,
-                                 stack: Seq[Primitive] = Nil,
-                                 heap: Map[Primitive.Ref, Data] = Map.empty,
-                                 storage: Map[Primitive, Data] = Map.empty,
-                                 `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
-                                 programs: Map[Address, Primitive.Bytes] = Map.empty,
-                                 executor: Option[Address] = None,
-                                 `dotnet-compilation`: DotnetCompilation,
-                                 `app-state-info`: AppStateInfo =
-                                 AppStateInfo(`app-hash` = bytes.hex2byteString("62099c6a16853f70fcf2e5a24da6e46faaf0b2541658bec668527b0436d32ece"),
-                                   height = 1L))
+  final case class Preconditions(
+      balances: Map[Address, Primitive.BigInt] = Map.empty,
+      stack: Seq[Primitive] = Nil,
+      heap: Map[Primitive.Ref, Data] = Map.empty,
+      storage: Map[Primitive, Data] = Map.empty,
+      `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
+      programs: Map[Address, Primitive.Bytes] = Map.empty,
+      executor: Option[Address] = None,
+      `dotnet-compilation`: DotnetCompilation,
+      `app-state-info`: AppStateInfo = AppStateInfo(
+        `app-hash` = bytes.hex2byteString("0000000000000000000000000000000000000000000000000000000000000000"),
+        height = 1L))
 
   final case class Expectations(stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
