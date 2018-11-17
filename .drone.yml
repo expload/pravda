@@ -6,6 +6,30 @@ workspace:
   base: /workdir
   path: code
 pipeline:
+  publish-pravda-dll-nuget:
+    group: dotnet
+    image: microsoft/dotnet:2.1-sdk
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG##v}
+    commands:
+      - cd /workdir/code/PravdaDotNet
+      - dotnet pack -c Release
+      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+    secrets: [ nuget_key ]
+    when:
+      event: tag
+  publish-pravda-program-template-nuget:
+    group: dotnet
+    image: chicker/nuget:0.8
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG##v}
+    commands:
+      - cd /workdir/code/PravdaProgramTemplate
+      - nuget pack -Version $PRAVDA_VERSION Expload.PravdaProgramTemplate.nuspec
+      - dotnet nuget push Expload.PravdaProgramTemplate.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+    secrets: [ nuget_key ]
+    when:
+      event: tag
   tag-the-image:
     image: alpine/git:1.0.4
     pull: false
@@ -59,18 +83,6 @@ pipeline:
     - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
     - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
     secrets: [ bintray_user, bintray_pass ]
-    when:
-      event: tag
-  package-publish-nuget:
-    group: publish
-    image: microsoft/dotnet:2.1-sdk
-    environment:
-      - PRAVDA_VERSION=${DRONE_TAG##v}
-    commands:
-      - cd /workdir/code/PravdaDotNet
-      - dotnet pack -c Release
-      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
-    secrets: [ nuget_key ]
     when:
       event: tag
   publish-github-releases:
