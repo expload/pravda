@@ -75,7 +75,7 @@ object TablesData {
                                  params: Vector[ParamData])
       extends MethodRefDefData
   final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends MethodRefDefData
-  final case class FieldData(id: Int, flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
+  final case class FieldData(id: Int, flags: Short, name: String, signatureIdx: Long)          extends TableRowData
   final case class FieldRVAData(field: FieldData, rva: Long)                                   extends TableRowData
   final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData
   final case class TypeDefData(id: Int,

@@ -64,7 +64,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case Rem => List(Operation(Opcodes.SWAP), Operation(Opcodes.MOD))
       case Sub => List(pushInt(-1), Operation(Opcodes.MUL), Operation(Opcodes.ADD))
 
-      case Or => Operation(Opcodes.OR) :: cast(Data.Type.Int32)
+      case Or  => Operation(Opcodes.OR) :: cast(Data.Type.Int32)
       case And => Operation(Opcodes.AND) :: cast(Data.Type.Int32)
       case Xor => Operation(Opcodes.XOR) :: cast(Data.Type.Int32)
 
