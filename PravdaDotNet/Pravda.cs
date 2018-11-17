@@ -28,6 +28,9 @@ namespace Expload.Pravda {
 
         // Get list of contract's callers' addresses
         public static Bytes[] Callers() { return null; }
+
+        public static long Height() { return 0L; }
+        public static Bytes LastBlockHash() { return null; }
     }
 
     public class Log {

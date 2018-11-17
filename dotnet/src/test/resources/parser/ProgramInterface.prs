@@ -18,40 +18,40 @@ dotnet-compilation:
   main-class: InterfaceNamespace.ProgramInterfaceCheck
 ---
 methods: |-
-   List(
-     Method(
-       List(
-         Nop,
-         LdStr("1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"),
-         NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 22L)),
-         StLoc0,
-         LdLoc0,
-         Call(
-           MethodSpecData(
-             MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 27L),
-             35L
-           )
-         ),
-         LdcI41,
-         LdcI42,
-         CallVirt(
-           MemberRefData(TypeRefData(14L, "ProgramInterface", "InterfaceNamespace"), "Add", 40L)
-         ),
-         StLoc1,
-         BrS(0),
-         LdLoc1,
-         Ret
-       ),
-       3,
-       Some(16L)
-     ),
-     Method(List(Nop, Ret), 0, None),
-     Method(
-       List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
-       0,
-       None
-     )
-   )
+  List(
+    Method(
+      List(
+        Nop,
+        LdStr("1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"),
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 22L)),
+        StLoc0,
+        LdLoc0,
+        Call(
+          MethodSpecData(
+            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 27L),
+            35L
+          )
+        ),
+        LdcI41,
+        LdcI42,
+        CallVirt(
+          MemberRefData(TypeRefData(14L, "ProgramInterface", "InterfaceNamespace"), "Add", 40L)
+        ),
+        StLoc1,
+        BrS(0),
+        LdLoc1,
+        Ret
+      ),
+      3,
+      Some(16L)
+    ),
+    Method(List(Nop, Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      0,
+      None
+    )
+  )
 signatures: |-
   List(
     (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
@@ -102,4 +102,3 @@ signatures: |-
     (55L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
     (59L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )
-
