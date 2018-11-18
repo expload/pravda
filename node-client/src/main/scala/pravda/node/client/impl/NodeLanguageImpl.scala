@@ -104,4 +104,23 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
           }
       }
   }
+
+  def execute(data: ByteString, address: Address, endpoint: String): Future[Either[String, TransactionResult]] = {
+    val fromHex = bytes.byteString2hex(address)
+    val request = HttpRequest(
+      method = HttpMethods.POST,
+      uri = s"$endpoint/execute?from=$fromHex",
+      entity = HttpEntity(data.toByteArray)
+    )
+    Http()
+      .singleRequest(request)
+      .flatMap { response =>
+        response.entity.dataBytes
+          .runFold(AkkaByteString.empty)(_ ++ _)
+          .map { x =>
+            val txr = transcode(Json @@ x.utf8String).to[Either[RpcError, TransactionResult]]
+            txr.left.map(_.message)
+          }
+      }
+  }
 }

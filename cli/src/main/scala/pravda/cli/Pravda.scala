@@ -50,6 +50,7 @@ object Pravda extends App {
   lazy val broadcast = new Broadcast(io, nodeLanguage, compilers)
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
   lazy val codegen = new Codegen(io, codeGenerators)
+  lazy val execute = new Execute(io, nodeLanguage)
 
   // FIXME programs should be composed by another one
   val eventuallyExitCode = PravdaArgsParser.parse(args.toList, PravdaConfig.Nope) match {
@@ -59,6 +60,7 @@ object Pravda extends App {
     case Ok(config: PravdaConfig.Broadcast)   => broadcast(config).map(_ => 0)
     case Ok(config: PravdaConfig.Node)        => nodeProgram(config).map(_ => 0)
     case Ok(config: PravdaConfig.Codegen)     => codegen(config).map(_ => 0)
+    case Ok(config: PravdaConfig.Execute)     => execute(config).map(_ => 0)
     case Ok(PravdaConfig.Nope) =>
       Future {
         print(PravdaArgsParser.root.toHelpString)
