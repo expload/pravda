@@ -400,9 +400,9 @@ object Translator {
 
     val programMethodsFuncsE = for {
       methodsFuncs <- filterValidateMethods(
-        i => tctx.isMainProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i),
-        i => !isStatic(i) && (isPrivate(i) || isPublic(i)),
-        InternalError("Only public or private non-static methods are allowed")
+        i => tctx.isMainProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i) && !isStatic(i),
+        i => isPrivate(i) || isPublic(i),
+        InternalError("Only public or private methods are allowed")
       )
       _ <- {
         val names = methodsFuncs.map(i => tctx.methodRow(i).name)
@@ -434,7 +434,7 @@ object Translator {
     } yield ctor
 
     val structEntitiesE = for {
-      methods <- filterMethods(i => !tctx.isProgramMethod(i) && !isMain(i))
+      methods <- filterMethods(i => (!tctx.isProgramMethod(i) || (tctx.isProgramMethod(i) && isStatic(i))) && !isMain(i))
     } yield methods
 
     val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
