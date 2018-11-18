@@ -77,12 +77,12 @@ Now the poor guy is not so poor. Great job!
 To use project template you will need [.NET Core SDK 2.1](https://www.microsoft.com/net/download/dotnet-core/2.1).  
 Create a directory for your project and run inside it:  
 ```bash
-dotnet new -i Expload.PravdaProgramTemplate --name MyProject
-dotnet new pravdaprogram
+dotnet new -i Expload.PravdaProgramTemplate
+dotnet new pravdaprogram --namespace MyTeam --version 1.0.0 --name HelloProgram 
 ```
 Now your directory contains:
- - `MyProject.cs` - main program file. By default it contains simple program with `HelloWorld` method
- - `MyProject.csproj` - project configuration. It includes scripts for compiling and deployment, as well as .NET dependencies & metadata
+ - `HelloProgram.cs` - main program file. By default it contains simple program with `HelloWorld` method
+ - `HelloProgram.csproj` - project configuration. It includes scripts for compiling and deployment, as well as .NET dependencies & metadata
  - `README.md` - feel free to consult it whenever you feel confused
 
 ### Compiling the Program
@@ -97,18 +97,29 @@ You can use [local node](#Getting-started-with-CLI) and [Pravda CLI commands](ht
 ### Deploying to Testnet
 
 Let us generate a Pravda Wallet:
+
 ```bash
 pravda gen address -o wallet.json
 ```
+
 If you already have a Pravda Wallet, move it to project folder and 
 rename it to `wallet.json`.  
-Go to [Testnet Faucet](https://faucet.dev.expload.com/ui) to get some EXP, as you have to pay for deployment transaction.  
+
+Go to [Testnet Faucet](https://faucet.dev.expload.com/ui) to get some XCoin, 
+as you have to pay for deployment transaction.  
   
 Finally, run:
 ```
-dotnet publish -c Release
+dotnet publish -c Deploy
 ```
-Now your program is on the Testchain!  
-Your project directory includes `program-wallet.json` which has your program's address.  
+Now your program is on the Testnet! Your project directory 
+includes `program-wallet.json` which has your program's address. 
+
+If you want to update program run
+
+```bash
+dotnet publish -c Update
+```
   
-For more information on working with the template, see `README.md` in your project directory.
+For more information on working with the template, 
+see `README.md` in your project directory.

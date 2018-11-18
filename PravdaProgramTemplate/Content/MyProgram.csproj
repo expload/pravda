@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageName>MyProgram</PackageName>
+    <PackageId>NAMESPACE.$(PackageName)</PackageId>
+    <PackageVersion>VERSION</PackageVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>$(PackageId)</AssemblyName>
+    <WattsLimit>500000</WattsLimit>
+    <PravdaApi>http://publicnode.expload.com/api/public</PravdaApi> 
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Expload.Pravda" Version="0.*" />
+  </ItemGroup>
+  <Target Name="BuildPravdaAfterPublish" AfterTargets="Publish" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Command="pravda compile dotnet -i &quot;bin/Debug/netstandard2.0/publish&quot; -o bin/$(PackageName).pravda --main-class $(PackageId)" />
+  </Target>
+  <Target Name="DeployPravdaAfterPublish" AfterTargets="Publish" Condition="'$(Configuration)' == 'Deploy'">
+    <Exec Command="pravda compile dotnet -i &quot;bin/Deploy/netstandard2.0/publish&quot; -o bin/$(PackageName).pravda --main-class $(PackageId)" />
+    <Exec Command="pravda gen address -o program-wallet.json" />
+    <Exec Command="pravda broadcast deploy -i bin/$(PackageName).pravda -w wallet.json -p program-wallet.json -l $(WattsLimit) -e $(PravdaApi)" />
+  </Target>
+  <Target Name="UpdatePravdaAfterPublish" AfterTargets="Publish" Condition="'$(Configuration)' == 'Update'">
+    <Exec Command="pravda compile dotnet -i &quot;bin/Update/netstandard2.0/publish&quot; -o bin/$(PackageName).pravda --main-class $(PackageId)" />
+    <Exec Command="pravda broadcast update -i bin/$(PackageName).pravda -w wallet.json -p program-wallet.json -l $(WattsLimit) -e $(PravdaApi)" />
+  </Target>
+</Project>
