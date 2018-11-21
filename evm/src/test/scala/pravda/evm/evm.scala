@@ -1,5 +1,7 @@
 package pravda.evm
 
+import java.io.{FileOutputStream}
+
 import com.google.protobuf.ByteString
 import fastparse.byte.all._
 import pravda.common.domain.Address
@@ -109,6 +111,26 @@ package object evm {
     val s = Source.fromResource(filename).mkString
     val allBytes = Bytes(s.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte))
     allBytes.dropRight(43)
+    // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
+    // we just drop auxdata
+  }
+
+  def writeSolidityBinFile(filename: String): Bytes = {
+
+    val s = Source.fromResource(filename).mkString
+    val allBytes = Bytes(s.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte))
+
+    var out = None: Option[FileOutputStream]
+    try {
+      out = Some(new FileOutputStream("bla"))
+      allBytes.toArray.foreach(c => out.get.write(c.toInt))
+
+    } finally {
+      println("entered finally ...")
+      if (out.isDefined) out.get.close
+    }
+
+    allBytes
     // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
     // we just drop auxdata
   }

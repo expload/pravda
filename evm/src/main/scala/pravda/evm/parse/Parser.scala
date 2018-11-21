@@ -23,6 +23,7 @@ import pravda.evm.EVM._
 import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.either._
+import pravda.evm.translate.Translator.Addressed
 
 object Parser {
 
@@ -30,7 +31,7 @@ object Parser {
     ops.parse(bytes).get.value
   }
 
-  def parseWithIndices(bytes: Bytes): Either[String, List[(Int, EVM.Op)]] = {
+  def parseWithIndices(bytes: Bytes): Either[String, List[Addressed[EVM.Op]]] = {
     opsWithIndices.parse(bytes).get.value.toList.map({ case (i, e) => e.map(op => (i, op)) }).sequence
   }
 

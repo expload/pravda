@@ -83,7 +83,6 @@ object EVM {
   final case class Dup(n: Int)        extends Op
   final case class Swap(n: Int)       extends Op
   final case class Log(n: Int)        extends Op
-  final case class JumpDest(n: Int)   extends Op
   case object Create                  extends Op
   case object Call                    extends Op
   case object CallCode                extends Op
@@ -93,6 +92,15 @@ object EVM {
   case object Revert                  extends Op
   case object Invalid                 extends Op
   case object SelfDestruct            extends Op
+
+  trait AddressedJumpOp extends Op {
+    def addr: Int
+  }
+  final case class JumpDest(addr: Int)     extends Op
+  case class SelfAddressedJump(addr: Int)  extends AddressedJumpOp
+  case class SelfAddressedJumpI(addr: Int) extends AddressedJumpOp
+  case class Jump(addr: Int, dest: Int)    extends AddressedJumpOp
+  case class JumpI(addr: Int, dest: Int)   extends AddressedJumpOp
 
   val singleOps: Map[Int, Op] = Map(
     0x00 -> Stop,
