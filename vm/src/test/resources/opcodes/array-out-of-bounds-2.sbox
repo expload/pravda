@@ -1,0 +1,17 @@
+watts-limit: 1000
+code: |-
+  new int8[1,2,3]
+  push -1
+  array_get
+---
+watts-spent: 103
+heap:
+  ref.0:
+    - int8
+    - '1'
+    - '2'
+    - '3'
+error:
+  code: 107
+  message: InvalidArgument
+
