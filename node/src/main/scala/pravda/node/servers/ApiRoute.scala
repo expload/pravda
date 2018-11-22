@@ -224,7 +224,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
               (
                 'program.as(hexUnmarshaller),
                 'name,
-                'transactionId.?,
+                'transactionId.as(hexUnmarshaller).?,
                 'offset.as(intUnmarshaller).?,
                 'count.as(intUnmarshaller).?
               )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
