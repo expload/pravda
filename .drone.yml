@@ -10,7 +10,7 @@ pipeline:
     image: alpine/git:1.0.4
     pull: false
     commands:
-      - git describe --tags | sed -e "s/^v//" > .tags
+      - echo -n `git describe --tags | sed -e "s/^v//"`",latest" > .tags
   tests:
     image: gcr.io/time-coin/sbt:latest
     pull: true
@@ -77,7 +77,6 @@ pipeline:
     context: .
     dockerfile: docker/images/pravda-cli/Dockerfile
     secrets: [ docker_username, docker_password ]
-    auto_tag: true
     when:
       event: tag
   publish-pravda-faucet:
@@ -87,7 +86,6 @@ pipeline:
     context: .
     dockerfile: docker/images/pravda-faucet/Dockerfile
     secrets: [ docker_username, docker_password ]
-    auto_tag: true
     when:
       event: tag
   publish-broadcaster-to-docker:
@@ -97,7 +95,6 @@ pipeline:
     context: .
     dockerfile: docker/images/broadcaster/Dockerfile
     secrets: [ docker_username, docker_password ]
-    auto_tag: true
     when:
       event: tag
   publish-pravda-dll-nuget:
