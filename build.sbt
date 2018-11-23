@@ -150,7 +150,8 @@ lazy val dotnet = (project in file("dotnet"))
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.0.1",
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
-      "com.lihaoyi" %% "pprint" % "0.5.3" % "test"
+      "com.lihaoyi" %% "pprint" % "0.5.3" % "test",
+      "commons-io" % "commons-io" % "2.6"
     ),
     testFrameworks := Seq(new TestFramework("pravda.common.PreserveColoursFramework"))
   )

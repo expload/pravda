@@ -2,6 +2,7 @@ package pravda.dotnet
 import java.nio.file._
 
 import cats.implicits._
+import org.apache.commons.io.FileUtils
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 
@@ -23,8 +24,7 @@ object DotnetCompilation {
     }
   }
 
-  val pravdaDir = Paths.get("/tmp/pravda")
-
+  val pravdaDir = Paths.get(System.getProperty("java.io.tmpdir"), "pravda")
   private def readFileBytes(p: Path) = Files.readAllBytes(p)
 
   private def parsePeFile(p: Path): Either[String, ParsedPe] =
@@ -45,15 +45,18 @@ object DotnetCompilation {
           } else {
             sources.find(s => !s.endsWith(".dll") && !s.endsWith(".cs")) match {
               case None =>
-                def restorePath(s: String): Path =
+                def restorePath(s: String): Path = {
                   if (labels.contains(s)) {
                     pravdaDir.resolve(s)
                   } else {
                     val path = Paths.get(s)
                     val copyPath = pravdaDir.resolve(path.getFileName)
-                    Files.copy(path, copyPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
+                    // The standard Java 7 copy method fails with the strange error "NoSuchFileException"
+                    // So we replaced that method to another implementation from Apache Commons IO
+                    FileUtils.copyFile(path.toFile, copyPath.toFile)
                     copyPath
                   }
+                }
 
                 val dlls = sources.filter(_.endsWith(".dll")).map(s => restorePath(s))
                 val css = sources.filter(_.endsWith(".cs")).map(s => restorePath(s))
