@@ -4,7 +4,7 @@ using Expload.Pravda;
 [Program]
 public class LogicOperations
 {
-   public Mapping<int, string> Log;
+   private Mapping<int, string> Log;
 
    public void TestLogicOperations()
    {

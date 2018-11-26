@@ -4,15 +4,15 @@ using Expload.Pravda;
 [Program]
 class MyProgram
 {
-    public Mapping<Bytes, Bytes> PlayerCards1 = new Mapping<Bytes, Bytes>();
-    public Mapping<Bytes, Bytes> PlayerCards2 = new Mapping<Bytes, Bytes>();
-    public Mapping<int, int> TableCards = new Mapping<int, int>();
-    public Mapping<Bytes, bool> Folded = new Mapping<Bytes, bool>();
+    private Mapping<Bytes, Bytes> PlayerCards1 = new Mapping<Bytes, Bytes>();
+    private Mapping<Bytes, Bytes> PlayerCards2 = new Mapping<Bytes, Bytes>();
+    private Mapping<int, int> TableCards = new Mapping<int, int>();
+    private Mapping<Bytes, bool> Folded = new Mapping<Bytes, bool>();
 
-    public Mapping<int, Bytes> Players = new Mapping<int, Bytes>();
+    private Mapping<int, Bytes> Players = new Mapping<int, Bytes>();
 
-    public Mapping<Bytes, int> Bets = new Mapping<Bytes, int>();
-    public Mapping<Bytes, int> Bankrolls = new Mapping<Bytes, int>();
+    private Mapping<Bytes, int> Bets = new Mapping<Bytes, int>();
+    private Mapping<Bytes, int> Bankrolls = new Mapping<Bytes, int>();
 
     public void Deal(Bytes p1, Bytes p2, Bytes p3, Bytes p4, Bytes p5, Bytes p6, Bytes p7, Bytes p8, Bytes p9)
     {
