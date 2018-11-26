@@ -8,13 +8,13 @@ public class LogicOperations
 
    public void TestLogicOperations()
    {
-        Log.put(1, Convert.ToString(false || true));
-        Log.put(2, Convert.ToString(false && true));
-        Log.put(3, Convert.ToString(true ^ true));
+        Log[1] = Convert.ToString(false || true);
+        Log[2] = Convert.ToString(false && true);
+        Log[3] = Convert.ToString(true ^ true);
 
-        Log.put(4, Convert.ToString(3 | 5));
-        Log.put(5, Convert.ToString(3 & 5));
-        Log.put(6, Convert.ToString(3 ^ 5));
+        Log[4] = Convert.ToString(3 | 5);
+        Log[5] = Convert.ToString(3 & 5);
+        Log[6] = Convert.ToString(3 ^ 5);
    }
 
    public static void Main() {}

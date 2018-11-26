@@ -11,7 +11,7 @@ namespace Expload.Pravda {
     // Access to the storage
     public class Mapping<K, V> {
         
-        public V this[int K] { 
+        public V this[K k] {
             get { 
                 return default(V);
             } 

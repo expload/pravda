@@ -18,9 +18,9 @@ public class Arrays
 
         Bytes bytes3 = bytes1.Slice(1, 2);
 
-        BytesMapping.put(bytes1, bytes2);
-        if (BytesMapping.exists(new Bytes(8, 9, 10))) {
-          BytesMapping.put(bytes1, new Bytes(7, 8, 9));
+        BytesMapping[bytes1] = bytes2;
+        if (BytesMapping.ContainsKey(new Bytes(8, 9, 10))) {
+          BytesMapping[bytes1] = new Bytes(7, 8, 9);
         }
 
         arr1[0] = 2;

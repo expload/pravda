@@ -22,24 +22,24 @@ public class ZooProgram
 
     public int NewZoo()
     {
-        ZooToOwner.put(ZooCnt, Info.Sender());
+        ZooToOwner[ZooCnt] = Info.Sender();
         ZooCnt += 1;
         return ZooCnt - 1;
     }
 
     public void TransferZoo(Bytes to, int zoo)
     {
-        if (ZooToOwner.getDefault(zoo, Bytes.EMPTY) == Info.Sender()) {
-            ZooToOwner.put(zoo, to);
+        if (ZooToOwner.GetOrDefault(zoo, Bytes.EMPTY) == Info.Sender()) {
+            ZooToOwner[zoo] = to;
         }
     }
 
     public String NewPet(int zoo)
     {
-        if (ZooToOwner.getDefault(zoo, Bytes.EMPTY) == Info.Sender()) {
+        if (ZooToOwner.GetOrDefault(zoo, Bytes.EMPTY) == Info.Sender()) {
             String pet = "pet" + System.Convert.ToString(PetId);
-            PetToOwner.put(pet, Info.Sender());
-            PetSignature.put(pet, GenerateSignature(pet));
+            PetToOwner[pet] = Info.Sender();
+            PetSignature[pet] = GenerateSignature(pet);
             PetId += 1;
             return pet;
         }
@@ -48,21 +48,21 @@ public class ZooProgram
 
     public void TransferPet(Bytes to, int zoo, String pet)
     {
-        if (PetToOwner.getDefault(pet, Bytes.EMPTY) == Info.Sender() && ZooToOwner.getDefault(zoo, Bytes.EMPTY) == to) {
-           PetToOwner.put(pet, to);
-           PetToZoo.put(pet, zoo);
+        if (PetToOwner.GetOrDefault(pet, Bytes.EMPTY) == Info.Sender() && ZooToOwner.GetOrDefault(zoo, Bytes.EMPTY) == to) {
+           PetToOwner[pet] = to;
+           PetToZoo[pet] = zoo;
         }
     }
 
     public String BreedPets(String pet1, String pet2)
     {
-        if (PetToOwner.getDefault(pet1, Bytes.EMPTY) == Info.Sender() &&
-                PetToOwner.getDefault(pet2, Bytes.EMPTY) == Info.Sender() &&
-                PetToZoo.getDefault(pet1, -1) == PetToZoo.getDefault(pet2, -1)) {
+        if (PetToOwner.GetOrDefault(pet1, Bytes.EMPTY) == Info.Sender() &&
+                PetToOwner.GetOrDefault(pet2, Bytes.EMPTY) == Info.Sender() &&
+                PetToZoo.GetOrDefault(pet1, -1) == PetToZoo.GetOrDefault(pet2, -1)) {
 
             String newPet = pet1 + pet2;
-            PetToOwner.put(newPet, Info.Sender());
-            PetSignature.put(newPet, PetSignature.get(pet1).Concat(PetSignature.get(pet2)));
+            PetToOwner[newPet] = Info.Sender();
+            PetSignature[newPet] = PetSignature[pet1].Concat(PetSignature[pet2]);
             return newPet;
         } else {
             return "";
