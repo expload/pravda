@@ -27,6 +27,7 @@ final case class TranslationCtx(
     cilData: CilData,
     mainProgramClass: TypeDefData,
     programClasses: List[TypeDefData],
+    structs: List[TypeDefData],
     methodsToTypes: Map[Int, TypeDefData],
     pdbTables: Option[TablesData]
 ) {

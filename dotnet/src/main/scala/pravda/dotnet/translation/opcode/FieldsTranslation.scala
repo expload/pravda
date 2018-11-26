@@ -23,13 +23,11 @@ import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.Signatures._
-import pravda.dotnet.translation.TypeDetectors
+import pravda.dotnet.translation.{FieldExtractors, TypeDetectors}
 import pravda.dotnet.translation.data._
 import pravda.vm.{Data, Opcodes, asm}
 
 case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
-
-  def isStatic(flags: Short): Boolean = (flags & 0x10) != 0
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
@@ -117,10 +115,10 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
     }
 
     op match {
-      case LdSFld(FieldData(id, flags, name, sig)) => loadField(id, name, sig, isStatic(flags))
-      case LdFld(FieldData(id, flags, name, sig))  => loadField(id, name, sig, isStatic(flags))
-      case StSFld(FieldData(id, flags, name, sig)) => storeField(id, name, sig, isStatic(flags))
-      case StFld(FieldData(id, flags, name, sig))  => storeField(id, name, sig, isStatic(flags))
+      case LdSFld(FieldData(id, flags, name, sig)) => loadField(id, name, sig, FieldExtractors.isStatic(flags))
+      case LdFld(FieldData(id, flags, name, sig))  => loadField(id, name, sig, FieldExtractors.isStatic(flags))
+      case StSFld(FieldData(id, flags, name, sig)) => storeField(id, name, sig, FieldExtractors.isStatic(flags))
+      case StFld(FieldData(id, flags, name, sig))  => storeField(id, name, sig, FieldExtractors.isStatic(flags))
       case _                                       => Left(UnknownOpcode)
     }
   }

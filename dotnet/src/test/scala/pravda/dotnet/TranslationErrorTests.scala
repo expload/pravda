@@ -21,5 +21,19 @@ object TranslationErrorTests extends TestSuite {
         """|Call(MemberRefData(TypeRefData(6,Console,System),WriteLine,16)) is not supported
            |  Error.cs:9,9-9,74""".stripMargin
     }
+
+    'PublicMapping - {
+      val Right(files) =
+        steps(
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "PublicMapping.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/PublicMapping.cs")
+        ).run
+
+      val pe = files.last.parsedPe
+      val pdb = files.last.parsedPdb.get
+
+      Translator.translateAsm(pe, Some(pdb)).left.get.mkString ==>
+        "All Mapping must be private: M in PublicMapping is not private"
+    }
   }
 }

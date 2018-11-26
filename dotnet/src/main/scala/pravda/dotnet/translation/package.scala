@@ -119,4 +119,13 @@ package object translation {
     def isVirtual(m: MethodDefData): Boolean =
       (m.flags & 0x40) != 0
   }
+
+  object FieldExtractors {
+
+    def isPrivate(f: FieldData): Boolean =
+      (f.flags & 0x7) == 0x1
+
+    def isStatic(flags: Short): Boolean =
+      (flags & 0x10) != 0
+  }
 }

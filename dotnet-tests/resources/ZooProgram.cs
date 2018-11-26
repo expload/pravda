@@ -4,10 +4,10 @@ using Expload.Pravda;
 [Program]
 public class ZooProgram
 {
-    public Mapping<String, int> PetToZoo = new Mapping<String, int>();
-    public Mapping<String, Bytes> PetSignature = new Mapping<String, Bytes>();
-    public Mapping<String, Bytes> PetToOwner = new Mapping<String, Bytes>();
-    public Mapping<int, Bytes> ZooToOwner = new Mapping<int, Bytes>();
+    private Mapping<String, int> PetToZoo = new Mapping<String, int>();
+    private Mapping<String, Bytes> PetSignature = new Mapping<String, Bytes>();
+    private Mapping<String, Bytes> PetToOwner = new Mapping<String, Bytes>();
+    private Mapping<int, Bytes> ZooToOwner = new Mapping<int, Bytes>();
     public int ZooCnt = 1;
     public int PetId = 1;
 
