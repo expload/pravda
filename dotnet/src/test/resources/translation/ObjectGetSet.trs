@@ -36,10 +36,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(25),"sc":int32(5),"el":int32(25),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  "sl":int32(25),"sc":int32(5),"el":int32(25),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(35)
+  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(35)
   }
   new {}
   call @vtable_SomeClass
@@ -49,14 +49,14 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(24)
+  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(24)
   }
   push int32(2)
   dupn
   push int32(3)
   struct_mut "field1"
   meta source_mark {
-  "sl":int32(28),"sc":int32(9),"el":int32(28),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(25)
+  "sl":int32(28),"sc":int32(9),"el":int32(28),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(25)
   }
   push int32(2)
   dupn
@@ -64,7 +64,7 @@ translation: |-
   call @func_SomeClass.set_field2_int32
   pop
   meta source_mark {
-  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(28)
+  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(28)
   }
   push int32(2)
   dupn
@@ -72,7 +72,7 @@ translation: |-
   call @func_SomeClass.SetField3_int32
   pop
   meta source_mark {
-  "sl":int32(31),"sc":int32(9),"el":int32(31),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(58)
+  "sl":int32(31),"sc":int32(9),"el":int32(31),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(58)
   }
   push int32(2)
   dupn
@@ -95,7 +95,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(32),"sc":int32(5),"el":int32(32),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  "sl":int32(32),"sc":int32(5),"el":int32(32),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(6)
   }
   jump @TestObjectGetSet_lvc
   @TestObjectGetSet_lvc:
@@ -138,10 +138,10 @@ translation: |-
   @func_SomeClass.GetField3:
   push null
   meta source_mark {
-  "sl":int32(16),"sc":int32(5),"el":int32(16),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  "sl":int32(16),"sc":int32(5),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(23)
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(23)
   }
   push int32(2)
   dupn
@@ -152,7 +152,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(18),"sc":int32(5),"el":int32(18),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  "sl":int32(18),"sc":int32(5),"el":int32(18),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(6)
   }
   jump @SomeClass.GetField3_lvc
   @SomeClass.GetField3_lvc:
@@ -161,10 +161,10 @@ translation: |-
   ret
   @func_SomeClass.SetField3_int32:
   meta source_mark {
-  "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(30)
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(30)
   }
   push int32(2)
   dupn
@@ -172,7 +172,7 @@ translation: |-
   dupn
   struct_mut "field3"
   meta source_mark {
-  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(6)
+  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(6)
   }
   jump @SomeClass.SetField3_int32_lvc
   @SomeClass.SetField3_int32_lvc:
@@ -187,7 +187,7 @@ translation: |-
   ret
   @func_SomeClass.get_field2:
   meta source_mark {
-  "sl":int32(7),"sc":int32(25),"el":int32(7),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(29)
+  "sl":int32(7),"sc":int32(25),"el":int32(7),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(29)
   }
   push int32(1)
   dupn
@@ -197,7 +197,7 @@ translation: |-
   ret
   @func_SomeClass.set_field2_int32:
   meta source_mark {
-  "sl":int32(7),"sc":int32(30),"el":int32(7),"src":"/tmp/pravda/ObjectGetSet.cs","ec":int32(34)
+  "sl":int32(7),"sc":int32(30),"el":int32(7),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(34)
   }
   push int32(2)
   dupn

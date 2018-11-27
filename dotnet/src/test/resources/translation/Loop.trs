@@ -39,17 +39,17 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(7),"sc":int32(4),"el":int32(7),"src":"/tmp/pravda/Loop.cs","ec":int32(5)
+  "sl":int32(7),"sc":int32(4),"el":int32(7),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(5)
   }
   meta source_mark {
-  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"/tmp/pravda/Loop.cs","ec":int32(18)
+  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(18)
   }
   push int32(0)
   push int32(6)
   swapn
   pop
   meta source_mark {
-  "sl":int32(9),"sc":int32(13),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(22)
+  "sl":int32(9),"sc":int32(13),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(22)
   }
   push int32(0)
   push int32(5)
@@ -60,11 +60,11 @@ translation: |-
   push int32(5)
   dupn
   meta source_mark {
-  "sl":int32(9),"sc":int32(37),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(38)
+  "sl":int32(9),"sc":int32(37),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(38)
   }
   push int32(2)
   meta source_mark {
-  "sl":int32(10),"sc":int32(12),"el":int32(10),"src":"/tmp/pravda/Loop.cs","ec":int32(19)
+  "sl":int32(10),"sc":int32(12),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(19)
   }
   add
   push int32(6)
@@ -73,11 +73,11 @@ translation: |-
   push int32(4)
   dupn
   meta source_mark {
-  "sl":int32(11),"sc":int32(8),"el":int32(11),"src":"/tmp/pravda/Loop.cs","ec":int32(9)
+  "sl":int32(11),"sc":int32(8),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(9)
   }
   push int32(1)
   meta source_mark {
-  "sl":int32(9),"sc":int32(32),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(35)
+  "sl":int32(9),"sc":int32(32),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(35)
   }
   add
   push int32(5)
@@ -87,7 +87,7 @@ translation: |-
   push int32(4)
   dupn
   meta source_mark {
-  "sl":int32(9),"sc":int32(24),"el":int32(9),"src":"/tmp/pravda/Loop.cs","ec":int32(30)
+  "sl":int32(9),"sc":int32(24),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(30)
   }
   push int32(10)
   swap
@@ -113,19 +113,19 @@ translation: |-
   pop
   @TestLoop_br34:
   meta source_mark {
-  "sl":int32(13),"sc":int32(26),"el":int32(13),"src":"/tmp/pravda/Loop.cs","ec":int32(27)
+  "sl":int32(13),"sc":int32(26),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(27)
   }
   push int32(5)
   dupn
   meta source_mark {
-  "sl":int32(14),"sc":int32(11),"el":int32(14),"src":"/tmp/pravda/Loop.cs","ec":int32(18)
+  "sl":int32(14),"sc":int32(11),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(18)
   }
   meta source_mark {
-  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"/tmp/pravda/Loop.cs","ec":int32(9)
+  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(9)
   }
   push int32(10000)
   meta source_mark {
-  "sl":int32(13),"sc":int32(8),"el":int32(13),"src":"/tmp/pravda/Loop.cs","ec":int32(25)
+  "sl":int32(13),"sc":int32(8),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(25)
   }
   swap
   lt

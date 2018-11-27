@@ -38,10 +38,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(38),"sc":int32(5),"el":int32(38),"src":"/tmp/pravda/Object.cs","ec":int32(6)
+  "sl":int32(38),"sc":int32(5),"el":int32(38),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"/tmp/pravda/Object.cs","ec":int32(28)
+  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(28)
   }
   push int32(100)
   new {}
@@ -54,7 +54,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(40),"sc":int32(9),"el":int32(40),"src":"/tmp/pravda/Object.cs","ec":int32(28)
+  "sl":int32(40),"sc":int32(9),"el":int32(40),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(28)
   }
   push int32(200)
   new {}
@@ -67,7 +67,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(41),"sc":int32(9),"el":int32(41),"src":"/tmp/pravda/Object.cs","ec":int32(43)
+  "sl":int32(41),"sc":int32(9),"el":int32(41),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(43)
   }
   push int32(4)
   dupn
@@ -84,7 +84,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"/tmp/pravda/Object.cs","ec":int32(18)
+  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(18)
   }
   push int32(2)
   dupn
@@ -94,7 +94,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(43),"sc":int32(5),"el":int32(43),"src":"/tmp/pravda/Object.cs","ec":int32(6)
+  "sl":int32(43),"sc":int32(5),"el":int32(43),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
   }
   jump @TestObjects_lvc
   @TestObjects_lvc:
@@ -140,10 +140,10 @@ translation: |-
   @func_A.AnswerA:
   push null
   meta source_mark {
-  "sl":int32(14),"sc":int32(4),"el":int32(14),"src":"/tmp/pravda/Object.cs","ec":int32(5)
+  "sl":int32(14),"sc":int32(4),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(5)
   }
   meta source_mark {
-  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"/tmp/pravda/Object.cs","ec":int32(25)
+  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(25)
   }
   push int32(2)
   dupn
@@ -156,7 +156,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(16),"sc":int32(4),"el":int32(16),"src":"/tmp/pravda/Object.cs","ec":int32(5)
+  "sl":int32(16),"sc":int32(4),"el":int32(16),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(5)
   }
   jump @A.AnswerA_lvc
   @A.AnswerA_lvc:
@@ -165,16 +165,16 @@ translation: |-
   ret
   @func_A.ctor_int32:
   meta source_mark {
-  "sl":int32(8),"sc":int32(4),"el":int32(8),"src":"/tmp/pravda/Object.cs","ec":int32(22)
+  "sl":int32(8),"sc":int32(4),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(22)
   }
   push int32(2)
   dupn
   pop
   meta source_mark {
-  "sl":int32(9),"sc":int32(4),"el":int32(9),"src":"/tmp/pravda/Object.cs","ec":int32(5)
+  "sl":int32(9),"sc":int32(4),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(5)
   }
   meta source_mark {
-  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"/tmp/pravda/Object.cs","ec":int32(25)
+  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(25)
   }
   push int32(2)
   dupn
@@ -182,7 +182,7 @@ translation: |-
   dupn
   struct_mut "AVal"
   meta source_mark {
-  "sl":int32(11),"sc":int32(4),"el":int32(11),"src":"/tmp/pravda/Object.cs","ec":int32(5)
+  "sl":int32(11),"sc":int32(4),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(5)
   }
   jump @A.ctor_int32_lvc
   @A.ctor_int32_lvc:
@@ -191,10 +191,10 @@ translation: |-
   @func_B.AnswerB:
   push null
   meta source_mark {
-  "sl":int32(29),"sc":int32(5),"el":int32(29),"src":"/tmp/pravda/Object.cs","ec":int32(6)
+  "sl":int32(29),"sc":int32(5),"el":int32(29),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(30),"sc":int32(9),"el":int32(30),"src":"/tmp/pravda/Object.cs","ec":int32(26)
+  "sl":int32(30),"sc":int32(9),"el":int32(30),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(26)
   }
   push int32(2)
   dupn
@@ -207,7 +207,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(31),"sc":int32(5),"el":int32(31),"src":"/tmp/pravda/Object.cs","ec":int32(6)
+  "sl":int32(31),"sc":int32(5),"el":int32(31),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
   }
   jump @B.AnswerB_lvc
   @B.AnswerB_lvc:
@@ -216,16 +216,16 @@ translation: |-
   ret
   @func_B.ctor_int32:
   meta source_mark {
-  "sl":int32(23),"sc":int32(5),"el":int32(23),"src":"/tmp/pravda/Object.cs","ec":int32(23)
+  "sl":int32(23),"sc":int32(5),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(23)
   }
   push int32(2)
   dupn
   pop
   meta source_mark {
-  "sl":int32(24),"sc":int32(5),"el":int32(24),"src":"/tmp/pravda/Object.cs","ec":int32(6)
+  "sl":int32(24),"sc":int32(5),"el":int32(24),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"/tmp/pravda/Object.cs","ec":int32(26)
+  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(26)
   }
   push int32(2)
   dupn
@@ -233,7 +233,7 @@ translation: |-
   dupn
   struct_mut "BVal"
   meta source_mark {
-  "sl":int32(26),"sc":int32(5),"el":int32(26),"src":"/tmp/pravda/Object.cs","ec":int32(6)
+  "sl":int32(26),"sc":int32(5),"el":int32(26),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
   }
   jump @B.ctor_int32_lvc
   @B.ctor_int32_lvc:

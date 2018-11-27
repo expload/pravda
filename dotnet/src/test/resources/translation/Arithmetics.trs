@@ -39,10 +39,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(6)
+  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
   push "p_X"
   sget
@@ -52,7 +52,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
   push "p_X"
   sget
@@ -62,7 +62,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
   push "p_X"
   sget
@@ -73,7 +73,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
   push "p_X"
   sget
@@ -84,7 +84,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(46)
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(46)
   }
   push int32(5)
   dupn
@@ -106,7 +106,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(6)
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(6)
   }
   push int32(1)
   dupn
@@ -140,7 +140,7 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"/tmp/pravda/Arithmetics.cs","ec":int32(23)
+  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
   push int32(10)
   push "p_X"

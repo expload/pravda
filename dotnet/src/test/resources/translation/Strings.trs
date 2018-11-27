@@ -42,31 +42,31 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/Strings.cs","ec":int32(6)
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/Strings.cs","ec":int32(40)
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(40)
   }
   push "zauser1"
   push int32(9)
   swapn
   pop
   meta source_mark {
-  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Strings.cs","ec":int32(26)
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(26)
   }
   push "us"
   push int32(8)
   swapn
   pop
   meta source_mark {
-  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/Strings.cs","ec":int32(28)
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(28)
   }
   push "er2"
   push int32(7)
   swapn
   pop
   meta source_mark {
-  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Strings.cs","ec":int32(32)
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(32)
   }
   push int32(7)
   dupn
@@ -78,7 +78,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/Strings.cs","ec":int32(39)
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(39)
   }
   push x537472696E67734D617070696E67
   push int32(6)
@@ -96,7 +96,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(49)
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(49)
   }
   push x537472696E67734D617070696E67
   push "user1"
@@ -121,10 +121,10 @@ translation: |-
   eq
   jumpi @TestStrings_br87
   meta source_mark {
-  "sl":int32(17),"sc":int32(50),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(51)
+  "sl":int32(17),"sc":int32(50),"el":int32(17),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(51)
   }
   meta source_mark {
-  "sl":int32(18),"sc":int32(11),"el":int32(18),"src":"/tmp/pravda/Strings.cs","ec":int32(40)
+  "sl":int32(18),"sc":int32(11),"el":int32(18),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(40)
   }
   push x537472696E67734D617070696E67
   push "user2"
@@ -141,12 +141,12 @@ translation: |-
   pop
   @TestStrings_br87:
   meta source_mark {
-  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/Strings.cs","ec":int32(10)
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(10)
   }
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/Strings.cs","ec":int32(29)
+  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(29)
   }
   push int32(0)
   array_get
@@ -156,7 +156,7 @@ translation: |-
   push int32(5)
   dupn
   meta source_mark {
-  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/Strings.cs","ec":int32(27)
+  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(27)
   }
   push int32(3)
   array_get
@@ -166,7 +166,7 @@ translation: |-
   push int32(5)
   dupn
   meta source_mark {
-  "sl":int32(23),"sc":int32(9),"el":int32(23),"src":"/tmp/pravda/Strings.cs","ec":int32(42)
+  "sl":int32(23),"sc":int32(9),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(42)
   }
   push int32(1)
   push int32(2)
@@ -205,7 +205,7 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/Strings.cs","ec":int32(84)
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"$PRAVDA_TMP_DIR/Strings.cs","ec":int32(84)
   }
   jump @ctor_lvc
   @ctor_lvc:

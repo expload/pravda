@@ -44,31 +44,31 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(32),"sc":int32(33),"el":int32(32),"src":"/tmp/pravda/Arrays.cs","ec":int32(34)
+  "sl":int32(32),"sc":int32(33),"el":int32(32),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(34)
   }
   meta source_mark {
-  "sl":int32(33),"sc":int32(9),"el":int32(33),"src":"/tmp/pravda/Arrays.cs","ec":int32(53)
+  "sl":int32(33),"sc":int32(9),"el":int32(33),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(53)
   }
   new int16[97, 98, 99]
   push int32(7)
   swapn
   pop
   meta source_mark {
-  "sl":int32(34),"sc":int32(9),"el":int32(34),"src":"/tmp/pravda/Arrays.cs","ec":int32(44)
+  "sl":int32(34),"sc":int32(9),"el":int32(34),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(44)
   }
   new int32[1, 2, 3]
   push int32(6)
   swapn
   pop
   meta source_mark {
-  "sl":int32(35),"sc":int32(9),"el":int32(35),"src":"/tmp/pravda/Arrays.cs","ec":int32(59)
+  "sl":int32(35),"sc":int32(9),"el":int32(35),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(59)
   }
   new number[1.0, 2.0, 3.0]
   push int32(5)
   swapn
   pop
   meta source_mark {
-  "sl":int32(36),"sc":int32(9),"el":int32(36),"src":"/tmp/pravda/Arrays.cs","ec":int32(65)
+  "sl":int32(36),"sc":int32(9),"el":int32(36),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(65)
   }
   push int32(3)
   push int8(11)
@@ -92,14 +92,14 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(37),"sc":int32(9),"el":int32(37),"src":"/tmp/pravda/Arrays.cs","ec":int32(47)
+  "sl":int32(37),"sc":int32(9),"el":int32(37),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(47)
   }
   new int32[4, 5, 6]
   push int32(3)
   swapn
   pop
   meta source_mark {
-  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"/tmp/pravda/Arrays.cs","ec":int32(24)
+  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(24)
   }
   push int32(6)
   dupn
@@ -108,7 +108,7 @@ translation: |-
   swap
   array_mut
   meta source_mark {
-  "sl":int32(40),"sc":int32(9),"el":int32(40),"src":"/tmp/pravda/Arrays.cs","ec":int32(21)
+  "sl":int32(40),"sc":int32(9),"el":int32(40),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(21)
   }
   push int32(5)
   dupn
@@ -117,7 +117,7 @@ translation: |-
   swap
   array_mut
   meta source_mark {
-  "sl":int32(41),"sc":int32(9),"el":int32(41),"src":"/tmp/pravda/Arrays.cs","ec":int32(26)
+  "sl":int32(41),"sc":int32(9),"el":int32(41),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(26)
   }
   push int32(4)
   dupn
@@ -126,7 +126,7 @@ translation: |-
   swap
   array_mut
   meta source_mark {
-  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"/tmp/pravda/Arrays.cs","ec":int32(29)
+  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(29)
   }
   push int32(3)
   dupn
@@ -135,7 +135,7 @@ translation: |-
   swap
   array_mut
   meta source_mark {
-  "sl":int32(43),"sc":int32(9),"el":int32(43),"src":"/tmp/pravda/Arrays.cs","ec":int32(22)
+  "sl":int32(43),"sc":int32(9),"el":int32(43),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(22)
   }
   push int32(2)
   dupn
@@ -144,7 +144,7 @@ translation: |-
   swap
   array_mut
   meta source_mark {
-  "sl":int32(45),"sc":int32(9),"el":int32(45),"src":"/tmp/pravda/Arrays.cs","ec":int32(34)
+  "sl":int32(45),"sc":int32(9),"el":int32(45),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(34)
   }
   push int32(3)
   dupn
@@ -155,7 +155,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(46),"sc":int32(5),"el":int32(46),"src":"/tmp/pravda/Arrays.cs","ec":int32(6)
+  "sl":int32(46),"sc":int32(5),"el":int32(46),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(6)
   }
   jump @TestAllArrays_lvc
   @TestAllArrays_lvc:
@@ -182,17 +182,17 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(9),"sc":int32(34),"el":int32(9),"src":"/tmp/pravda/Arrays.cs","ec":int32(35)
+  "sl":int32(9),"sc":int32(34),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(35)
   }
   meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/Arrays.cs","ec":int32(44)
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(44)
   }
   new int8[1, 2, 3]
   push int32(11)
   swapn
   pop
   meta source_mark {
-  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"/tmp/pravda/Arrays.cs","ec":int32(43)
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(43)
   }
   new int8[4, 5, 6]
   call @stdlib_array_to_bytes
@@ -200,7 +200,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Arrays.cs","ec":int32(43)
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(43)
   }
   new int8[7, 8, 9]
   call @stdlib_array_to_bytes
@@ -208,7 +208,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Arrays.cs","ec":int32(27)
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(27)
   }
   push int32(10)
   dupn
@@ -218,7 +218,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"/tmp/pravda/Arrays.cs","ec":int32(27)
+  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(27)
   }
   push int32(10)
   dupn
@@ -228,7 +228,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/Arrays.cs","ec":int32(29)
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(29)
   }
   push int32(9)
   dupn
@@ -238,7 +238,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/Arrays.cs","ec":int32(29)
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(29)
   }
   push int32(8)
   dupn
@@ -248,7 +248,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/Arrays.cs","ec":int32(43)
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(43)
   }
   push int32(9)
   dupn
@@ -263,7 +263,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/Arrays.cs","ec":int32(39)
+  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(39)
   }
   push x42797465734D617070696E67
   push int32(10)
@@ -281,7 +281,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(59)
+  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(59)
   }
   push x42797465734D617070696E67
   new int8[8, 9, 10]
@@ -307,10 +307,10 @@ translation: |-
   eq
   jumpi @TestByteArrays_br192
   meta source_mark {
-  "sl":int32(22),"sc":int32(60),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(61)
+  "sl":int32(22),"sc":int32(60),"el":int32(22),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(61)
   }
   meta source_mark {
-  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"/tmp/pravda/Arrays.cs","ec":int32(53)
+  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(53)
   }
   push x42797465734D617070696E67
   push int32(10)
@@ -329,12 +329,12 @@ translation: |-
   pop
   @TestByteArrays_br192:
   meta source_mark {
-  "sl":int32(24),"sc":int32(9),"el":int32(24),"src":"/tmp/pravda/Arrays.cs","ec":int32(10)
+  "sl":int32(24),"sc":int32(9),"el":int32(24),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(10)
   }
   push int32(10)
   dupn
   meta source_mark {
-  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"/tmp/pravda/Arrays.cs","ec":int32(21)
+  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(21)
   }
   push int32(0)
   push int32(2)
@@ -343,7 +343,7 @@ translation: |-
   push int32(10)
   dupn
   meta source_mark {
-  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"/tmp/pravda/Arrays.cs","ec":int32(21)
+  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(21)
   }
   push int32(1)
   push int32(1)
@@ -352,7 +352,7 @@ translation: |-
   push int32(9)
   dupn
   meta source_mark {
-  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"/tmp/pravda/Arrays.cs","ec":int32(35)
+  "sl":int32(29),"sc":int32(9),"el":int32(29),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(35)
   }
   length
   push int32(3)
@@ -387,7 +387,7 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/Arrays.cs","ec":int32(78)
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(78)
   }
   jump @ctor_lvc
   @ctor_lvc:

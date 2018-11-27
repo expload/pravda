@@ -42,17 +42,17 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(7),"sc":int32(4),"el":int32(7),"src":"/tmp/pravda/If.cs","ec":int32(5)
+  "sl":int32(7),"sc":int32(4),"el":int32(7),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(5)
   }
   meta source_mark {
-  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"/tmp/pravda/If.cs","ec":int32(19)
+  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(19)
   }
   push int32(10)
   push int32(9)
   swapn
   pop
   meta source_mark {
-  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"/tmp/pravda/If.cs","ec":int32(18)
+  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
   }
   push int32(8)
   dupn
@@ -75,23 +75,23 @@ translation: |-
   eq
   jumpi @TestIfs_br16
   meta source_mark {
-  "sl":int32(10),"sc":int32(19),"el":int32(10),"src":"/tmp/pravda/If.cs","ec":int32(20)
+  "sl":int32(10),"sc":int32(19),"el":int32(10),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(20)
   }
   push int32(4)
   meta source_mark {
-  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"/tmp/pravda/If.cs","ec":int32(18)
+  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
   }
   push int32(9)
   swapn
   pop
   @TestIfs_br16:
   meta source_mark {
-  "sl":int32(12),"sc":int32(8),"el":int32(12),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(12),"sc":int32(8),"el":int32(12),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(14),"sc":int32(8),"el":int32(14),"src":"/tmp/pravda/If.cs","ec":int32(18)
+  "sl":int32(14),"sc":int32(8),"el":int32(14),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
   }
   push int32(5)
   swap
@@ -114,11 +114,11 @@ translation: |-
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(14),"sc":int32(19),"el":int32(14),"src":"/tmp/pravda/If.cs","ec":int32(20)
+  "sl":int32(14),"sc":int32(19),"el":int32(14),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(20)
   }
   push int32(6)
   meta source_mark {
-  "sl":int32(15),"sc":int32(11),"el":int32(15),"src":"/tmp/pravda/If.cs","ec":int32(21)
+  "sl":int32(15),"sc":int32(11),"el":int32(15),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(21)
   }
   swap
   gt
@@ -142,24 +142,24 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(15),"sc":int32(22),"el":int32(15),"src":"/tmp/pravda/If.cs","ec":int32(23)
+  "sl":int32(15),"sc":int32(22),"el":int32(15),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(23)
   }
   @TestIfs_br37:
   meta source_mark {
-  "sl":int32(16),"sc":int32(15),"el":int32(16),"src":"/tmp/pravda/If.cs","ec":int32(21)
+  "sl":int32(16),"sc":int32(15),"el":int32(16),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(21)
   }
   @TestIfs_br38:
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(17),"sc":int32(11),"el":int32(17),"src":"/tmp/pravda/If.cs","ec":int32(12)
+  "sl":int32(17),"sc":int32(11),"el":int32(17),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(12)
   }
   push int32(0)
   meta source_mark {
-  "sl":int32(18),"sc":int32(8),"el":int32(18),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(18),"sc":int32(8),"el":int32(18),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   meta source_mark {
-  "sl":int32(20),"sc":int32(8),"el":int32(20),"src":"/tmp/pravda/If.cs","ec":int32(18)
+  "sl":int32(20),"sc":int32(8),"el":int32(20),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
   }
   swap
   gt
@@ -185,27 +185,27 @@ translation: |-
   jump @TestIfs_br58
   @TestIfs_br54:
   meta source_mark {
-  "sl":int32(20),"sc":int32(19),"el":int32(20),"src":"/tmp/pravda/If.cs","ec":int32(20)
+  "sl":int32(20),"sc":int32(19),"el":int32(20),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(20)
   }
   meta source_mark {
-  "sl":int32(21),"sc":int32(11),"el":int32(21),"src":"/tmp/pravda/If.cs","ec":int32(17)
+  "sl":int32(21),"sc":int32(11),"el":int32(21),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
   }
   push int32(5)
   push int32(9)
   swapn
   pop
   meta source_mark {
-  "sl":int32(22),"sc":int32(8),"el":int32(22),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(22),"sc":int32(8),"el":int32(22),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   @TestIfs_br58:
   push int32(8)
   dupn
   push int32(2)
   meta source_mark {
-  "sl":int32(22),"sc":int32(15),"el":int32(22),"src":"/tmp/pravda/If.cs","ec":int32(16)
+  "sl":int32(22),"sc":int32(15),"el":int32(22),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(16)
   }
   meta source_mark {
-  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"/tmp/pravda/If.cs","ec":int32(17)
+  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
   }
   swap
   gt
@@ -220,12 +220,12 @@ translation: |-
   eq
   jumpi @TestIfs_br68
   meta source_mark {
-  "sl":int32(24),"sc":int32(8),"el":int32(24),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(24),"sc":int32(8),"el":int32(24),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(26),"sc":int32(8),"el":int32(26),"src":"/tmp/pravda/If.cs","ec":int32(27)
+  "sl":int32(26),"sc":int32(8),"el":int32(26),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(27)
   }
   push int32(4)
   swap
@@ -261,16 +261,16 @@ translation: |-
   pop
   @TestIfs_br85:
   meta source_mark {
-  "sl":int32(26),"sc":int32(28),"el":int32(26),"src":"/tmp/pravda/If.cs","ec":int32(29)
+  "sl":int32(26),"sc":int32(28),"el":int32(26),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(29)
   }
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(27),"sc":int32(11),"el":int32(27),"src":"/tmp/pravda/If.cs","ec":int32(17)
+  "sl":int32(27),"sc":int32(11),"el":int32(27),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
   }
   push int32(7)
   meta source_mark {
-  "sl":int32(28),"sc":int32(8),"el":int32(28),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(28),"sc":int32(8),"el":int32(28),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   swap
   gt
@@ -282,11 +282,11 @@ translation: |-
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(28),"sc":int32(15),"el":int32(28),"src":"/tmp/pravda/If.cs","ec":int32(16)
+  "sl":int32(28),"sc":int32(15),"el":int32(28),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(16)
   }
   push int32(10)
   meta source_mark {
-  "sl":int32(29),"sc":int32(11),"el":int32(29),"src":"/tmp/pravda/If.cs","ec":int32(17)
+  "sl":int32(29),"sc":int32(11),"el":int32(29),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
   }
   swap
   gt
@@ -295,12 +295,12 @@ translation: |-
   jump @TestIfs_br97
   @TestIfs_br96:
   meta source_mark {
-  "sl":int32(30),"sc":int32(8),"el":int32(30),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(30),"sc":int32(8),"el":int32(30),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   push int32(1)
   @TestIfs_br97:
   meta source_mark {
-  "sl":int32(32),"sc":int32(8),"el":int32(32),"src":"/tmp/pravda/If.cs","ec":int32(28)
+  "sl":int32(32),"sc":int32(8),"el":int32(32),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(28)
   }
   push int32(3)
   swapn
@@ -342,16 +342,16 @@ translation: |-
   eq
   jumpi @TestIfs_br121
   meta source_mark {
-  "sl":int32(32),"sc":int32(29),"el":int32(32),"src":"/tmp/pravda/If.cs","ec":int32(30)
+  "sl":int32(32),"sc":int32(29),"el":int32(32),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(30)
   }
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(33),"sc":int32(12),"el":int32(33),"src":"/tmp/pravda/If.cs","ec":int32(18)
+  "sl":int32(33),"sc":int32(12),"el":int32(33),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
   }
   push int32(3)
   meta source_mark {
-  "sl":int32(34),"sc":int32(8),"el":int32(34),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(34),"sc":int32(8),"el":int32(34),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   swap
   lt
@@ -364,11 +364,11 @@ translation: |-
   push int32(8)
   dupn
   meta source_mark {
-  "sl":int32(34),"sc":int32(15),"el":int32(34),"src":"/tmp/pravda/If.cs","ec":int32(16)
+  "sl":int32(34),"sc":int32(15),"el":int32(34),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(16)
   }
   push int32(20)
   meta source_mark {
-  "sl":int32(35),"sc":int32(12),"el":int32(35),"src":"/tmp/pravda/If.cs","ec":int32(18)
+  "sl":int32(35),"sc":int32(12),"el":int32(35),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
   }
   swap
   gt
@@ -377,12 +377,12 @@ translation: |-
   jump @TestIfs_br129
   @TestIfs_br128:
   meta source_mark {
-  "sl":int32(36),"sc":int32(8),"el":int32(36),"src":"/tmp/pravda/If.cs","ec":int32(9)
+  "sl":int32(36),"sc":int32(8),"el":int32(36),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
   }
   push int32(1)
   @TestIfs_br129:
   meta source_mark {
-  "sl":int32(38),"sc":int32(8),"el":int32(38),"src":"/tmp/pravda/If.cs","ec":int32(39)
+  "sl":int32(38),"sc":int32(8),"el":int32(38),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(39)
   }
   push int32(2)
   swapn

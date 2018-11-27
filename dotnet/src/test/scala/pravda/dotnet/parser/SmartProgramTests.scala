@@ -2,6 +2,8 @@ package pravda.dotnet
 
 package parser
 
+import java.nio.file.Paths
+
 import pravda.common.TestUtils
 import pravda.dotnet.DotnetCompilation.dsl._
 import pravda.dotnet.data.Heaps.SequencePoint
@@ -20,7 +22,7 @@ object SmartProgramTests extends TestSuite {
 
       val pe = files.last.parsedPe
       val pdb = files.last.parsedPdb.get
-      val src = "/tmp/pravda/SmartProgram.cs"
+      val src = Paths.get(DotnetCompilation.pravdaDir.toString, "SmartProgram.cs").toString
 
       TestUtils.assertEqual(
         pe.cilData.tables.customAttributeTable,
