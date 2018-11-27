@@ -53,10 +53,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(58),"sc":int32(5),"el":int32(58),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(58),"sc":int32(5),"el":int32(58),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(59),"sc":int32(9),"el":int32(61),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(84)
+  "sl":int32(59),"sc":int32(9),"el":int32(61),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(84)
   }
   push x506574546F4F776E6572
   push int32(7)
@@ -123,12 +123,12 @@ translation: |-
   eq
   jumpi @BreedPets_br157
   meta source_mark {
-  "sl":int32(61),"sc":int32(85),"el":int32(61),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(86)
+  "sl":int32(61),"sc":int32(85),"el":int32(61),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(86)
   }
   push int32(6)
   dupn
   meta source_mark {
-  "sl":int32(63),"sc":int32(13),"el":int32(63),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(41)
+  "sl":int32(63),"sc":int32(13),"el":int32(63),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(41)
   }
   push int32(6)
   dupn
@@ -138,7 +138,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(64),"sc":int32(13),"el":int32(64),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(48)
+  "sl":int32(64),"sc":int32(13),"el":int32(64),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(48)
   }
   push x506574546F4F776E6572
   push int32(3)
@@ -155,7 +155,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(65),"sc":int32(13),"el":int32(65),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(82)
+  "sl":int32(65),"sc":int32(13),"el":int32(65),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(82)
   }
   push x5065745369676E6174757265
   push int32(3)
@@ -191,7 +191,7 @@ translation: |-
   push int32(2)
   dupn
   meta source_mark {
-  "sl":int32(66),"sc":int32(13),"el":int32(66),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
+  "sl":int32(66),"sc":int32(13),"el":int32(66),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(27)
   }
   push int32(2)
   swapn
@@ -199,10 +199,10 @@ translation: |-
   jump @BreedPets_br166
   @BreedPets_br157:
   meta source_mark {
-  "sl":int32(67),"sc":int32(16),"el":int32(67),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(17)
+  "sl":int32(67),"sc":int32(16),"el":int32(67),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(17)
   }
   meta source_mark {
-  "sl":int32(68),"sc":int32(13),"el":int32(68),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(23)
+  "sl":int32(68),"sc":int32(13),"el":int32(68),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(23)
   }
   push ""
   push int32(2)
@@ -234,10 +234,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(38),"sc":int32(5),"el":int32(38),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(38),"sc":int32(5),"el":int32(38),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
+  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
   }
   push x5A6F6F546F4F776E6572
   push int32(6)
@@ -262,10 +262,10 @@ translation: |-
   eq
   jumpi @NewPet_br108
   meta source_mark {
-  "sl":int32(39),"sc":int32(73),"el":int32(39),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(74)
+  "sl":int32(39),"sc":int32(73),"el":int32(39),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(74)
   }
   meta source_mark {
-  "sl":int32(40),"sc":int32(13),"el":int32(40),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(65)
+  "sl":int32(40),"sc":int32(13),"el":int32(40),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(65)
   }
   push "pet"
   push "p_PetId"
@@ -278,7 +278,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(41),"sc":int32(13),"el":int32(41),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(45)
+  "sl":int32(41),"sc":int32(13),"el":int32(41),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(45)
   }
   push x506574546F4F776E6572
   push int32(3)
@@ -295,7 +295,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(42),"sc":int32(13),"el":int32(42),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(56)
+  "sl":int32(42),"sc":int32(13),"el":int32(42),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(56)
   }
   push x5065745369676E6174757265
   push int32(3)
@@ -314,7 +314,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(43),"sc":int32(13),"el":int32(43),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(24)
+  "sl":int32(43),"sc":int32(13),"el":int32(43),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(24)
   }
   push "p_PetId"
   sget
@@ -325,7 +325,7 @@ translation: |-
   push int32(2)
   dupn
   meta source_mark {
-  "sl":int32(44),"sc":int32(13),"el":int32(44),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(24)
+  "sl":int32(44),"sc":int32(13),"el":int32(44),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(24)
   }
   push int32(2)
   swapn
@@ -333,7 +333,7 @@ translation: |-
   jump @NewPet_br116
   @NewPet_br108:
   meta source_mark {
-  "sl":int32(46),"sc":int32(9),"el":int32(46),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(19)
+  "sl":int32(46),"sc":int32(9),"el":int32(46),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(19)
   }
   push ""
   push int32(2)
@@ -361,10 +361,10 @@ translation: |-
   }
   push null
   meta source_mark {
-  "sl":int32(24),"sc":int32(5),"el":int32(24),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(24),"sc":int32(5),"el":int32(24),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(44)
+  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(44)
   }
   push x5A6F6F546F4F776E6572
   push "p_ZooCnt"
@@ -381,7 +381,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(21)
+  "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(21)
   }
   push "p_ZooCnt"
   sget
@@ -390,7 +390,7 @@ translation: |-
   push "p_ZooCnt"
   sput
   meta source_mark {
-  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
+  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(27)
   }
   push "p_ZooCnt"
   sget
@@ -404,7 +404,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(28),"sc":int32(5),"el":int32(28),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(28),"sc":int32(5),"el":int32(28),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   jump @NewZoo_lvc
   @NewZoo_lvc:
@@ -419,10 +419,10 @@ translation: |-
   }
   push null
   meta source_mark {
-  "sl":int32(50),"sc":int32(5),"el":int32(50),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(50),"sc":int32(5),"el":int32(50),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(51),"sc":int32(9),"el":int32(51),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(123)
+  "sl":int32(51),"sc":int32(9),"el":int32(51),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(123)
   }
   push x506574546F4F776E6572
   push int32(4)
@@ -469,10 +469,10 @@ translation: |-
   eq
   jumpi @TransferPet_br82
   meta source_mark {
-  "sl":int32(51),"sc":int32(124),"el":int32(51),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(125)
+  "sl":int32(51),"sc":int32(124),"el":int32(51),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(125)
   }
   meta source_mark {
-  "sl":int32(52),"sc":int32(12),"el":int32(52),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(33)
+  "sl":int32(52),"sc":int32(12),"el":int32(52),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(33)
   }
   push x506574546F4F776E6572
   push int32(4)
@@ -490,7 +490,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(53),"sc":int32(12),"el":int32(53),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(32)
+  "sl":int32(53),"sc":int32(12),"el":int32(53),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(32)
   }
   push x506574546F5A6F6F
   push int32(4)
@@ -522,10 +522,10 @@ translation: |-
   }
   push null
   meta source_mark {
-  "sl":int32(31),"sc":int32(5),"el":int32(31),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(31),"sc":int32(5),"el":int32(31),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(32),"sc":int32(9),"el":int32(32),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
+  "sl":int32(32),"sc":int32(9),"el":int32(32),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
   }
   push x5A6F6F546F4F776E6572
   push int32(4)
@@ -550,10 +550,10 @@ translation: |-
   eq
   jumpi @TransferZoo_br45
   meta source_mark {
-  "sl":int32(32),"sc":int32(73),"el":int32(32),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(74)
+  "sl":int32(32),"sc":int32(73),"el":int32(32),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(74)
   }
   meta source_mark {
-  "sl":int32(33),"sc":int32(13),"el":int32(33),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(34)
+  "sl":int32(33),"sc":int32(13),"el":int32(33),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(34)
   }
   push x5A6F6F546F4F776E6572
   push int32(4)
@@ -572,7 +572,7 @@ translation: |-
   pop
   @TransferZoo_br45:
   meta source_mark {
-  "sl":int32(34),"sc":int32(9),"el":int32(34),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(10)
+  "sl":int32(34),"sc":int32(9),"el":int32(34),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(10)
   }
   jump @TransferZoo_lvc
   @TransferZoo_lvc:
@@ -596,25 +596,25 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
   }
   meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(80)
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(80)
   }
   meta source_mark {
-  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(78)
+  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(78)
   }
   meta source_mark {
-  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
   }
   meta source_mark {
-  "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
+  "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(27)
   }
   push int32(1)
   push "p_ZooCnt"
   sput
   meta source_mark {
-  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(26)
+  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(26)
   }
   push int32(1)
   push "p_PetId"
@@ -629,10 +629,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(6)
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(36)
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(36)
   }
   push int32(10)
   push int8(1)
@@ -641,7 +641,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(17),"sc":int32(14),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(23)
+  "sl":int32(17),"sc":int32(14),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(23)
   }
   push int32(0)
   push int32(4)
@@ -652,12 +652,12 @@ translation: |-
   push int32(4)
   dupn
   meta source_mark {
-  "sl":int32(17),"sc":int32(38),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(39)
+  "sl":int32(17),"sc":int32(38),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(39)
   }
   push int32(4)
   dupn
   meta source_mark {
-  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(63)
+  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(63)
   }
   push int32(7)
   dupn
@@ -679,11 +679,11 @@ translation: |-
   push int32(3)
   dupn
   meta source_mark {
-  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(10)
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(10)
   }
   push int32(1)
   meta source_mark {
-  "sl":int32(17),"sc":int32(33),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(36)
+  "sl":int32(17),"sc":int32(33),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(36)
   }
   add
   push int32(4)
@@ -693,7 +693,7 @@ translation: |-
   push int32(3)
   dupn
   meta source_mark {
-  "sl":int32(17),"sc":int32(25),"el":int32(17),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(31)
+  "sl":int32(17),"sc":int32(25),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(31)
   }
   push int32(10)
   swap
@@ -711,7 +711,7 @@ translation: |-
   push int32(4)
   dupn
   meta source_mark {
-  "sl":int32(20),"sc":int32(9),"el":int32(20),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(32)
+  "sl":int32(20),"sc":int32(9),"el":int32(20),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(32)
   }
   call @stdlib_array_to_bytes
   push int32(2)

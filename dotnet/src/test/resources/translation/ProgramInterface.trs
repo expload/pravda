@@ -43,10 +43,10 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/ProgramInterfaceCheck.cs","ec":int32(10)
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(10)
   }
   meta source_mark {
-  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"/tmp/pravda/ProgramInterfaceCheck.cs","ec":int32(106)
+  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(106)
   }
   push "1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"
   push int32(4)
@@ -55,7 +55,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(12),"sc":int32(12),"el":int32(12),"src":"/tmp/pravda/ProgramInterfaceCheck.cs","ec":int32(78)
+  "sl":int32(12),"sc":int32(12),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(78)
   }
   push int32(2)
   dupn
@@ -75,7 +75,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"/tmp/pravda/ProgramInterfaceCheck.cs","ec":int32(10)
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(10)
   }
   jump @CheckInterface_lvc
   @CheckInterface_lvc:

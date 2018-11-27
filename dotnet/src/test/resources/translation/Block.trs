@@ -39,10 +39,10 @@ translation: |-
   }
   push null
   meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/Block.cs","ec":int32(6)
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"/tmp/pravda/Block.cs","ec":int32(30)
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(30)
   }
   height
   push int32(2)
@@ -51,7 +51,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/Block.cs","ec":int32(6)
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
   }
   jump @TestHeightMethod_lvc
   @TestHeightMethod_lvc:
@@ -66,10 +66,10 @@ translation: |-
   }
   push null
   meta source_mark {
-  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"/tmp/pravda/Block.cs","ec":int32(6)
+  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
   }
   meta source_mark {
-  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"/tmp/pravda/Block.cs","ec":int32(37)
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(37)
   }
   hash
   push int32(2)
@@ -78,7 +78,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"/tmp/pravda/Block.cs","ec":int32(6)
+  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
   }
   jump @TestLastBlockHash_lvc
   @TestLastBlockHash_lvc:

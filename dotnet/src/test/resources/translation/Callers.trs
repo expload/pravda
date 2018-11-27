@@ -35,10 +35,10 @@ translation: |-
   }
   push null
   meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"/tmp/pravda/Callers.cs","ec":int32(10)
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Callers.cs","ec":int32(10)
   }
   meta source_mark {
-  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"/tmp/pravda/Callers.cs","ec":int32(37)
+  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Callers.cs","ec":int32(37)
   }
   callers
   push int32(0)
@@ -49,7 +49,7 @@ translation: |-
   push int32(1)
   dupn
   meta source_mark {
-  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"/tmp/pravda/Callers.cs","ec":int32(10)
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Callers.cs","ec":int32(10)
   }
   jump @TestCallers_lvc
   @TestCallers_lvc:
