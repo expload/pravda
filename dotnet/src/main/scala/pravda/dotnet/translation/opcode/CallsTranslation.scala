@@ -156,6 +156,7 @@ case object CallsTranslation extends OneToManyTranslator {
         Right(List(Operation.Call(Some(s"func_${m.name}"))))
       } else {
         val tpeO = ctx.tctx.tpeByMethodDef(m)
+        println(tpeO)
         tpeO match {
           case Some(tpe) =>
             Right(
