@@ -332,16 +332,34 @@ object Translator {
           .toRight(TranslationError(InternalError(s"Unable to find $name class with [Program] attribute"), None))
     }
 
+    val methodParents: List[Vector[Option[TypeDefData]]] = files.map { f =>
+      val tables = f.parsedPe.cilData.tables
+
+      tables.methodDefTable.map { m => tables.typeDefTable.find(_.methods.exists(_ == m))
+      }
+    }
+
+    val namesToMethods = files
+      .zip(methodParents)
+      .flatMap {
+        case (f, typeDefs) =>
+          val tables = f.parsedPe.cilData.tables
+          val signatures = f.parsedPe.signatures
+
+          tables.methodDefTable.zip(typeDefs).flatMap {
+            case (method, typeDef) =>
+              typeDef.map(t =>
+                s"${CallsTranslation.fullTypeDefName(t)}.${CallsTranslation
+                  .fullMethodName(method.name, signatures.get(method.signatureIdx))}" -> method)
+          }
+      }
+      .toMap
+
     mainProgramClassE.flatMap { mainCls =>
       val translations = for {
-        f <- files
+        (f, parents) <- files.zip(methodParents)
       } yield {
         val tables = f.parsedPe.cilData.tables
-
-        val methodsToTypes: Map[Int, TypeDefData] = tables.methodDefTable.zipWithIndex.flatMap {
-          case (m, i) => tables.typeDefTable.find(_.methods.exists(_ == m)).map(i -> _)
-        }.toMap
-
         val structs = tables.typeDefTable.filterNot(programClasses.contains).toList
 
         val translationCtx = TranslationCtx(f.parsedPe.signatures,
@@ -349,11 +367,12 @@ object Translator {
                                             mainCls,
                                             programClasses,
                                             structs,
-                                            methodsToTypes,
+                                            namesToMethods,
+                                            parents,
                                             f.parsedPdb.map(_.tablesData))
 
-        val methods = f.parsedPe.methods.zipWithIndex
-          .filter { case (m, i) => methodsToTypes.get(i).forall(_.namespace != "Expload.Pravda") }
+        val methods = f.parsedPe.methods.zip(parents)
+          .filter { case (m, p) => p.forall(_.namespace != "Expload.Pravda") }
           .map(_._1)
 
         for {
@@ -434,7 +453,8 @@ object Translator {
     } yield ctor
 
     val structEntitiesE = for {
-      methods <- filterMethods(i => (!tctx.isProgramMethod(i) || (tctx.isProgramMethod(i) && isStatic(i))) && !isMain(i))
+      methods <- filterMethods(
+        i => (!tctx.isProgramMethod(i) || (tctx.isProgramMethod(i) && isStatic(i))) && !isMain(i))
     } yield methods
 
     val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
@@ -541,7 +561,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodsToTypes(i)
+          val tpe = tctx.methodParents(i).get
           val structName = CallsTranslation.fullTypeDefName(tpe)
           val name = s"$structName.$methodName"
 
@@ -571,7 +591,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodsToTypes(i)
+          val tpe = tctx.methodParents(i).get
           val structName = CallsTranslation.fullTypeDefName(tpe)
           val name = s"$structName.$methodName"
 
@@ -601,7 +621,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodsToTypes(i)
+          val tpe = tctx.methodParents(i).get
           val structName = CallsTranslation.fullTypeDefName(tpe)
           val name = s"$structName.$methodName"
 

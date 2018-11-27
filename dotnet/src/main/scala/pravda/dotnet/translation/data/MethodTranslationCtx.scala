@@ -18,7 +18,7 @@
 package pravda.dotnet.translation.data
 
 import pravda.dotnet.data.TablesData
-import pravda.dotnet.data.TablesData.{MethodDebugInformationData, TypeDefData}
+import pravda.dotnet.data.TablesData.{MethodDebugInformationData, MethodDefData, TypeDefData}
 import pravda.dotnet.parser.CIL.CilData
 import pravda.dotnet.parser.Signatures
 
@@ -28,7 +28,8 @@ final case class TranslationCtx(
     mainProgramClass: TypeDefData,
     programClasses: List[TypeDefData],
     structs: List[TypeDefData],
-    methodsToTypes: Map[Int, TypeDefData],
+    namesToMethodDefs: Map[String, MethodDefData],
+    methodParents: Vector[Option[TypeDefData]],
     pdbTables: Option[TablesData]
 ) {
 
@@ -40,12 +41,12 @@ final case class TranslationCtx(
     if (idx == -1) {
       None
     } else {
-      methodsToTypes.get(idx)
+      methodParents(idx)
     }
   }
 
   def isMainProgramMethod(idx: Int): Boolean =
-    methodsToTypes.get(idx).contains(mainProgramClass)
+    methodParents(idx).contains(mainProgramClass)
 
   def isMainProgramMethod(m: TablesData.MethodDefData): Boolean = {
     val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
@@ -57,7 +58,7 @@ final case class TranslationCtx(
   }
 
   def isProgramMethod(idx: Int): Boolean =
-    methodsToTypes.get(idx).exists(programClasses.contains)
+    methodParents(idx).exists(programClasses.contains)
 
   def isProgramMethod(m: TablesData.MethodDefData): Boolean = {
     val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
