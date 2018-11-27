@@ -18,8 +18,10 @@
 package pravda.dotnet.translation
 
 import cats.instances.list._
+import cats.instances.vector._
 import cats.instances.either._
 import cats.syntax.traverse._
+import com.google.protobuf.ByteString
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
@@ -27,7 +29,7 @@ import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
-import pravda.dotnet.translation.opcode.{CallsTranslation, FieldsTranslation, OpcodeTranslator, StdlibAsm}
+import pravda.dotnet.translation.opcode.{CallsTranslation, OpcodeTranslator, StdlibAsm}
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Meta, Opcodes}
 
@@ -85,6 +87,37 @@ object Translator {
     }.toList
   }
 
+  private def initStructFields(typeDefData: TypeDefData, tctx: TranslationCtx): List[Operation] = {
+    def initField(f: FieldData): List[Operation] = {
+      val defaultValue = (for {
+        sig <- tctx.signatures.get(f.signatureIdx)
+      } yield {
+        sig match {
+          case FieldSig(tpe) =>
+            tpe match {
+              case SigType.Boolean       => Data.Primitive.Bool.False
+              case SigType.I1            => Data.Primitive.Int8(0)
+              case SigType.I2            => Data.Primitive.Int16(0)
+              case SigType.I4            => Data.Primitive.Int32(0)
+              case SigType.U1            => Data.Primitive.Uint8(0)
+              case SigType.U2            => Data.Primitive.Uint16(0)
+              case SigType.U4            => Data.Primitive.Uint32(0)
+              case SigType.R4            => Data.Primitive.Number(0.0)
+              case SigType.R8            => Data.Primitive.Number(0.0)
+              case TypeDetectors.Bytes() => Data.Primitive.Bytes(ByteString.EMPTY)
+              case SigType.String        => Data.Primitive.Utf8("")
+              case _                     => Data.Primitive.Null
+            }
+          case _ => Data.Primitive.Null
+        }
+      }).getOrElse(Data.Primitive.Null)
+
+      List(Operation(Opcodes.DUP), Operation.Push(defaultValue), Operation.StructMut(Some(Data.Primitive.Utf8(f.name))))
+    }
+
+    typeDefData.fields.toList.flatMap(initField)
+  }
+
   private def eliminateDeadFuncs(methods: List[MethodTranslation],
                                  funcs: List[MethodTranslation]): List[MethodTranslation] = {
 
@@ -111,6 +144,60 @@ object Translator {
     val init = (methods ++ funcs.filter(_.forceAdd)).map(_.label).toSet
     val all = allNames(init, init)
     funcs.filter(f => all.contains(f.label))
+  }
+
+  private def inspectProgramTypeDef(typeDef: TypeDefData, tctx: TranslationCtx): Either[TranslationError, Unit] = {
+    lazy val staticFields = {
+      val staticFieldO = typeDef.fields.find(f => FieldExtractors.isStatic(f.flags))
+      staticFieldO match {
+        case Some(f) =>
+          Left(
+            TranslationError(InternalError(s"[Program] must not contain static fields: " +
+                               s"${CallsTranslation.fullTypeDefName(typeDef)} contains static ${f.name}"),
+                             None))
+        case None =>
+          Right(())
+      }
+    }
+
+    lazy val privateMappings = typeDef.fields.map { f =>
+      val isMapping = for {
+        parentSig <- tctx.signatures.get(f.signatureIdx)
+      } yield CallsTranslation.detectMapping(parentSig)
+
+      if (isMapping.getOrElse(false) && !FieldExtractors.isPrivate(f)) {
+        Left(
+          TranslationError(
+            InternalError(
+              s"All Mapping must be private: ${f.name} in ${CallsTranslation.fullTypeDefName(typeDef)} is not private"),
+            None))
+      } else {
+        Right(())
+      }
+    }.sequence
+
+    for {
+      _ <- staticFields
+      _ <- privateMappings
+    } yield ()
+  }
+
+  private def inspectStructTypeDef(typeDef: TypeDefData, tctx: TranslationCtx): Either[TranslationError, Unit] = {
+    typeDef.fields
+      .map { f =>
+        val isMapping = for {
+          parentSig <- tctx.signatures.get(f.signatureIdx)
+        } yield CallsTranslation.detectMapping(parentSig)
+
+        if (isMapping.getOrElse(false)) {
+          Left(TranslationError(InternalError(s"User defined classes must not contain Mappings: ${CallsTranslation
+            .fullTypeDefName(typeDef)} contains ${f.name}"), None))
+        } else {
+          Right(())
+        }
+      }
+      .sequence
+      .map(_ => ())
   }
 
   private def translateMethod(cil: List[CIL.Op],
@@ -225,14 +312,12 @@ object Translator {
 
   def translateVerbose(files: List[ParsedDotnetFile],
                        mainClass: Option[String]): Either[TranslationError, Translation] = {
-    val filesToProgramClasses = files.flatMap(f =>
+    val programClasses = files.flatMap(f =>
       f.parsedPe.cilData.tables.customAttributeTable.collect {
         case CustomAttributeData(td: TypeDefData,
                                  MemberRefData(TypeRefData(_, "Program", "Expload.Pravda"), ".ctor", _)) =>
-          f -> td
+          td
     })
-
-    val programClasses = filesToProgramClasses.map(_._2)
 
     val mainProgramClassE = mainClass match {
       case None =>
@@ -249,24 +334,33 @@ object Translator {
 
     mainProgramClassE.flatMap { mainCls =>
       val translations = for {
-        (f, cls) <- filesToProgramClasses
+        f <- files
       } yield {
-        if (cls.fields.exists(f => FieldsTranslation.isStatic(f.flags))) {
-          Left(TranslationError(InternalError("Static fields in [Program] class are forbidden"), None))
-        } else {
-          val tables = f.parsedPe.cilData.tables
-          val methodsToTypes: Map[Int, TypeDefData] = tables.methodDefTable.zipWithIndex.flatMap {
-            case (m, i) => tables.typeDefTable.find(_.methods.exists(_ == m)).map(i -> _)
-          }.toMap
+        val tables = f.parsedPe.cilData.tables
 
-          val translationCtx = TranslationCtx(f.parsedPe.signatures,
-                                              f.parsedPe.cilData,
-                                              mainCls,
-                                              programClasses,
-                                              methodsToTypes,
-                                              f.parsedPdb.map(_.tablesData))
-          translateAllMethods(f.parsedPe.methods, translationCtx)
-        }
+        val methodsToTypes: Map[Int, TypeDefData] = tables.methodDefTable.zipWithIndex.flatMap {
+          case (m, i) => tables.typeDefTable.find(_.methods.exists(_ == m)).map(i -> _)
+        }.toMap
+
+        val structs = tables.typeDefTable.filterNot(programClasses.contains).toList
+
+        val translationCtx = TranslationCtx(f.parsedPe.signatures,
+                                            f.parsedPe.cilData,
+                                            mainCls,
+                                            programClasses,
+                                            structs,
+                                            methodsToTypes,
+                                            f.parsedPdb.map(_.tablesData))
+
+        val methods = f.parsedPe.methods.zipWithIndex
+          .filter { case (m, i) => methodsToTypes.get(i).forall(_.namespace != "Expload.Pravda") }
+          .map(_._1)
+
+        for {
+          _ <- programClasses.map(td => inspectProgramTypeDef(td, translationCtx)).sequence
+          _ <- structs.map(td => inspectStructTypeDef(td, translationCtx)).sequence
+          res <- translateAllMethods(methods, translationCtx)
+        } yield res
       }
 
       val file =
@@ -512,16 +606,6 @@ object Translator {
           val name = s"$structName.$methodName"
 
           List(
-            Right(
-              MethodTranslation(
-                "vtable",
-                structName,
-                forceAdd = false,
-                List(
-                  OpCodeTranslation(List.empty,
-                                    vtableInit(tpe, tctx) :+
-                                      Operation(Opcodes.RET)))
-              )),
             translateMethod(
               BranchTransformer.transformBranches(method.opcodes, name),
               name,
@@ -542,6 +626,29 @@ object Translator {
         .sequence
     } yield opss
 
+    lazy val structCtorHelpers: List[MethodTranslation] = tctx.structs.flatMap { s =>
+      List(
+        MethodTranslation(
+          "vtable",
+          CallsTranslation.fullTypeDefName(s),
+          forceAdd = false,
+          List(
+            OpCodeTranslation(List.empty,
+                              vtableInit(s, tctx) :+
+                                Operation(Opcodes.RET)))
+        ),
+        MethodTranslation(
+          "default_fields",
+          CallsTranslation.fullTypeDefName(s),
+          forceAdd = false,
+          List(
+            OpCodeTranslation(List.empty,
+                              initStructFields(s, tctx) :+
+                                Operation(Opcodes.RET)))
+        )
+      )
+    }
+
     for {
       programMethodsOps <- programMethodsOpsE
       ctorOps <- ctorOpsE
@@ -551,7 +658,7 @@ object Translator {
       structCtorsOps <- structCtorsOpsE
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
-      val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
+      val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
       FileTranslation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
     }
   }

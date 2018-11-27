@@ -35,6 +35,7 @@ case object CallsTranslation extends OneToManyTranslator {
   def detectMapping(sig: Signature): Boolean = {
     sig match {
       case TypeSig(Tpe(Generic(TypeDetectors.Mapping(), _), _)) => true
+      case FieldSig(Generic(TypeDetectors.Mapping(), _))        => true
       case _                                                    => false
     }
   }
@@ -187,7 +188,8 @@ case object CallsTranslation extends OneToManyTranslator {
             Right(
               List(
                 Operation.New(Data.Struct.empty),
-                Operation.Call(Some(s"vtable_${fullTypeDefName(tpe)}"))
+                Operation.Call(Some(s"vtable_${fullTypeDefName(tpe)}")),
+                Operation.Call(Some(s"default_fields_${fullTypeDefName(tpe)}"))
               ) ++
                 m.params.length
                   .to(1, -1)

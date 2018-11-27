@@ -205,7 +205,7 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/Strings.cs","ec":int32(83)
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/Strings.cs","ec":int32(84)
   }
   jump @ctor_lvc
   @ctor_lvc:

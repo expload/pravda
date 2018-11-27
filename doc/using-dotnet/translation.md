@@ -32,6 +32,9 @@ Things that are *not* supported:
 - Standard C# library (except of some specific functions from the list above);
 - Standard C# collections.
 
+**Important note**: All code placed in `Expload.Pravda` namespace is ignored. 
+It is needed to support stub methods in `Pravda.dll`.
+
 ## Examples
 
 You can look at several examples of test _programs_ to learn current abilities of translation:

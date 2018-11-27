@@ -4,7 +4,7 @@ using Expload.Pravda;
 [Program]
 public class Arrays
 {
-    public Mapping<Bytes, Bytes> BytesMapping = new Mapping<Bytes, Bytes>();
+    private Mapping<Bytes, Bytes> BytesMapping = new Mapping<Bytes, Bytes>();
 
     public void TestByteArrays() {
         byte[] arr1 = new byte[] {1, 2, 3};

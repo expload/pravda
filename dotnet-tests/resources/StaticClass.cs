@@ -1,7 +1,8 @@
 using Expload.Pravda;
 using System;
+using StaticClassUtils;
 
-namespace Expload.Pravda
+namespace StaticClassUtils
 {
     public static class StringUtils
     {

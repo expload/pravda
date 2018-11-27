@@ -4,7 +4,7 @@ using Expload.Pravda;
 [Program]
 public class Strings
 {
-    public Mapping<String, String> StringsMapping = new Mapping<String, String>();
+    private Mapping<String, String> StringsMapping = new Mapping<String, String>();
 
     public void TestStrings()
     {

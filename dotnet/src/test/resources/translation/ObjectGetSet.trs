@@ -43,6 +43,7 @@ translation: |-
   }
   new {}
   call @vtable_SomeClass
+  call @default_fields_SomeClass
   call @func_SomeClass.ctor
   push int32(3)
   swapn
@@ -123,6 +124,17 @@ translation: |-
   @ctor_lvc:
   pop
   jump @stop
+  @default_fields_SomeClass:
+  dup
+  push int32(0)
+  struct_mut "field1"
+  dup
+  push int32(0)
+  struct_mut "<field2>k__BackingField"
+  dup
+  push int32(0)
+  struct_mut "field3"
+  ret
   @func_SomeClass.GetField3:
   push null
   meta source_mark {

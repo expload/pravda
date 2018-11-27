@@ -46,6 +46,7 @@ translation: |-
   push int32(100)
   new {}
   call @vtable_A
+  call @default_fields_A
   push int32(2)
   swapn
   call @func_A.ctor_int32
@@ -58,6 +59,7 @@ translation: |-
   push int32(200)
   new {}
   call @vtable_B
+  call @default_fields_B
   push int32(2)
   swapn
   call @func_B.ctor_int32
@@ -125,6 +127,16 @@ translation: |-
   @ctor_lvc:
   pop
   jump @stop
+  @default_fields_A:
+  dup
+  push int32(0)
+  struct_mut "AVal"
+  ret
+  @default_fields_B:
+  dup
+  push int32(0)
+  struct_mut "BVal"
+  ret
   @func_A.AnswerA:
   push null
   meta source_mark {

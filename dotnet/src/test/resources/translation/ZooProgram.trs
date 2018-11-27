@@ -596,16 +596,16 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(71)
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
   }
   meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(79)
+  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(80)
   }
   meta source_mark {
-  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(77)
+  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(78)
   }
   meta source_mark {
-  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(71)
+  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(72)
   }
   meta source_mark {
   "sl":int32(11),"sc":int32(5),"el":int32(11),"src":"/tmp/pravda/ZooProgram.cs","ec":int32(27)
