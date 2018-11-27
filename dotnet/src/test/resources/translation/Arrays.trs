@@ -263,7 +263,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/Arrays.cs","ec":int32(42)
+  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"/tmp/pravda/Arrays.cs","ec":int32(39)
   }
   push x42797465734D617070696E67
   push int32(10)
@@ -281,7 +281,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(54)
+  "sl":int32(22),"sc":int32(9),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(59)
   }
   push x42797465734D617070696E67
   new int8[8, 9, 10]
@@ -307,10 +307,10 @@ translation: |-
   eq
   jumpi @TestByteArrays_br192
   meta source_mark {
-  "sl":int32(22),"sc":int32(55),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(56)
+  "sl":int32(22),"sc":int32(60),"el":int32(22),"src":"/tmp/pravda/Arrays.cs","ec":int32(61)
   }
   meta source_mark {
-  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"/tmp/pravda/Arrays.cs","ec":int32(56)
+  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"/tmp/pravda/Arrays.cs","ec":int32(53)
   }
   push x42797465734D617070696E67
   push int32(10)

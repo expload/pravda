@@ -78,7 +78,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/Strings.cs","ec":int32(42)
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"/tmp/pravda/Strings.cs","ec":int32(39)
   }
   push x537472696E67734D617070696E67
   push int32(6)
@@ -96,7 +96,7 @@ translation: |-
   pop
   pop
   meta source_mark {
-  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(44)
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(49)
   }
   push x537472696E67734D617070696E67
   push "user1"
@@ -121,10 +121,10 @@ translation: |-
   eq
   jumpi @TestStrings_br87
   meta source_mark {
-  "sl":int32(17),"sc":int32(45),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(46)
+  "sl":int32(17),"sc":int32(50),"el":int32(17),"src":"/tmp/pravda/Strings.cs","ec":int32(51)
   }
   meta source_mark {
-  "sl":int32(18),"sc":int32(11),"el":int32(18),"src":"/tmp/pravda/Strings.cs","ec":int32(43)
+  "sl":int32(18),"sc":int32(11),"el":int32(18),"src":"/tmp/pravda/Strings.cs","ec":int32(40)
   }
   push x537472696E67734D617070696E67
   push "user2"

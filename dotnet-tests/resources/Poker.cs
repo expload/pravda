@@ -16,38 +16,38 @@ class MyProgram
 
     public void Deal(Bytes p1, Bytes p2, Bytes p3, Bytes p4, Bytes p5, Bytes p6, Bytes p7, Bytes p8, Bytes p9)
     {
-        TableCards.put(-1, 0);
+        TableCards[-1] = 0;
         int len = 0;
-        if (p1 != Bytes.EMPTY) Players.put(len++, p1);
-        if (p2 != Bytes.EMPTY) Players.put(len++, p2);
-        if (p3 != Bytes.EMPTY) Players.put(len++, p3);
-        if (p4 != Bytes.EMPTY) Players.put(len++, p4);
-        if (p5 != Bytes.EMPTY) Players.put(len++, p5);
-        if (p6 != Bytes.EMPTY) Players.put(len++, p6);
-        if (p7 != Bytes.EMPTY) Players.put(len++, p7);
-        if (p8 != Bytes.EMPTY) Players.put(len++, p8);
-        Players.put(-1, new Bytes(Convert.ToByte(len)));
+        if (p1 != Bytes.EMPTY) Players[len++] = p1;
+        if (p2 != Bytes.EMPTY) Players[len++] = p2;
+        if (p3 != Bytes.EMPTY) Players[len++] = p3;
+        if (p4 != Bytes.EMPTY) Players[len++] = p4;
+        if (p5 != Bytes.EMPTY) Players[len++] = p5;
+        if (p6 != Bytes.EMPTY) Players[len++] = p6;
+        if (p7 != Bytes.EMPTY) Players[len++] = p7;
+        if (p8 != Bytes.EMPTY) Players[len++] = p8;
+        Players[-1] = new Bytes(Convert.ToByte(len));
     }
     public void DealPublicCard(int card)
     {
-        int len = TableCards.getDefault(-1, 0);
-        TableCards.put(len++, card);
-        TableCards.put(-1, len);
+        int len = TableCards.GetOrDefault(-1, 0);
+        TableCards[len++] = card;
+        TableCards[-1] = len;
     }
     public void DealPrivateCard(int player, Bytes cardHash)
     {
-        Bytes p = Players.getDefault(player, Bytes.EMPTY);
+        Bytes p = Players.GetOrDefault(player, Bytes.EMPTY);
 
         if (p == Bytes.EMPTY)
             return; // no such player!
         
-        if (PlayerCards1.getDefault(p, Bytes.EMPTY) == Bytes.EMPTY)
+        if (PlayerCards1.GetOrDefault(p, Bytes.EMPTY) == Bytes.EMPTY)
         {
-            PlayerCards1.put(p, cardHash);
+            PlayerCards1[p] = cardHash;
         }
         else
         {
-            PlayerCards2.put(p, cardHash);
+            PlayerCards2[p] = cardHash;
         }
     }
     public string Showdown(string cardSalt, Bytes dealtCards)
@@ -56,9 +56,9 @@ class MyProgram
     }
     private string showdown(string cardSalt, Bytes dealtCards)
     {
-        Bytes playersCountB = Players.getDefault(-1, new Bytes(0));
+        Bytes playersCountB = Players.GetOrDefault(-1, new Bytes(0));
         int playersCount = playersCountB[0];
-        int dealt = playersCount * 2 + TableCards.getDefault(-1, 0);
+        int dealt = playersCount * 2 + TableCards.GetOrDefault(-1, 0);
         
         if (dealt != Convert.ToInt32(dealtCards[0])) // length
 	    // should be a built-in error
@@ -71,11 +71,11 @@ class MyProgram
             if (i < (playersCount * 2))
             {
                 Bytes playerCardHash;
-                Bytes p = Players.get(i % playersCount);
+                Bytes p = Players[i % playersCount];
                 if (i < playersCount)
-                    playerCardHash = PlayerCards1.getDefault(p, Bytes.EMPTY);
+                    playerCardHash = PlayerCards1.GetOrDefault(p, Bytes.EMPTY);
                 else
-                    playerCardHash = PlayerCards2.getDefault(p, Bytes.EMPTY);
+                    playerCardHash = PlayerCards2.GetOrDefault(p, Bytes.EMPTY);
                 
                 if (playerCardHash != cardHash)
                     return "cards mismatch! #" + Convert.ToString(i) + " (" + Convert.ToString(card) + ") expected: " + Convert.ToString(playerCardHash) + " got: " + Convert.ToString(cardHash);
@@ -85,28 +85,28 @@ class MyProgram
         int totalWin = 0;
         for (int i = 0; i < playersCount; i++)
         {
-            Bytes player = Players.getDefault(i, Bytes.EMPTY);
-            int bet = Bets.getDefault(player, 0);
+            Bytes player = Players.GetOrDefault(i, Bytes.EMPTY);
+            int bet = Bets.GetOrDefault(player, 0);
             totalWin = totalWin + bet;
-            int bank = Bankrolls.getDefault(player, 0);
-            Bankrolls.put(player, bank - bet);
+            int bank = Bankrolls.GetOrDefault(player, 0);
+            Bankrolls[player] = bank - bet;
         }
         int maxHand = 0;
         Bytes winner = Bytes.EMPTY;
         for (int i = 0; i < playersCount; i++)
         {
-            Bytes player = Players.getDefault(i, Bytes.EMPTY);
-            bool fold = Folded.getDefault(player, false);
+            Bytes player = Players.GetOrDefault(i, Bytes.EMPTY);
+            bool fold = Folded.GetOrDefault(player, false);
             if (!fold)
             {
                 int[] cards = new int[]{
-                    Convert.ToInt32(PlayerCards1.getDefault(player, Bytes.EMPTY)[0]),
-                    Convert.ToInt32(PlayerCards2.getDefault(player, Bytes.EMPTY)[0]),
-                    TableCards.getDefault(0, -1),
-                    TableCards.getDefault(1, -1),
-                    TableCards.getDefault(2, -1),
-                    TableCards.getDefault(3, -1),
-                    TableCards.getDefault(4, -1),
+                    Convert.ToInt32(PlayerCards1.GetOrDefault(player, Bytes.EMPTY)[0]),
+                    Convert.ToInt32(PlayerCards2.GetOrDefault(player, Bytes.EMPTY)[0]),
+                    TableCards.GetOrDefault(0, -1),
+                    TableCards.GetOrDefault(1, -1),
+                    TableCards.GetOrDefault(2, -1),
+                    TableCards.GetOrDefault(3, -1),
+                    TableCards.GetOrDefault(4, -1),
                 };
                
                 int temp = 0;
@@ -137,24 +137,24 @@ class MyProgram
         if (winner == Bytes.EMPTY)
             return "couldn't find winner!";
         
-        int wbank = Bankrolls.getDefault(winner, 0);
-        Bankrolls.put(winner, wbank + totalWin);
+        int wbank = Bankrolls.GetOrDefault(winner, 0);
+        Bankrolls[winner] = wbank + totalWin;
 
         return "success!";
     } 
     public void CreatePlayer(Bytes p, int bankroll)
     {
-        Bankrolls.put(p, bankroll);
+        Bankrolls[p] = bankroll;
     }
     public string UpdateBet(Bytes p, int bet)
     {
-        int old = Bets.getDefault(p, 0);
+        int old = Bets.GetOrDefault(p, 0);
         if (bet <= old)
             return "bet is lower than before! old: " + Convert.ToString(old) + ", new: " + Convert.ToString(bet);
-        if (bet > Bankrolls.getDefault(p, 0))
-            return "not enough bankroll! bet: " + Convert.ToString(bet) + ", bankroll: " + Convert.ToString(Bankrolls.getDefault(p, 0));
+        if (bet > Bankrolls.GetOrDefault(p, 0))
+            return "not enough bankroll! bet: " + Convert.ToString(bet) + ", bankroll: " + Convert.ToString(Bankrolls.GetOrDefault(p, 0));
         
-        Bets.put(p, bet);
+        Bets[p] = bet;
         return "success!";
     }
 

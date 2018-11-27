@@ -10,10 +10,26 @@ namespace Expload.Pravda {
 
     // Access to the storage
     public class Mapping<K, V> {
-       public V get(K key) { return default(V); }
-       public bool exists(K key) { return false; }
-       public void put(K key, V value) { return; }
-       public V getDefault(K key, V def) { return default(V); }
+        
+        public V this[K k] {
+            get { 
+                return default(V);
+            } 
+            set {
+                return;
+            }
+        }
+
+        // Checks the specified key is present in the mapping.
+        public bool ContainsKey(K key) {
+            return false;
+        }
+        
+        // Gets the value associated with the specified key.
+        // If key is not fount returns defaultValue.
+        public V GetOrDefault(K key, V defaultValue) { 
+            return default(V); 
+        }
     }
 
     public class Info {
@@ -60,7 +76,7 @@ namespace Expload.Pravda {
        public Bytes(String hex) {}
 
        // Get the i-th byte
-       public byte this[int i] { get { return 0; } set { return; } }
+       public byte this[int i] { get { return 0; } }
        // Get the sub-array
        public Bytes Slice(int start, int length) { return null; }
        // Concatenate two Bytes

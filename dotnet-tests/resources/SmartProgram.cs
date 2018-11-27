@@ -8,15 +8,15 @@ public class SmartProgram
 
     public int BalanceOf(Bytes tokenOwner)
     {
-        return Balances.getDefault(tokenOwner, 0);
+        return Balances.GetOrDefault(tokenOwner, 0);
     }
 
     public void Transfer(Bytes to, int tokens)
     {
         if (tokens > 0) {
-            if (Balances.getDefault(Info.Sender(), 0) >= tokens) {
-                Balances.put(Info.Sender(), Balances.getDefault(Info.Sender(), 0) - tokens);
-                Balances.put(to, Balances.getDefault(to, 0) + tokens);
+            if (Balances.GetOrDefault(Info.Sender(), 0) >= tokens) {
+                Balances[Info.Sender()] = Balances.GetOrDefault(Info.Sender(), 0) - tokens;
+                Balances[to] = Balances.GetOrDefault(to, 0) + tokens;
             }
         }
     }
@@ -24,7 +24,7 @@ public class SmartProgram
     public void Emit(Bytes owner, int tokens)
     {
         if (tokens > 0) {
-            Balances.put(owner, Balances.getDefault(owner, 0) + tokens);
+            Balances[owner] = Balances.GetOrDefault(owner, 0) + tokens;
         }
     }
 

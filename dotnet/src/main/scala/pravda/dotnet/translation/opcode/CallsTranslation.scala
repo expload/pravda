@@ -30,7 +30,7 @@ import pravda.vm.{Data, Opcodes}
 
 case object CallsTranslation extends OneToManyTranslator {
 
-  private val mappingsMethods = Set("get", "getDefault", "exists", "put")
+  private val mappingsMethods = Set("get_Item", "GetOrDefault", "ContainsKey", "set_Item")
 
   def detectMapping(sig: Signature): Boolean = {
     sig match {
@@ -257,19 +257,19 @@ case object CallsTranslation extends OneToManyTranslator {
         } yield {
           if (detectMapping(parentSig)) {
             name match {
-              case "get" =>
+              case "get_Item" =>
                 Right(
                   cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),
                                                 Operation(Opcodes.CONCAT),
                                                 Operation(Opcodes.SGET)))
 
-              case "getDefault" => Right(List(Operation.Call(Some("stdlib_storage_get_default"))))
-              case "exists" =>
+              case "GetOrDefault" => Right(List(Operation.Call(Some("stdlib_storage_get_default"))))
+              case "ContainsKey" =>
                 Right(
                   cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),
                                                 Operation(Opcodes.CONCAT),
                                                 Operation(Opcodes.SEXIST)) ++ cast(Data.Type.Int32))
-              case "put" =>
+              case "set_Item" =>
                 Right(
                   dupn(2) ++ cast(Data.Type.Bytes) ++ dupn(4) ++
                     List(

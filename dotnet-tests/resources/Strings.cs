@@ -13,9 +13,9 @@ public class Strings
         string er2 = "er2";
         string user = us + er2;
 
-        StringsMapping.put(user, salary);
-        if (StringsMapping.exists("user1")) {
-          StringsMapping.put("user2", "");
+        StringsMapping[user] = salary;
+        if (StringsMapping.ContainsKey("user1")) {
+          StringsMapping["user2"] = "";
         }
 
         char c0 = salary[0];
