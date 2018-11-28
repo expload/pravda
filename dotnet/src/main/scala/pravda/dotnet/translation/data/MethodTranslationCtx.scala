@@ -29,7 +29,7 @@ final case class TranslationCtx(
     programClasses: List[TypeDefData],
     structs: List[TypeDefData],
     namesToMethodDefs: Map[String, MethodDefData],
-    methodParents: Vector[Option[TypeDefData]],
+    methodParents: Map[MethodDefData, TypeDefData],
     pdbTables: Option[TablesData]
 ) {
 

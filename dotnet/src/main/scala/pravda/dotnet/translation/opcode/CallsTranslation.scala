@@ -60,6 +60,9 @@ case object CallsTranslation extends OneToManyTranslator {
   def fullTypeDefName(typeDefData: TypeDefData): String =
     fullTypeName(typeDefData.namespace, typeDefData.name)
 
+  def fullTypeMethodName(typeDef: TypeDefData, methodName: String, sig: Option[Signature]): String =
+    s"${fullTypeDefName(typeDef)}.${fullMethodName(methodName, sig)}"
+
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
     def callMethodDef(m: MethodDefData): Int = {
       val void = MethodExtractors.isVoid(m, ctx.tctx.signatures)
@@ -156,7 +159,6 @@ case object CallsTranslation extends OneToManyTranslator {
         Right(List(Operation.Call(Some(s"func_${m.name}"))))
       } else {
         val tpeO = ctx.tctx.tpeByMethodDef(m)
-        println(tpeO)
         tpeO match {
           case Some(tpe) =>
             Right(
@@ -317,8 +319,8 @@ case object CallsTranslation extends OneToManyTranslator {
       case NewObj(m: MethodDefData)   => newObj(m)
 
       case Call(m: MemberRefData)     => refToDef(m).map(callFunc).getOrElse(Left(UnknownOpcode))
-      case CallVirt(m: MemberRefData) => refToDef(m).map(callFunc).getOrElse(Left(UnknownOpcode))
-      case NewObj(m: MemberRefData)   => refToDef(m).map(callFunc).getOrElse(Left(UnknownOpcode))
+      case CallVirt(m: MemberRefData) => refToDef(m).map(callVirt).getOrElse(Left(UnknownOpcode))
+      case NewObj(m: MemberRefData)   => refToDef(m).map(newObj).getOrElse(Left(UnknownOpcode))
 
       case _ => Left(UnknownOpcode)
     }

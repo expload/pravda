@@ -332,28 +332,25 @@ object Translator {
           .toRight(TranslationError(InternalError(s"Unable to find $name class with [Program] attribute"), None))
     }
 
-    val methodParents: List[Vector[Option[TypeDefData]]] = files.map { f =>
+    val methodParents: Map[MethodDefData, TypeDefData] = files.flatMap { f =>
       val tables = f.parsedPe.cilData.tables
+      val signatures = f.parsedPe.signatures
 
-      tables.methodDefTable.map { m => tables.typeDefTable.find(_.methods.exists(_ == m))
+      tables.methodDefTable.flatMap { m =>
+        val parent = tables.typeDefTable.find(_.methods.exists(_ == m))
+        parent.map(p => m -> p)
       }
-    }
+    }.toMap
 
-    val namesToMethods = files
-      .zip(methodParents)
-      .flatMap {
-        case (f, typeDefs) =>
-          val tables = f.parsedPe.cilData.tables
-          val signatures = f.parsedPe.signatures
+    val methodDefs: Map[String, MethodDefData] = files.flatMap { f =>
+      val tables = f.parsedPe.cilData.tables
+      val signatures = f.parsedPe.signatures
 
-          tables.methodDefTable.zip(typeDefs).flatMap {
-            case (method, typeDef) =>
-              typeDef.map(t =>
-                s"${CallsTranslation.fullTypeDefName(t)}.${CallsTranslation
-                  .fullMethodName(method.name, signatures.get(method.signatureIdx))}" -> method)
-          }
+      tables.methodDefTable.flatMap { m =>
+        val parent = methodParents.get(m)
+        parent.map(p => CallsTranslation.fullTypeMethodName(p, m.name, signatures.get(m.signatureIdx)) -> m)
       }
-      .toMap
+    }.toMap
 
     mainProgramClassE.flatMap { mainCls =>
       val translations = for {
@@ -367,12 +364,12 @@ object Translator {
                                             mainCls,
                                             programClasses,
                                             structs,
-                                            namesToMethods,
-                                            parents,
+                                            methodDefs,
+                                            methodParents,
                                             f.parsedPdb.map(_.tablesData))
 
-        val methods = f.parsedPe.methods.zip(parents)
-          .filter { case (m, p) => p.forall(_.namespace != "Expload.Pravda") }
+        val methods = f.parsedPe.methods
+          .filter { m => methodParents.get(m).forall(_.namespace != "Expload.Pravda") }
           .map(_._1)
 
         for {
