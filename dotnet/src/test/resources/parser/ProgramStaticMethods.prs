@@ -1,0 +1,128 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ProgramStaticMethods.dll
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ProgramStaticMethods.cs
+    optimize: false
+  - target: ProgramStaticMethodsCheck.exe
+    sources:
+    - Pravda.dll
+    - ProgramStaticMethods.dll
+    - dotnet-tests/resources/ProgramStaticMethodsCheck.cs
+    optimize: false
+  main-class: ProgramNamespace.ProgramStaticMethodsCheck
+---
+methods: |-
+  List(
+    Method(
+      List(
+        Nop,
+        Call(
+          MemberRefData(
+            TypeRefData(14L, "ProgramStaticMethods", "ProgramNamespace"),
+            "GetInstance",
+            25L
+          )
+        ),
+        StLoc0,
+        LdLoc0,
+        LdcI42,
+        LdcI42,
+        CallVirt(
+          MemberRefData(TypeRefData(14L, "ProgramStaticMethods", "ProgramNamespace"), "Add", 30L)
+        ),
+        StLoc1,
+        LdLoc0,
+        LdcI4S(10),
+        LdcI4S(10),
+        CallVirt(
+          MemberRefData(TypeRefData(14L, "ProgramStaticMethods", "ProgramNamespace"), "Add", 30L)
+        ),
+        StLoc2,
+        LdLoc0,
+        LdcI4(300),
+        LdcI4(300),
+        CallVirt(
+          MemberRefData(TypeRefData(14L, "ProgramStaticMethods", "ProgramNamespace"), "Add", 30L)
+        ),
+        StLoc3,
+        LdLoc1,
+        LdLoc2,
+        Add,
+        LdLoc3,
+        Add,
+        StLocS(4),
+        BrS(0),
+        LdLocS(4),
+        Ret
+      ),
+      3,
+      Some(16L)
+    ),
+    Method(List(Nop, Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      LocalVarSig(
+        List(
+          LocalVar(Cls(TypeRefData(14L, "ProgramStaticMethods", "ProgramNamespace")), false),
+          LocalVar(I4, false),
+          LocalVar(I4, false),
+          LocalVar(I4, false),
+          LocalVar(I4, false)
+        )
+      )
+    ),
+    (
+      25L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Cls(TypeRefData(14L, "ProgramStaticMethods", "ProgramNamespace")), false),
+        List()
+      )
+    ),
+    (
+      30L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(I4, false),
+        List(Tpe(I4, false), Tpe(I4, false))
+      )
+    ),
+    (45L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (49L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

@@ -18,7 +18,7 @@
 package pravda.dotnet.translation.data
 
 import pravda.dotnet.data.TablesData
-import pravda.dotnet.data.TablesData.{MethodDebugInformationData, MethodDefData, TypeDefData}
+import pravda.dotnet.data.TablesData.{FieldData, MethodDebugInformationData, MethodDefData, TypeDefData}
 import pravda.dotnet.parser.CIL.CilData
 import pravda.dotnet.parser.Signatures
 
@@ -28,48 +28,20 @@ final case class TranslationCtx(
     mainProgramClass: TypeDefData,
     programClasses: List[TypeDefData],
     structs: List[TypeDefData],
-    namesToMethodDefs: Map[String, MethodDefData],
-    methodParents: Map[MethodDefData, TypeDefData],
+    methodIndex: TypeDefInvertedFileIndex[MethodDefData],
+    fieldIndex: TypeDefInvertedFileIndex[FieldData],
     pdbTables: Option[TablesData]
 ) {
 
-  def typeDefByField(idx: Int): Option[TypeDefData] =
-    cilData.tables.typeDefTable.find(_.fields.exists(_.id == idx))
+  def fieldParent(fileIdx: Int): Option[TypeDefData] = fieldIndex.parent(fileIdx)
 
-  def tpeByMethodDef(m: TablesData.MethodDefData): Option[TypeDefData] = {
-    val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
-    if (idx == -1) {
-      None
-    } else {
-      methodParents(idx)
-    }
-  }
+  def isMainProgramMethod(fileIdx: Int): Boolean =
+    methodIndex.parent(fileIdx).contains(mainProgramClass)
 
-  def isMainProgramMethod(idx: Int): Boolean =
-    methodParents(idx).contains(mainProgramClass)
+  def isProgramMethod(fileIdx: Int): Boolean =
+    methodIndex.parent(fileIdx).exists(programClasses.contains)
 
-  def isMainProgramMethod(m: TablesData.MethodDefData): Boolean = {
-    val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
-    if (idx == -1) {
-      false
-    } else {
-      isMainProgramMethod(idx)
-    }
-  }
-
-  def isProgramMethod(idx: Int): Boolean =
-    methodParents(idx).exists(programClasses.contains)
-
-  def isProgramMethod(m: TablesData.MethodDefData): Boolean = {
-    val idx = cilData.tables.methodDefTable.indexWhere(_ == m)
-    if (idx == -1) {
-      false
-    } else {
-      isProgramMethod(idx)
-    }
-  }
-
-  def methodRow(idx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(idx)
+  def methodRow(fileIdx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(idx)
 }
 
 final case class MethodTranslationCtx(

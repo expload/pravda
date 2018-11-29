@@ -61,14 +61,14 @@ object Translator {
       val methodNames = typeDefData.methods.flatMap {
         case m @ MethodDefData(_, _, flags, name, sigIdx, _) =>
           if (MethodExtractors.isVirtual(m)) {
-            Some(CallsTranslation.fullMethodName(name, tctx.signatures.get(sigIdx)))
+            Some(NamesBuilder.fullMethod(name, tctx.signatures.get(sigIdx)))
           } else {
             None
           }
       }
 
       val notUsedMethods = methodNames.filter(name => !usedMethods.contains(name))
-      val notUsedMethodsWithType = notUsedMethods.map((_, CallsTranslation.fullTypeDefName(typeDefData)))
+      val notUsedMethodsWithType = notUsedMethods.map((_, NamesBuilder.fullTypeDef(typeDefData)))
 
       typeDefData.parent match {
         case typeDef: TypeDefData =>
@@ -153,7 +153,7 @@ object Translator {
         case Some(f) =>
           Left(
             TranslationError(InternalError(s"[Program] must not contain static fields: " +
-                               s"${CallsTranslation.fullTypeDefName(typeDef)} contains static ${f.name}"),
+                               s"${NamesBuilder.fullTypeDef(typeDef)} contains static ${f.name}"),
                              None))
         case None =>
           Right(())
@@ -169,7 +169,7 @@ object Translator {
         Left(
           TranslationError(
             InternalError(
-              s"All Mapping must be private: ${f.name} in ${CallsTranslation.fullTypeDefName(typeDef)} is not private"),
+              s"All Mapping must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
             None))
       } else {
         Right(())
@@ -190,8 +190,8 @@ object Translator {
         } yield CallsTranslation.detectMapping(parentSig)
 
         if (isMapping.getOrElse(false)) {
-          Left(TranslationError(InternalError(s"User defined classes must not contain Mappings: ${CallsTranslation
-            .fullTypeDefName(typeDef)} contains ${f.name}"), None))
+          Left(TranslationError(InternalError(s"User defined classes must not contain Mappings: ${NamesBuilder
+            .fullTypeDef(typeDef)} contains ${f.name}"), None))
         } else {
           Right(())
         }
@@ -310,8 +310,11 @@ object Translator {
       )
   }
 
-  def translateVerbose(files: List[ParsedDotnetFile],
+  def translateVerbose(rawFiles: List[ParsedDotnetFile],
                        mainClass: Option[String]): Either[TranslationError, Translation] = {
+    val files =
+      rawFiles.filterNot(f => f.parsedPdb.exists(_.tablesData.documentTable.exists(_.path.endsWith("Pravda.cs"))))
+
     val programClasses = files.flatMap(f =>
       f.parsedPe.cilData.tables.customAttributeTable.collect {
         case CustomAttributeData(td: TypeDefData,
@@ -328,64 +331,50 @@ object Translator {
         }
       case Some(name) =>
         programClasses
-          .find(cls => CallsTranslation.fullTypeDefName(cls) == name)
+          .find(cls => NamesBuilder.fullTypeDef(cls) == name)
           .toRight(TranslationError(InternalError(s"Unable to find $name class with [Program] attribute"), None))
     }
 
-    val methodParents: Map[MethodDefData, TypeDefData] = files.flatMap { f =>
-      val tables = f.parsedPe.cilData.tables
-      val signatures = f.parsedPe.signatures
+    val structs = files.flatMap(f => f.parsedPe.cilData.tables.typeDefTable).filterNot(programClasses.contains)
 
-      tables.methodDefTable.flatMap { m =>
-        val parent = tables.typeDefTable.find(_.methods.exists(_ == m))
-        parent.map(p => m -> p)
-      }
-    }.toMap
+    val methodIndexes = TypeDefInvertedFileIndex(files.map(_.parsedPe.cilData.tables.typeDefTable),
+      _.methods,
+      NamesBuilder.fullMethod)
 
-    val methodDefs: Map[String, MethodDefData] = files.flatMap { f =>
-      val tables = f.parsedPe.cilData.tables
-      val signatures = f.parsedPe.signatures
-
-      tables.methodDefTable.flatMap { m =>
-        val parent = methodParents.get(m)
-        parent.map(p => CallsTranslation.fullTypeMethodName(p, m.name, signatures.get(m.signatureIdx)) -> m)
-      }
-    }.toMap
+    val fieldIndexes = TypeDefInvertedFileIndex[FieldData](files.map(_.parsedPe.cilData.tables.typeDefTable), _.fields, _.name)
 
     mainProgramClassE.flatMap { mainCls =>
       val translations = for {
-        (f, parents) <- files.zip(methodParents)
+        ((f, methodIndex), fieldIndex) <- files.zip(methodIndexes).zip(fieldIndexes)
       } yield {
-        val tables = f.parsedPe.cilData.tables
-        val structs = tables.typeDefTable.filterNot(programClasses.contains).toList
 
-        val translationCtx = TranslationCtx(f.parsedPe.signatures,
-                                            f.parsedPe.cilData,
-                                            mainCls,
-                                            programClasses,
-                                            structs,
-                                            methodDefs,
-                                            methodParents,
-                                            f.parsedPdb.map(_.tablesData))
-
-        val methods = f.parsedPe.methods
-          .filter { m => methodParents.get(m).forall(_.namespace != "Expload.Pravda") }
-          .map(_._1)
+        val translationCtx = TranslationCtx(
+          f.parsedPe.signatures,
+          f.parsedPe.cilData,
+          mainCls,
+          programClasses,
+          structs,
+          methodIndex,
+          fieldIndex,
+          f.parsedPdb.map(_.tablesData)
+        )
 
         for {
           _ <- programClasses.map(td => inspectProgramTypeDef(td, translationCtx)).sequence
           _ <- structs.map(td => inspectStructTypeDef(td, translationCtx)).sequence
-          res <- translateAllMethods(methods, translationCtx)
+          res <- translateAllMethods(f.parsedPe.methods, translationCtx)
         } yield res
       }
 
-      val file =
+      val all =
         (translations.sequence: Either[TranslationError, List[FileTranslation]]).map(_.reduce[FileTranslation] {
           case (FileTranslation(methods1, funcs1), FileTranslation(methods2, funcs2)) =>
             FileTranslation(methods1 ++ methods2, funcs1 ++ funcs2)
         })
 
-      file.map(Translation(_, CallsTranslation.fullTypeDefName(mainCls).replace(".", "")))
+      val clearedAll = all.map(a => a.copy(funcs = eliminateDeadFuncs(a.methods, a.funcs ++ StdlibAsm.stdlibFuncs)))
+
+      clearedAll.map(Translation(_, NamesBuilder.fullTypeDef(mainCls).replace(".", "")))
     }
   }
 
@@ -464,6 +453,7 @@ object Translator {
       ops <- ctor match {
         case Some(i) =>
           val method = methods(i)
+          println(tctx.methodParents(tctx.methodRow(i)))
           val prefix = List(
             Operation.Push(Data.Primitive.Utf8("init")),
             Operation(Opcodes.SEXIST),
@@ -558,7 +548,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodParents(i).get
+          val tpe = tctx.methodParents(methodRow)
           val structName = CallsTranslation.fullTypeDefName(tpe)
           val name = s"$structName.$methodName"
 
@@ -588,7 +578,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodParents(i).get
+          val tpe = tctx.methodParents(methodRow)
           val structName = CallsTranslation.fullTypeDefName(tpe)
           val name = s"$structName.$methodName"
 
@@ -618,7 +608,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodParents(i).get
+          val tpe = tctx.methodParents(methodRow)
           val structName = CallsTranslation.fullTypeDefName(tpe)
           val name = s"$structName.$methodName"
 
@@ -676,7 +666,7 @@ object Translator {
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
       val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
-      FileTranslation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
+      FileTranslation(methodsOps, funcsOps)
     }
   }
 

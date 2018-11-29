@@ -24,3 +24,22 @@ dotnet-compilation:
     - dotnet-tests/resources/ProgramStaticMethodsCheck.cs
   main-class: ProgramNamespace.ProgramStaticMethodsCheck
 ---
+stack:
+  - int32.624
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: 123456789012345678901234567890123456789012345678901234567890abcd
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: 123456789012345678901234567890123456789012345678901234567890abcd
+    key: utf8.init
+    value: "null"
+  - eventType: StorageRead
+    program: 123456789012345678901234567890123456789012345678901234567890abcd
+    key: utf8.init
+    value: "null"

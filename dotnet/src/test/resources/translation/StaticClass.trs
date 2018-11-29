@@ -43,10 +43,10 @@ translation: |-
   push int32(3)
   dupn
   call @func_StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes
-  push int32(1)
+  push int32(2)
   swapn
   pop
-  push int32(0)
+  push int32(1)
   dupn
   meta source_mark {
   "sl":int32(68),"sc":int32(5),"el":int32(68),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(6)

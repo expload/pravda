@@ -1,0 +1,188 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ProgramStaticMethods.dll
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ProgramStaticMethods.cs
+    optimize: false
+  - target: ProgramStaticMethodsCheck.exe
+    sources:
+    - Pravda.dll
+    - ProgramStaticMethods.dll
+    - dotnet-tests/resources/ProgramStaticMethodsCheck.cs
+    optimize: false
+  main-class: ProgramNamespace.ProgramStaticMethodsCheck
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "ProgramNamespaceProgramStaticMethodsCheck"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestStaticMethods"
+  eq
+  jumpi @method_TestStaticMethods
+  push "Wrong method name"
+  throw
+  @method_TestStaticMethods:
+  meta method {
+  "name":"TestStaticMethods","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(58)
+  }
+  call @func_ProgramNamespace.ProgramStaticMethods.GetInstance
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(13),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(35)
+  }
+  push int32(5)
+  dupn
+  push int32(2)
+  push int32(2)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(13),"el":int32(13),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(37)
+  }
+  push int32(5)
+  dupn
+  push int32(10)
+  push int32(10)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(13),"el":int32(14),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(39)
+  }
+  push int32(5)
+  dupn
+  push int32(300)
+  push int32(300)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(16),"sc":int32(13),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(30)
+  }
+  push int32(4)
+  dupn
+  push int32(4)
+  dupn
+  add
+  push int32(3)
+  dupn
+  add
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethodsCheck.cs","ec":int32(10)
+  }
+  push int32(1)
+  dupn
+  jump @TestStaticMethods_lvc
+  @TestStaticMethods_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @func_ProgramNamespace.ProgramStaticMethods.GetInstance:
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethods.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(13),"el":int32(13),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethods.cs","ec":int32(16)
+  }
+  push "123456789012345678901234567890123456789012345678901234567890ABCD"
+  push int32(4)
+  scall
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/ProgramStaticMethods.cs","ec":int32(10)
+  }
+  jump @ProgramNamespace.ProgramStaticMethods.GetInstance_lvc
+  @ProgramNamespace.ProgramStaticMethods.GetInstance_lvc:
+  swap
+  pop
+  ret
+  @stop:

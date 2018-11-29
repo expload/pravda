@@ -40,34 +40,12 @@ case object CallsTranslation extends OneToManyTranslator {
     }
   }
 
-  def fullMethodName(name: String, sigO: Option[Signature]): String = {
-    val normalizedName = if (name == ".ctor" || name == ".cctor") name.drop(1) else name
-    val sigParams = sigO.collect { case m: MethodRefDefSig => m.params }.getOrElse(List.empty)
-    if (sigParams.nonEmpty) {
-      s"${normalizedName}_${sigParams.map(_.tpe.mkString).mkString("_")}"
-    } else {
-      normalizedName
-    }
-  }
-
-  def fullTypeName(namespace: String, name: String): String =
-    if (namespace.nonEmpty) {
-      s"$namespace.$name"
-    } else {
-      name
-    }
-
-  def fullTypeDefName(typeDefData: TypeDefData): String =
-    fullTypeName(typeDefData.namespace, typeDefData.name)
-
-  def fullTypeMethodName(typeDef: TypeDefData, methodName: String, sig: Option[Signature]): String =
-    s"${fullTypeDefName(typeDef)}.${fullMethodName(methodName, sig)}"
-
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
     def callMethodDef(m: MethodDefData): Int = {
       val void = MethodExtractors.isVoid(m, ctx.tctx.signatures)
-      val program = ctx.tctx.isMainProgramMethod(m)
-      -m.params.length + (if (void) 0 else 1) + (if (program || ctx.static) 0 else -1)
+      val static = MethodExtractors.isStatic(m)
+      val program = ctx.tctx.isProgramMethod(m)
+      -m.params.length + (if (void) 0 else 1) + (if (program || static) 0 else -1)
     }
 
     def callMethodRef(signatureIdx: Long): Int = {
@@ -158,7 +136,7 @@ case object CallsTranslation extends OneToManyTranslator {
       if (ctx.tctx.isMainProgramMethod(m)) {
         Right(List(Operation.Call(Some(s"func_${m.name}"))))
       } else {
-        val tpeO = ctx.tctx.tpeByMethodDef(m)
+        val tpeO = ctx.tctx.methodParents.get(m)
         tpeO match {
           case Some(tpe) =>
             Right(
@@ -196,7 +174,7 @@ case object CallsTranslation extends OneToManyTranslator {
       }
 
     def newObj(m: MethodDefData): Either[InnerTranslationError, List[Operation]] = {
-      val tpeO = ctx.tctx.tpeByMethodDef(m)
+      val tpeO = ctx.tctx.methodParents.get(m)
       tpeO match {
         case Some(tpe) =>
           Right(
