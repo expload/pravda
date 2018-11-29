@@ -96,6 +96,7 @@ case object CallsTranslation extends OneToManyTranslator {
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "Ripemd160", _))                => Right(0)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "ValidateEd25519Signature", _)) => Right(-2)
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "HexToBytes", _))               => Right(0)
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "BytesToHex", _))               => Right(0)
       case Call(MemberRefData(TypeRefData(_, "Error", "Expload.Pravda"), "Throw", _))                     => Right(-1)
       case Call(MethodSpecData(MemberRefData(TypeRefData(_, "ProgramHelper", "Expload.Pravda"), "Program", _), _)) =>
         Right(0)
@@ -243,6 +244,8 @@ case object CallsTranslation extends OneToManyTranslator {
         Right(List(Operation.Push(Data.Primitive.Int32(2)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "HexToBytes", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(4)), Operation(Opcodes.SCALL)))
+      case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "BytesToHex", _)) =>
+        Right(List(Operation.Push(Data.Primitive.Int32(5)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "StdLib", "Expload.Pravda"), "ValidateEd25519Signature", _)) =>
         Right(List(Operation.Push(Data.Primitive.Int32(1)), Operation(Opcodes.SCALL)))
       case Call(MemberRefData(TypeRefData(_, "Error", "Expload.Pravda"), "Throw", _)) =>
