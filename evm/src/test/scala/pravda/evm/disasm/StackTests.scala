@@ -11,6 +11,10 @@ object StackTests extends TestSuite {
       stack.pop ==> Tuple2(3, StackList(2, 1))
       stack.pop._2.pop ==> Tuple2(2, StackList(1))
 
+      stack.pop(1) ==> Tuple2(List(3), StackList(2, 1))
+      stack.pop(2) ==> Tuple2(List(3, 2), StackList(1))
+      stack.pop(3) ==> Tuple2(List(3, 2, 1), StackList())
+
       stack.swap(1) ==> StackList(2, 3, 1)
       stack.swap(2) ==> StackList(1, 2, 3)
 

@@ -40,7 +40,7 @@ object Translator {
   val startLabelName = "__start_evm_program"
 
   def apply(ops: List[EVM.Op], abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
-    val (funcs, _, _) = ABIObject.split(abi)
+    val (funcs, _, _) = ABIObject.unzip(abi)
     FunctionSelectorTranslator
       .evmToOps(ops, funcs)
       .map({

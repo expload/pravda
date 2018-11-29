@@ -29,9 +29,7 @@ object Blocks {
     @tailrec def split(ops: List[Op], acc: List[List[Op]]): List[List[Op]] = ops match {
       case Nil                        => acc.reverse
       case JumpDest :: xs             => split(xs, List(JumpDest) :: acc)
-      case JumpDest(addr) :: xs       => split(xs, List(JumpDest(addr)) :: acc)
-      case Jump :: xs                 => split(xs, Nil :: (Jump :: acc.head).reverse :: acc.tail)
-      case JumpI :: xs                => split(xs, Nil :: (JumpI :: acc.head).reverse :: acc.tail)
+      case JumpDest(addr) :: xs       => split(xs, List(JumpDest(addr)) :: acc.head.reverse :: acc.tail)
       case SelfAddressedJump(n) :: xs => split(xs, Nil :: (SelfAddressedJump(n) :: acc.head).reverse :: acc.tail)
       case SelfAddressedJumpI(n) :: xs =>
         split(xs, (SelfAddressedJumpI(n) :: Nil) :: (SelfAddressedJumpI(n) :: acc.head).reverse :: acc.tail)
@@ -47,7 +45,7 @@ object Blocks {
   }
 
   case class WithJumpDest(dest: JumpDest, ops: List[Op])
-  case class JumpIContinuation(jumpi: SelfAddressedJumpI, ops: List[Op])
+  case class WithJumpI(jumpi: SelfAddressedJumpI, ops: List[Op])
   case class Jumpable(withJumpdest: List[WithJumpDest], withoutJumpdest: List[List[Op]])
 
   def jumpable(blocks: List[List[Op]]): Jumpable = {
@@ -60,9 +58,9 @@ object Blocks {
     }), withoutJ)
   }
 
-  def continuation(blocks: List[List[Op]]): List[JumpIContinuation] = {
+  def continuation(blocks: List[List[Op]]): List[WithJumpI] = {
     blocks.collect({
-      case SelfAddressedJumpI(addr) :: xs => JumpIContinuation(SelfAddressedJumpI(addr), xs)
+      case SelfAddressedJumpI(addr) :: xs => WithJumpI(SelfAddressedJumpI(addr), xs)
     })
   }
 
@@ -93,12 +91,16 @@ object Blocks {
 
         val addressedCreative = creative.map({
           case (ind, JumpDest) => ind -> JumpDest(ind)
-          case (ind, x)        => ind -> x
+
+          case (ind, x) => ind -> x
         })
 
         val addressedRuntime = runtime.map({
-          case (ind, JumpDest) => (ind - offset) -> JumpDest(ind - offset)
-          case (ind, x)        => (ind - offset) -> x
+          case (ind, JumpDest)              => (ind - offset) -> JumpDest(ind - offset)
+          case (ind, SelfAddressedJump(_))  => (ind - offset) -> SelfAddressedJump(ind - offset)
+          case (ind, SelfAddressedJumpI(_)) => (ind - offset) -> SelfAddressedJumpI(ind - offset)
+
+          case (ind, x) => (ind - offset) -> x
         })
         addressedCreative -> addressedRuntime
       })

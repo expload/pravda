@@ -183,10 +183,10 @@ object EVM {
     (0xa0 to 0xa4, i => Log(i - 0xa0))
   )
 
-  sealed trait Type
+  sealed trait AbiType
 
-  sealed trait Fixed   extends Type
-  sealed trait Dynamic extends Type
+  sealed trait Fixed   extends AbiType
+  sealed trait Dynamic extends AbiType
 
   final case class UInt(bytes: Int) extends Fixed
   final case class SInt(bytes: Int) extends Fixed

@@ -18,7 +18,7 @@
 package pravda.evm.disasm
 
 import pravda.evm.EVM.{Op, _}
-import pravda.evm.disasm.Blocks.{JumpIContinuation, WithJumpDest}
+import pravda.evm.disasm.Blocks.{WithJumpI, WithJumpDest}
 
 import scala.annotation.tailrec
 
@@ -38,36 +38,6 @@ case class HistoryRecord(op: Op, args: List[StackItem])
 
 object Emulator {
 
-  /*
-  def evalCommand(state: Stack[StackItem],op: Op,f: (BigInt) => BigInt): Stack[StackItem] ={
-    val (first,res) = state.pop
-    (first) match {
-      case Number(a) => res push Number(f(a))
-      case a =>  res push Expr1(op,a)
-    }
-  }
-
-  def evalCommand(state: Stack[StackItem],op: Op,f: BigInt => BigInt => BigInt): Stack[StackItem] ={
-    val (first,tail) = state.pop
-    val (second,res) = tail.pop
-    (first,second) match {
-      case (Number(a),Number(b)) => res push Number(f(a)(b))
-      case (a,b) =>  res push Expr2(op,a,b)
-    }
-  }
-
-  def evalCommand(state: Stack[StackItem],op: Op,f: BigInt => BigInt => BigInt => BigInt): Stack[StackItem] ={
-    val (first,tail) = state.pop
-    val (second,tail1) = tail.pop
-    val (third,res) = tail1.pop
-
-    (first,second,third) match {
-      case (Number(a),Number(b),Number(c)) => res push Number(f(a)(b)(c))
-      case (a,b,c) =>  res push Expr3(op,a,b,c)
-    }
-  }
-   */
-
   @tailrec def eval(ops: List[Op],
                     state: Stack[StackItem],
                     history: List[HistoryRecord]): (Stack[StackItem], List[HistoryRecord]) = {
@@ -76,23 +46,24 @@ object Emulator {
       case Push(n) :: xs                   => eval(xs, state push Number(BigInt(1, n.toArray)), HistoryRecord(Push(n), Nil) :: history)
       case Swap(n) :: xs if n < state.size => eval(xs, state swap n, history)
       case Dup(n) :: xs if n <= state.size => eval(xs, state dup n, history)
+
       case op :: ops =>
         val r = OpCodes.stackReadCount(op)
-        val (args, s) = state.pop(r)
+        val (args, s) = if (state.size >= r) state.pop(r) else state.pop(state.size)
         val w = OpCodes.stackWriteCount(op)
         val resState = (1 to w).foldLeft(s)({ case (state, n) => state push CommandResult(op, n) })
         eval(ops, resState, HistoryRecord(op, args) :: history)
     }
   }
 
-  def eval(withoutJ: List[List[Op]],
+  def eval(main: List[List[Op]],
            withJ: Map[Int, WithJumpDest],
-           continuation: Map[Int, JumpIContinuation]): Set[AddressedJumpOp] = {
+           WithJumpI: Map[Int, WithJumpI]): (Set[AddressedJumpOp], Set[WithJumpDest]) = {
 
     def evalBlock(state: Stack[StackItem])(history: List[HistoryRecord])(
         block: List[Op]): (Option[AddressedJumpOp], Stack[StackItem], List[HistoryRecord]) = {
       val (newStack, newHistory) = Emulator.eval(block, state, history)
-      getJump(newHistory) match {
+      jump(newHistory) match {
         case Some(HistoryRecord(SelfAddressedJumpI(n), Number(dest) :: _)) =>
           (Some(JumpI(n, dest.intValue())), newStack, Nil)
         case Some(HistoryRecord(SelfAddressedJump(n), Number(dest) :: _)) =>
@@ -110,45 +81,55 @@ object Emulator {
     def evalChain(state: Stack[StackItem])(history: List[HistoryRecord])(
         ops: List[Op],
         withJ: Map[Int, WithJumpDest],
-        continuation: Map[Int, JumpIContinuation],
-        acc: Set[AddressedJumpOp]): (Set[AddressedJumpOp], Map[Int, WithJumpDest], Map[Int, JumpIContinuation]) = {
+        WithJumpI: Map[Int, WithJumpI],
+        acc: Set[AddressedJumpOp]): (Set[AddressedJumpOp], Map[Int, WithJumpDest], Map[Int, WithJumpI]) = {
       val (jump, newStack, newHistory) = evalBlock(state)(history)(ops)
       jump match {
         case Some(j @ Jump(addr, dest)) if withJ.contains(dest) =>
-          evalChain(newStack)(newHistory)(withJ(dest).ops, withJ - dest, continuation, acc + j)
-        case Some(j @ JumpI(addr, dest)) if withJ.contains(dest) && !continuation.contains(addr) =>
-          evalChain(newStack)(newHistory)(withJ(dest).ops, withJ - dest, continuation, acc + j)
-        case Some(j @ JumpI(addr, dest)) if withJ.contains(dest) && continuation.contains(addr) =>
+          evalChain(newStack)(newHistory)(withJ(dest).ops, withJ - dest, WithJumpI, acc + j)
+
+        case Some(j @ JumpI(addr, dest)) if withJ.contains(dest) && !WithJumpI.contains(addr) =>
+          evalChain(newStack)(newHistory)(withJ(dest).ops, withJ - dest, WithJumpI, acc + j)
+
+        case Some(j @ JumpI(addr, dest)) if withJ.contains(dest) && WithJumpI.contains(addr) =>
           val (jumps1, dests1, contins1) =
-            evalChain(newStack)(newHistory)(withJ(dest).ops, withJ - dest, continuation - addr, acc + j)
+            evalChain(newStack)(newHistory)(withJ(dest).ops, withJ - dest, WithJumpI - addr, acc + j)
           val (jumps2, dests2, contins2) =
-            evalChain(newStack)(newHistory)(continuation(addr).ops, withJ - dest, continuation - addr, acc + j)
+            evalChain(newStack)(newHistory)(WithJumpI(addr).ops, withJ - dest, WithJumpI - addr, acc + j)
           val dests = dests1.keySet.intersect(dests2.keySet).map(k => k -> dests1(k)).toMap
           val contins = contins1.keySet.intersect(contins2.keySet).map(k => k -> contins1(k)).toMap
-          (jumps1 ++ jumps2, dests, contins)
+          (jumps1 ++ jumps2 ++ acc, dests, contins)
 
-        case Some(j @ Jump(addr, dest)) => (acc + j, withJ, continuation)
+        case Some(j @ Jump(addr, dest)) => (acc + j, withJ, WithJumpI)
 
-        case Some(j @ JumpI(addr, dest)) => (acc + j, withJ, continuation)
-        case _                           => (acc, withJ, continuation)
+        case Some(j @ JumpI(addr, dest)) => (acc + j, withJ, WithJumpI)
+        case _                           => (acc, withJ, WithJumpI)
       }
     }
 
-    val res = withoutJ.foldLeft((Set.empty[AddressedJumpOp], withJ, continuation))({
+    val (jumps1, jumpDests1, jumpi1) = main.foldLeft((Set.empty[AddressedJumpOp], withJ, WithJumpI))({
       case ((jumps, dests, contins), ops) =>
         evalChain(StackList.empty)(List.empty)(ops, dests, contins, jumps)
     })
-    res._1
+    val (jumps2, jumpDests2, jumpi2) = jumpi1.foldLeft((jumps1, jumpDests1, WithJumpI))({
+      case ((jumps, dests, contins), (_, ops)) =>
+        evalChain(StackList.empty)(List.empty)(ops.ops, dests, contins, jumps)
+    })
+    val (jumps3, jumpDests3, jumpi3) = jumpDests2.foldLeft((jumps2, jumpDests2, jumpi2))({
+      case ((jumps, dests, contins), (_, ops)) =>
+        evalChain(StackList.empty)(List.empty)(ops.ops, dests, contins, jumps)
+    })
+    jumps3 -> jumpDests3.values.toSet
   }
 
-  def getJump(jump: List[HistoryRecord]): Option[HistoryRecord] = {
+  def jump(jump: List[HistoryRecord]): Option[HistoryRecord] = {
     jump.collectFirst({
       case h @ HistoryRecord(SelfAddressedJumpI(_), _) => h
       case h @ HistoryRecord(SelfAddressedJump(_), _)  => h
     })
   }
 
-  def getJumps(blocks: List[List[Op]]): Set[AddressedJumpOp] = {
+  def jumps(blocks: List[List[Op]]): (Set[AddressedJumpOp], Set[WithJumpDest]) = {
     val jumpable = Blocks.jumpable(blocks)
     val main = jumpable.withoutJumpdest.filter({
       case SelfAddressedJumpI(_) :: _ => false

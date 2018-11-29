@@ -17,8 +17,19 @@
 
 package pravda.evm.disasm
 
-trait Stack[+A] {
-  def pop(n: Int): (List[A], Stack[A])
+import scala.annotation.tailrec
+
+trait Stack[+A] { self =>
+
+  def pop(n: Int): (List[A], Stack[A]) = {
+    @tailrec def pop(n: Int, acc: (List[A], Stack[A])): (List[A], Stack[A]) = n match {
+      case 0 => acc._1.reverse -> acc._2
+      case _ =>
+        val (el, tail) = acc._2.pop
+        pop(n - 1, (el :: acc._1, tail))
+    }
+    pop(n, (Nil, self))
+  }
   def pop(): (A, Stack[A])
   def push[B >: A](a: B): Stack[B]
   def swap(a: Int): Stack[A]
@@ -28,12 +39,12 @@ trait Stack[+A] {
 
 case class StackList[+A](state: List[A]) extends Stack[A] {
   val size = state.size
-  override def pop(n: Int): (List[A], Stack[A]) = state.take(n) -> new StackList(state.drop(n))
-  override def pop(): (A, Stack[A]) = state.head -> new StackList(state.tail)
-  override def push[B >: A](a: B): Stack[B] = new StackList(a :: state)
-  override def swap(n: Int): Stack[A] =
+  def pop(): (A, Stack[A]) = state.head -> new StackList(state.tail)
+  def push[B >: A](a: B): Stack[B] = new StackList(a :: state)
+
+  def swap(n: Int): Stack[A] =
     new StackList(state(n) :: state.tail.take(n - 1) ::: state.head :: state.drop(n + 1))
-  override def dup(n: Int): Stack[A] = new StackList(state(n - 1) :: state)
+  def dup(n: Int): Stack[A] = new StackList(state(n - 1) :: state)
 
   override def toString: String = state.toString.replace("List", "Stack")
 }

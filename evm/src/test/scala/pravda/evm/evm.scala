@@ -1,11 +1,11 @@
 package pravda.evm
 
-import java.io.{FileOutputStream}
+import java.io.{File, FileOutputStream}
 
 import com.google.protobuf.ByteString
 import fastparse.byte.all._
 import pravda.common.domain.Address
-import pravda.evm.abi.parse.ABIParser.{ABIConstructor, ABIEvent, ABIFunction, ABIObject, Variable}
+import pravda.evm.abi.parse.ABIParser.{ABIConstructor, ABIEvent, ABIFunction, ABIObject, Argument}
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
 import pravda.vm.VmSuiteData.Expectations
@@ -115,6 +115,15 @@ package object evm {
     // we just drop auxdata
   }
 
+  def readSolidityBinFile(file: File): Bytes = {
+
+    val s = Source.fromFile(file).mkString
+    val allBytes = Bytes(s.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte))
+    allBytes.dropRight(43)
+    // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
+    // we just drop auxdata
+  }
+
   def writeSolidityBinFile(filename: String): Bytes = {
 
     val s = Source.fromResource(filename).mkString
@@ -131,15 +140,13 @@ package object evm {
     }
 
     allBytes
-    // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
-    // we just drop auxdata
   }
 
   def readSolidityABI(filename: String): String = Source.fromResource(filename).mkString
 
-  def printSeq(vars: Seq[Variable]): Seq[String] = {
+  def printSeq(vars: Seq[Argument]): Seq[String] = {
     vars.map(
-      { case Variable(name, t, indexed) => s"""Variable("$name","$t",$indexed)""" }
+      { case Argument(name, t, indexed) => s"""Variable("$name","$t",$indexed)""" }
     )
   }
 

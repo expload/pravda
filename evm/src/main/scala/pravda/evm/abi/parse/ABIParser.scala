@@ -38,11 +38,11 @@ object ABIParser {
     }
 
   trait ABIObject {
-    def inputs: Seq[Variable]
+    def inputs: Seq[Argument]
 
-    val variables: List[(Int, EVM.Type)] = inputs
+    val arguments: List[(Int, EVM.AbiType)] = inputs
       .map(variable => nameToType(variable.`type`))
-      .foldLeft((4, List.empty[(Int, EVM.Type)]))({
+      .foldLeft((4, List.empty[(Int, EVM.AbiType)]))({
         case ((pos, types), varType) =>
           (pos + 32, (pos, varType) :: types)
       })
@@ -52,7 +52,7 @@ object ABIParser {
 
   object ABIObject {
 
-    def split(abi: List[ABIObject]): (List[ABIFunction], List[ABIEvent], List[ABIConstructor]) = {
+    def unzip(abi: List[ABIObject]): (List[ABIFunction], List[ABIEvent], List[ABIConstructor]) = {
       val funcs = abi.collect({ case a @ ABIFunction(_, _, _, _, _, _, _) => a })
       val events = abi.collect({ case a @ ABIEvent(_, _, _)               => a })
       val constructors = abi.collect({ case a @ ABIConstructor(_, _, _)   => a })
@@ -62,22 +62,22 @@ object ABIParser {
 
   case class ABIFunction(constant: Boolean,
                          name: String,
-                         inputs: Seq[Variable],
-                         outputs: Seq[Variable],
+                         inputs: Seq[Argument],
+                         outputs: Seq[Argument],
                          payable: Boolean,
                          stateMutability: String,
                          newName: Option[String])
       extends ABIObject {
 
     val hashableName = s"$name(${inputs.map(_.`type`).mkString(",")})"
-    val id = getHash(hashableName).toList
+    val id = hashKeccak256(hashableName).toList
   }
 
-  case class ABIEvent(name: String, inputs: Seq[Variable], anonymous: Boolean)                extends ABIObject
-  case class ABIConstructor(inputs: Seq[Variable], payable: Boolean, stateMutability: String) extends ABIObject
-  case class Variable(name: String, `type`: String, indexed: Option[Boolean])
+  case class ABIEvent(name: String, inputs: Seq[Argument], anonymous: Boolean)                extends ABIObject
+  case class ABIConstructor(inputs: Seq[Argument], payable: Boolean, stateMutability: String) extends ABIObject
+  case class Argument(name: String, `type`: String, indexed: Option[Boolean])
 
-  val nameToType: PartialFunction[String, EVM.Type] = {
+  val nameToType: PartialFunction[String, EVM.AbiType] = {
     case "bool" => Bool
 
     case name if name.startsWith("uint") => UInt(name.substring(4).toInt)
@@ -92,21 +92,20 @@ object ABIParser {
                                     names: Map[String, Int]): List[ABIFunction] =
         funcs match {
           case x :: xs =>
-            import x._
-            if (names.contains(name))
+            if (names.contains(x.name))
               buildUniqueNames(xs,
-                               x.copy(newName = Some(s"$name${names(name)}")) :: acc,
-                               names.updated(name, names(name) + 1))
-            else buildUniqueNames(xs, x :: acc, names.updated(name, 0))
+                               x.copy(newName = Some(s"${x.name}${names(x.name)}")) :: acc,
+                               names.updated(x.name, names(x.name) + 1))
+            else buildUniqueNames(xs, x :: acc, names.updated(x.name, 0))
           case Nil => acc
         }
 
-      val (funcs, events, consts) = ABIObject.split(functions)
+      val (funcs, events, consts) = ABIObject.unzip(functions)
       Right(events ++ consts ++ buildUniqueNames(funcs, List.empty, Map.empty))
     case _ => Left(s"Invalid json $s")
   }
 
-  def getHash(s: String): Array[Byte] = {
+  def hashKeccak256(s: String): Array[Byte] = {
     import org.bouncycastle.jcajce.provider.digest._
     val digest = new Keccak.Digest256
     digest.digest(s.getBytes(Charset.forName("ASCII"))).slice(0, 4)
