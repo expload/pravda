@@ -1,0 +1,24 @@
+stack:
+  [bytes.0123456789ABCDEF, utf8.TestToHex]
+storage:
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: StaticClass.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/StaticClass.cs
+    optimize: false
+---
+stack:
+  - utf8.0123456789ABCDEF
+effects:
+  - eventType: StorageRead
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: utf8.init
+    value: 'null'
+

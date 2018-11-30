@@ -344,9 +344,9 @@ translation: |-
   meta source_mark {
   "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(26)
   }
-  push int32(4)
+  push int32(3)
   dupn
-  push int32(4)
+  push int32(3)
   dupn
   add
   push int32(2)

@@ -86,13 +86,13 @@ translation: |-
   meta source_mark {
   "sl":int32(48),"sc":int32(13),"el":int32(48),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(54)
   }
-  push int32(3)
+  push int32(2)
   dupn
   push int32(16)
   swap
   div
   call @func_StaticClassUtils.StringUtils.HexPart_int32
-  push int32(4)
+  push int32(3)
   dupn
   push int32(16)
   swap
@@ -144,7 +144,7 @@ translation: |-
   meta source_mark {
   "sl":int32(54),"sc":int32(54),"el":int32(54),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(55)
   }
-  push int32(7)
+  push int32(6)
   dupn
   meta source_mark {
   "sl":int32(55),"sc":int32(17),"el":int32(55),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(44)
@@ -174,7 +174,7 @@ translation: |-
   @StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes_br36:
   push int32(3)
   dupn
-  push int32(7)
+  push int32(6)
   dupn
   meta source_mark {
   "sl":int32(54),"sc":int32(29),"el":int32(54),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(47)
@@ -239,7 +239,7 @@ translation: |-
   meta source_mark {
   "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(24)
   }
-  push int32(19)
+  push int32(18)
   dupn
   push int32(0)
   eq
@@ -267,7 +267,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br20:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(1)
   eq
@@ -295,7 +295,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br39:
-  push int32(19)
+  push int32(18)
   dupn
   meta source_mark {
   "sl":int32(14),"sc":int32(17),"el":int32(14),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(28)
@@ -326,7 +326,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br58:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(3)
   eq
@@ -354,7 +354,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br79:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(4)
   meta source_mark {
@@ -385,7 +385,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br100:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(5)
   eq
@@ -413,7 +413,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br121:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(6)
   eq
@@ -444,7 +444,7 @@ translation: |-
   meta source_mark {
   "sl":int32(21),"sc":int32(18),"el":int32(21),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(29)
   }
-  push int32(19)
+  push int32(18)
   dupn
   push int32(7)
   eq
@@ -472,7 +472,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br163:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(8)
   eq
@@ -500,7 +500,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br184:
-  push int32(19)
+  push int32(18)
   dupn
   meta source_mark {
   "sl":int32(24),"sc":int32(17),"el":int32(24),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(28)
@@ -531,7 +531,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br203:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(10)
   eq
@@ -559,7 +559,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br222:
-  push int32(19)
+  push int32(18)
   dupn
   meta source_mark {
   "sl":int32(27),"sc":int32(18),"el":int32(27),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(29)
@@ -590,7 +590,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br241:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(12)
   eq
@@ -618,7 +618,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br260:
-  push int32(19)
+  push int32(18)
   dupn
   meta source_mark {
   "sl":int32(30),"sc":int32(17),"el":int32(30),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(28)
@@ -649,7 +649,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br279:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(14)
   meta source_mark {
@@ -680,7 +680,7 @@ translation: |-
   pop
   jump @StaticClassUtils.StringUtils.HexPart_int32_br325
   @StaticClassUtils.StringUtils.HexPart_int32_br298:
-  push int32(19)
+  push int32(18)
   dupn
   push int32(15)
   eq
