@@ -443,8 +443,7 @@ object Translator {
       }
     } yield ctor
 
-    val programStaticFuncsE = filterMethods(
-      i => tctx.isProgramMethod(i) && !tctx.isMainProgramMethod(i) && isStatic(i))
+    val programStaticFuncsE = filterMethods(i => tctx.isProgramMethod(i) && !tctx.isMainProgramMethod(i) && isStatic(i))
 
     val structEntitiesE = filterMethods(i => !tctx.isProgramMethod(i) && !isMain(i))
 
