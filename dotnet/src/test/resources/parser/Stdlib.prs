@@ -42,6 +42,19 @@ methods: |-
       3,
       Some(27L)
     ),
+    Method(
+      List(
+        Nop,
+        LdArg1,
+        Call(MemberRefData(TypeRefData(10L, "StdLib", "Expload.Pravda"), "BytesToHex", 44L)),
+        StLoc0,
+        BrS(0),
+        LdLoc0,
+        Ret
+      ),
+      1,
+      Some(40L)
+    ),
     Method(List(Nop, Ret), 0, None),
     Method(
       List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
@@ -95,8 +108,21 @@ signatures: |-
         )
       )
     ),
+    (40L, LocalVarSig(List(LocalVar(String, false)))),
     (
-      49L,
+      44L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(String, false),
+        List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
+      )
+    ),
+    (
+      59L,
       MethodRefDefSig(
         true,
         false,
@@ -108,7 +134,7 @@ signatures: |-
       )
     ),
     (
-      55L,
+      65L,
       MethodRefDefSig(
         true,
         false,
@@ -123,5 +149,17 @@ signatures: |-
         )
       )
     ),
-    (64L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (
+      74L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(String, false),
+        List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
+      )
+    ),
+    (80L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

@@ -14,5 +14,10 @@ public class Stdlib
         return StdLib.ValidateEd25519Signature(pubKey, message, sign);
     }
 
+    public String BytesToHex(Bytes bytes)
+    {
+        return StdLib.BytesToHex(bytes);
+    }
+
     public static void Main() {}
 }

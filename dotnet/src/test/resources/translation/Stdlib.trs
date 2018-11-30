@@ -24,6 +24,10 @@ translation: |-
   throw
   @methods:
   dup
+  push "BytesToHex"
+  eq
+  jumpi @method_BytesToHex
+  dup
   push "Ripemd160"
   eq
   jumpi @method_Ripemd160
@@ -33,6 +37,38 @@ translation: |-
   jumpi @method_ValidateEd25519Signature
   push "Wrong method name"
   throw
+  @method_BytesToHex:
+  meta method {
+  "name":"BytesToHex",int32(0):int8(14),"returnTpe":int8(11)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(18),"sc":int32(5),"el":int32(18),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
+  }
+  meta source_mark {
+  "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(41)
+  }
+  push int32(3)
+  dupn
+  push int32(5)
+  scall
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(20),"sc":int32(5),"el":int32(20),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
+  }
+  jump @BytesToHex_lvc
+  @BytesToHex_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
   @method_Ripemd160:
   meta method {
   "name":"Ripemd160",int32(0):int8(11),"returnTpe":int8(14)
