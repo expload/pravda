@@ -41,7 +41,7 @@ final case class TranslationCtx(
   def isProgramMethod(fileIdx: Int): Boolean =
     methodIndex.parent(fileIdx).exists(programClasses.contains)
 
-  def methodRow(fileIdx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(idx)
+  def methodRow(fileIdx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(fileIdx)
 }
 
 final case class MethodTranslationCtx(

@@ -4,7 +4,6 @@ import pravda.dotnet.data.TablesData.TypeDefData
 import pravda.dotnet.parser.FileParser.ParsedDotnetFile
 import pravda.dotnet.translation.NamesBuilder
 
-
 /**
   * Inverted index for `TypeDef` component
   *
@@ -18,7 +17,11 @@ final case class TypeDefInvertedIndex[T](all: Vector[T], fromNames: Map[String, 
 
   def parent(i: Int): Option[TypeDefData] = parents.get(i)
 
-  def byName(name: String): Option[T] = fromNames.get(name).map(all)
+  def byName(name: String): Option[(TypeDefData, T)] =
+    for {
+      idx <- fromNames.get(name)
+      p <- parents.get(idx)
+    } yield (p, all(idx))
 
   private[data] def merge(other: TypeDefInvertedIndex[T]): TypeDefInvertedIndex[T] =
     new TypeDefInvertedIndex[T](all ++ other.all, fromNames ++ other.fromNames, parents ++ other.parents)
@@ -48,7 +51,7 @@ object TypeDefInvertedIndex {
 
     val (all, names, parents) = withTd.zipWithIndex.map {
       case ((t, td), i) =>
-        (t, s"${NamesBuilder.fullTypeDef(td)}.${name(t)}" -> i, i -> td)
+        (t, s"${NamesBuilder.fullTypeDef(td)}.${name(t)}" -> (i + offset), (i + offset) -> td)
     }.unzip3
 
     new TypeDefInvertedIndex[T](all.toVector, names.toMap, parents.toMap)
@@ -67,7 +70,7 @@ final case class TypeDefInvertedFileIndex[T](index: TypeDefInvertedIndex[T], ind
 
   def parent(fileIdx: Int): Option[TypeDefData] = index.parents.get(indexIdx(fileIdx))
 
-  def byName(name: String): Option[T] = index.fromNames.get(name).map(apply)
+  def byName(name: String): Option[(TypeDefData, T)] = index.byName(name)
 }
 
 object TypeDefInvertedFileIndex {
@@ -85,10 +88,11 @@ object TypeDefInvertedFileIndex {
     val (index, fileIndices, _) = files.foldLeft[(TypeDefInvertedIndex[T], List[Vector[Int]], Int)](
       (new TypeDefInvertedIndex[T](Vector.empty, Map.empty, Map.empty), List.empty, 0)) {
       case ((acc, fileIdxes, total), f) =>
-        val index = TypeDefInvertedIndex[T](f.parsedPe.cilData.tables.typeDefTable, fromTypeDef, t => name(f, t), total)
-        (acc.merge(index), total.to(total + index.all.size).toVector :: fileIdxes, total + index.all.size)
+        val index =
+          TypeDefInvertedIndex[T](f.parsedPe.cilData.tables.typeDefTable, fromTypeDef, (t: T) => name(f, t), total)
+        (acc.merge(index), total.until(total + index.all.size).toVector :: fileIdxes, total + index.all.size)
     }
 
-    fileIndices.map(fi => new TypeDefInvertedFileIndex[T](index, fi))
+    fileIndices.reverse.map(fi => new TypeDefInvertedFileIndex[T](index, fi))
   }
 }

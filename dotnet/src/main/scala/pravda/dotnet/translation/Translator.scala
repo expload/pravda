@@ -337,11 +337,16 @@ object Translator {
 
     val structs = files.flatMap(f => f.parsedPe.cilData.tables.typeDefTable).filterNot(programClasses.contains)
 
-    val methodIndexes = TypeDefInvertedFileIndex(files.map(_.parsedPe.cilData.tables.typeDefTable),
-      _.methods,
-      NamesBuilder.fullMethod)
+    val methodIndexes = TypeDefInvertedFileIndex[MethodDefData](
+      files,
+      (td: TypeDefData) => td.methods,
+      (f: ParsedDotnetFile, m: MethodDefData) =>
+        NamesBuilder.fullMethod(m.name, f.parsedPe.signatures.get(m.signatureIdx))
+    )
 
-    val fieldIndexes = TypeDefInvertedFileIndex[FieldData](files.map(_.parsedPe.cilData.tables.typeDefTable), _.fields, _.name)
+    val fieldIndexes = TypeDefInvertedFileIndex[FieldData](files,
+                                                           (td: TypeDefData) => td.fields,
+                                                           (_: ParsedDotnetFile, f: FieldData) => f.name)
 
     mainProgramClassE.flatMap { mainCls =>
       val translations = for {
@@ -438,10 +443,10 @@ object Translator {
       }
     } yield ctor
 
-    val structEntitiesE = for {
-      methods <- filterMethods(
-        i => (!tctx.isProgramMethod(i) || (tctx.isProgramMethod(i) && isStatic(i))) && !isMain(i))
-    } yield methods
+    val programStaticFuncsE = filterMethods(
+      i => tctx.isProgramMethod(i) && !tctx.isMainProgramMethod(i) && isStatic(i))
+
+    val structEntitiesE = filterMethods(i => !tctx.isProgramMethod(i) && !isMain(i))
 
     val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
     val structStaticFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && isStatic(i)))
@@ -453,7 +458,6 @@ object Translator {
       ops <- ctor match {
         case Some(i) =>
           val method = methods(i)
-          println(tctx.methodParents(tctx.methodRow(i)))
           val prefix = List(
             Operation.Push(Data.Primitive.Utf8("init")),
             Operation(Opcodes.SEXIST),
@@ -541,15 +545,45 @@ object Translator {
         .sequence
     } yield opss
 
+    lazy val programStaticFuncsOpsE: Either[TranslationError, List[MethodTranslation]] = for {
+      programStaticFuncs <- programStaticFuncsE
+      opss <- programStaticFuncs
+        .map(i => {
+          val method = methods(i)
+          val methodRow = tctx.methodRow(i)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
+          val name = s"$structName.$methodName"
+
+          translateMethod(
+            BranchTransformer.transformBranches(method.opcodes, name),
+            name,
+            "func",
+            i,
+            methodRow.params.length,
+            MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
+            void = MethodExtractors.isVoid(methodRow, tctx.signatures),
+            func = true,
+            static = true,
+            struct = None,
+            forceAdd = false,
+            tctx.pdbTables.map(_.methodDebugInformationTable(i)),
+            tctx
+          )
+        })
+        .sequence
+    } yield opss
+
     lazy val structFuncsOpsE: Either[TranslationError, List[MethodTranslation]] = for {
       structFuncs <- structFuncsE
       opss <- structFuncs
         .map(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
-          val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodParents(methodRow)
-          val structName = CallsTranslation.fullTypeDefName(tpe)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
           val name = s"$structName.$methodName"
 
           translateMethod(
@@ -577,9 +611,9 @@ object Translator {
         .map(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
-          val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodParents(methodRow)
-          val structName = CallsTranslation.fullTypeDefName(tpe)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
           val name = s"$structName.$methodName"
 
           translateMethod(
@@ -607,9 +641,9 @@ object Translator {
         .flatMap(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
-          val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodParents(methodRow)
-          val structName = CallsTranslation.fullTypeDefName(tpe)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
           val name = s"$structName.$methodName"
 
           List(
@@ -637,7 +671,7 @@ object Translator {
       List(
         MethodTranslation(
           "vtable",
-          CallsTranslation.fullTypeDefName(s),
+          NamesBuilder.fullTypeDef(s),
           forceAdd = false,
           List(
             OpCodeTranslation(List.empty,
@@ -646,7 +680,7 @@ object Translator {
         ),
         MethodTranslation(
           "default_fields",
-          CallsTranslation.fullTypeDefName(s),
+          NamesBuilder.fullTypeDef(s),
           forceAdd = false,
           List(
             OpCodeTranslation(List.empty,
@@ -660,12 +694,13 @@ object Translator {
       programMethodsOps <- programMethodsOpsE
       ctorOps <- ctorOpsE
       programFuncOps <- programFuncsOpsE
+      programStaticFuncOps <- programStaticFuncsOpsE
       structFuncsOps <- structFuncsOpsE
       strucStaticFuncsOps <- structStaticFuncOpsE
       structCtorsOps <- structCtorsOpsE
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
-      val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
+      val funcsOps = programFuncOps ++ programStaticFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
       FileTranslation(methodsOps, funcsOps)
     }
   }

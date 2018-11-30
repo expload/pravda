@@ -23,7 +23,7 @@ import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.Signatures._
-import pravda.dotnet.translation.{FieldExtractors, TypeDetectors}
+import pravda.dotnet.translation.{FieldExtractors, NamesBuilder, TypeDetectors}
 import pravda.dotnet.translation.data._
 import pravda.vm.{Data, Opcodes, asm}
 
@@ -43,7 +43,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
           asm.Operation(Opcodes.SGET)
         ))
 
-      ctx.tctx.typeDefByField(id) match {
+      ctx.tctx.fieldIndex.parent(id) match {
         case Some(typeDef) if typeDef == ctx.tctx.mainProgramClass =>
           ctx.tctx.signatures.get(sigIdx) match {
             case Some(FieldSig(tpe)) =>
@@ -61,7 +61,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
           if (static) {
             Right(
               List(
-                pushString(s"s_${CallsTranslation.fullTypeDefName(typeDef)}_$name"),
+                pushString(s"s_${NamesBuilder.fullTypeDef(typeDef)}_$name"),
                 asm.Operation(Opcodes.SGET)
               ))
           } else {
@@ -81,7 +81,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
           asm.Operation(Opcodes.SPUT)
         ))
 
-      ctx.tctx.typeDefByField(id) match {
+      ctx.tctx.fieldIndex.parent(id) match {
         case Some(typeDef) if typeDef == ctx.tctx.mainProgramClass =>
           ctx.tctx.signatures.get(sigIdx) match {
             case Some(FieldSig(tpe)) =>
@@ -104,7 +104,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
           if (static) {
             Right(
               List(
-                pushString(s"s_${CallsTranslation.fullTypeDefName(typeDef)}_$name"),
+                pushString(s"s_${NamesBuilder.fullTypeDef(typeDef)}_$name"),
                 asm.Operation(Opcodes.SPUT)
               ))
           } else {

@@ -1,0 +1,431 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: false
+  - target: ExternalMethods.dll
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ExternalMethods.cs
+    optimize: false
+  - target: ExternalMethodsCheck.exe
+    sources:
+    - Pravda.dll
+    - ExternalMethods.dll
+    - dotnet-tests/resources/ExternalMethodsCheck.cs
+    optimize: false
+  main-class: ExternalNamespace.ExternalMethodsCheck
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "ExternalNamespaceExternalMethodsCheck"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestRegularMethods"
+  eq
+  jumpi @method_TestRegularMethods
+  dup
+  push "TestStaticMethods"
+  eq
+  jumpi @method_TestStaticMethods
+  push "Wrong method name"
+  throw
+  @method_TestRegularMethods:
+  meta method {
+  "name":"TestRegularMethods","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(20),"sc":int32(9),"el":int32(20),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(21),"sc":int32(13),"el":int32(21),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(60)
+  }
+  push int32(3)
+  push int32(3)
+  new {}
+  call @vtable_ExternalNamespace.ExternalMethods
+  call @default_fields_ExternalNamespace.ExternalMethods
+  push int32(3)
+  swapn
+  push int32(2)
+  swapn
+  call @func_ExternalNamespace.ExternalMethods.ctor_int32_int32
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(22),"sc":int32(13),"el":int32(22),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(30)
+  }
+  push int32(5)
+  dupn
+  call @func_ExternalNamespace.ExternalMethods.Add
+  swap
+  pop
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(23),"sc":int32(13),"el":int32(23),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(33)
+  }
+  push int32(5)
+  dupn
+  push int32(100)
+  call @func_ExternalNamespace.ExternalMethods.Add_int32
+  swap
+  pop
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(24),"sc":int32(13),"el":int32(24),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(53)
+  }
+  push int32(1000)
+  push int32(1000)
+  call @func_ExternalNamespace.ExternalMethods.Add_int32_int32
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(26),"sc":int32(13),"el":int32(26),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(30)
+  }
+  push int32(4)
+  dupn
+  push int32(4)
+  dupn
+  add
+  push int32(3)
+  dupn
+  add
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(27),"sc":int32(9),"el":int32(27),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(10)
+  }
+  push int32(1)
+  dupn
+  jump @TestRegularMethods_lvc
+  @TestRegularMethods_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_TestStaticMethods:
+  meta method {
+  "name":"TestStaticMethods","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(79)
+  }
+  call @func_ExternalNamespace.ExternalProgramMethods.GetInstance
+  push int32(6)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(13),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(35)
+  }
+  push int32(5)
+  dupn
+  push int32(2)
+  push int32(2)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(13),"el":int32(13),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(37)
+  }
+  push int32(5)
+  dupn
+  push int32(10)
+  push int32(10)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(13),"el":int32(14),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(39)
+  }
+  push int32(5)
+  dupn
+  push int32(300)
+  push int32(300)
+  push int32(2)
+  swapn
+  push int32(3)
+  swapn
+  push "Add"
+  swap
+  push int32(3)
+  pcall
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(16),"sc":int32(13),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(30)
+  }
+  push int32(4)
+  dupn
+  push int32(4)
+  dupn
+  add
+  push int32(3)
+  dupn
+  add
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ExternalMethodsCheck.cs","ec":int32(10)
+  }
+  push int32(1)
+  dupn
+  jump @TestStaticMethods_lvc
+  @TestStaticMethods_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @default_fields_ExternalNamespace.ExternalMethods:
+  dup
+  push int32(0)
+  struct_mut "A"
+  dup
+  push int32(0)
+  struct_mut "B"
+  ret
+  @default_fields_ExternalNamespace.ExternalMethods:
+  dup
+  push null
+  struct_mut "A"
+  dup
+  push null
+  struct_mut "B"
+  ret
+  @func_ExternalNamespace.ExternalMethods.Add:
+  push null
+  meta source_mark {
+  "sl":int32(19),"sc":int32(26),"el":int32(19),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(27)
+  }
+  meta source_mark {
+  "sl":int32(20),"sc":int32(13),"el":int32(20),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(26)
+  }
+  push int32(2)
+  dupn
+  struct_get "A"
+  push int32(3)
+  dupn
+  struct_get "B"
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(21),"sc":int32(9),"el":int32(21),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(10)
+  }
+  jump @ExternalNamespace.ExternalMethods.Add_lvc
+  @ExternalNamespace.ExternalMethods.Add_lvc:
+  swap
+  pop
+  ret
+  @func_ExternalNamespace.ExternalMethods.Add_int32:
+  push null
+  meta source_mark {
+  "sl":int32(23),"sc":int32(31),"el":int32(23),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(32)
+  }
+  meta source_mark {
+  "sl":int32(24),"sc":int32(13),"el":int32(24),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(30)
+  }
+  push int32(3)
+  dupn
+  struct_get "A"
+  push int32(4)
+  dupn
+  struct_get "B"
+  add
+  push int32(3)
+  dupn
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(10)
+  }
+  jump @ExternalNamespace.ExternalMethods.Add_int32_lvc
+  @ExternalNamespace.ExternalMethods.Add_int32_lvc:
+  swap
+  pop
+  swap
+  pop
+  ret
+  @func_ExternalNamespace.ExternalMethods.Add_int32_int32:
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(45),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(46)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(26)
+  }
+  push int32(4)
+  dupn
+  push int32(4)
+  dupn
+  add
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(10)
+  }
+  jump @ExternalNamespace.ExternalMethods.Add_int32_int32_lvc
+  @ExternalNamespace.ExternalMethods.Add_int32_int32_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @func_ExternalNamespace.ExternalMethods.ctor_int32_int32:
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(45)
+  }
+  push int32(3)
+  dupn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(46),"el":int32(14),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(47)
+  }
+  meta source_mark {
+  "sl":int32(15),"sc":int32(13),"el":int32(15),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(24)
+  }
+  push int32(3)
+  dupn
+  push int32(3)
+  dupn
+  struct_mut "A"
+  meta source_mark {
+  "sl":int32(16),"sc":int32(13),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(24)
+  }
+  push int32(3)
+  dupn
+  push int32(2)
+  dupn
+  struct_mut "B"
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(10)
+  }
+  jump @ExternalNamespace.ExternalMethods.ctor_int32_int32_lvc
+  @ExternalNamespace.ExternalMethods.ctor_int32_int32_lvc:
+  pop
+  pop
+  ret
+  @func_ExternalNamespace.ExternalProgramMethods.GetInstance:
+  push null
+  meta source_mark {
+  "sl":int32(32),"sc":int32(9),"el":int32(32),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(10)
+  }
+  meta source_mark {
+  "sl":int32(33),"sc":int32(13),"el":int32(35),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(16)
+  }
+  push "123456789012345678901234567890123456789012345678901234567890ABCD"
+  push int32(4)
+  scall
+  push int32(2)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(36),"sc":int32(9),"el":int32(36),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(10)
+  }
+  jump @ExternalNamespace.ExternalProgramMethods.GetInstance_lvc
+  @ExternalNamespace.ExternalProgramMethods.GetInstance_lvc:
+  swap
+  pop
+  ret
+  @vtable_ExternalNamespace.ExternalMethods:
+  ret
+  @vtable_ExternalNamespace.ExternalMethods:
+  ret
+  @stop:

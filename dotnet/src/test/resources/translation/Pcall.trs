@@ -150,24 +150,6 @@ translation: |-
   @ctor_lvc:
   pop
   jump @stop
-  @method_ctor:
-  meta method {
-  "name":"ctor","returnTpe":int8(0)
-  }
-  push "init"
-  sexist
-  not
-  jumpi @ctor_ok
-  push "Program has been already initialized"
-  throw
-  @ctor_ok:
-  push null
-  push "init"
-  sput
-  jump @ctor_lvc
-  @ctor_lvc:
-  pop
-  jump @stop
   @stdlib_array_to_bytes:
   dup
   length

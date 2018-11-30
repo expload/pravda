@@ -1,5 +1,5 @@
 stack:
-  [utf8.TestStaticMethods]
+  [utf8.TestRegularMethods]
 storage:
   utf8.init: "null"
 program-storage:
@@ -13,33 +13,27 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-  - target: ProgramStaticMethods.dll
+  - target: ExternalMethods.dll
     sources:
     - Pravda.dll
-    - dotnet-tests/resources/ProgramStaticMethods.cs
-  - target: ProgramStaticMethodsCheck.exe
+    - dotnet-tests/resources/ExternalMethods.cs
+    optimize: false
+  - target: ExternalMethodsCheck.exe
     sources:
     - Pravda.dll
-    - ProgramStaticMethods.dll
-    - dotnet-tests/resources/ProgramStaticMethodsCheck.cs
-  main-class: ProgramNamespace.ProgramStaticMethodsCheck
+    - ExternalMethods.dll
+    - dotnet-tests/resources/ExternalMethodsCheck.cs
+    optimize: false
+  main-class: ExternalNamespace.ExternalMethodsCheck
 ---
 stack:
-  - int32.624
+  - int32.2112
+heap:
+  ref.0:
+    utf8.A: int32.3
+    utf8.B: int32.3
 effects:
   - eventType: StorageRead
     program: "0000000000000000000000000000000000000000000000000000000000000000"
-    key: utf8.init
-    value: "null"
-  - eventType: StorageRead
-    program: 123456789012345678901234567890123456789012345678901234567890abcd
-    key: utf8.init
-    value: "null"
-  - eventType: StorageRead
-    program: 123456789012345678901234567890123456789012345678901234567890abcd
-    key: utf8.init
-    value: "null"
-  - eventType: StorageRead
-    program: 123456789012345678901234567890123456789012345678901234567890abcd
     key: utf8.init
     value: "null"
