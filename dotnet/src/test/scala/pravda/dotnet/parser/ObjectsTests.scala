@@ -29,9 +29,9 @@ object ObjectsTests extends TestSuite {
             "A",
             "",
             TypeRefData(6, "Object", "System"),
-            Vector(FieldData(0, 1, "AVal", 38)),
+            Vector(FieldData(0, 1, "AVal", 30)),
             Vector(MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-                   MethodDefData(1, 0, 134, "AnswerA", 41, Vector()))
+                   MethodDefData(1, 0, 134, "AnswerA", 33, Vector()))
           ),
           TypeDefData(
             2,
@@ -39,9 +39,9 @@ object ObjectsTests extends TestSuite {
             "B",
             "",
             TypeRefData(6, "Object", "System"),
-            Vector(FieldData(1, 1, "BVal", 38)),
+            Vector(FieldData(1, 1, "BVal", 30)),
             Vector(MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-                   MethodDefData(3, 0, 134, "AnswerB", 41, Vector()))
+                   MethodDefData(3, 0, 134, "AnswerB", 33, Vector()))
           ),
           TypeDefData(
             3,
@@ -50,8 +50,8 @@ object ObjectsTests extends TestSuite {
             "",
             TypeRefData(6, "Object", "System"),
             Vector(),
-            Vector(MethodDefData(4, 0, 134, "TestObjects", 41, Vector()),
-                   MethodDefData(5, 0, 150, "Main", 45, Vector()),
+            Vector(MethodDefData(4, 0, 134, "TestObjects", 33, Vector()),
+                   MethodDefData(5, 0, 150, "Main", 37, Vector()),
                    MethodDefData(6, 0, 6278, ".ctor", 6, Vector()))
           )
         )
@@ -61,11 +61,11 @@ object ObjectsTests extends TestSuite {
         pe.cilData.tables.methodDefTable,
         Vector(
           MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-          MethodDefData(1, 0, 134, "AnswerA", 41, Vector()),
+          MethodDefData(1, 0, 134, "AnswerA", 33, Vector()),
           MethodDefData(2, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-          MethodDefData(3, 0, 134, "AnswerB", 41, Vector()),
-          MethodDefData(4, 0, 134, "TestObjects", 41, Vector()),
-          MethodDefData(5, 0, 150, "Main", 45, Vector()),
+          MethodDefData(3, 0, 134, "AnswerB", 33, Vector()),
+          MethodDefData(4, 0, 134, "TestObjects", 33, Vector()),
+          MethodDefData(5, 0, 150, "Main", 37, Vector()),
           MethodDefData(6, 0, 6278, ".ctor", 6, Vector())
         )
       )
