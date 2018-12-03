@@ -17,12 +17,13 @@
 
 package pravda.evm.disasm
 
-import pravda.evm.EVM._
+import pravda.evm.EVM.{Op, _}
 import pravda.evm.disasm.Blocks.WithJumpDest
+import pravda.evm.translate.Translator.{ActualCode, Addressed, CreationCode}
 
 object JumpTargetRecognizer {
 
-  def apply(ops1: List[(Int, Op)], length: Long): Option[(List[(Int, Op)], Set[WithJumpDest])] = {
+  def apply(ops1: List[Addressed[Op]], length: Long): Option[((CreationCode, ActualCode), Set[WithJumpDest])] = {
     val ops = ops1.map({
       case (ind, JumpI) => ind -> SelfAddressedJumpI(ind)
       case (ind, Jump)  => ind -> SelfAddressedJump(ind)
@@ -65,8 +66,7 @@ object JumpTargetRecognizer {
             case a                                                                 => a
           })
 
-          (newCreativeOps ::: newRuntimeOps) -> (creativeJumps._2 ++ runtimeJumps._2)
+          (CreationCode(newCreativeOps), ActualCode(newRuntimeOps)) -> (creativeJumps._2 ++ runtimeJumps._2)
       })
-
   }
 }

@@ -17,8 +17,8 @@
 
 package pravda.evm.disasm
 
-import pravda.evm.EVM.{Op, _}
-import pravda.evm.disasm.Blocks.{WithJumpI, WithJumpDest}
+import pravda.evm.EVM.{AddressedJumpOp, Op, _}
+import pravda.evm.disasm.Blocks.{WithJumpDest, WithJumpI}
 
 import scala.annotation.tailrec
 
@@ -26,12 +26,16 @@ trait StackItem
 
 trait Expr extends StackItem
 
-case class Expr0(op: Op)                                                                extends Expr
-case class Expr1(op: Op, operand1: StackItem)                                           extends Expr
-case class Expr2(op: Op, operand1: StackItem, operand2: StackItem)                      extends Expr
+case class Expr0(op: Op) extends Expr
+
+case class Expr1(op: Op, operand1: StackItem) extends Expr
+
+case class Expr2(op: Op, operand1: StackItem, operand2: StackItem) extends Expr
+
 case class Expr3(op: Op, operand1: StackItem, operand2: StackItem, operand3: StackItem) extends Expr
 
-case class Number(n: BigInt)                extends StackItem
+case class Number(n: BigInt) extends StackItem
+
 case class CommandResult(op: Op, numb: Int) extends StackItem
 
 case class HistoryRecord(op: Op, args: List[StackItem])
@@ -139,4 +143,5 @@ object Emulator {
     val byJumpi = Blocks.continuation(blocks).groupBy(_.jumpi).map({ case (k, v) => k.addr -> v.head })
     Emulator.eval(main, byJumpdest, byJumpi)
   }
+
 }
