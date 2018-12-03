@@ -36,8 +36,7 @@ object PravdaConfig {
       time: String,
       chainId: String,
       appHash: String,
-      validators: Seq[GenesisValidator],
-      distribution: Boolean
+      validators: Seq[GenesisValidator]
   )
   final case class Validator(
       privateKey: PrivateKey,
@@ -46,12 +45,12 @@ object PravdaConfig {
 
   final case class GenesisValidator(
       publicKey: CryptoKey,
-      power: Int,
+      power: String,
       name: String
   )
   final case class CryptoKey(
       `type`: String,
-      data: String
+      value: String
   )
   final case class HttpConfig(
       host: String,

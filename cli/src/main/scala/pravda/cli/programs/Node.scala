@@ -65,7 +65,6 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    chain-id = "$chainId"
        |    validators = "${validators.mkString(",")}"
        |    app-hash = ""
-       |    distribution = true
        |  }
        |${if (isValidator) {
          s"""  validator {
