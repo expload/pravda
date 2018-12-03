@@ -64,7 +64,7 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
 
     def computeArgOffset(num: Int, stackOffset: Int): Int =
       (ctx.argsCount - num) + stackOffset + ctx.localsCount + 1 +
-        (if (!ctx.func) 1 else 0)
+        (if (!ctx.func) 1 else 0) + (if (ctx.static) -1 else 0)
     // for method there's name of the method
 
     def storeLocal(num: Int): Either[InternalError, List[asm.Operation]] =
