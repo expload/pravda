@@ -3,37 +3,29 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: LoopNested.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/LoopNested.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdcI40,
         StLoc0,
         LdcI40,
         StLoc1,
-        BrS(51),
-        Nop,
+        BrS(34),
         LdcI40,
         StLoc2,
-        BrS(30),
-        Nop,
+        BrS(21),
         LdLoc0,
         LdcI42,
         Rem,
-        LdcI40,
-        Ceq,
-        StLoc3,
-        LdLoc3,
-        BrFalseS(14),
-        Nop,
+        BrTrueS(12),
         LdLoc0,
         LdLoc1,
         LdLoc2,
@@ -42,54 +34,37 @@ methods: |-
         Rem,
         Add,
         StLoc0,
-        Nop,
-        Nop,
         LdLoc2,
         LdcI41,
         Add,
         StLoc2,
         LdLoc2,
         LdcI4S(20),
-        Clt,
-        StLocS(4),
-        LdLocS(4),
-        BrTrueS(-41),
-        Nop,
+        BltS(-26),
         LdLoc1,
         LdcI41,
         Add,
         StLoc1,
         LdLoc1,
         LdcI4S(10),
-        Clt,
-        StLocS(5),
-        LdLocS(5),
-        BrTrueS(-62),
-        BrS(6),
-        Nop,
+        BltS(-39),
+        BrS(4),
         LdLoc0,
         LdcI42,
         Mul,
         StLoc0,
-        Nop,
         LdLoc0,
         LdcI4(10000),
-        Clt,
-        StLocS(6),
-        LdLocS(6),
-        BrTrueS(-20),
+        BltS(-12),
         LdLoc0,
-        StLocS(7),
-        BrS(0),
-        LdLocS(7),
         Ret
       ),
       3,
       Some(16L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )
@@ -110,21 +85,7 @@ signatures: |-
         List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
       )
     ),
-    (
-      16L,
-      LocalVarSig(
-        List(
-          LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(Boolean, false),
-          LocalVar(Boolean, false),
-          LocalVar(Boolean, false),
-          LocalVar(Boolean, false),
-          LocalVar(I4, false)
-        )
-      )
-    ),
-    (36L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (40L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (16L, LocalVarSig(List(LocalVar(I4, false), LocalVar(I4, false), LocalVar(I4, false)))),
+    (31L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (35L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

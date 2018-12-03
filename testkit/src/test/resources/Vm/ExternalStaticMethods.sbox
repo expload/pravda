@@ -13,17 +13,18 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: ExternalMethods.dll
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ExternalMethods.cs
-    optimize: false
+    optimize: true
   - target: ExternalMethodsCheck.exe
     sources:
     - Pravda.dll
     - ExternalMethods.dll
     - dotnet-tests/resources/ExternalMethodsCheck.cs
-    optimize: false
+    optimize: true
   main-class: ExternalNamespace.ExternalMethodsCheck
 ---
 stack:

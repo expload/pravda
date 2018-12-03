@@ -3,76 +3,66 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Strings.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Strings.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdStr("zauser1"),
         StLoc0,
         LdStr("us"),
-        StLoc1,
         LdStr("er2"),
-        StLoc2,
+        StLoc1,
         LdLoc1,
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 22L)),
+        StLoc2,
+        LdArg0,
+        LdFld(FieldData(0, 1, "StringsMapping", 69L)),
         LdLoc2,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 27L)),
-        StLoc3,
-        LdArg0,
-        LdFld(FieldData(0, 1, "StringsMapping", 74L)),
-        LdLoc3,
         LdLoc0,
-        CallVirt(MemberRefData(TypeSpecData(33L), "set_Item", 40L)),
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(28L), "set_Item", 35L)),
         LdArg0,
-        LdFld(FieldData(0, 1, "StringsMapping", 74L)),
+        LdFld(FieldData(0, 1, "StringsMapping", 69L)),
         LdStr("user1"),
-        CallVirt(MemberRefData(TypeSpecData(33L), "ContainsKey", 48L)),
-        StLocS(7),
-        LdLocS(7),
-        BrFalseS(24),
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(28L), "ContainsKey", 43L)),
+        BrFalseS(21),
         LdArg0,
-        LdFld(FieldData(0, 1, "StringsMapping", 74L)),
+        LdFld(FieldData(0, 1, "StringsMapping", 69L)),
         LdStr("user2"),
         LdStr(""),
-        CallVirt(MemberRefData(TypeSpecData(33L), "set_Item", 40L)),
-        Nop,
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(28L), "set_Item", 35L)),
         LdLoc0,
         LdcI40,
-        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 54L)),
-        StLocS(4),
-        LdLoc3,
+        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 49L)),
+        Pop,
+        LdLoc2,
         LdcI43,
-        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 54L)),
-        StLocS(5),
-        LdLoc3,
+        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 49L)),
+        Pop,
+        LdLoc2,
         LdcI41,
         LdcI42,
-        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "Substring", 59L)),
-        StLocS(6),
+        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "Substring", 54L)),
+        Pop,
         Ret
       ),
       3,
       Some(16L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
       List(
         LdArg0,
-        NewObj(MemberRefData(TypeSpecData(33L), ".ctor", 6L)),
-        StFld(FieldData(0, 1, "StringsMapping", 74L)),
+        NewObj(MemberRefData(TypeSpecData(28L), ".ctor", 6L)),
+        StFld(FieldData(0, 1, "StringsMapping", 69L)),
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
-        Nop,
         Ret
       ),
       0,
@@ -97,21 +87,10 @@ signatures: |-
     ),
     (
       16L,
-      LocalVarSig(
-        List(
-          LocalVar(String, false),
-          LocalVar(String, false),
-          LocalVar(String, false),
-          LocalVar(String, false),
-          LocalVar(Char, false),
-          LocalVar(Char, false),
-          LocalVar(String, false),
-          LocalVar(Boolean, false)
-        )
-      )
+      LocalVarSig(List(LocalVar(String, false), LocalVar(String, false), LocalVar(String, false)))
     ),
     (
-      27L,
+      22L,
       MethodRefDefSig(
         false,
         false,
@@ -123,7 +102,7 @@ signatures: |-
       )
     ),
     (
-      33L,
+      28L,
       TypeSig(
         Tpe(
           Generic(Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")), List(String, String)),
@@ -132,7 +111,7 @@ signatures: |-
       )
     ),
     (
-      40L,
+      35L,
       MethodRefDefSig(
         true,
         false,
@@ -144,12 +123,12 @@ signatures: |-
       )
     ),
     (
-      48L,
+      43L,
       MethodRefDefSig(true, false, false, false, 0, Tpe(Boolean, false), List(Tpe(Var(0), false)))
     ),
-    (54L, MethodRefDefSig(true, false, false, false, 0, Tpe(Char, false), List(Tpe(I4, false)))),
+    (49L, MethodRefDefSig(true, false, false, false, 0, Tpe(Char, false), List(Tpe(I4, false)))),
     (
-      59L,
+      54L,
       MethodRefDefSig(
         true,
         false,
@@ -161,8 +140,8 @@ signatures: |-
       )
     ),
     (
-      74L,
+      69L,
       FieldSig(Generic(Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")), List(String, String)))
     ),
-    (82L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (77L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

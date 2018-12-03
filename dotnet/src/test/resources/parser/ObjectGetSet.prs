@@ -3,63 +3,53 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: ObjectGetSet.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ObjectGetSet.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
-    Method(List(LdArg0, LdFld(FieldData(1, 1, "<field2>k__BackingField", 41L)), Ret), 0, None),
-    Method(List(LdArg0, LdArg1, StFld(FieldData(1, 1, "<field2>k__BackingField", 41L)), Ret), 0, None),
-    Method(List(Nop, LdArg0, LdArg1, StFld(FieldData(2, 1, "field3", 41L)), Ret), 0, None),
+    Method(List(LdArg0, LdFld(FieldData(1, 1, "<field2>k__BackingField", 30L)), Ret), 0, None),
+    Method(List(LdArg0, LdArg1, StFld(FieldData(1, 1, "<field2>k__BackingField", 30L)), Ret), 0, None),
+    Method(List(LdArg0, LdArg1, StFld(FieldData(2, 1, "field3", 30L)), Ret), 0, None),
+    Method(List(LdArg0, LdFld(FieldData(2, 1, "field3", 30L)), Ret), 0, None),
     Method(
-      List(Nop, LdArg0, LdFld(FieldData(2, 1, "field3", 41L)), StLoc0, BrS(0), LdLoc0, Ret),
-      1,
-      Some(22L)
-    ),
-    Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     ),
     Method(
       List(
-        Nop,
         NewObj(MethodDefData(4, 0, 6278, ".ctor", 6L, Vector())),
         StLoc0,
         LdLoc0,
         LdcI43,
-        StFld(FieldData(0, 6, "field1", 41L)),
+        StFld(FieldData(0, 6, "field1", 30L)),
         LdLoc0,
         LdcI4S(20),
         CallVirt(MethodDefData(1, 0, 2182, "set_field2", 1L, Vector(ParamData(0, 1, "value")))),
-        Nop,
         LdLoc0,
         LdcI4S(100),
         CallVirt(MethodDefData(2, 0, 134, "SetField3", 1L, Vector(ParamData(0, 1, "field3")))),
-        Nop,
         LdLoc0,
-        LdFld(FieldData(0, 6, "field1", 41L)),
+        LdFld(FieldData(0, 6, "field1", 30L)),
         LdLoc0,
-        CallVirt(MethodDefData(0, 0, 2182, "get_field2", 44L, Vector())),
+        CallVirt(MethodDefData(0, 0, 2182, "get_field2", 33L, Vector())),
         Add,
         LdLoc0,
-        CallVirt(MethodDefData(3, 0, 134, "GetField3", 44L, Vector())),
+        CallVirt(MethodDefData(3, 0, 134, "GetField3", 33L, Vector())),
         Add,
-        StLoc1,
-        BrS(0),
-        LdLoc1,
         Ret
       ),
       2,
-      Some(26L)
+      Some(16L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )
@@ -82,19 +72,6 @@ signatures: |-
     ),
     (
       16L,
-      MethodRefDefSig(
-        true,
-        false,
-        false,
-        false,
-        0,
-        Tpe(Void, false),
-        List(Tpe(ValueTpe(TypeRefData(6L, "DebuggerBrowsableState", "System.Diagnostics")), false))
-      )
-    ),
-    (22L, LocalVarSig(List(LocalVar(I4, false)))),
-    (
-      26L,
       LocalVarSig(
         List(
           LocalVar(
@@ -106,26 +83,25 @@ signatures: |-
                 "",
                 TypeRefData(6L, "Object", "System"),
                 Vector(
-                  FieldData(0, 6, "field1", 41L),
-                  FieldData(1, 1, "<field2>k__BackingField", 41L),
-                  FieldData(2, 1, "field3", 41L)
+                  FieldData(0, 6, "field1", 30L),
+                  FieldData(1, 1, "<field2>k__BackingField", 30L),
+                  FieldData(2, 1, "field3", 30L)
                 ),
                 Vector(
-                  MethodDefData(0, 0, 2182, "get_field2", 44L, Vector()),
+                  MethodDefData(0, 0, 2182, "get_field2", 33L, Vector()),
                   MethodDefData(1, 0, 2182, "set_field2", 1L, Vector(ParamData(0, 1, "value"))),
                   MethodDefData(2, 0, 134, "SetField3", 1L, Vector(ParamData(0, 1, "field3"))),
-                  MethodDefData(3, 0, 134, "GetField3", 44L, Vector()),
+                  MethodDefData(3, 0, 134, "GetField3", 33L, Vector()),
                   MethodDefData(4, 0, 6278, ".ctor", 6L, Vector())
                 )
               )
             ),
             false
-          ),
-          LocalVar(I4, false)
+          )
         )
       )
     ),
-    (41L, FieldSig(I4)),
-    (44L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (48L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (30L, FieldSig(I4)),
+    (33L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (37L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

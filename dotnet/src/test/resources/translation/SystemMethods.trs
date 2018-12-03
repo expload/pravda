@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: SystemMethods.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/SystemMethods.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -33,26 +33,16 @@ translation: |-
   meta method {
   "name":"TestSystemMethods","returnTpe":int8(0)
   }
-  push null
-  push null
-  push null
-  meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(57)
   }
   push x0000000000000000000000000000000000000000000000000000000000000000
   balance
-  push int32(4)
-  swapn
   pop
   meta source_mark {
   "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(54)
   }
   paddr
-  push int32(3)
-  swapn
   pop
   meta source_mark {
   "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(52)
@@ -71,20 +61,10 @@ translation: |-
   cast
   ptransfer
   meta source_mark {
-  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(32)
-  }
-  push null
-  push int32(2)
-  swapn
-  pop
-  meta source_mark {
   "sl":int32(16),"sc":int32(5),"el":int32(16),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(6)
   }
   jump @TestSystemMethods_lvc
   @TestSystemMethods_lvc:
-  pop
-  pop
-  pop
   pop
   jump @stop
   @method_ctor:

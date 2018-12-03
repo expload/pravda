@@ -3,120 +3,113 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Arrays.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Arrays.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(3, 307, "7037807198C22A7D2B0807371D763779A84FDFCF", 119L)),
+        LdToken(FieldData(3, 307, "7037807198C22A7D2B0807371D763779A84FDFCF", 110L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
         StLoc0,
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(8, 307, "E809C5D1CEA47B45E34701D23F608A9A58034DC9", 119L)),
+        LdToken(FieldData(8, 307, "E809C5D1CEA47B45E34701D23F608A9A58034DC9", 110L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 41L)),
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 33L)),
         StLoc1,
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(6, 307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 119L)),
+        LdToken(FieldData(6, 307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 110L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 41L)),
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 33L)),
         StLoc2,
         LdLoc0,
         LdcI40,
         LdElemU1,
-        StLoc3,
+        Pop,
         LdLoc0,
         LdcI42,
         LdElemU1,
-        StLocS(4),
+        Pop,
         LdLoc1,
         LdcI41,
-        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "get_Item", 47L)),
-        StLocS(5),
+        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "get_Item", 39L)),
+        Pop,
         LdLoc2,
         LdcI41,
-        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "get_Item", 47L)),
-        StLocS(6),
+        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "get_Item", 39L)),
+        Pop,
         LdLoc1,
         LdcI41,
         LdcI42,
-        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Slice", 52L)),
-        StLocS(7),
+        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Slice", 44L)),
+        Pop,
         LdArg0,
-        LdFld(FieldData(0, 1, "BytesMapping", 109L)),
+        LdFld(FieldData(0, 1, "BytesMapping", 100L)),
         LdLoc1,
         LdLoc2,
-        CallVirt(MemberRefData(TypeSpecData(59L), "set_Item", 68L)),
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(51L), "set_Item", 60L)),
         LdArg0,
-        LdFld(FieldData(0, 1, "BytesMapping", 109L)),
+        LdFld(FieldData(0, 1, "BytesMapping", 100L)),
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(1, 307, "1EAFE5ED57A26A58369E0ECC65DD21A143D475E1", 119L)),
+        LdToken(FieldData(1, 307, "1EAFE5ED57A26A58369E0ECC65DD21A143D475E1", 110L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 41L)),
-        CallVirt(MemberRefData(TypeSpecData(59L), "ContainsKey", 76L)),
-        StLocS(9),
-        LdLocS(9),
-        BrFalseS(37),
-        Nop,
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 33L)),
+        CallVirt(MemberRefData(TypeSpecData(51L), "ContainsKey", 68L)),
+        BrFalseS(34),
         LdArg0,
-        LdFld(FieldData(0, 1, "BytesMapping", 109L)),
+        LdFld(FieldData(0, 1, "BytesMapping", 100L)),
         LdLoc1,
         LdcI43,
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(6, 307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 119L)),
+        LdToken(FieldData(6, 307, "B470CF972A0D84FBAEEEDB51A963A902269417E8", 110L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 41L)),
-        CallVirt(MemberRefData(TypeSpecData(59L), "set_Item", 68L)),
-        Nop,
-        Nop,
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 33L)),
+        CallVirt(MemberRefData(TypeSpecData(51L), "set_Item", 60L)),
         LdLoc0,
         LdcI40,
         LdcI42,
@@ -126,8 +119,8 @@ methods: |-
         LdcI41,
         StElemI1,
         LdLoc1,
-        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Length", 82L)),
-        StLocS(8),
+        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Length", 74L)),
+        Pop,
         Ret
       ),
       5,
@@ -135,40 +128,39 @@ methods: |-
     ),
     Method(
       List(
-        Nop,
         LdcI43,
         NewArr(TypeRefData(6L, "Char", "System")),
         Dup,
-        LdToken(FieldData(5, 307, "9F04F41A848514162050E3D68C1A7ABB441DC2B5", 131L)),
+        LdToken(FieldData(5, 307, "9F04F41A848514162050E3D68C1A7ABB441DC2B5", 122L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
         StLoc0,
         LdcI43,
         NewArr(TypeRefData(6L, "Int32", "System")),
         Dup,
-        LdToken(FieldData(7, 307, "E429CCA3F703A39CC5954A6572FEC9086135B34E", 127L)),
+        LdToken(FieldData(7, 307, "E429CCA3F703A39CC5954A6572FEC9086135B34E", 118L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
         StLoc1,
         LdcI43,
         NewArr(TypeRefData(6L, "Double", "System")),
         Dup,
-        LdToken(FieldData(2, 307, "380E84549CB845604C318E8E14B73622CC10AF42", 123L)),
+        LdToken(FieldData(2, 307, "380E84549CB845604C318E8E14B73622CC10AF42", 114L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
         StLoc2,
@@ -190,12 +182,12 @@ methods: |-
         LdcI43,
         NewArr(TypeRefData(6L, "UInt32", "System")),
         Dup,
-        LdToken(FieldData(4, 307, "8CFA957D76B6E190580D284C12F31AA6E3E2D41C", 127L)),
+        LdToken(FieldData(4, 307, "8CFA957D76B6E190580D284C12F31AA6E3E2D41C", 118L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            33L
+            25L
           )
         ),
         StLocS(4),
@@ -222,21 +214,20 @@ methods: |-
         LdLoc3,
         LdLen,
         ConvI4,
-        StLocS(5),
+        Pop,
         Ret
       ),
       4,
-      Some(86L)
+      Some(78L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
       List(
         LdArg0,
-        NewObj(MemberRefData(TypeSpecData(59L), ".ctor", 6L)),
-        StFld(FieldData(0, 1, "BytesMapping", 109L)),
+        NewObj(MemberRefData(TypeSpecData(51L), ".ctor", 6L)),
+        StFld(FieldData(0, 1, "BytesMapping", 100L)),
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
-        Nop,
         Ret
       ),
       0,
@@ -265,19 +256,12 @@ signatures: |-
         List(
           LocalVar(Arr(U1, ArrayShape(1, List(), List())), false),
           LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
-          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
-          LocalVar(U1, false),
-          LocalVar(U1, false),
-          LocalVar(U1, false),
-          LocalVar(U1, false),
-          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
-          LocalVar(I4, false),
-          LocalVar(Boolean, false)
+          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false)
         )
       )
     ),
     (
-      33L,
+      25L,
       MethodRefDefSig(
         false,
         false,
@@ -292,7 +276,7 @@ signatures: |-
       )
     ),
     (
-      41L,
+      33L,
       MethodRefDefSig(
         true,
         false,
@@ -303,9 +287,9 @@ signatures: |-
         List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false))
       )
     ),
-    (47L, MethodRefDefSig(true, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
+    (39L, MethodRefDefSig(true, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
     (
-      52L,
+      44L,
       MethodRefDefSig(
         true,
         false,
@@ -317,7 +301,7 @@ signatures: |-
       )
     ),
     (
-      59L,
+      51L,
       TypeSig(
         Tpe(
           Generic(
@@ -332,7 +316,7 @@ signatures: |-
       )
     ),
     (
-      68L,
+      60L,
       MethodRefDefSig(
         true,
         false,
@@ -344,25 +328,24 @@ signatures: |-
       )
     ),
     (
-      76L,
+      68L,
       MethodRefDefSig(true, false, false, false, 0, Tpe(Boolean, false), List(Tpe(Var(0), false)))
     ),
-    (82L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (74L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
     (
-      86L,
+      78L,
       LocalVarSig(
         List(
           LocalVar(Arr(Char, ArrayShape(1, List(), List())), false),
           LocalVar(Arr(I4, ArrayShape(1, List(), List())), false),
           LocalVar(Arr(R8, ArrayShape(1, List(), List())), false),
           LocalVar(Arr(String, ArrayShape(1, List(), List())), false),
-          LocalVar(Arr(U4, ArrayShape(1, List(), List())), false),
-          LocalVar(I4, false)
+          LocalVar(Arr(U4, ArrayShape(1, List(), List())), false)
         )
       )
     ),
     (
-      109L,
+      100L,
       FieldSig(
         Generic(
           Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")),
@@ -374,7 +357,7 @@ signatures: |-
       )
     ),
     (
-      119L,
+      110L,
       FieldSig(
         ValueTpe(
           TypeDefData(
@@ -390,7 +373,7 @@ signatures: |-
       )
     ),
     (
-      123L,
+      114L,
       FieldSig(
         ValueTpe(
           TypeDefData(
@@ -406,7 +389,7 @@ signatures: |-
       )
     ),
     (
-      127L,
+      118L,
       FieldSig(
         ValueTpe(
           TypeDefData(
@@ -422,7 +405,7 @@ signatures: |-
       )
     ),
     (
-      131L,
+      122L,
       FieldSig(
         ValueTpe(
           TypeDefData(
@@ -437,5 +420,5 @@ signatures: |-
         )
       )
     ),
-    (135L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (126L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

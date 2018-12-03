@@ -3,53 +3,44 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: ZooProgram.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ZooProgram.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdcI4S(10),
         NewArr(TypeRefData(6L, "Byte", "System")),
         StLoc0,
         LdcI40,
         StLoc1,
-        BrS(30),
-        Nop,
+        BrS(28),
         LdLoc0,
         LdLoc1,
         LdArg1,
         LdLoc1,
         LdArg1,
-        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Length", 25L)),
+        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Length", 22L)),
         Rem,
-        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 29L)),
+        CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 26L)),
         LdcI42,
         Div,
-        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToByte", 34L)),
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToByte", 31L)),
         StElemI1,
-        Nop,
         LdLoc1,
         LdcI41,
         Add,
         StLoc1,
         LdLoc1,
         LdcI4S(10),
-        Clt,
-        StLoc2,
-        LdLoc2,
-        BrTrueS(-39),
+        BltS(-33),
         LdLoc0,
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 39L)),
-        StLoc3,
-        BrS(0),
-        LdLoc3,
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 36L)),
         Ret
       ),
       5,
@@ -57,246 +48,198 @@ methods: |-
     ),
     Method(
       List(
-        Nop,
         LdArg0,
-        LdFld(FieldData(3, 1, "ZooToOwner", 159L)),
+        LdFld(FieldData(3, 1, "ZooToOwner", 146L)),
         LdArg0,
-        LdFld(FieldData(4, 6, "ZooCnt", 168L)),
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        CallVirt(MemberRefData(TypeSpecData(54L), "set_Item", 62L)),
-        Nop,
+        LdFld(FieldData(4, 6, "ZooCnt", 155L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        CallVirt(MemberRefData(TypeSpecData(47L), "set_Item", 55L)),
         LdArg0,
         LdArg0,
-        LdFld(FieldData(4, 6, "ZooCnt", 168L)),
+        LdFld(FieldData(4, 6, "ZooCnt", 155L)),
         LdcI41,
         Add,
-        StFld(FieldData(4, 6, "ZooCnt", 168L)),
+        StFld(FieldData(4, 6, "ZooCnt", 155L)),
         LdArg0,
-        LdFld(FieldData(4, 6, "ZooCnt", 168L)),
+        LdFld(FieldData(4, 6, "ZooCnt", 155L)),
         LdcI41,
         Sub,
-        StLoc0,
-        BrS(0),
-        LdLoc0,
         Ret
       ),
-      3,
-      Some(45L)
+      0,
+      None
     ),
     Method(
       List(
-        Nop,
         LdArg0,
-        LdFld(FieldData(3, 1, "ZooToOwner", 159L)),
+        LdFld(FieldData(3, 1, "ZooToOwner", 146L)),
         LdArg2,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 74L)),
-        CallVirt(MemberRefData(TypeSpecData(54L), "GetOrDefault", 78L)),
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        Ceq,
-        StLoc0,
-        LdLoc0,
-        BrFalseS(16),
-        Nop,
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 63L)),
+        CallVirt(MemberRefData(TypeSpecData(47L), "GetOrDefault", 67L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        BneUnS(13),
         LdArg0,
-        LdFld(FieldData(3, 1, "ZooToOwner", 159L)),
+        LdFld(FieldData(3, 1, "ZooToOwner", 146L)),
         LdArg2,
         LdArg1,
-        CallVirt(MemberRefData(TypeSpecData(54L), "set_Item", 62L)),
-        Nop,
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(47L), "set_Item", 55L)),
         Ret
       ),
-      3,
-      Some(70L)
+      0,
+      None
     ),
     Method(
       List(
-        Nop,
         LdArg0,
-        LdFld(FieldData(3, 1, "ZooToOwner", 159L)),
+        LdFld(FieldData(3, 1, "ZooToOwner", 146L)),
         LdArg1,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 74L)),
-        CallVirt(MemberRefData(TypeSpecData(54L), "GetOrDefault", 78L)),
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        Ceq,
-        StLoc0,
-        LdLoc0,
-        BrFalseS(79),
-        Nop,
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 63L)),
+        CallVirt(MemberRefData(TypeSpecData(47L), "GetOrDefault", 67L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        BneUnS(74),
         LdStr("pet"),
         LdArg0,
-        LdFld(FieldData(5, 6, "PetId", 168L)),
-        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToString", 93L)),
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 98L)),
-        StLoc1,
+        LdFld(FieldData(5, 6, "PetId", 155L)),
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToString", 80L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 85L)),
+        StLoc0,
         LdArg0,
-        LdFld(FieldData(2, 1, "PetToOwner", 150L)),
-        LdLoc1,
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        CallVirt(MemberRefData(TypeSpecData(104L), "set_Item", 62L)),
-        Nop,
+        LdFld(FieldData(2, 1, "PetToOwner", 137L)),
+        LdLoc0,
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        CallVirt(MemberRefData(TypeSpecData(91L), "set_Item", 55L)),
         LdArg0,
-        LdFld(FieldData(1, 1, "PetSignature", 150L)),
-        LdLoc1,
+        LdFld(FieldData(1, 1, "PetSignature", 137L)),
+        LdLoc0,
         LdArg0,
-        LdLoc1,
-        Call(MethodDefData(0, 0, 129, "GenerateSignature", 171L, Vector(ParamData(0, 1, "pet")))),
-        CallVirt(MemberRefData(TypeSpecData(104L), "set_Item", 62L)),
-        Nop,
+        LdLoc0,
+        Call(MethodDefData(0, 0, 129, "GenerateSignature", 158L, Vector(ParamData(0, 1, "pet")))),
+        CallVirt(MemberRefData(TypeSpecData(91L), "set_Item", 55L)),
         LdArg0,
         LdArg0,
-        LdFld(FieldData(5, 6, "PetId", 168L)),
+        LdFld(FieldData(5, 6, "PetId", 155L)),
         LdcI41,
         Add,
-        StFld(FieldData(5, 6, "PetId", 168L)),
-        LdLoc1,
-        StLoc2,
-        BrS(8),
+        StFld(FieldData(5, 6, "PetId", 155L)),
+        LdLoc0,
+        Ret,
         LdStr(""),
-        StLoc2,
-        BrS(0),
-        LdLoc2,
         Ret
       ),
       4,
-      Some(87L)
+      Some(76L)
     ),
     Method(
       List(
-        Nop,
         LdArg0,
-        LdFld(FieldData(2, 1, "PetToOwner", 150L)),
+        LdFld(FieldData(2, 1, "PetToOwner", 137L)),
         LdArg3,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 74L)),
-        CallVirt(MemberRefData(TypeSpecData(104L), "GetOrDefault", 78L)),
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        BneUnS(22),
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 63L)),
+        CallVirt(MemberRefData(TypeSpecData(91L), "GetOrDefault", 67L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        BneUnS(46),
         LdArg0,
-        LdFld(FieldData(3, 1, "ZooToOwner", 159L)),
+        LdFld(FieldData(3, 1, "ZooToOwner", 146L)),
         LdArg2,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 74L)),
-        CallVirt(MemberRefData(TypeSpecData(54L), "GetOrDefault", 78L)),
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 63L)),
+        CallVirt(MemberRefData(TypeSpecData(47L), "GetOrDefault", 67L)),
         LdArg1,
-        Ceq,
-        BrS(1),
-        LdcI40,
-        StLoc0,
-        LdLoc0,
-        BrFalseS(30),
-        Nop,
+        BneUnS(26),
         LdArg0,
-        LdFld(FieldData(2, 1, "PetToOwner", 150L)),
+        LdFld(FieldData(2, 1, "PetToOwner", 137L)),
         LdArg3,
         LdArg1,
-        CallVirt(MemberRefData(TypeSpecData(104L), "set_Item", 62L)),
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(91L), "set_Item", 55L)),
         LdArg0,
-        LdFld(FieldData(0, 1, "PetToZoo", 142L)),
+        LdFld(FieldData(0, 1, "PetToZoo", 129L)),
         LdArg3,
         LdArg2,
-        CallVirt(MemberRefData(TypeSpecData(112L), "set_Item", 62L)),
-        Nop,
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(99L), "set_Item", 55L)),
         Ret
       ),
       3,
-      Some(70L)
+      None
     ),
     Method(
       List(
-        Nop,
         LdArg0,
-        LdFld(FieldData(2, 1, "PetToOwner", 150L)),
+        LdFld(FieldData(2, 1, "PetToOwner", 137L)),
         LdArg1,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 74L)),
-        CallVirt(MemberRefData(TypeSpecData(104L), "GetOrDefault", 78L)),
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        BneUnS(54),
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 63L)),
+        CallVirt(MemberRefData(TypeSpecData(91L), "GetOrDefault", 67L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        BneUnS(120),
         LdArg0,
-        LdFld(FieldData(2, 1, "PetToOwner", 150L)),
+        LdFld(FieldData(2, 1, "PetToOwner", 137L)),
         LdArg2,
-        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 74L)),
-        CallVirt(MemberRefData(TypeSpecData(104L), "GetOrDefault", 78L)),
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        BneUnS(30),
+        LdSFld(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "EMPTY", 63L)),
+        CallVirt(MemberRefData(TypeSpecData(91L), "GetOrDefault", 67L)),
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        BneUnS(96),
         LdArg0,
-        LdFld(FieldData(0, 1, "PetToZoo", 142L)),
+        LdFld(FieldData(0, 1, "PetToZoo", 129L)),
         LdArg1,
         LdcI4M1,
-        CallVirt(MemberRefData(TypeSpecData(112L), "GetOrDefault", 78L)),
+        CallVirt(MemberRefData(TypeSpecData(99L), "GetOrDefault", 67L)),
         LdArg0,
-        LdFld(FieldData(0, 1, "PetToZoo", 142L)),
+        LdFld(FieldData(0, 1, "PetToZoo", 129L)),
         LdArg2,
         LdcI4M1,
-        CallVirt(MemberRefData(TypeSpecData(112L), "GetOrDefault", 78L)),
-        Ceq,
-        BrS(1),
-        LdcI40,
+        CallVirt(MemberRefData(TypeSpecData(99L), "GetOrDefault", 67L)),
+        BneUnS(68),
+        LdArg1,
+        LdArg2,
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 85L)),
         StLoc0,
+        LdArg0,
+        LdFld(FieldData(2, 1, "PetToOwner", 137L)),
         LdLoc0,
-        BrFalseS(73),
-        Nop,
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 42L)),
+        CallVirt(MemberRefData(TypeSpecData(91L), "set_Item", 55L)),
+        LdArg0,
+        LdFld(FieldData(1, 1, "PetSignature", 137L)),
+        LdLoc0,
+        LdArg0,
+        LdFld(FieldData(1, 1, "PetSignature", 137L)),
         LdArg1,
+        CallVirt(MemberRefData(TypeSpecData(91L), "get_Item", 106L)),
+        LdArg0,
+        LdFld(FieldData(1, 1, "PetSignature", 137L)),
         LdArg2,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 98L)),
-        StLoc1,
-        LdArg0,
-        LdFld(FieldData(2, 1, "PetToOwner", 150L)),
-        LdLoc1,
-        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Sender", 49L)),
-        CallVirt(MemberRefData(TypeSpecData(104L), "set_Item", 62L)),
-        Nop,
-        LdArg0,
-        LdFld(FieldData(1, 1, "PetSignature", 150L)),
-        LdLoc1,
-        LdArg0,
-        LdFld(FieldData(1, 1, "PetSignature", 150L)),
-        LdArg1,
-        CallVirt(MemberRefData(TypeSpecData(104L), "get_Item", 119L)),
-        LdArg0,
-        LdFld(FieldData(1, 1, "PetSignature", 150L)),
-        LdArg2,
-        CallVirt(MemberRefData(TypeSpecData(104L), "get_Item", 119L)),
-        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Concat", 126L)),
-        CallVirt(MemberRefData(TypeSpecData(104L), "set_Item", 62L)),
-        Nop,
-        LdLoc1,
-        StLoc2,
-        BrS(9),
-        Nop,
+        CallVirt(MemberRefData(TypeSpecData(91L), "get_Item", 106L)),
+        CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Concat", 113L)),
+        CallVirt(MemberRefData(TypeSpecData(91L), "set_Item", 55L)),
+        LdLoc0,
+        Ret,
         LdStr(""),
-        StLoc2,
-        BrS(0),
-        LdLoc2,
         Ret
       ),
       5,
-      Some(87L)
+      Some(76L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
       List(
         LdArg0,
-        NewObj(MemberRefData(TypeSpecData(112L), ".ctor", 6L)),
-        StFld(FieldData(0, 1, "PetToZoo", 142L)),
+        NewObj(MemberRefData(TypeSpecData(99L), ".ctor", 6L)),
+        StFld(FieldData(0, 1, "PetToZoo", 129L)),
         LdArg0,
-        NewObj(MemberRefData(TypeSpecData(104L), ".ctor", 6L)),
-        StFld(FieldData(1, 1, "PetSignature", 150L)),
+        NewObj(MemberRefData(TypeSpecData(91L), ".ctor", 6L)),
+        StFld(FieldData(1, 1, "PetSignature", 137L)),
         LdArg0,
-        NewObj(MemberRefData(TypeSpecData(104L), ".ctor", 6L)),
-        StFld(FieldData(2, 1, "PetToOwner", 150L)),
+        NewObj(MemberRefData(TypeSpecData(91L), ".ctor", 6L)),
+        StFld(FieldData(2, 1, "PetToOwner", 137L)),
         LdArg0,
-        NewObj(MemberRefData(TypeSpecData(54L), ".ctor", 6L)),
-        StFld(FieldData(3, 1, "ZooToOwner", 159L)),
-        LdArg0,
-        LdcI41,
-        StFld(FieldData(4, 6, "ZooCnt", 168L)),
+        NewObj(MemberRefData(TypeSpecData(47L), ".ctor", 6L)),
+        StFld(FieldData(3, 1, "ZooToOwner", 146L)),
         LdArg0,
         LdcI41,
-        StFld(FieldData(5, 6, "PetId", 168L)),
+        StFld(FieldData(4, 6, "ZooCnt", 155L)),
+        LdArg0,
+        LdcI41,
+        StFld(FieldData(5, 6, "PetId", 155L)),
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
-        Nop,
         Ret
       ),
       2,
@@ -321,20 +264,13 @@ signatures: |-
     ),
     (
       16L,
-      LocalVarSig(
-        List(
-          LocalVar(Arr(U1, ArrayShape(1, List(), List())), false),
-          LocalVar(I4, false),
-          LocalVar(Boolean, false),
-          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false)
-        )
-      )
+      LocalVarSig(List(LocalVar(Arr(U1, ArrayShape(1, List(), List())), false), LocalVar(I4, false)))
     ),
-    (25L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (29L, MethodRefDefSig(true, false, false, false, 0, Tpe(Char, false), List(Tpe(I4, false)))),
-    (34L, MethodRefDefSig(false, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
+    (22L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (26L, MethodRefDefSig(true, false, false, false, 0, Tpe(Char, false), List(Tpe(I4, false)))),
+    (31L, MethodRefDefSig(false, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
     (
-      39L,
+      36L,
       MethodRefDefSig(
         true,
         false,
@@ -345,9 +281,8 @@ signatures: |-
         List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false))
       )
     ),
-    (45L, LocalVarSig(List(LocalVar(I4, false)))),
     (
-      49L,
+      42L,
       MethodRefDefSig(
         false,
         false,
@@ -359,7 +294,7 @@ signatures: |-
       )
     ),
     (
-      54L,
+      47L,
       TypeSig(
         Tpe(
           Generic(
@@ -371,7 +306,7 @@ signatures: |-
       )
     ),
     (
-      62L,
+      55L,
       MethodRefDefSig(
         true,
         false,
@@ -382,10 +317,9 @@ signatures: |-
         List(Tpe(Var(0), false), Tpe(Var(1), false))
       )
     ),
-    (70L, LocalVarSig(List(LocalVar(Boolean, false)))),
-    (74L, FieldSig(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")))),
+    (63L, FieldSig(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")))),
     (
-      78L,
+      67L,
       MethodRefDefSig(
         true,
         false,
@@ -396,13 +330,10 @@ signatures: |-
         List(Tpe(Var(0), false), Tpe(Var(1), false))
       )
     ),
+    (76L, LocalVarSig(List(LocalVar(String, false)))),
+    (80L, MethodRefDefSig(false, false, false, false, 0, Tpe(String, false), List(Tpe(I4, false)))),
     (
-      87L,
-      LocalVarSig(List(LocalVar(Boolean, false), LocalVar(String, false), LocalVar(String, false)))
-    ),
-    (93L, MethodRefDefSig(false, false, false, false, 0, Tpe(String, false), List(Tpe(I4, false)))),
-    (
-      98L,
+      85L,
       MethodRefDefSig(
         false,
         false,
@@ -414,7 +345,7 @@ signatures: |-
       )
     ),
     (
-      104L,
+      91L,
       TypeSig(
         Tpe(
           Generic(
@@ -426,17 +357,17 @@ signatures: |-
       )
     ),
     (
-      112L,
+      99L,
       TypeSig(
         Tpe(Generic(Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")), List(String, I4)), false)
       )
     ),
     (
-      119L,
+      106L,
       MethodRefDefSig(true, false, false, false, 0, Tpe(Var(1), false), List(Tpe(Var(0), false)))
     ),
     (
-      126L,
+      113L,
       MethodRefDefSig(
         true,
         false,
@@ -447,9 +378,9 @@ signatures: |-
         List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false))
       )
     ),
-    (142L, FieldSig(Generic(Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")), List(String, I4)))),
+    (129L, FieldSig(Generic(Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")), List(String, I4)))),
     (
-      150L,
+      137L,
       FieldSig(
         Generic(
           Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")),
@@ -458,7 +389,7 @@ signatures: |-
       )
     ),
     (
-      159L,
+      146L,
       FieldSig(
         Generic(
           Cls(TypeRefData(10L, "Mapping`2", "Expload.Pravda")),
@@ -466,9 +397,9 @@ signatures: |-
         )
       )
     ),
-    (168L, FieldSig(I4)),
+    (155L, FieldSig(I4)),
     (
-      171L,
+      158L,
       MethodRefDefSig(
         true,
         false,
@@ -480,7 +411,7 @@ signatures: |-
       )
     ),
     (
-      177L,
+      164L,
       MethodRefDefSig(
         true,
         false,
@@ -491,9 +422,9 @@ signatures: |-
         List(Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false), Tpe(I4, false))
       )
     ),
-    (184L, MethodRefDefSig(true, false, false, false, 0, Tpe(String, false), List(Tpe(I4, false)))),
+    (171L, MethodRefDefSig(true, false, false, false, 0, Tpe(String, false), List(Tpe(I4, false)))),
     (
-      189L,
+      176L,
       MethodRefDefSig(
         true,
         false,
@@ -509,7 +440,7 @@ signatures: |-
       )
     ),
     (
-      197L,
+      184L,
       MethodRefDefSig(
         true,
         false,
@@ -520,5 +451,5 @@ signatures: |-
         List(Tpe(String, false), Tpe(String, false))
       )
     ),
-    (203L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (190L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

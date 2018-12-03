@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Loop.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Loop.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -35,56 +35,44 @@ translation: |-
   }
   push null
   push null
-  push null
-  push null
-  push null
-  meta source_mark {
-  "sl":int32(7),"sc":int32(4),"el":int32(7),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(5)
-  }
   meta source_mark {
   "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(18)
   }
   push int32(0)
-  push int32(6)
+  push int32(3)
   swapn
   pop
   meta source_mark {
   "sl":int32(9),"sc":int32(13),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(22)
   }
   push int32(0)
-  push int32(5)
+  push int32(2)
   swapn
   pop
-  jump @TestLoop_br17
-  @TestLoop_br7:
-  push int32(5)
+  jump @TestLoop_br14
+  @TestLoop_br6:
+  push int32(2)
   dupn
-  meta source_mark {
-  "sl":int32(9),"sc":int32(37),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(38)
-  }
   push int32(2)
   meta source_mark {
   "sl":int32(10),"sc":int32(12),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(19)
   }
   add
-  push int32(6)
+  push int32(3)
   swapn
   pop
-  push int32(4)
+  push int32(1)
   dupn
-  meta source_mark {
-  "sl":int32(11),"sc":int32(8),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(9)
-  }
   push int32(1)
   meta source_mark {
   "sl":int32(9),"sc":int32(32),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(35)
   }
   add
-  push int32(5)
+  push int32(2)
   swapn
   pop
-  @TestLoop_br17:
-  push int32(4)
+  @TestLoop_br14:
+  push int32(1)
   dupn
   meta source_mark {
   "sl":int32(9),"sc":int32(24),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(30)
@@ -94,66 +82,41 @@ translation: |-
   lt
   push int8(3)
   cast
-  push int32(4)
-  swapn
-  pop
-  push int32(3)
-  dupn
-  push int32(1)
+  push int32(0)
   eq
-  jumpi @TestLoop_br7
-  jump @TestLoop_br34
-  @TestLoop_br28:
-  push int32(5)
+  not
+  jumpi @TestLoop_br6
+  jump @TestLoop_br25
+  @TestLoop_br21:
+  push int32(2)
   dupn
   push int32(2)
   mul
-  push int32(6)
+  push int32(3)
   swapn
   pop
-  @TestLoop_br34:
-  meta source_mark {
-  "sl":int32(13),"sc":int32(26),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(27)
-  }
-  push int32(5)
-  dupn
+  @TestLoop_br25:
   meta source_mark {
   "sl":int32(14),"sc":int32(11),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(18)
   }
-  meta source_mark {
-  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(9)
-  }
-  push int32(10000)
+  push int32(2)
+  dupn
   meta source_mark {
   "sl":int32(13),"sc":int32(8),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(25)
   }
+  push int32(10000)
   swap
   lt
   push int8(3)
   cast
-  push int32(3)
-  swapn
-  pop
-  push int32(2)
-  dupn
-  push int32(1)
+  push int32(0)
   eq
-  jumpi @TestLoop_br28
-  push int32(5)
-  dupn
+  not
+  jumpi @TestLoop_br21
   push int32(2)
-  swapn
-  pop
-  push int32(1)
   dupn
   jump @TestLoop_lvc
   @TestLoop_lvc:
-  swap
-  pop
-  swap
-  pop
-  swap
-  pop
   swap
   pop
   swap

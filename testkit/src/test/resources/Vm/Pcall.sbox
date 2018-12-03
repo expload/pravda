@@ -12,15 +12,18 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: PcallProgram.dll
     sources:
     - Pravda.dll
     - dotnet-tests/resources/PcallProgram.cs
+    optimize: true
   - target: Pcall.exe
     sources:
     - Pravda.dll
     - PcallProgram.dll
     - dotnet-tests/resources/Pcall.cs
+    optimize: true
   main-class: PcallNamespace.Pcall
 ---
 stack:

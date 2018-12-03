@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Arithmetics.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Arithmetics.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -36,11 +36,6 @@ translation: |-
   push null
   push null
   push null
-  push null
-  push null
-  meta source_mark {
-  "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
@@ -48,9 +43,6 @@ translation: |-
   sget
   push int32(2)
   add
-  push int32(6)
-  swapn
-  pop
   meta source_mark {
   "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }
@@ -86,36 +78,22 @@ translation: |-
   meta source_mark {
   "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(46)
   }
-  push int32(5)
-  dupn
-  push int32(5)
+  push int32(4)
   dupn
   add
   push int32(42)
   add
-  push int32(4)
+  push int32(3)
   dupn
   mul
-  push int32(3)
+  push int32(2)
   dupn
   add
   push int32(1337)
   swap
   div
-  push int32(2)
-  swapn
-  pop
-  meta source_mark {
-  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(6)
-  }
-  push int32(1)
-  dupn
   jump @TestBasicOperations_lvc
   @TestBasicOperations_lvc:
-  swap
-  pop
-  swap
-  pop
   swap
   pop
   swap

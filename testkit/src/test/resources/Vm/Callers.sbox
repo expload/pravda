@@ -7,10 +7,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: Callers.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Callers.cs
+    optimize: true
 ---
 stack:
   - bytes.0000000000000000000000000000000000000000000000000000000000000000

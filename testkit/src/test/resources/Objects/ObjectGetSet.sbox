@@ -7,10 +7,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: ObjectGetSet.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ObjectGetSet.cs
+    optimize: true
 ---
 stack:
   - int32.123

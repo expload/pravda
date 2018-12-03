@@ -3,36 +3,32 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Event.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Event.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdStr("my_event"),
         LdcI4(1234),
         Call(
           MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 24L)
         ),
-        Nop,
         LdStr("my_event"),
         LdStr("my_string"),
         Call(
           MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 28L)
         ),
-        Nop,
         LdStr("my_event"),
         LdcR8(2.0),
         Call(
           MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 32L)
         ),
-        Nop,
         LdStr("my_event"),
         LdcI44,
         NewArr(TypeRefData(6L, "Byte", "System")),
@@ -49,15 +45,14 @@ methods: |-
         Call(
           MethodSpecData(MemberRefData(TypeRefData(10L, "Log", "Expload.Pravda"), "Event", 16L), 50L)
         ),
-        Nop,
         Ret
       ),
       4,
       None
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )

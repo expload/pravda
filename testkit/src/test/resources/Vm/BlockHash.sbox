@@ -10,12 +10,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Block.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Block.cs
-    optimize: false
+    optimize: true
 ---
 stack:
   - bytes.62099c6a16853f70fcf2e5a24da6e46faaf0b2541658bec668527b0436d32ece

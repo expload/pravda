@@ -7,10 +7,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: Object.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Object.cs
+    optimize: true
 ---
 stack:
   - int32.385

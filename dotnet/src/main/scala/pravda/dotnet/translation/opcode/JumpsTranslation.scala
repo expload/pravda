@@ -33,7 +33,7 @@ case object JumpsTranslation extends OneToManyTranslatorOnlyAsm {
     op match {
       case Jump(label) => Right(List(asm.Operation.Jump(Some(label))))
       case JumpI(label) =>
-        Right(List(pushInt(1), asm.Operation(Opcodes.EQ), asm.Operation.JumpI(Some(label))))
+        Right(List(pushInt(0), asm.Operation(Opcodes.EQ), asm.Operation(Opcodes.NOT), asm.Operation.JumpI(Some(label))))
       case Label(label) => Right(List(asm.Operation.Label(label)))
       case _            => Left(UnknownOpcode)
     }

@@ -8,10 +8,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: SmartProgram.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/SmartProgram.cs
+    optimize: true
 ---
 stack:
   [int32.10]

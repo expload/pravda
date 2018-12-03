@@ -51,12 +51,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: <C# program name>.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/<C# program name>.cs
-    optimize: false
+    optimize: true
 ---
 ```
 
@@ -92,12 +92,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: <C# program name>.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/<C# program name>.cs
-    optimize: false
+    optimize: true
 ---
 ```
 
