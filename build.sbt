@@ -14,7 +14,7 @@ git.gitTagToVersionNumber := { tag: String =>
   else None
 }
 
-val `tendermint-version` = "0.16.0"
+val `tendermint-version` = "0.26.4"
 
 lazy val envDockerUsername = sys.env.get("docker_username")
 
@@ -195,7 +195,7 @@ lazy val node = (project in file("node"))
       // UI
       "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
       // Other
-      "com.expload" %% "scala-abci-server" % "0.12.0",
+      "com.expload" %% "scala-abci-server" % "0.13.0",
       "com.github.pureconfig" %% "pureconfig" % "0.9.1",
       // Marshalling
       "com.tethys-json" %% "tethys" % "0.7.0.2",

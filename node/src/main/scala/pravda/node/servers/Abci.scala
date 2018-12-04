@@ -65,7 +65,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
 
     val initValidators = request.validators.toVector
-      .map(x => tendermint.unpackAddress(x.pubKey))
+      .map(x => tendermint.unpackAddress(x.getPubKey.data))
 
     for {
       _ <- FileStore
@@ -80,16 +80,17 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
+    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.getValidator.address))
+    val absent = request.getLastCommitInfo.votes.collect {
+      case VoteInfo(validator, signedLastBlock) if !signedLastBlock =>
+        validator.map(v => tendermint.unpackAddress(v.address))
+    }.flatten
 
-    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.pubKey))
-    val absent = request.absentValidators
     FileStore
       .readApplicationStateInfoAsync()
       .map { maybeInfo =>
         val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
-        validators = info.validators.zipWithIndex.collect {
-          case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
-        }
+        validators = info.validators.filter(address => !malicious.contains(address) && !absent.contains(address))
       }
       .map(_ => ResponseBeginBlock())
   }

@@ -18,6 +18,7 @@
 package pravda.common
 
 import java.nio.charset.{Charset, StandardCharsets}
+import java.util.Base64
 
 import com.google.protobuf.ByteString
 
@@ -165,6 +166,14 @@ package object bytes {
 
   def bytesToString(array: Array[Byte], charset: Charset = StandardCharsets.UTF_8): String = {
     new String(array, charset)
+  }
+
+  def byteStringToBase64(byteString: ByteString): String = {
+    Base64.getEncoder.encodeToString(byteString.toByteArray)
+  }
+
+  def hexToBase64(hex: String): String = {
+    Base64.getEncoder.encodeToString(hex2bytes(hex))
   }
 
 }
