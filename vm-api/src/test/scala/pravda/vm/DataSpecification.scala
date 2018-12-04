@@ -116,14 +116,14 @@ import scala.collection.mutable
                    toUtf8: Boolean = true,
                    toBytes: Boolean = true): Prop = forAll(gen) { data =>
     (!toInt8 || data.cast(Type.Int8).cast(`type`) == data) :| "to int8" &&
-      (!toInt16 || data.cast(Type.Int16).cast(`type`) == data) :| "to int16" &&
-      (!toInt32 || data.cast(Type.Int32).cast(`type`) == data) :| "to int32" &&
-      (!toInt64 || data.cast(Type.Int64).cast(`type`) == data) :| "to int64" &&
-      (!toBigInt || data.cast(Type.BigInt).cast(`type`) == data) :| "to bigint" &&
-      (!toNumber || data.cast(Type.Number).cast(`type`) == data) :| "to number" &&
-      (!toRef || data.cast(Type.Ref).cast(`type`) == data) :| "to ref" &&
-      (!toUtf8 || data.cast(Type.Utf8).cast(`type`) == data) :| "to utf8" &&
-      (!toBytes || data.cast(Type.Bytes).cast(`type`) == data) :| "to bytes"
+    (!toInt16 || data.cast(Type.Int16).cast(`type`) == data) :| "to int16" &&
+    (!toInt32 || data.cast(Type.Int32).cast(`type`) == data) :| "to int32" &&
+    (!toInt64 || data.cast(Type.Int64).cast(`type`) == data) :| "to int64" &&
+    (!toBigInt || data.cast(Type.BigInt).cast(`type`) == data) :| "to bigint" &&
+    (!toNumber || data.cast(Type.Number).cast(`type`) == data) :| "to number" &&
+    (!toRef || data.cast(Type.Ref).cast(`type`) == data) :| "to ref" &&
+    (!toUtf8 || data.cast(Type.Utf8).cast(`type`) == data) :| "to utf8" &&
+    (!toBytes || data.cast(Type.Bytes).cast(`type`) == data) :| "to bytes"
   }
 
   property("int8.cast") = castProperty(int8, Type.Int8)

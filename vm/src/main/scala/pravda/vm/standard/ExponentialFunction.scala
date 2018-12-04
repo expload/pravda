@@ -37,28 +37,28 @@ object ExponentialFunction extends FunctionDefinition {
   val returns = Seq(Data.Type.Number)
 
   private def pow(x: Long, y: Int): Long = y match {
-    case p if p <= 0 => 1L
+    case p if p <= 0     => 1L
     case p if p % 2 == 1 => x * pow(x, y - 1)
     case p if p % 2 == 0 =>
       val r = pow(x, p / 2)
       r * r
   }
   private def pow(x: Int, y: Int): Int = y match {
-    case p if p <= 0 => 1
+    case p if p <= 0     => 1
     case p if p % 2 == 1 => x * pow(x, y - 1)
     case p if p % 2 == 0 =>
       val r = pow(x, p / 2)
       r * r
   }
   private def pow(x: Short, y: Int): Short = y match {
-    case p if p <= 0 => 1
+    case p if p <= 0     => 1
     case p if p % 2 == 1 => (x * pow(x, y - 1)).toShort
     case p if p % 2 == 0 =>
       val r = pow(x, p / 2)
       (r * r).toShort
   }
   private def pow(x: Byte, y: Int): Byte = y match {
-    case p if p <= 0 => 1
+    case p if p <= 0     => 1
     case p if p % 2 == 1 => (x * pow(x, y - 1)).toByte
     case p if p % 2 == 0 =>
       val r = pow(x, p / 2)
