@@ -34,7 +34,7 @@ methods: |-
         CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 39L)),
         StLoc0,
         LdcI4S(32),
-        NewArr(TypeRefData(6L, "Byte", "System")),
+        NewArr(TypeRefData(6L, "SByte", "System")),
         Dup,
         LdToken(FieldData(0, 307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 68L)),
         Call(
@@ -136,7 +136,7 @@ signatures: |-
         false,
         0,
         Tpe(Void, false),
-        List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false))
+        List(Tpe(Arr(I1, ArrayShape(1, List(), List())), false))
       )
     ),
     (

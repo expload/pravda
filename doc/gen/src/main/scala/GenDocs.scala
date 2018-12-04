@@ -168,9 +168,7 @@ object GenDocs extends App {
         case Data.Type.Int8    => "int8"
         case Data.Type.Int16   => "int16"
         case Data.Type.Int32   => "int32"
-        case Data.Type.Uint8   => "uint8"
-        case Data.Type.Uint16  => "uint16"
-        case Data.Type.Uint32  => "uint32"
+        case Data.Type.Int64   => "int64"
       }
 
       def typesToName(types: Seq[Data.Type]) = {

@@ -104,9 +104,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case Type.Int8    => Data.Array.Int8Array(ArrayBuffer.fill(num.toInt)(0))
       case Type.Int16   => Data.Array.Int16Array(ArrayBuffer.fill(num.toInt)(0))
       case Type.Int32   => Data.Array.Int32Array(ArrayBuffer.fill(num.toInt)(0))
-      case Type.Uint8   => Data.Array.Uint8Array(ArrayBuffer.fill(num.toInt)(0))
-      case Type.Uint16  => Data.Array.Uint16Array(ArrayBuffer.fill(num.toInt)(0))
-      case Type.Uint32  => Data.Array.Uint32Array(ArrayBuffer.fill(num.toInt)(0L))
+      case Type.Int64   => Data.Array.Int64Array(ArrayBuffer.fill(num.toInt)(0L))
       case Type.BigInt  => Data.Array.BigIntArray(ArrayBuffer.fill(num.toInt)(scala.BigInt(0)))
       case Type.Number  => Data.Array.NumberArray(ArrayBuffer.fill(num.toInt)(0.0))
       case Type.Ref     => Data.Array.RefArray(ArrayBuffer.fill(num.toInt)(0))
@@ -137,14 +135,12 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     memory.pop() match {
       case reference: Ref =>
         val datum = memory.heapGet(reference) match {
-          case Bytes(data)       => Uint8(readArray(data.byteAt, data.size()) & 0xFF)
-          case Utf8(data)        => Uint8(readArray(data.charAt, data.length).toByte & 0xFF)
+          case Bytes(data)       => Int8(readArray(data.byteAt, data.size()))
+          case Utf8(data)        => Int8(readArray(data.charAt, data.length).toByte)
           case Int8Array(data)   => Int8(readArray(data.apply, data.length))
           case Int16Array(data)  => Int16(readArray(data.apply, data.length))
           case Int32Array(data)  => Int32(readArray(data.apply, data.length))
-          case Uint8Array(data)  => Uint8(readArray(data.apply, data.length))
-          case Uint16Array(data) => Uint16(readArray(data.apply, data.length))
-          case Uint32Array(data) => Uint32(readArray(data.apply, data.length))
+          case Int64Array(data)  => Int64(readArray(data.apply, data.length))
           case BigIntArray(data) => BigInt(readArray(data.apply, data.length))
           case RefArray(data)    => Ref(readArray(data.apply, data.length))
           case BoolArray(data)   => readArray(data.apply, data.length)
@@ -155,11 +151,11 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
       case Utf8(data) =>
-        val datum = Uint8(readArray(data.charAt, data.length).toByte & 0xFF)
+        val datum = Int8(readArray(data.charAt, data.length).toByte)
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
       case Bytes(data) =>
-        val datum = Uint8(readArray(data.byteAt, data.size()) & 0xFF)
+        val datum = Int8(readArray(data.byteAt, data.size()))
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
       case _ => throw ThrowableVmError(WrongType)
@@ -188,9 +184,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case (Int8(value), Int8Array(data))     => writeArray(value, data.update, data.length)
       case (Int16(value), Int16Array(data))   => writeArray(value, data.update, data.length)
       case (Int32(value), Int32Array(data))   => writeArray(value, data.update, data.length)
-      case (Uint8(value), Uint8Array(data))   => writeArray(value, data.update, data.length)
-      case (Uint16(value), Uint16Array(data)) => writeArray(value, data.update, data.length)
-      case (Uint32(value), Uint32Array(data)) => writeArray(value, data.update, data.length)
+      case (Int64(value), Int64Array(data))   => writeArray(value, data.update, data.length)
       case (BigInt(value), BigIntArray(data)) => writeArray(value, data.update, data.length)
       case (Ref(value), RefArray(data))       => writeArray(value, data.update, data.length)
       case (value: Bool, BoolArray(data))     => writeArray(value, data.update, data.length)
@@ -213,9 +207,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
           case Int8Array(data)   => data.length
           case Int16Array(data)  => data.length
           case Int32Array(data)  => data.length
-          case Uint8Array(data)  => data.length
-          case Uint16Array(data) => data.length
-          case Uint32Array(data) => data.length
+          case Int64Array(data)  => data.length
           case BigIntArray(data) => data.length
           case RefArray(data)    => data.length
           case BoolArray(data)   => data.length
@@ -228,7 +220,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case _           => throw ThrowableVmError(WrongType)
     }
 
-    memory.push(Data.Primitive.Uint32(len.toLong))
+    memory.push(Data.Primitive.Int32(len))
   }
 
   @OpcodeImplementation(

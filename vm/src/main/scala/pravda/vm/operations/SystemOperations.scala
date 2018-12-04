@@ -299,7 +299,7 @@ final class SystemOperations(program: ByteBuffer,
   def chainHeight(): Unit = {
     val data = env.chainHeight
     wattCounter.cpuUsage(CpuStorageUse)
-    memory.push(Data.Primitive.Uint32(data))
+    memory.push(Data.Primitive.Int64(data))
   }
 
   @OpcodeImplementation(

@@ -31,7 +31,7 @@ methods: |-
         ),
         LdStr("my_event"),
         LdcI44,
-        NewArr(TypeRefData(6L, "Byte", "System")),
+        NewArr(TypeRefData(6L, "SByte", "System")),
         Dup,
         LdToken(FieldData(0, 307, "12DADA1FFF4D4787ADE3333147202C3B443E376F", 64L)),
         Call(
@@ -109,7 +109,7 @@ signatures: |-
         false,
         0,
         Tpe(Void, false),
-        List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false))
+        List(Tpe(Arr(I1, ArrayShape(1, List(), List())), false))
       )
     ),
     (64L, FieldSig(I4)),

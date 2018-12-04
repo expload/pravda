@@ -15,7 +15,7 @@ methods: |-
     Method(
       List(
         LdArg1,
-        Call(MethodDefData(5, 0, 150, "BytesToHex", 65L, Vector(ParamData(0, 1, "bytes")))),
+        Call(MethodDefData(5, 0, 150, "BytesToHex", 60L, Vector(ParamData(0, 1, "bytes")))),
         Ret
       ),
       0,
@@ -136,12 +136,14 @@ methods: |-
         StLoc0,
         LdcI40,
         StLoc1,
-        BrS(23),
+        BrS(29),
         LdLoc0,
         LdArg0,
         LdLoc1,
         CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "get_Item", 27L)),
-        Call(MethodDefData(4, 0, 150, "ByteToHex", 60L, Vector(ParamData(0, 1, "b")))),
+        LdcI4(255),
+        And,
+        Call(MethodDefData(4, 0, 150, "ByteToHex", 55L, Vector(ParamData(0, 1, "b")))),
         Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 16L)),
         StLoc0,
         LdLoc1,
@@ -151,7 +153,7 @@ methods: |-
         LdLoc1,
         LdArg0,
         CallVirt(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), "Length", 32L)),
-        BltS(-32),
+        BltS(-38),
         LdLoc0,
         Ret
       ),
@@ -188,7 +190,7 @@ signatures: |-
       )
     ),
     (22L, LocalVarSig(List(LocalVar(String, false), LocalVar(I4, false)))),
-    (27L, MethodRefDefSig(true, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
+    (27L, MethodRefDefSig(true, false, false, false, 0, Tpe(I1, false), List(Tpe(I4, false)))),
     (32L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
     (
       45L,
@@ -204,9 +206,8 @@ signatures: |-
     ),
     (51L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List())),
     (55L, MethodRefDefSig(false, false, false, false, 0, Tpe(String, false), List(Tpe(I4, false)))),
-    (60L, MethodRefDefSig(false, false, false, false, 0, Tpe(String, false), List(Tpe(U1, false)))),
     (
-      65L,
+      60L,
       MethodRefDefSig(
         false,
         false,

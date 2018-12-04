@@ -52,48 +52,18 @@ namespace Expload.Unity.Codegen
             return "int32." + elem.ToString();
         }
 
-        // unsigned integers
-
-        public static byte ParseUInt8(string elem)
+        public static long ParseInt64(string elem)
         {
-            if (elem.StartsWith("uint8.")) {
-                return byte.Parse(elem.Substring("uint8.".Length));
+            if (elem.StartsWith("int64.")) {
+                return long.Parse(elem.Substring("int64.".Length));
             } else {
-                throw new ArgumentException("Wrong format for uint8 type: " + elem);
+                throw new ArgumentException("Wrong format for int64 type: " + elem);
             }
         }
 
-        public static string PruintUInt8(byte elem)
+        public static string PrintInt64(long elem)
         {
-            return "uint8." + elem.ToString();
-        }
-
-        public static ushort ParseUInt16(string elem)
-        {
-            if (elem.StartsWith("uint16.")) {
-                return ushort.Parse(elem.Substring("uint16.".Length));
-            } else {
-                throw new ArgumentException("Wrong format for uint16 type: " + elem);
-            }
-        }
-
-        public static string PrintUInt16(ushort elem)
-        {
-            return "uint16." + elem.ToString();
-        }
-
-        public static uint ParseUInt32(string elem)
-        {
-            if (elem.StartsWith("uint32.")) {
-                return uint.Parse(elem.Substring("uint32.".Length));
-            } else {
-                throw new ArgumentException("Wrong format for uint32 type: " + elem);
-            }
-        }
-
-        public static string PrintUInt32(uint elem)
-        {
-            return "uint32." + elem.ToString();
+            return "int64." + elem.ToString();
         }
 
         // bool

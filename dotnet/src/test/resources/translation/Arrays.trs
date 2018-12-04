@@ -88,9 +88,9 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(37),"sc":int32(9),"el":int32(37),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(47)
+  "sl":int32(37),"sc":int32(9),"el":int32(37),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(50)
   }
-  new int32[4, 5, 6]
+  new int64[4, 5, 6]
   push int32(2)
   swapn
   pop
@@ -131,12 +131,14 @@ translation: |-
   swap
   array_mut
   meta source_mark {
-  "sl":int32(43),"sc":int32(9),"el":int32(43),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(22)
+  "sl":int32(43),"sc":int32(9),"el":int32(43),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(23)
   }
   push int32(1)
   dupn
   push int32(1)
   push int32(7)
+  push int8(4)
+  cast
   swap
   array_mut
   meta source_mark {
@@ -168,7 +170,7 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(44)
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(46)
   }
   new int8[1, 2, 3]
   push int32(4)
@@ -191,7 +193,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(27)
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(28)
   }
   push int32(3)
   dupn
@@ -199,7 +201,7 @@ translation: |-
   array_get
   pop
   meta source_mark {
-  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(27)
+  "sl":int32(15),"sc":int32(9),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(28)
   }
   push int32(3)
   dupn
@@ -207,7 +209,7 @@ translation: |-
   array_get
   pop
   meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(29)
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(30)
   }
   push int32(2)
   dupn
@@ -215,7 +217,7 @@ translation: |-
   array_get
   pop
   meta source_mark {
-  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(29)
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/Arrays.cs","ec":int32(30)
   }
   push int32(1)
   dupn

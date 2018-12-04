@@ -46,10 +46,10 @@ object Translator {
     case SigType.I1            => Meta.TypeSignature.Int8
     case SigType.I2            => Meta.TypeSignature.Int16
     case SigType.I4            => Meta.TypeSignature.Int32
-    case SigType.I8            => Meta.TypeSignature.BigInt
-    case SigType.U1            => Meta.TypeSignature.Uint8
-    case SigType.U2            => Meta.TypeSignature.Uint16
-    case SigType.U4            => Meta.TypeSignature.Uint32
+    case SigType.I8            => Meta.TypeSignature.Int64
+    case SigType.U1            => Meta.TypeSignature.Int16
+    case SigType.U2            => Meta.TypeSignature.Int32
+    case SigType.U4            => Meta.TypeSignature.Int64
     case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
     case SigType.String        => Meta.TypeSignature.Utf8
     // TODO add more types
@@ -99,9 +99,10 @@ object Translator {
               case SigType.I1            => Data.Primitive.Int8(0)
               case SigType.I2            => Data.Primitive.Int16(0)
               case SigType.I4            => Data.Primitive.Int32(0)
-              case SigType.U1            => Data.Primitive.Uint8(0)
-              case SigType.U2            => Data.Primitive.Uint16(0)
-              case SigType.U4            => Data.Primitive.Uint32(0)
+              case SigType.I8            => Data.Primitive.Int64(0L)
+              case SigType.U1            => Data.Primitive.Int16(0)
+              case SigType.U2            => Data.Primitive.Int32(0)
+              case SigType.U4            => Data.Primitive.Int64(0L)
               case SigType.R4            => Data.Primitive.Number(0.0)
               case SigType.R8            => Data.Primitive.Number(0.0)
               case TypeDetectors.Bytes() => Data.Primitive.Bytes(ByteString.EMPTY)

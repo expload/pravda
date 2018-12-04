@@ -7,8 +7,8 @@ public class Compare
    {
        int a = 1;
        int b = 2;
-       uint c = 3;
-       uint d = 4;
+       short c = 3;
+       short d = 4;
        long e = 5L;
        long f = 6L;
 

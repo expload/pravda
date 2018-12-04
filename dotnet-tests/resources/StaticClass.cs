@@ -43,7 +43,7 @@ namespace StaticClassUtils
             return "";
         }
 
-        public static string ByteToHex(byte b)
+        public static string ByteToHex(int b)
         {
             return HexPart(b / 16) + HexPart(b % 16);
         }
@@ -52,7 +52,7 @@ namespace StaticClassUtils
         {
             string res = "";
             for (int i = 0; i < bytes.Length(); i++) {
-                res += ByteToHex(bytes[i]);
+                res += ByteToHex(bytes[i] & 0xFF);
             }
             return res;
         }

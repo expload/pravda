@@ -72,11 +72,11 @@ namespace Expload.Pravda {
        // Get the void address (32 zero bytes)
        public static Bytes VOID_ADDRESS = null;
 
-       public Bytes(params byte[] bytes) {}
+       public Bytes(params sbyte[] bytes) {}
        public Bytes(String hex) {}
 
        // Get the i-th byte
-       public byte this[int i] { get { return 0; } }
+       public sbyte this[int i] { get { return 0; } }
        // Get the sub-array
        public Bytes Slice(int start, int length) { return null; }
        // Concatenate two Bytes

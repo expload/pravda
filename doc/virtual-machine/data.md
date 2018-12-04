@@ -7,15 +7,14 @@ Human-readable representation of `vm.Data`. Supported by assembler for PravdaVM.
 ### Primitive types
 
 ```
-int8, int16, int32,
-uint8, uint16, uint32
+int8, int16, int32, int64
 bigint, number
 ref,
 boolean,
 utf8, bytes
 ```
 
-1. All numbers encodes as `type(number)`. For example: `int16(500)` or `number(12.0)`. You can use decimal and hexadecimal way of writing for integers. Also you can write only a number and nearest type will be inferred automatically. For example: `4` will be `uint8`, `-500` will be `int16`.
+1. All numbers encodes as `type(number)`. For example: `int16(500)` or `number(12.0)`. You can use decimal and hexadecimal way of writing for integers. Also you can write only a number and nearest type will be inferred automatically. For example: `4` will be `int8`, `-500` will be `int16`.
 2. Booleans encodes as `true` and `false`. 
 3. Refs encodes as `#0x0000`.
 4. UTF8 string encodes classically `"hello world"`.
@@ -52,9 +51,7 @@ int8    := 0x01
 int16   := 0x02
 int32   := 0x03
 bigint  := 0x04
-uint8   := 0x05
-uint16  := 0x06
-uint32  := 0x07
+int64   := 0x05
 decimal := 0x08
 boolean := 0x09
 ref     := 0x0A
@@ -66,10 +63,8 @@ bytestr := 0x0E
 primitive_type := int8
                | int16
                | int32
-               | bigint
-               | uint8
-               | uint16
-               | uint256
+               | int64
+               | bigint               
                | double
                | boolean
                | ref
@@ -84,10 +79,8 @@ type := primitive_type
 primitive := int8 bytes~1
            | int16 bytes~2
            | int32 bytes~4
-           | bigint length bytes[&length]
-           | uint8 bytes~1
-           | uint16 bytes~2
-           | uint32 bytes~4
+           | int64 bytes~8
+           | bigint length bytes[&length]           
            | double bytes~8 # strict IEEE-754 floating point number
            | ref byte[4] # ref is constant sized
            | boolean
@@ -117,9 +110,7 @@ All primitives encodes as JSON strings with prefix. It's easy to parse. Most of 
 "int8.-100"
 "int16.-100" 
 "int32.-100"
-"uint8.100"
-"uint16.100"
-"uint32.1000"
+"int64.-100"
 "bigint.9999999999999"
 "number.2.0"
 "ref.1"

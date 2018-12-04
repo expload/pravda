@@ -30,37 +30,40 @@ object ExponentialFunction extends FunctionDefinition {
     "Takes two items from the stack, raises the second number to a power of first number and pushes the result to the stack."
 
   val args: Seq[(String, Seq[Type])] = Seq(
-    "x" -> Seq(Data.Type.Int32),
-    "y" -> Seq(Data.Type.Int32)
+    "x" -> Seq(Data.Type.Int8, Data.Type.Int16, Data.Type.Int32, Data.Type.Int64, Data.Type.Number, Data.Type.BigInt),
+    "y" -> Seq(Data.Type.Int8, Data.Type.Int16, Data.Type.Int32, Data.Type.Number, Data.Type.BigInt)
   )
 
   val returns = Seq(Data.Type.Number)
 
-  private def pow(x: Double, y: Double): Double = math.pow(x, y)
-  private def pow(x: Double, y: Byte): Double = math.pow(x, y.toDouble)
-  private def pow(x: Double, y: Int): Double = math.pow(x, y.toDouble)
-  private def pow(x: Double, y: Long): Double = math.pow(x, y.toDouble)
-  private def pow(x: Double, y: Short): Double = math.pow(x, y.toDouble)
-  private def pow(x: Long, y: Double): Long = math.pow(x.toDouble, y).toLong
-  private def pow(x: Long, y: Byte): Long = math.pow(x.toDouble, y.toDouble).toLong
-  private def pow(x: Long, y: Int): Long = math.pow(x.toDouble, y.toDouble).toLong
-  private def pow(x: Long, y: Long): Long = math.pow(x.toDouble, y.toDouble).toLong
-  private def pow(x: Long, y: Short): Long = math.pow(x.toDouble, y.toDouble).toLong
-  private def pow(x: Int, y: Double): Int = math.pow(x.toDouble, y).toInt
-  private def pow(x: Int, y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Int, y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Int, y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Int, y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Short, y: Double): Short = math.pow(x.toDouble, y).toShort
-  private def pow(x: Short, y: Byte): Short = math.pow(x.toDouble, y.toDouble).toShort
-  private def pow(x: Short, y: Int): Short = math.pow(x.toDouble, y.toDouble).toShort
-  private def pow(x: Short, y: Long): Short = math.pow(x.toDouble, y.toDouble).toShort
-  private def pow(x: Short, y: Short): Short = math.pow(x.toDouble, y.toDouble).toShort
-  private def pow(x: Byte, y: Double): Int = math.pow(x.toDouble, y).toInt
-  private def pow(x: Byte, y: Byte): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Byte, y: Int): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Byte, y: Long): Int = math.pow(x.toDouble, y.toDouble).toInt
-  private def pow(x: Byte, y: Short): Int = math.pow(x.toDouble, y.toDouble).toInt
+  private def pow(x: Long, y: Int): Long = y match {
+    case p if p <= 0 => 1L
+    case p if p % 2 == 1 => x * pow(x, y - 1)
+    case p if p % 2 == 0 =>
+      val r = pow(x, p / 2)
+      r * r
+  }
+  private def pow(x: Int, y: Int): Int = y match {
+    case p if p <= 0 => 1
+    case p if p % 2 == 1 => x * pow(x, y - 1)
+    case p if p % 2 == 0 =>
+      val r = pow(x, p / 2)
+      r * r
+  }
+  private def pow(x: Short, y: Int): Short = y match {
+    case p if p <= 0 => 1
+    case p if p % 2 == 1 => (x * pow(x, y - 1)).toShort
+    case p if p % 2 == 0 =>
+      val r = pow(x, p / 2)
+      (r * r).toShort
+  }
+  private def pow(x: Byte, y: Int): Byte = y match {
+    case p if p <= 0 => 1
+    case p if p % 2 == 1 => (x * pow(x, y - 1)).toByte
+    case p if p % 2 == 0 =>
+      val r = pow(x, p / 2)
+      (r * r).toByte
+  }
 
   def apply(memory: Memory, wattCounter: WattCounter): Unit = {
 
@@ -69,191 +72,91 @@ object ExponentialFunction extends FunctionDefinition {
       primitive
     }
 
-    def calculateWattsForBigInt(x: scala.BigInt, y: Int): Long = {
-      (scala.BigInt(x.bitLength) * y.abs / 8 + 1).toLong //FIXME overflow
-    }
+    def wattsForBigInt(x: scala.BigInt, y: Int): Long =
+      x.bitLength * y.abs.toLong / 8 + 1
+
     wattCounter.cpuUsage(CpuArithmetic)
     val a = memory.pop()
     val b = memory.pop()
 
     val res = a match {
+      case Int64(lhs) =>
+        b match {
+          case Int8(rhs) =>
+            calculateWatts(Int64(pow(lhs, rhs.toInt)))
+          case Int16(rhs) =>
+            calculateWatts(Int64(pow(lhs, rhs.toInt)))
+          case Int32(rhs) =>
+            calculateWatts(Int64(pow(lhs, rhs)))
+          case Number(rhs) =>
+            calculateWatts(Number(math.pow(lhs.toDouble, rhs)))
+          case _ => throw ThrowableVmError(WrongType)
+        }
       case Int32(lhs) =>
         b match {
           case Int8(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
+            calculateWatts(Int32(pow(lhs, rhs.toInt)))
           case Int16(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
+            calculateWatts(Int32(pow(lhs, rhs.toInt)))
           case Int32(rhs) =>
             calculateWatts(Int32(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
+            calculateWatts(Number(math.pow(lhs.toDouble, rhs)))
           case _ => throw ThrowableVmError(WrongType)
         }
       case Int16(lhs) =>
         b match {
           case Int8(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs)))
+            calculateWatts(Int16(pow(lhs, rhs.toInt)))
           case Int16(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs)))
+            calculateWatts(Int16(pow(lhs, rhs.toInt)))
           case Int32(rhs) =>
             calculateWatts(Int16(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs.intValue())))
           case Number(rhs) =>
-            calculateWatts(Int16(pow(lhs, rhs)))
+            calculateWatts(Number(math.pow(lhs.toDouble, rhs)))
           case _ => throw ThrowableVmError(WrongType)
-
         }
       case Int8(lhs) =>
         b match {
           case Int8(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
+            calculateWatts(Int8(pow(lhs, rhs.toInt)))
           case Int16(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
+            calculateWatts(Int8(pow(lhs, rhs.toInt)))
           case Int32(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Int32(pow(lhs, rhs.intValue())))
+            calculateWatts(Int8(pow(lhs, rhs)))
           case Number(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs).toDouble))
+            calculateWatts(Number(math.pow(lhs.toDouble, rhs)))
           case _ => throw ThrowableVmError(WrongType)
-
-        }
-      case Uint8(lhs) =>
-        b match {
-          case Int8(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case Int16(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case Int32(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs.byteValue())))
-          case Number(rhs) =>
-            calculateWatts(Uint8(pow(lhs, rhs)))
-          case _ => throw ThrowableVmError(WrongType)
-
-        }
-      case Uint16(lhs) =>
-        b match {
-          case Int8(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case Int16(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case Int32(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs.intValue())))
-          case Number(rhs) =>
-            calculateWatts(Uint16(pow(lhs, rhs)))
-          case _ => throw ThrowableVmError(WrongType)
-
-        }
-      case Uint32(lhs) =>
-        b match {
-          case Int8(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case Int16(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case Int32(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs.intValue())))
-          case Number(rhs) =>
-            calculateWatts(Uint32(pow(lhs, rhs)))
-          case _ => throw ThrowableVmError(WrongType)
-
         }
       case Number(lhs) =>
         b match {
           case Int8(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
+            calculateWatts(Number(math.pow(lhs, rhs.toDouble)))
           case Int16(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
+            calculateWatts(Number(math.pow(lhs, rhs.toDouble)))
           case Int32(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
-          case Uint8(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
-          case Uint16(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
-          case Uint32(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
-          case BigInt(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs.longValue())))
+            calculateWatts(Number(math.pow(lhs, rhs.toDouble)))
           case Number(rhs) =>
-            calculateWatts(Number(pow(lhs, rhs)))
+            calculateWatts(Number(math.pow(lhs, rhs)))
           case _ => throw ThrowableVmError(WrongType)
-
         }
       case BigInt(lhs) =>
         b match {
           case Int8(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue()))
+            wattCounter.memoryUsage(wattsForBigInt(lhs, rhs.toInt))
             BigInt(lhs.pow(rhs.toInt))
           case Int16(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
+            wattCounter.memoryUsage(wattsForBigInt(lhs, rhs.toInt))
             BigInt(lhs.pow(rhs.toInt))
           case Int32(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
+            wattCounter.memoryUsage(wattsForBigInt(lhs, rhs))
             BigInt(lhs.pow(rhs))
-          case Uint8(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
-            BigInt(lhs.pow(rhs))
-          case Uint16(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
-            BigInt(lhs.pow(rhs))
-          case Uint32(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
-            BigInt(lhs.pow(rhs.toInt))
           case BigInt(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue()))
-            BigInt(lhs.pow(rhs.intValue()))
-          case Number(rhs) =>
-            wattCounter.memoryUsage(calculateWattsForBigInt(lhs, rhs.intValue))
+            wattCounter.memoryUsage(wattsForBigInt(lhs, rhs.toInt))
             BigInt(lhs.pow(rhs.toInt))
           case _ => throw ThrowableVmError(WrongType)
-
         }
       case _ => throw ThrowableVmError(WrongType)
-
     }
 
     memory.push(res)

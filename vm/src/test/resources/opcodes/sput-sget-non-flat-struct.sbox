@@ -12,10 +12,10 @@ code: |-
 watts-spent: 106
 heap:
   ref.0:
-    utf8.hello: uint8.42
+    utf8.hello: int8.42
     utf8.r: ref.1
   ref.1:
-    utf8.world: uint8.7
+    utf8.world: int8.7
 error:
   code: 104
   message: WrongType

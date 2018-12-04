@@ -24,17 +24,14 @@ import scala.collection.mutable
   val (int16, int16Array) =
     genPrimitive(Gen.chooseNum[Short](Short.MinValue, (Byte.MinValue - 1).toShort), Int16, Int16Array)
   val (int32, int32Array) = genPrimitive(Gen.chooseNum[Int](Int.MinValue, Short.MinValue - 1), Int32, Int32Array)
-
-  val (uint8, uint8Array) = genPrimitive(Gen.chooseNum(0, 0xFF), Uint8, Uint8Array)
-  val (uint16, uint16Array) = genPrimitive(Gen.chooseNum(0xFF + 1, 0xFFFF), Uint16, Uint16Array)
-  val (uint32, uint32Array) = genPrimitive(Gen.chooseNum(0xFFFFl + 1, 0xFFFFFFFFl), Uint32, Uint32Array)
+  val (int64, int64Array) = genPrimitive(Gen.chooseNum[Long](Long.MinValue, Int.MinValue - 1L), Int64, Int64Array)
 
   val (bigInt, bigIntArray) = {
-    //val n = arbitrary[scala.BigInt].suchThat(x => x < Int.MinValue && x > 0xFFFFFFFFl)
-    val i = Gen.chooseNum[Int](1, Int.MaxValue)
+    //val n = arbitrary[scala.BigInt].suchThat(x => x < Long.MinValue && x > Long.MaxValue)
+    val i = Gen.chooseNum[Long](1, Long.MaxValue)
     val n = Gen.oneOf(
-      i.map(x => scala.BigInt(Int.MinValue) - x),
-      i.map(x => scala.BigInt(0xFFFFFFFFl) + x)
+      i.map(x => scala.BigInt(Long.MinValue) - x),
+      i.map(x => scala.BigInt(Long.MaxValue) + x)
     )
     genPrimitive(n, BigInt, BigIntArray)
   }
@@ -70,10 +67,8 @@ import scala.collection.mutable
     int8,
     int16,
     int32,
+    int64,
     utf8,
-    uint8,
-    uint16,
-    uint32,
     bigInt,
     number,
     bytes,
@@ -94,9 +89,7 @@ import scala.collection.mutable
     int8Array,
     int16Array,
     int32Array,
-    uint8Array,
-    uint16Array,
-    uint32Array,
+    int64Array,
     bigIntArray,
     numberArray,
     bytesArray,
@@ -116,35 +109,28 @@ import scala.collection.mutable
                    toInt8: Boolean = true,
                    toInt16: Boolean = true,
                    toInt32: Boolean = true,
-                   toUint8: Boolean = true,
-                   toUint16: Boolean = true,
-                   toUint32: Boolean = true,
+                   toInt64: Boolean = true,
                    toBigInt: Boolean = true,
                    toNumber: Boolean = true,
                    toRef: Boolean = true,
                    toUtf8: Boolean = true,
                    toBytes: Boolean = true): Prop = forAll(gen) { data =>
     (!toInt8 || data.cast(Type.Int8).cast(`type`) == data) :| "to int8" &&
-    (!toInt16 || data.cast(Type.Int16).cast(`type`) == data) :| "to int16" &&
-    (!toInt32 || data.cast(Type.Int32).cast(`type`) == data) :| "to int32" &&
-    (!toUint8 || data.cast(Type.Uint8).cast(`type`) == data) :| "to uint8" &&
-    (!toUint16 || data.cast(Type.Uint16).cast(`type`) == data) :| "to uint16" &&
-    (!toUint32 || data.cast(Type.Uint32).cast(`type`) == data) :| "to uint32" &&
-    (!toBigInt || data.cast(Type.BigInt).cast(`type`) == data) :| "to uint32" &&
-    (!toNumber || data.cast(Type.Number).cast(`type`) == data) :| "to number" &&
-    (!toRef || data.cast(Type.Ref).cast(`type`) == data) :| "to ref" &&
-    (!toUtf8 || data.cast(Type.Utf8).cast(`type`) == data) :| "to utf8" &&
-    (!toBytes || data.cast(Type.Bytes).cast(`type`) == data) :| "to bytes"
+      (!toInt16 || data.cast(Type.Int16).cast(`type`) == data) :| "to int16" &&
+      (!toInt32 || data.cast(Type.Int32).cast(`type`) == data) :| "to int32" &&
+      (!toInt64 || data.cast(Type.Int64).cast(`type`) == data) :| "to int64" &&
+      (!toBigInt || data.cast(Type.BigInt).cast(`type`) == data) :| "to bigint" &&
+      (!toNumber || data.cast(Type.Number).cast(`type`) == data) :| "to number" &&
+      (!toRef || data.cast(Type.Ref).cast(`type`) == data) :| "to ref" &&
+      (!toUtf8 || data.cast(Type.Utf8).cast(`type`) == data) :| "to utf8" &&
+      (!toBytes || data.cast(Type.Bytes).cast(`type`) == data) :| "to bytes"
   }
 
   property("int8.cast") = castProperty(int8, Type.Int8)
-  property("int16.cast") = castProperty(int16, Type.Int16, toInt8 = false, toUint8 = false)
-  property("int32.cast") =
-    castProperty(int32, Type.Int32, toInt8 = false, toUint8 = false, toInt16 = false, toUint16 = false)
-  property("uint8.cast") = castProperty(uint8, Type.Uint8)
-  property("uint16.cast") = castProperty(uint16, Type.Uint16, toInt8 = false, toUint8 = false)
-  property("uint32.cast") =
-    castProperty(uint32, Type.Uint32, toInt8 = false, toUint8 = false, toInt16 = false, toUint16 = false)
+  property("int16.cast") = castProperty(int16, Type.Int16, toInt8 = false)
+  property("int32.cast") = castProperty(int32, Type.Int32, toInt8 = false, toInt16 = false)
+  property("int64.cast") =
+    castProperty(int64, Type.Int64, toInt8 = false, toInt16 = false, toInt32 = false, toRef = false, toNumber = false)
   property("utf8.cast") = castProperty(Gen.choose(0, 127).map(x => Utf8(x.toString)), Type.Utf8, toNumber = false)
   property("ref.cast") = castProperty(Gen.choose(0, 127).map(x => Ref(x)), Type.Ref)
 

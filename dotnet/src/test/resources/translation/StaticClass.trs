@@ -64,7 +64,7 @@ translation: |-
   @ctor_lvc:
   pop
   jump @stop
-  @func_StaticClassUtils.StringUtils.ByteToHex_uint8:
+  @func_StaticClassUtils.StringUtils.ByteToHex_int32:
   meta source_mark {
   "sl":int32(48),"sc":int32(13),"el":int32(48),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(54)
   }
@@ -82,8 +82,8 @@ translation: |-
   call @func_StaticClassUtils.StringUtils.HexPart_int32
   swap
   concat
-  jump @StaticClassUtils.StringUtils.ByteToHex_uint8_lvc
-  @StaticClassUtils.StringUtils.ByteToHex_uint8_lvc:
+  jump @StaticClassUtils.StringUtils.ByteToHex_int32_lvc
+  @StaticClassUtils.StringUtils.ByteToHex_int32_lvc:
   swap
   pop
   ret
@@ -104,19 +104,21 @@ translation: |-
   push int32(2)
   swapn
   pop
-  jump @StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes_br33
+  jump @StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes_br39
   @StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes_br10:
   push int32(2)
   dupn
   push int32(4)
   dupn
   meta source_mark {
-  "sl":int32(55),"sc":int32(17),"el":int32(55),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(44)
+  "sl":int32(55),"sc":int32(17),"el":int32(55),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(51)
   }
   push int32(3)
   dupn
   array_get
-  call @func_StaticClassUtils.StringUtils.ByteToHex_uint8
+  push int32(255)
+  and
+  call @func_StaticClassUtils.StringUtils.ByteToHex_int32
   swap
   concat
   push int32(3)
@@ -132,7 +134,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes_br33:
+  @StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes_br39:
   push int32(1)
   dupn
   push int32(4)

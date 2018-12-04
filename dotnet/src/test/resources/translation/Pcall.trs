@@ -65,7 +65,7 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(13),"sc":int32(12),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Pcall.cs","ec":int32(195)
+  "sl":int32(13),"sc":int32(12),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Pcall.cs","ec":int32(197)
   }
   new int8[30, -82, -46, 11, 124, -30, -77, 54, 4, 62, 75, 52, 11, 3, 31, -107, -69, 28, -26, -39, 53, -17, 115, 58, -28, -33, 27, 102, -31, -29, -39, 31]
   call @stdlib_array_to_bytes
