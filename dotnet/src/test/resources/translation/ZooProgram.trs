@@ -534,7 +534,7 @@ translation: |-
   push null
   push null
   meta source_mark {
-  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(36)
+  "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(38)
   }
   push int32(10)
   push int8(1)
@@ -556,7 +556,7 @@ translation: |-
   push int32(2)
   dupn
   meta source_mark {
-  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(63)
+  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(64)
   }
   push int32(5)
   dupn

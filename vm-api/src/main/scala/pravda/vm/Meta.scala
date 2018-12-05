@@ -87,10 +87,8 @@ object Meta {
       case Int8     => "int8"
       case Int16    => "int16"
       case Int32    => "int32"
+      case Int64    => "int64"
       case BigInt   => "bigint"
-      case Uint8    => "uint8"
-      case Uint16   => "uint16"
-      case Uint32   => "uint32"
       case Number   => "number"
       case Boolean  => "boolean"
       case Ref      => "ref"
@@ -107,10 +105,8 @@ object Meta {
     case object Int8                                                             extends PrimitiveType(Data.Type.Int8)
     case object Int16                                                            extends PrimitiveType(Data.Type.Int16)
     case object Int32                                                            extends PrimitiveType(Data.Type.Int32)
+    case object Int64                                                            extends PrimitiveType(Data.Type.Int64)
     case object BigInt                                                           extends PrimitiveType(Data.Type.BigInt)
-    case object Uint8                                                            extends PrimitiveType(Data.Type.Uint8)
-    case object Uint16                                                           extends PrimitiveType(Data.Type.Uint16)
-    case object Uint32                                                           extends PrimitiveType(Data.Type.Uint32)
     case object Number                                                           extends PrimitiveType(Data.Type.Number)
     case object Boolean                                                          extends PrimitiveType(Data.Type.Boolean)
     case object Ref                                                              extends PrimitiveType(Data.Type.Ref)
@@ -125,10 +121,8 @@ object Meta {
         case Data.Type.Int8    => Some(Int8)
         case Data.Type.Int16   => Some(Int16)
         case Data.Type.Int32   => Some(Int32)
+        case Data.Type.Int64   => Some(Int64)
         case Data.Type.BigInt  => Some(BigInt)
-        case Data.Type.Uint8   => Some(Uint8)
-        case Data.Type.Uint16  => Some(Uint16)
-        case Data.Type.Uint32  => Some(Uint32)
         case Data.Type.Number  => Some(Number)
         case Data.Type.Boolean => Some(Boolean)
         case Data.Type.Ref     => Some(Ref)

@@ -15,7 +15,7 @@ methods: |-
     Method(
       List(
         LdcI4S(10),
-        NewArr(TypeRefData(6L, "Byte", "System")),
+        NewArr(TypeRefData(6L, "SByte", "System")),
         StLoc0,
         LdcI40,
         StLoc1,
@@ -30,7 +30,7 @@ methods: |-
         CallVirt(MemberRefData(TypeRefData(6L, "String", "System"), "get_Chars", 26L)),
         LdcI42,
         Div,
-        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToByte", 31L)),
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToSByte", 31L)),
         StElemI1,
         LdLoc1,
         LdcI41,
@@ -264,11 +264,11 @@ signatures: |-
     ),
     (
       16L,
-      LocalVarSig(List(LocalVar(Arr(U1, ArrayShape(1, List(), List())), false), LocalVar(I4, false)))
+      LocalVarSig(List(LocalVar(Arr(I1, ArrayShape(1, List(), List())), false), LocalVar(I4, false)))
     ),
     (22L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
     (26L, MethodRefDefSig(true, false, false, false, 0, Tpe(Char, false), List(Tpe(I4, false)))),
-    (31L, MethodRefDefSig(false, false, false, false, 0, Tpe(U1, false), List(Tpe(I4, false)))),
+    (31L, MethodRefDefSig(false, false, false, false, 0, Tpe(I1, false), List(Tpe(I4, false)))),
     (
       36L,
       MethodRefDefSig(
@@ -278,7 +278,7 @@ signatures: |-
         false,
         0,
         Tpe(Void, false),
-        List(Tpe(Arr(U1, ArrayShape(1, List(), List())), false))
+        List(Tpe(Arr(I1, ArrayShape(1, List(), List())), false))
       )
     ),
     (

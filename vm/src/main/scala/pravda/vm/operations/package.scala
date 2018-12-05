@@ -51,9 +51,7 @@ package object operations {
     case Int8(x)   => x.toLong
     case Int16(x)  => x.toLong
     case Int32(x)  => x.toLong
-    case Uint8(x)  => x.toLong
-    case Uint16(x) => x.toLong
-    case Uint32(x) => x.toLong
+    case Int64(x)  => x
     case BigInt(x) => x.toLong
     case _         => throw ThrowableVmError(WrongType)
   }
@@ -86,8 +84,7 @@ package object operations {
     case _                                                            => throw ThrowableVmError(WrongType)
   }
 
-  def coins(a: NativeCoin): Data.Primitive =
-    BigInt(scala.BigInt(a))
+  def coins(a: NativeCoin): Data.Primitive = Int64(a)
 
   def address(a: Data): Address = {
     val bytes = a match {

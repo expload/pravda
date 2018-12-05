@@ -11,4 +11,4 @@ code: |-
 ---
 watts-spent: 130
 stack:
-  - int32.5
+  - int8.5

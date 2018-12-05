@@ -55,14 +55,14 @@ translation: |-
   swapn
   pop
   meta source_mark {
-  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
+  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(20)
   }
   push int32(3)
   push int32(6)
   swapn
   pop
   meta source_mark {
-  "sl":int32(11),"sc":int32(8),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
+  "sl":int32(11),"sc":int32(8),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(20)
   }
   push int32(4)
   push int32(5)
@@ -106,8 +106,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -118,18 +116,12 @@ translation: |-
   dupn
   push int32(8)
   dupn
-  push int8(4)
-  cast
   push int32(7)
   dupn
-  push int8(4)
-  cast
   eq
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -146,8 +138,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -166,8 +156,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -184,8 +172,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -210,7 +196,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br77
+  jumpi @TestCompare_br75
   push int32(1)
   meta source_mark {
   "sl":int32(23),"sc":int32(8),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
@@ -218,15 +204,11 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br77:
+  @TestCompare_br75:
   push int32(7)
   dupn
-  push int8(4)
-  cast
   push int32(6)
   dupn
-  push int8(4)
-  cast
   meta source_mark {
   "sl":int32(23),"sc":int32(22),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -241,7 +223,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br86
+  jumpi @TestCompare_br82
   push int32(1)
   meta source_mark {
   "sl":int32(24),"sc":int32(8),"el":int32(24),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
@@ -249,7 +231,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br86:
+  @TestCompare_br82:
   push int32(5)
   dupn
   push int32(5)
@@ -268,7 +250,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br93
+  jumpi @TestCompare_br89
   meta source_mark {
   "sl":int32(25),"sc":int32(8),"el":int32(25),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
   }
@@ -276,7 +258,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br93:
+  @TestCompare_br89:
   push int32(5)
   dupn
   push int8(4)
@@ -300,12 +282,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br102
+  jumpi @TestCompare_br98
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br102:
+  @TestCompare_br98:
   push int32(3)
   dupn
   meta source_mark {
@@ -327,12 +309,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br111
+  jumpi @TestCompare_br107
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br111:
+  @TestCompare_br107:
   push int32(1)
   dupn
   push int32(8)
@@ -351,8 +333,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -360,12 +340,8 @@ translation: |-
   dupn
   push int32(8)
   dupn
-  push int8(4)
-  cast
   push int32(7)
   dupn
-  push int8(4)
-  cast
   swap
   lt
   push int8(3)
@@ -378,8 +354,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -401,8 +375,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -426,8 +398,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -449,8 +419,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   meta source_mark {
   "sl":int32(34),"sc":int32(22),"el":int32(34),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -471,23 +439,19 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br184
+  jumpi @TestCompare_br178
   push int32(1)
-  push int32(2)
-  swapn
-  pop
-  @TestCompare_br184:
-  push int32(7)
-  dupn
   meta source_mark {
   "sl":int32(35),"sc":int32(22),"el":int32(35),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
-  push int8(4)
-  cast
+  push int32(2)
+  swapn
+  pop
+  @TestCompare_br178:
+  push int32(7)
+  dupn
   push int32(6)
   dupn
-  push int8(4)
-  cast
   meta source_mark {
   "sl":int32(36),"sc":int32(8),"el":int32(36),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
   }
@@ -498,7 +462,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br193
+  jumpi @TestCompare_br185
   push int32(1)
   meta source_mark {
   "sl":int32(36),"sc":int32(22),"el":int32(36),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
@@ -506,7 +470,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br193:
+  @TestCompare_br185:
   push int32(5)
   dupn
   push int32(5)
@@ -521,12 +485,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br200
+  jumpi @TestCompare_br192
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br200:
+  @TestCompare_br192:
   push int32(5)
   dupn
   meta source_mark {
@@ -546,12 +510,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br209
+  jumpi @TestCompare_br201
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br209:
+  @TestCompare_br201:
   meta source_mark {
   "sl":int32(38),"sc":int32(22),"el":int32(38),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -569,12 +533,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br218
+  jumpi @TestCompare_br210
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br218:
+  @TestCompare_br210:
   push int32(1)
   dupn
   push int32(8)
@@ -593,8 +557,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -602,12 +564,8 @@ translation: |-
   dupn
   push int32(8)
   dupn
-  push int8(4)
-  cast
   push int32(7)
   dupn
-  push int8(4)
-  cast
   swap
   gt
   push int8(3)
@@ -620,8 +578,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -643,8 +599,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -668,8 +622,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -691,8 +643,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   meta source_mark {
   "sl":int32(46),"sc":int32(22),"el":int32(46),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -713,23 +663,19 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br291
+  jumpi @TestCompare_br281
   push int32(1)
-  push int32(2)
-  swapn
-  pop
-  @TestCompare_br291:
-  push int32(7)
-  dupn
   meta source_mark {
   "sl":int32(47),"sc":int32(22),"el":int32(47),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
-  push int8(4)
-  cast
+  push int32(2)
+  swapn
+  pop
+  @TestCompare_br281:
+  push int32(7)
+  dupn
   push int32(6)
   dupn
-  push int8(4)
-  cast
   meta source_mark {
   "sl":int32(48),"sc":int32(8),"el":int32(48),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
   }
@@ -740,7 +686,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br300
+  jumpi @TestCompare_br288
   push int32(1)
   meta source_mark {
   "sl":int32(48),"sc":int32(22),"el":int32(48),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
@@ -748,7 +694,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br300:
+  @TestCompare_br288:
   push int32(5)
   dupn
   push int32(5)
@@ -763,12 +709,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br307
+  jumpi @TestCompare_br295
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br307:
+  @TestCompare_br295:
   push int32(5)
   dupn
   meta source_mark {
@@ -788,12 +734,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br316
+  jumpi @TestCompare_br304
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br316:
+  @TestCompare_br304:
   meta source_mark {
   "sl":int32(50),"sc":int32(22),"el":int32(50),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -811,12 +757,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br325
+  jumpi @TestCompare_br313
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br325:
+  @TestCompare_br313:
   push int32(1)
   dupn
   push int32(8)
@@ -834,8 +780,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -843,12 +787,8 @@ translation: |-
   dupn
   push int32(8)
   dupn
-  push int8(4)
-  cast
   push int32(7)
   dupn
-  push int8(4)
-  cast
   eq
   push int8(3)
   cast
@@ -860,8 +800,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -882,8 +820,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -906,8 +842,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -928,8 +862,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   meta source_mark {
   "sl":int32(58),"sc":int32(22),"el":int32(58),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -949,23 +881,19 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br398
+  jumpi @TestCompare_br384
   push int32(1)
-  push int32(2)
-  swapn
-  pop
-  @TestCompare_br398:
-  push int32(7)
-  dupn
   meta source_mark {
   "sl":int32(59),"sc":int32(22),"el":int32(59),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
-  push int8(4)
-  cast
+  push int32(2)
+  swapn
+  pop
+  @TestCompare_br384:
+  push int32(7)
+  dupn
   push int32(6)
   dupn
-  push int8(4)
-  cast
   meta source_mark {
   "sl":int32(60),"sc":int32(8),"el":int32(60),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(19)
   }
@@ -975,7 +903,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br407
+  jumpi @TestCompare_br391
   push int32(1)
   meta source_mark {
   "sl":int32(60),"sc":int32(22),"el":int32(60),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
@@ -983,7 +911,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br407:
+  @TestCompare_br391:
   push int32(5)
   dupn
   push int32(5)
@@ -997,12 +925,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br414
+  jumpi @TestCompare_br398
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br414:
+  @TestCompare_br398:
   push int32(5)
   dupn
   meta source_mark {
@@ -1021,12 +949,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br423
+  jumpi @TestCompare_br407
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br423:
+  @TestCompare_br407:
   meta source_mark {
   "sl":int32(62),"sc":int32(22),"el":int32(62),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
@@ -1043,12 +971,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br432
+  jumpi @TestCompare_br416
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br432:
+  @TestCompare_br416:
   push int32(1)
   dupn
   push int32(8)
@@ -1063,8 +991,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -1072,12 +998,8 @@ translation: |-
   dupn
   push int32(8)
   dupn
-  push int8(4)
-  cast
   push int32(7)
   dupn
-  push int8(4)
-  cast
   meta source_mark {
   "sl":int32(66),"sc":int32(8),"el":int32(66),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(21)
   }
@@ -1086,8 +1008,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -1105,8 +1025,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -1126,8 +1044,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -1145,8 +1061,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   meta source_mark {
   "sl":int32(70),"sc":int32(21),"el":int32(70),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
   }
@@ -1172,26 +1086,22 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br490
+  jumpi @TestCompare_br472
   push int32(1)
-  push int32(2)
-  swapn
-  pop
-  @TestCompare_br490:
   meta source_mark {
   "sl":int32(71),"sc":int32(21),"el":int32(71),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
   }
+  push int32(2)
+  swapn
+  pop
+  @TestCompare_br472:
   push int32(7)
-  dupn
-  push int8(4)
-  cast
-  push int32(6)
   dupn
   meta source_mark {
   "sl":int32(72),"sc":int32(8),"el":int32(72),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
   }
-  push int8(4)
-  cast
+  push int32(6)
+  dupn
   swap
   gt
   push int8(3)
@@ -1204,7 +1114,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br499
+  jumpi @TestCompare_br479
   meta source_mark {
   "sl":int32(72),"sc":int32(21),"el":int32(72),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
   }
@@ -1212,7 +1122,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br499:
+  @TestCompare_br479:
   meta source_mark {
   "sl":int32(73),"sc":int32(8),"el":int32(73),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
   }
@@ -1232,7 +1142,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br506
+  jumpi @TestCompare_br486
   push int32(1)
   meta source_mark {
   "sl":int32(73),"sc":int32(21),"el":int32(73),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
@@ -1240,7 +1150,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br506:
+  @TestCompare_br486:
   push int32(5)
   dupn
   meta source_mark {
@@ -1262,7 +1172,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br515
+  jumpi @TestCompare_br495
   meta source_mark {
   "sl":int32(74),"sc":int32(21),"el":int32(74),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
   }
@@ -1270,7 +1180,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br515:
+  @TestCompare_br495:
   meta source_mark {
   "sl":int32(76),"sc":int32(8),"el":int32(76),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(21)
   }
@@ -1290,7 +1200,7 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br524
+  jumpi @TestCompare_br504
   push int32(1)
   meta source_mark {
   "sl":int32(77),"sc":int32(8),"el":int32(77),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(21)
@@ -1298,7 +1208,7 @@ translation: |-
   push int32(2)
   swapn
   pop
-  @TestCompare_br524:
+  @TestCompare_br504:
   push int32(1)
   dupn
   push int32(8)
@@ -1310,31 +1220,23 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
-  push int32(2)
-  swapn
-  pop
   meta source_mark {
   "sl":int32(78),"sc":int32(8),"el":int32(78),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(21)
   }
+  push int32(2)
+  swapn
+  pop
   push int32(1)
   dupn
   push int32(8)
   dupn
-  push int8(4)
-  cast
   push int32(7)
   dupn
-  push int8(4)
-  cast
   swap
   lt
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   meta source_mark {
   "sl":int32(79),"sc":int32(8),"el":int32(79),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(21)
   }
@@ -1352,8 +1254,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -1373,8 +1273,6 @@ translation: |-
   push int8(3)
   cast
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
@@ -1398,22 +1296,23 @@ translation: |-
   "sl":int32(83),"sc":int32(8),"el":int32(83),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
   }
   and
-  push int8(3)
-  cast
   push int32(2)
   swapn
   pop
   push int32(7)
   dupn
-  push int32(7)
-  dupn
   meta source_mark {
   "sl":int32(83),"sc":int32(21),"el":int32(83),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
   }
+  push int32(7)
+  dupn
   swap
   lt
   push int8(3)
   cast
+  meta source_mark {
+  "sl":int32(84),"sc":int32(8),"el":int32(84),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
+  }
   push int8(9)
   cast
   not
@@ -1422,26 +1321,19 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br582
+  jumpi @TestCompare_br560
   push int32(1)
-  meta source_mark {
-  "sl":int32(84),"sc":int32(8),"el":int32(84),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
-  }
   push int32(2)
   swapn
   pop
-  @TestCompare_br582:
-  push int32(7)
-  dupn
-  push int8(4)
-  cast
+  @TestCompare_br560:
   meta source_mark {
   "sl":int32(84),"sc":int32(21),"el":int32(84),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)
   }
+  push int32(7)
+  dupn
   push int32(6)
   dupn
-  push int8(4)
-  cast
   meta source_mark {
   "sl":int32(85),"sc":int32(8),"el":int32(85),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
   }
@@ -1457,12 +1349,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br591
+  jumpi @TestCompare_br567
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br591:
+  @TestCompare_br567:
   push int32(5)
   dupn
   meta source_mark {
@@ -1485,12 +1377,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br598
+  jumpi @TestCompare_br574
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br598:
+  @TestCompare_br574:
   push int32(5)
   dupn
   push int8(4)
@@ -1515,12 +1407,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br607
+  jumpi @TestCompare_br583
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br607:
+  @TestCompare_br583:
   push int32(3)
   dupn
   push int32(3)
@@ -1537,12 +1429,12 @@ translation: |-
   push int32(0)
   eq
   not
-  jumpi @TestCompare_br616
+  jumpi @TestCompare_br592
   push int32(1)
   push int32(2)
   swapn
   pop
-  @TestCompare_br616:
+  @TestCompare_br592:
   push int32(1)
   dupn
   jump @TestCompare_lvc

@@ -8,7 +8,7 @@ watts-spent: 103
 heap:
  ref.0:
    utf8.name: utf8.Expload foundation
-   utf8.year: uint16.2018
+   utf8.year: int16.2018
 effects:
   - eventType: Event
     program: '0000000000000000000000000000000000000000000000000000000000000000'
@@ -17,4 +17,4 @@ effects:
       simple:
         data:
           utf8.name: utf8.Expload foundation
-          utf8.year: uint16.2018
+          utf8.year: int16.2018

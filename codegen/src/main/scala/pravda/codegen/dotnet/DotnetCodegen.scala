@@ -47,10 +47,8 @@ object DotnetCodegen {
       case Meta.TypeSignature.Int8    => "PrintInt8"
       case Meta.TypeSignature.Int16   => "PrintInt16"
       case Meta.TypeSignature.Int32   => "PrintInt32"
+      case Meta.TypeSignature.Int64   => "PrintInt64"
       case Meta.TypeSignature.BigInt  => ??? //"PrintBigInt"
-      case Meta.TypeSignature.Uint8   => "PrintUInt8"
-      case Meta.TypeSignature.Uint16  => "PrintUInt16"
-      case Meta.TypeSignature.Uint32  => "PrintUInt32"
       case Meta.TypeSignature.Number  => ??? //"PrintNumber"
       case Meta.TypeSignature.Boolean => "PrintBool"
       case Meta.TypeSignature.Ref     => ???
@@ -81,10 +79,8 @@ object DotnetCodegen {
         case Meta.TypeSignature.Int8    => "sbyte"
         case Meta.TypeSignature.Int16   => "short"
         case Meta.TypeSignature.Int32   => "int"
+        case Meta.TypeSignature.Int64   => "long"
         case Meta.TypeSignature.BigInt  => "BigInteger"
-        case Meta.TypeSignature.Uint8   => "byte"
-        case Meta.TypeSignature.Uint16  => "ushort"
-        case Meta.TypeSignature.Uint32  => "uint"
         case Meta.TypeSignature.Number  => ???
         case Meta.TypeSignature.Boolean => "bool"
         case Meta.TypeSignature.Ref     => ???
@@ -107,10 +103,8 @@ object DotnetCodegen {
         case Meta.TypeSignature.Int8    => "ParseInt8"
         case Meta.TypeSignature.Int16   => "ParseInt16"
         case Meta.TypeSignature.Int32   => "ParseInt32"
+        case Meta.TypeSignature.Int64   => "ParseInt64"
         case Meta.TypeSignature.BigInt  => "ParseBigInt"
-        case Meta.TypeSignature.Uint8   => "ParseUInt8"
-        case Meta.TypeSignature.Uint16  => "ParseUInt16"
-        case Meta.TypeSignature.Uint32  => "ParseUInt32"
         case Meta.TypeSignature.Number  => "ParseNumber"
         case Meta.TypeSignature.Boolean => "ParseBool"
         case Meta.TypeSignature.Ref     => ???

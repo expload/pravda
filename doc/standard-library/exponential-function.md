@@ -8,7 +8,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 `0x03`
 ### Signature
 
-`(x: int32, y: int32): number`
+`(x: int8 | int16 | int32 | int64 | number | bigint, y: int8 | int16 | int32 | number | bigint): int8 | int16 | int32 | int64 | number | bigint`
 
 ### Description
 

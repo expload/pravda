@@ -14,7 +14,7 @@ object BasicTests extends TestSuite {
         DotnetCodegen.generateMethods(
           "OneMethod",
           List(
-            Meta.MethodSignature("BalanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes))
+            Meta.MethodSignature("BalanceOf", Meta.TypeSignature.Int64, List(Meta.TypeSignature.Bytes))
           )
         ),
         Source.fromResource("OneMethod.generated.cs").mkString
@@ -26,20 +26,20 @@ object BasicTests extends TestSuite {
         DotnetCodegen.generateMethods(
           "ERC20",
           List(
-            Meta.MethodSignature("BalanceOf", Meta.TypeSignature.Uint32, List(Meta.TypeSignature.Bytes)),
+            Meta.MethodSignature("BalanceOf", Meta.TypeSignature.Int64, List(Meta.TypeSignature.Bytes)),
             Meta.MethodSignature("Allowance",
-                                 Meta.TypeSignature.Uint32,
+                                 Meta.TypeSignature.Int64,
                                  List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes)),
             Meta.MethodSignature("Transfer",
                                  Meta.TypeSignature.Null,
-                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)),
+                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Int64)),
             Meta.MethodSignature("Approve",
                                  Meta.TypeSignature.Null,
-                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)),
+                                 List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Int64)),
             Meta.MethodSignature(
               "TransferFrom",
               Meta.TypeSignature.Null,
-              List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes, Meta.TypeSignature.Uint32)
+              List(Meta.TypeSignature.Bytes, Meta.TypeSignature.Bytes, Meta.TypeSignature.Int64)
             )
           )
         ),

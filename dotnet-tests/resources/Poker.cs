@@ -26,7 +26,7 @@ class MyProgram
         if (p6 != Bytes.EMPTY) Players[len++] = p6;
         if (p7 != Bytes.EMPTY) Players[len++] = p7;
         if (p8 != Bytes.EMPTY) Players[len++] = p8;
-        Players[-1] = new Bytes(Convert.ToByte(len));
+        Players[-1] = new Bytes(Convert.ToSByte(len));
     }
     public void DealPublicCard(int card)
     {
@@ -197,23 +197,23 @@ class MyProgram
 	// should be bitwise operation
         return (b1 / b2) % 2 == 1;
     }
-    private Bytes selectCombination(int c0, int c1, int c2, int c3, int c4, int c5, int c6, byte comb)
+    private Bytes selectCombination(int c0, int c1, int c2, int c3, int c4, int c5, int c6, sbyte comb)
     {
         Bytes select = Bytes.EMPTY;
         if (hasFlag(comb, 1))
-            select = select.Concat(new Bytes(Convert.ToByte(c0)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c0)));
         if (hasFlag(comb, 2))
-            select = select.Concat(new Bytes(Convert.ToByte(c1)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c1)));
         if (hasFlag(comb, 4))
-            select = select.Concat(new Bytes(Convert.ToByte(c2)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c2)));
         if (hasFlag(comb, 8))
-            select = select.Concat(new Bytes(Convert.ToByte(c3)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c3)));
         if (hasFlag(comb, 16))
-            select = select.Concat(new Bytes(Convert.ToByte(c4)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c4)));
         if (hasFlag(comb, 32))
-            select = select.Concat(new Bytes(Convert.ToByte(c5)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c5)));
         if (hasFlag(comb, 64))
-            select = select.Concat(new Bytes(Convert.ToByte(c6)));
+            select = select.Concat(new Bytes(Convert.ToSByte(c6)));
         
         return select;
     }

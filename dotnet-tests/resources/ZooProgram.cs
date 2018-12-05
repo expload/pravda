@@ -13,9 +13,9 @@ public class ZooProgram
 
     private Bytes GenerateSignature(String pet)
     {
-        byte[] sign = new byte[10];
+        sbyte[] sign = new sbyte[10];
         for (int i = 0; i < 10; i++) {
-            sign[i] = Convert.ToByte(pet[i % pet.Length] / 2);
+            sign[i] = Convert.ToSByte(pet[i % pet.Length] / 2);
         }
         return new Bytes(sign);
     }

@@ -2,19 +2,19 @@ watts-limit: 1000
 code: |-
   push number(1000000000000000.0)
   push number(546.0)
-  push 0x03
+  push 3
   scall
   push int32(1000000000)
   push int32(1000)
-  push 0x03
+  push 3
   scall
-  push number(10.0)
+  push int32(10)
   push bigint(1000)
-  push 0x03
+  push 3
   scall
 ---
 watts-spent: 172
 stack:
   - number.Infinity
-  - int32.2147483647
+  - int32.0
   - bigint.1000000000000000000000000000000

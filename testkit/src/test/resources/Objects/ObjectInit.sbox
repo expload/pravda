@@ -21,7 +21,7 @@ heap:
     utf8.str: utf8.
     utf8.s: int16.0
     utf8.i: int32.0
-    utf8.b: uint8.0
+    utf8.b: int16.0
 effects:
   - eventType: StorageRead
     program: '0000000000000000000000000000000000000000000000000000000000000000'

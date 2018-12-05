@@ -12,7 +12,7 @@ code: |-
 ---
 watts-spent: 145
 stack:
-  - bigint.101199
+  - int64.101199
 effects:
   - eventType: Transfer
     from: 25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
