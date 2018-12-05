@@ -117,6 +117,9 @@ translation: |-
   push null
   push "init"
   sput
+  push int32(0)
+  push "p_X"
+  sput
   meta source_mark {
   "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
   }

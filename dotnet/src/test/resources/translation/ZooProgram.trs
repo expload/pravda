@@ -502,6 +502,12 @@ translation: |-
   push null
   push "init"
   sput
+  push int32(0)
+  push "p_ZooCnt"
+  sput
+  push int32(0)
+  push "p_PetId"
+  sput
   meta source_mark {
   "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
   }
