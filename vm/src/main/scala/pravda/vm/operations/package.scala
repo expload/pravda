@@ -84,8 +84,7 @@ package object operations {
     case _                                                            => throw ThrowableVmError(WrongType)
   }
 
-  def coins(a: NativeCoin): Data.Primitive =
-    BigInt(scala.BigInt(a))
+  def coins(a: NativeCoin): Data.Primitive = Int64(a)
 
   def address(a: Data): Address = {
     val bytes = a match {
