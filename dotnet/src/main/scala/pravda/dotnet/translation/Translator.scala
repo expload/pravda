@@ -20,6 +20,7 @@ package pravda.dotnet.translation
 import cats.instances.list._
 import cats.instances.vector._
 import cats.instances.either._
+import cats.instances.option._
 import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import pravda.dotnet.data.Method
@@ -40,18 +41,19 @@ object Translator {
 
   final val CILMark = Meta.Custom("CIL")
 
-  def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
-    case SigType.Void          => Meta.TypeSignature.Null
-    case SigType.Boolean       => Meta.TypeSignature.Boolean
-    case SigType.I1            => Meta.TypeSignature.Int8
-    case SigType.I2            => Meta.TypeSignature.Int16
-    case SigType.I4            => Meta.TypeSignature.Int32
-    case SigType.I8            => Meta.TypeSignature.Int64
-    case SigType.U1            => Meta.TypeSignature.Int16
-    case SigType.U2            => Meta.TypeSignature.Int32
-    case SigType.U4            => Meta.TypeSignature.Int64
-    case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
-    case SigType.String        => Meta.TypeSignature.Utf8
+  def dotnetToVmTpe(sigType: SigType): Option[Meta.TypeSignature] = sigType match {
+    case SigType.Void          => Some(Meta.TypeSignature.Null)
+    case SigType.Boolean       => Some(Meta.TypeSignature.Boolean)
+    case SigType.I1            => Some(Meta.TypeSignature.Int8)
+    case SigType.I2            => Some(Meta.TypeSignature.Int16)
+    case SigType.I4            => Some(Meta.TypeSignature.Int32)
+    case SigType.I8            => Some(Meta.TypeSignature.Int64)
+    case SigType.U1            => Some(Meta.TypeSignature.Int16)
+    case SigType.U2            => Some(Meta.TypeSignature.Int32)
+    case SigType.U4            => Some(Meta.TypeSignature.Int64)
+    case TypeDetectors.Bytes() => Some(Meta.TypeSignature.Bytes)
+    case SigType.String        => Some(Meta.TypeSignature.Utf8)
+    case _                     => None
     // TODO add more types
   }
 
@@ -279,12 +281,14 @@ object Translator {
         methodSign <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
         methodTpe <- MethodExtractors.methodType(methodSign)
         argTpes <- MethodExtractors.methodParams(methodSign)
+        dotnetMethodTpe <- dotnetToVmTpe(methodTpe)
+        dotnetArgTpes <- argTpes.map(tpe => dotnetToVmTpe(tpe.tpe)).sequence
       } yield
         Operation.Meta(
           Meta.MethodSignature(
             name,
-            dotnetToVmTpe(methodTpe),
-            argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
+            dotnetMethodTpe,
+            dotnetArgTpes
           )
         )
     } else {
