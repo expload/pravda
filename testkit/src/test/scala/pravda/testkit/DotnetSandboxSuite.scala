@@ -62,10 +62,12 @@ object DotnetSuite extends Plaintest[Preconditions, Expectations] {
       json4sKeyFormat[Primitive]
 
   def produce(input: Preconditions): Either[String, Expectations] = {
+    import pravda.dotnet.clearPathsInPdb
     val asmE =
       for {
         files <- DotnetCompilation.run(input.`dotnet-compilation`)
-        ops <- Translator.translateAsm(files, input.`dotnet-compilation`.`main-class`).left.map(_.mkString)
+        clearedFiles = clearPathsInPdb(files)
+        ops <- Translator.translateAsm(clearedFiles, input.`dotnet-compilation`.`main-class`).left.map(_.mkString)
         asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
       } yield asmProgram
 

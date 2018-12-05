@@ -20,7 +20,8 @@ object ParserSuite extends Plaintest[Input, Output] {
   def produce(input: Input): Either[String, Output] =
     for {
       files <- DotnetCompilation.run(input.`dotnet-compilation`)
-      last = files.last
+      clearedFiles = clearPathsInPdb(files)
+      last = clearedFiles.last
     } yield
       Output(
         pprint.apply(last.parsedPe.methods, height = Int.MaxValue).plainText,

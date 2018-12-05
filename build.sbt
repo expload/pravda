@@ -1,4 +1,4 @@
-import java.nio.file.Files
+import java.nio.file.{Files, Paths}
 
 resolvers += "jitpack" at "https://jitpack.io"
 resolvers += Resolver.bintrayRepo("expload", "oss")
@@ -17,6 +17,16 @@ git.gitTagToVersionNumber := { tag: String =>
 val `tendermint-version` = "0.26.4"
 
 lazy val envDockerUsername = sys.env.get("docker_username")
+
+
+lazy val cleanupTestDirTask = TaskKey[Unit]("cleanupTestDirTask", "Cleanup test dir")
+
+cleanupTestDirTask := {
+  println("Cleaning up the temporary folder...")
+  sbt.IO.delete(Paths.get(System.getProperty("java.io.tmpdir"), "pravda").toFile)
+}
+
+test in Test := (test in Test).dependsOn(cleanupTestDirTask).value
 
 val scalacheckOps = Seq(
   libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",

@@ -21,11 +21,11 @@ object TranslationSuite extends Plaintest[Input, Output] {
   def produce(input: Input): Either[String, Output] = {
     for {
       files <- DotnetCompilation.run(input.`dotnet-compilation`)
-      asm <- Translator.translateAsm(files, input.`dotnet-compilation`.`main-class`).left.map(_.mkString)
+      clearedFiles = clearPathsInPdb(files)
+      asm <- Translator.translateAsm(clearedFiles, input.`dotnet-compilation`.`main-class`).left.map(_.mkString)
     } yield {
       val rawAsm = PravdaAssembler.render(asm)
-      val clearedPaths = rawAsm.replace(DotnetCompilation.pravdaDir.toString, "$PRAVDA_TMP_DIR")
-      Output(clearedPaths)
+      Output(rawAsm)
     }
   }
 }
