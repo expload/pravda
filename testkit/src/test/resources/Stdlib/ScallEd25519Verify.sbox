@@ -10,10 +10,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: Stdlib.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Stdlib.cs
+    optimize: true
 ---
 stack:
   - bool.true

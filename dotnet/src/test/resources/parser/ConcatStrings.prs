@@ -3,30 +3,29 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: ConcatStrings.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ConcatStrings.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdStr("s"),
         StLoc0,
         LdLoc0,
         LdLoc0,
         LdStr("2"),
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 30L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 29L)),
         StLoc1,
         LdLoc0,
         LdLoc0,
         LdLoc0,
         LdStr("3"),
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 37L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 36L)),
         StLoc2,
         LdcI45,
         NewArr(TypeRefData(6L, "String", "System")),
@@ -50,7 +49,7 @@ methods: |-
         LdcI44,
         LdStr("4"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLoc3,
         LdcI46,
         NewArr(TypeRefData(6L, "String", "System")),
@@ -78,7 +77,7 @@ methods: |-
         LdcI45,
         LdStr("5"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLocS(4),
         LdcI47,
         NewArr(TypeRefData(6L, "String", "System")),
@@ -110,7 +109,7 @@ methods: |-
         LdcI46,
         LdStr("6"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLocS(5),
         LdcI48,
         NewArr(TypeRefData(6L, "String", "System")),
@@ -146,7 +145,7 @@ methods: |-
         LdcI47,
         LdStr("7"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLocS(6),
         LdcI4S(9),
         NewArr(TypeRefData(6L, "String", "System")),
@@ -186,7 +185,7 @@ methods: |-
         LdcI48,
         LdStr("8"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLocS(7),
         LdcI4S(10),
         NewArr(TypeRefData(6L, "String", "System")),
@@ -230,7 +229,7 @@ methods: |-
         LdcI4S(9),
         LdStr("9"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLocS(8),
         LdcI4S(11),
         NewArr(TypeRefData(6L, "String", "System")),
@@ -278,7 +277,7 @@ methods: |-
         LdcI4S(10),
         LdStr("10"),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         StLocS(9),
         LdcI4S(9),
         NewArr(TypeRefData(6L, "String", "System")),
@@ -318,18 +317,15 @@ methods: |-
         LdcI48,
         LdLocS(9),
         StElemRef,
-        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 45L)),
-        StLocS(10),
-        BrS(0),
-        LdLocS(10),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 44L)),
         Ret
       ),
       4,
       Some(16L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )
@@ -363,13 +359,12 @@ signatures: |-
           LocalVar(String, false),
           LocalVar(String, false),
           LocalVar(String, false),
-          LocalVar(String, false),
           LocalVar(String, false)
         )
       )
     ),
     (
-      30L,
+      29L,
       MethodRefDefSig(
         false,
         false,
@@ -381,7 +376,7 @@ signatures: |-
       )
     ),
     (
-      37L,
+      36L,
       MethodRefDefSig(
         false,
         false,
@@ -393,7 +388,7 @@ signatures: |-
       )
     ),
     (
-      45L,
+      44L,
       MethodRefDefSig(
         false,
         false,
@@ -404,6 +399,6 @@ signatures: |-
         List(Tpe(Arr(String, ArrayShape(1, List(), List())), false))
       )
     ),
-    (60L, MethodRefDefSig(true, false, false, false, 0, Tpe(String, false), List())),
-    (64L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (59L, MethodRefDefSig(true, false, false, false, 0, Tpe(String, false), List())),
+    (63L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

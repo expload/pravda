@@ -29,8 +29,8 @@ object InheritanceTests extends TestSuite {
           Vector(),
           Vector(
             MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
-            MethodDefData(1, 0, 454, "AnswerPlus1", 43, Vector()),
-            MethodDefData(2, 0, 454, "Answer", 43, Vector())
+            MethodDefData(1, 0, 454, "AnswerPlus1", 34, Vector()),
+            MethodDefData(2, 0, 454, "Answer", 34, Vector())
           )
         )
 
@@ -45,9 +45,9 @@ object InheritanceTests extends TestSuite {
             "A",
             "",
             parentCls,
-            Vector(FieldData(0, 1, "AVal", 40)),
+            Vector(FieldData(0, 1, "AVal", 31)),
             Vector(MethodDefData(3, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-                   MethodDefData(4, 0, 198, "Answer", 43, Vector()))
+                   MethodDefData(4, 0, 198, "Answer", 34, Vector()))
           ),
           TypeDefData(
             3,
@@ -55,9 +55,9 @@ object InheritanceTests extends TestSuite {
             "B",
             "",
             parentCls,
-            Vector(FieldData(1, 1, "BVal", 40)),
+            Vector(FieldData(1, 1, "BVal", 31)),
             Vector(MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-                   MethodDefData(6, 0, 198, "Answer", 43, Vector()))
+                   MethodDefData(6, 0, 198, "Answer", 34, Vector()))
           ),
           TypeDefData(
             4,
@@ -66,8 +66,8 @@ object InheritanceTests extends TestSuite {
             "",
             TypeRefData(6, "Object", "System"),
             Vector(),
-            Vector(MethodDefData(7, 0, 134, "TestInheritance", 43, Vector()),
-                   MethodDefData(8, 0, 150, "Main", 47, Vector()),
+            Vector(MethodDefData(7, 0, 134, "TestInheritance", 34, Vector()),
+                   MethodDefData(8, 0, 150, "Main", 38, Vector()),
                    MethodDefData(9, 0, 6278, ".ctor", 6, Vector()))
           )
         )
@@ -77,14 +77,14 @@ object InheritanceTests extends TestSuite {
         pe.cilData.tables.methodDefTable,
         Vector(
           MethodDefData(0, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "val"))),
-          MethodDefData(1, 0, 454, "AnswerPlus1", 43, Vector()),
-          MethodDefData(2, 0, 454, "Answer", 43, Vector()),
+          MethodDefData(1, 0, 454, "AnswerPlus1", 34, Vector()),
+          MethodDefData(2, 0, 454, "Answer", 34, Vector()),
           MethodDefData(3, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "aVal"))),
-          MethodDefData(4, 0, 198, "Answer", 43, Vector()),
+          MethodDefData(4, 0, 198, "Answer", 34, Vector()),
           MethodDefData(5, 0, 6278, ".ctor", 1, Vector(ParamData(0, 1, "bVal"))),
-          MethodDefData(6, 0, 198, "Answer", 43, Vector()),
-          MethodDefData(7, 0, 134, "TestInheritance", 43, Vector()),
-          MethodDefData(8, 0, 150, "Main", 47, Vector()),
+          MethodDefData(6, 0, 198, "Answer", 34, Vector()),
+          MethodDefData(7, 0, 134, "TestInheritance", 34, Vector()),
+          MethodDefData(8, 0, 150, "Main", 38, Vector()),
           MethodDefData(9, 0, 6278, ".ctor", 6, Vector())
         )
       )

@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Object.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Object.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
@@ -16,87 +16,47 @@ methods: |-
       List(
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
-        Nop,
-        Nop,
         LdArg0,
         LdArg1,
-        StFld(FieldData(0, 1, "AVal", 38L)),
+        StFld(FieldData(0, 1, "AVal", 30L)),
         Ret
       ),
       0,
       None
     ),
-    Method(
-      List(
-        Nop,
-        LdArg0,
-        LdFld(FieldData(0, 1, "AVal", 38L)),
-        LdcI4S(42),
-        Add,
-        StLoc0,
-        BrS(0),
-        LdLoc0,
-        Ret
-      ),
-      2,
-      Some(16L)
-    ),
+    Method(List(LdArg0, LdFld(FieldData(0, 1, "AVal", 30L)), LdcI4S(42), Add, Ret), 0, None),
     Method(
       List(
         LdArg0,
         Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
-        Nop,
-        Nop,
         LdArg0,
         LdArg1,
-        StFld(FieldData(1, 1, "BVal", 38L)),
+        StFld(FieldData(1, 1, "BVal", 30L)),
         Ret
       ),
       0,
       None
     ),
+    Method(List(LdArg0, LdFld(FieldData(1, 1, "BVal", 30L)), LdcI4S(43), Add, Ret), 0, None),
     Method(
       List(
-        Nop,
-        LdArg0,
-        LdFld(FieldData(1, 1, "BVal", 38L)),
-        LdcI4S(43),
-        Add,
+        LdcI4S(100),
+        NewObj(MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "aVal")))),
+        LdcI4(200),
+        NewObj(MethodDefData(2, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal")))),
         StLoc0,
-        BrS(0),
+        CallVirt(MethodDefData(1, 0, 134, "AnswerA", 33L, Vector())),
         LdLoc0,
+        CallVirt(MethodDefData(3, 0, 134, "AnswerB", 33L, Vector())),
+        Add,
         Ret
       ),
       2,
       Some(16L)
     ),
+    Method(List(Ret), 0, None),
     Method(
-      List(
-        Nop,
-        LdcI4S(100),
-        NewObj(MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "aVal")))),
-        StLoc0,
-        LdcI4(200),
-        NewObj(MethodDefData(2, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal")))),
-        StLoc1,
-        LdLoc0,
-        CallVirt(MethodDefData(1, 0, 134, "AnswerA", 41L, Vector())),
-        LdLoc1,
-        CallVirt(MethodDefData(3, 0, 134, "AnswerB", 41L, Vector())),
-        Add,
-        StLoc2,
-        LdLoc2,
-        StLoc3,
-        BrS(0),
-        LdLoc3,
-        Ret
-      ),
-      2,
-      Some(20L)
-    ),
-    Method(List(Nop, Ret), 0, None),
-    Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )
@@ -117,28 +77,10 @@ signatures: |-
         List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
       )
     ),
-    (16L, LocalVarSig(List(LocalVar(I4, false)))),
     (
-      20L,
+      16L,
       LocalVarSig(
         List(
-          LocalVar(
-            Cls(
-              TypeDefData(
-                1,
-                1048577,
-                "A",
-                "",
-                TypeRefData(6L, "Object", "System"),
-                Vector(FieldData(0, 1, "AVal", 38L)),
-                Vector(
-                  MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "aVal"))),
-                  MethodDefData(1, 0, 134, "AnswerA", 41L, Vector())
-                )
-              )
-            ),
-            false
-          ),
           LocalVar(
             Cls(
               TypeDefData(
@@ -147,21 +89,19 @@ signatures: |-
                 "B",
                 "",
                 TypeRefData(6L, "Object", "System"),
-                Vector(FieldData(1, 1, "BVal", 38L)),
+                Vector(FieldData(1, 1, "BVal", 30L)),
                 Vector(
                   MethodDefData(2, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal"))),
-                  MethodDefData(3, 0, 134, "AnswerB", 41L, Vector())
+                  MethodDefData(3, 0, 134, "AnswerB", 33L, Vector())
                 )
               )
             ),
             false
-          ),
-          LocalVar(I4, false),
-          LocalVar(I4, false)
+          )
         )
       )
     ),
-    (38L, FieldSig(I4)),
-    (41L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (45L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (30L, FieldSig(I4)),
+    (33L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (37L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

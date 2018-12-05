@@ -3,101 +3,89 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: ExternalMethods.dll
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ExternalMethods.cs
-    optimize: false
+    optimize: true
   - target: ExternalMethodsCheck.exe
     sources:
     - Pravda.dll
     - ExternalMethods.dll
     - dotnet-tests/resources/ExternalMethodsCheck.cs
-    optimize: false
+    optimize: true
   main-class: ExternalNamespace.ExternalMethodsCheck
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         Call(
           MemberRefData(
             TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"),
             "GetInstance",
-            25L
+            22L
           )
         ),
-        StLoc0,
-        LdLoc0,
+        Dup,
         LdcI42,
         LdcI42,
         CallVirt(
-          MemberRefData(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"), "Add", 30L)
+          MemberRefData(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"), "Add", 27L)
+        ),
+        StLoc0,
+        Dup,
+        LdcI4S(10),
+        LdcI4S(10),
+        CallVirt(
+          MemberRefData(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"), "Add", 27L)
         ),
         StLoc1,
-        LdLoc0,
-        LdcI4S(10),
-        LdcI4S(10),
+        LdcI4(300),
+        LdcI4(300),
         CallVirt(
-          MemberRefData(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"), "Add", 30L)
+          MemberRefData(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"), "Add", 27L)
         ),
         StLoc2,
         LdLoc0,
-        LdcI4(300),
-        LdcI4(300),
-        CallVirt(
-          MemberRefData(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace"), "Add", 30L)
-        ),
-        StLoc3,
         LdLoc1,
+        Add,
         LdLoc2,
         Add,
-        LdLoc3,
-        Add,
-        StLocS(4),
-        BrS(0),
-        LdLocS(4),
         Ret
       ),
-      3,
+      4,
       Some(16L)
     ),
     Method(
       List(
-        Nop,
         LdcI43,
         LdcI43,
-        NewObj(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), ".ctor", 45L)),
+        NewObj(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), ".ctor", 33L)),
+        Dup,
+        CallVirt(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), "Add", 39L)),
         StLoc0,
-        LdLoc0,
-        CallVirt(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), "Add", 51L)),
-        StLoc1,
-        LdLoc0,
         LdcI4S(100),
-        CallVirt(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), "Add", 55L)),
+        CallVirt(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), "Add", 43L)),
+        StLoc1,
+        LdcI4(1000),
+        LdcI4(1000),
+        Call(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), "Add", 48L)),
         StLoc2,
-        LdcI4(1000),
-        LdcI4(1000),
-        Call(MemberRefData(TypeRefData(14L, "ExternalMethods", "ExternalNamespace"), "Add", 60L)),
-        StLoc3,
+        LdLoc0,
         LdLoc1,
+        Add,
         LdLoc2,
         Add,
-        LdLoc3,
-        Add,
-        StLocS(4),
-        BrS(0),
-        LdLocS(4),
         Ret
       ),
       2,
-      Some(36L)
+      Some(16L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )
@@ -118,20 +106,9 @@ signatures: |-
         List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
       )
     ),
+    (16L, LocalVarSig(List(LocalVar(I4, false), LocalVar(I4, false), LocalVar(I4, false)))),
     (
-      16L,
-      LocalVarSig(
-        List(
-          LocalVar(Cls(TypeRefData(14L, "ExternalProgramMethods", "ExternalNamespace")), false),
-          LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(I4, false)
-        )
-      )
-    ),
-    (
-      25L,
+      22L,
       MethodRefDefSig(
         false,
         false,
@@ -143,7 +120,7 @@ signatures: |-
       )
     ),
     (
-      30L,
+      27L,
       MethodRefDefSig(
         true,
         false,
@@ -155,19 +132,7 @@ signatures: |-
       )
     ),
     (
-      36L,
-      LocalVarSig(
-        List(
-          LocalVar(Cls(TypeRefData(14L, "ExternalMethods", "ExternalNamespace")), false),
-          LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(I4, false),
-          LocalVar(I4, false)
-        )
-      )
-    ),
-    (
-      45L,
+      33L,
       MethodRefDefSig(
         true,
         false,
@@ -178,10 +143,10 @@ signatures: |-
         List(Tpe(I4, false), Tpe(I4, false))
       )
     ),
-    (51L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (55L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List(Tpe(I4, false)))),
+    (39L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (43L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List(Tpe(I4, false)))),
     (
-      60L,
+      48L,
       MethodRefDefSig(
         false,
         false,
@@ -192,5 +157,5 @@ signatures: |-
         List(Tpe(I4, false), Tpe(I4, false))
       )
     ),
-    (75L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (63L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

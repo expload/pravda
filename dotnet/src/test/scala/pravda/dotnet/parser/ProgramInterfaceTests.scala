@@ -43,7 +43,7 @@ object ProgramInterfaceTests extends TestSuite {
               "InterfaceNamespace",
               Ignored,
               Vector(),
-              Vector(MethodDefData(0, 0, 1478, "Add", 29, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))),
+              Vector(MethodDefData(0, 0, 1478, "Add", 25, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b"))))),
             MemberRefData(TypeRefData(10, "Program", "Expload.Pravda"), ".ctor", 6)
           ),
           CustomAttributeData(
@@ -55,8 +55,8 @@ object ProgramInterfaceTests extends TestSuite {
               TypeRefData(6, "Object", "System"),
               Vector(),
               Vector(
-                MethodDefData(1, 0, 486, "Add", 29, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
-                MethodDefData(2, 0, 150, "Main", 35, Vector()),
+                MethodDefData(1, 0, 486, "Add", 25, Vector(ParamData(0, 1, "a"), ParamData(0, 2, "b"))),
+                MethodDefData(2, 0, 150, "Main", 31, Vector()),
                 MethodDefData(3, 0, 6278, ".ctor", 6, Vector())
               )
             ),

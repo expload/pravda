@@ -7,12 +7,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: ConcatStrings.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ConcatStrings.cs
-    optimize: false
+    optimize: true
 ---
 stack: 
   - utf8.ss2sss3ssss4sssss5ssssss6sssssss7ssssssss8sssssssss9ssssssssss10

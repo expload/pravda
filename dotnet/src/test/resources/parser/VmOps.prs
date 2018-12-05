@@ -3,29 +3,27 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: VmOps.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/VmOps.cs
-    optimize: false
+    optimize: true
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdStr("Oops!"),
         Call(MemberRefData(TypeRefData(10L, "Error", "Expload.Pravda"), "Throw", 16L)),
-        Nop,
         Ret
       ),
       0,
       None
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )

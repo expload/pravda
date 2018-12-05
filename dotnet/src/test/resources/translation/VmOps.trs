@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: VmOps.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/VmOps.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -32,9 +32,6 @@ translation: |-
   @method_TestThrow:
   meta method {
   "name":"TestThrow","returnTpe":int8(0)
-  }
-  meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"$PRAVDA_TMP_DIR/VmOps.cs","ec":int32(6)
   }
   meta source_mark {
   "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/VmOps.cs","ec":int32(30)

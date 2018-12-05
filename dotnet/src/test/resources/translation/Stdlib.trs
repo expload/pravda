@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Stdlib.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Stdlib.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -41,29 +41,15 @@ translation: |-
   meta method {
   "name":"BytesToHex",int32(0):int8(14),"returnTpe":int8(11)
   }
-  push null
-  meta source_mark {
-  "sl":int32(18),"sc":int32(5),"el":int32(18),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(19),"sc":int32(9),"el":int32(19),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(41)
   }
-  push int32(3)
+  push int32(2)
   dupn
   push int32(5)
   scall
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  meta source_mark {
-  "sl":int32(20),"sc":int32(5),"el":int32(20),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
-  }
   jump @BytesToHex_lvc
   @BytesToHex_lvc:
-  swap
-  pop
   swap
   pop
   swap
@@ -73,29 +59,15 @@ translation: |-
   meta method {
   "name":"Ripemd160",int32(0):int8(11),"returnTpe":int8(14)
   }
-  push null
-  meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(40)
   }
-  push int32(3)
+  push int32(2)
   dupn
   push int32(2)
   scall
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  meta source_mark {
-  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
-  }
   jump @Ripemd160_lvc
   @Ripemd160_lvc:
-  swap
-  pop
   swap
   pop
   swap
@@ -105,33 +77,19 @@ translation: |-
   meta method {
   "name":"ValidateEd25519Signature",int32(1):int8(11),int32(0):int8(14),"returnTpe":int8(9),int32(2):int8(14)
   }
-  push null
-  meta source_mark {
-  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(71)
   }
-  push int32(5)
+  push int32(4)
   dupn
-  push int32(5)
+  push int32(4)
   dupn
-  push int32(5)
+  push int32(4)
   dupn
   push int32(1)
   scall
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  meta source_mark {
-  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(6)
-  }
   jump @ValidateEd25519Signature_lvc
   @ValidateEd25519Signature_lvc:
-  swap
-  pop
   swap
   pop
   swap

@@ -7,22 +7,24 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
+    optimize: true
   - target: Inheritance.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Inheritance.cs
+    optimize: true
 ---
 stack:
   - int32.387
 heap:
   ref.0:
     utf8.AVal: int32.100
-    utf8.Answer: offset.1379
-    utf8.AnswerPlus1: offset.2924
+    utf8.Answer: offset.1207
+    utf8.AnswerPlus1: offset.2225
   ref.1:
     utf8.BVal: int32.200
-    utf8.Answer: offset.2012
-    utf8.AnswerPlus1: offset.2924
+    utf8.Answer: offset.1644
+    utf8.AnswerPlus1: offset.2225
 storage:
     utf8.init: "null"
 effects:

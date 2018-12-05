@@ -3,77 +3,69 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: PcallProgram.dll
     sources:
     - Pravda.dll
     - dotnet-tests/resources/PcallProgram.cs
-    optimize: false
+    optimize: true
   - target: Pcall.exe
     sources:
     - Pravda.dll
     - PcallProgram.dll
     - dotnet-tests/resources/Pcall.cs
-    optimize: false
+    optimize: true
   main-class: PcallNamespace.Pcall
 ---
 methods: |-
   List(
     Method(
       List(
-        Nop,
         LdStr("1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"),
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 26L)),
-        StLoc0,
-        LdLoc0,
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 21L)),
         Call(
           MethodSpecData(
-            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 31L),
-            39L
+            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 26L),
+            34L
           )
         ),
         LdcI41,
         LdcI42,
-        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 44L)),
-        StLoc1,
+        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 39L)),
+        StLoc0,
         LdcI4S(32),
         NewArr(TypeRefData(6L, "Byte", "System")),
         Dup,
-        LdToken(FieldData(0, 307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 73L)),
+        LdToken(FieldData(0, 307, "AABC1596532EF46AA24B3AEE37458002516F48B8", 68L)),
         Call(
           MemberRefData(
             TypeRefData(6L, "RuntimeHelpers", "System.Runtime.CompilerServices"),
             "InitializeArray",
-            50L
+            45L
           )
         ),
-        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 58L)),
-        StLoc2,
-        LdLoc2,
+        NewObj(MemberRefData(TypeRefData(10L, "Bytes", "Expload.Pravda"), ".ctor", 53L)),
         Call(
           MethodSpecData(
-            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 31L),
-            39L
+            MemberRefData(TypeRefData(10L, "ProgramHelper", "Expload.Pravda"), "Program", 26L),
+            34L
           )
         ),
         LdcI43,
         LdcI44,
-        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 44L)),
-        StLoc3,
+        CallVirt(MemberRefData(TypeRefData(14L, "PcallProgram", "PcallNamespace"), "Add", 39L)),
+        StLoc1,
+        LdLoc0,
         LdLoc1,
-        LdLoc3,
         Add,
-        StLocS(4),
-        BrS(0),
-        LdLocS(4),
         Ret
       ),
       3,
       Some(16L)
     ),
-    Method(List(Nop, Ret), 0, None),
+    Method(List(Ret), 0, None),
     Method(
-      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Nop, Ret),
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
       0,
       None
     )
@@ -94,21 +86,10 @@ signatures: |-
         List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
       )
     ),
+    (16L, LocalVarSig(List(LocalVar(I4, false), LocalVar(I4, false)))),
+    (21L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
     (
-      16L,
-      LocalVarSig(
-        List(
-          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
-          LocalVar(I4, false),
-          LocalVar(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
-          LocalVar(I4, false),
-          LocalVar(I4, false)
-        )
-      )
-    ),
-    (26L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
-    (
-      31L,
+      26L,
       MethodRefDefSig(
         false,
         false,
@@ -120,7 +101,7 @@ signatures: |-
       )
     ),
     (
-      44L,
+      39L,
       MethodRefDefSig(
         true,
         false,
@@ -132,7 +113,7 @@ signatures: |-
       )
     ),
     (
-      50L,
+      45L,
       MethodRefDefSig(
         false,
         false,
@@ -147,7 +128,7 @@ signatures: |-
       )
     ),
     (
-      58L,
+      53L,
       MethodRefDefSig(
         true,
         false,
@@ -159,7 +140,7 @@ signatures: |-
       )
     ),
     (
-      73L,
+      68L,
       FieldSig(
         ValueTpe(
           TypeDefData(
@@ -174,6 +155,6 @@ signatures: |-
         )
       )
     ),
-    (77L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
-    (81L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+    (72L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (76L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
   )

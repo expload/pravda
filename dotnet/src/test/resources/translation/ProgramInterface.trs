@@ -3,18 +3,18 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: ProgramInterface.dll
     sources:
     - Pravda.dll
     - dotnet-tests/resources/ProgramInterface.cs
-    optimize: false
+    optimize: true
   - target: ProgramInterfaceCheck.exe
     sources:
     - Pravda.dll
     - ProgramInterface.dll
     - dotnet-tests/resources/ProgramInterfaceCheck.cs
-    optimize: false
+    optimize: true
   main-class: InterfaceNamespace.ProgramInterfaceCheck
 ---
 translation: |-
@@ -40,25 +40,15 @@ translation: |-
   meta method {
   "name":"CheckInterface","returnTpe":int8(3)
   }
-  push null
-  push null
-  meta source_mark {
-  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(10)
-  }
   meta source_mark {
   "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(106)
   }
   push "1eaed20b7ce2b336043e4b340b031f95bb1ce6d935ef733ae4df1b66e1e3d91f"
   push int32(4)
   scall
-  push int32(3)
-  swapn
-  pop
   meta source_mark {
   "sl":int32(12),"sc":int32(12),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(78)
   }
-  push int32(2)
-  dupn
   push int32(1)
   push int32(2)
   push int32(2)
@@ -69,20 +59,8 @@ translation: |-
   swap
   push int32(3)
   pcall
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  meta source_mark {
-  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$PRAVDA_TMP_DIR/ProgramInterfaceCheck.cs","ec":int32(10)
-  }
   jump @CheckInterface_lvc
   @CheckInterface_lvc:
-  swap
-  pop
-  swap
-  pop
   swap
   pop
   jump @stop

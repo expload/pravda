@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Block.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Block.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -37,26 +37,12 @@ translation: |-
   meta method {
   "name":"TestHeightMethod","returnTpe":int8(4)
   }
-  push null
-  meta source_mark {
-  "sl":int32(8),"sc":int32(5),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(30)
   }
   height
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  meta source_mark {
-  "sl":int32(10),"sc":int32(5),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
-  }
   jump @TestHeightMethod_lvc
   @TestHeightMethod_lvc:
-  swap
-  pop
   swap
   pop
   jump @stop
@@ -64,26 +50,12 @@ translation: |-
   meta method {
   "name":"TestLastBlockHash","returnTpe":int8(14)
   }
-  push null
-  meta source_mark {
-  "sl":int32(13),"sc":int32(5),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
-  }
   meta source_mark {
   "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(37)
   }
   hash
-  push int32(2)
-  swapn
-  pop
-  push int32(1)
-  dupn
-  meta source_mark {
-  "sl":int32(15),"sc":int32(5),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(6)
-  }
   jump @TestLastBlockHash_lvc
   @TestLastBlockHash_lvc:
-  swap
-  pop
   swap
   pop
   jump @stop

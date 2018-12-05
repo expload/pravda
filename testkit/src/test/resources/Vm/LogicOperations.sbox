@@ -7,12 +7,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: LogicOperations.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/LogicOperations.cs
-    optimize: false
+    optimize: true
 ---
 effects:
   - eventType: StorageRead

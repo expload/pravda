@@ -15,7 +15,7 @@ object DotnetCompilation {
   object dsl {
 
     def steps(pairs: (String, Seq[String])*): DotnetCompilation =
-      DotnetCompilation(pairs.map { case (target, sources) => DotnetCompilationStep(target, sources) })
+      DotnetCompilation(pairs.map { case (target, sources) => DotnetCompilationStep(target, sources, optimize = true) })
 
     implicit class DotnetCompilationOps(dc: DotnetCompilation) {
       def withMainClass(mainClass: String): DotnetCompilation = dc.copy(`main-class` = Some(mainClass))

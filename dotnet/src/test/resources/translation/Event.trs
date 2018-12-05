@@ -3,12 +3,12 @@ dotnet-compilation:
   - target: Pravda.dll
     sources:
     - PravdaDotNet/Pravda.cs
-    optimize: false
+    optimize: true
   - target: Event.exe
     sources:
     - Pravda.dll
     - dotnet-tests/resources/Event.cs
-    optimize: false
+    optimize: true
 ---
 translation: |-
   meta custom "CIL"
@@ -32,9 +32,6 @@ translation: |-
   @method_TestEvent:
   meta method {
   "name":"TestEvent","returnTpe":int8(0)
-  }
-  meta source_mark {
-  "sl":int32(7),"sc":int32(29),"el":int32(7),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(30)
   }
   meta source_mark {
   "sl":int32(8),"sc":int32(9),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(37)
