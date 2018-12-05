@@ -175,16 +175,12 @@ object Translator {
       }
     }
 
-    lazy val privateMappings = typeDef.fields.map { f =>
-      val isMapping = for {
-        parentSig <- tctx.signatures.get(f.signatureIdx)
-      } yield CallsTranslation.detectMapping(parentSig)
-
-      if (isMapping.getOrElse(false) && !FieldExtractors.isPrivate(f)) {
+    lazy val privateFields = typeDef.fields.map { f =>
+      if (!FieldExtractors.isPrivate(f)) {
         Left(
           TranslationError(
             InternalError(
-              s"All Mapping must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
+              s"All [Program] fields must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
             None))
       } else {
         Right(())
@@ -193,7 +189,7 @@ object Translator {
 
     for {
       _ <- staticFields
-      _ <- privateMappings
+      _ <- privateFields
     } yield ()
   }
 

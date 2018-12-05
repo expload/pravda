@@ -8,8 +8,8 @@ public class ZooProgram
     private Mapping<String, Bytes> PetSignature = new Mapping<String, Bytes>();
     private Mapping<String, Bytes> PetToOwner = new Mapping<String, Bytes>();
     private Mapping<int, Bytes> ZooToOwner = new Mapping<int, Bytes>();
-    public int ZooCnt = 1;
-    public int PetId = 1;
+    private int ZooCnt = 1;
+    private int PetId = 1;
 
     private Bytes GenerateSignature(String pet)
     {

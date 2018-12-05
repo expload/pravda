@@ -4,7 +4,7 @@ using Expload.Pravda;
 [Program]
 public class PublicMapping
 {
-    public Mapping<Bytes, int> M = new Mapping<Bytes, int>();
+    public int SomeField = 42;
 
     public void Test()
     {
