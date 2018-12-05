@@ -34,7 +34,7 @@ object ExponentialFunction extends FunctionDefinition {
     "y" -> Seq(Data.Type.Int8, Data.Type.Int16, Data.Type.Int32, Data.Type.Number, Data.Type.BigInt)
   )
 
-  val returns = Seq(Data.Type.Number)
+  val returns = Seq(Data.Type.Int8, Data.Type.Int16, Data.Type.Int32, Data.Type.Int64, Data.Type.Number, Data.Type.BigInt)
 
   private def pow(x: Long, y: Int): Long = y match {
     case p if p <= 0     => 1L
