@@ -3,7 +3,7 @@ using Expload.Pravda;
 [Program]
 public class Compare
 {
-   public void TestCompare()
+   public bool TestCompare()
    {
        int a = 1;
        int b = 2;
@@ -12,78 +12,80 @@ public class Compare
        long e = 5L;
        long f = 6L;
 
-       bool tmp = false;
-       tmp = a == b;
-       tmp = a == c;
-       tmp = c == d;
-       tmp = c == e;
-       tmp = e == f;
+       bool tmp = true;
+       tmp &= a == b;
+       tmp &= a == c;
+       tmp &= c == d;
+       tmp &= c == e;
+       tmp &= e == f;
 
-       if (a == b) {}
-       if (a == c) {}
-       if (c == d) {}
-       if (c == e) {}
-       if (e == f) {}
+       if (a == b) { tmp = true; }
+       if (a == c) { tmp = true; }
+       if (c == d) { tmp = true; }
+       if (c == e) { tmp = true; }
+       if (e == f) { tmp = true; }
 
-       tmp = a >= b;
-       tmp = a >= c;
-       tmp = c >= d;
-       tmp = c >= e;
-       tmp = e >= f;
+       tmp &= a >= b;
+       tmp &= a >= c;
+       tmp &= c >= d;
+       tmp &= c >= e;
+       tmp &= e >= f;
 
-       if (a >= b) {}
-       if (a >= c) {}
-       if (c >= d) {}
-       if (c >= e) {}
-       if (e >= f) {}
+       if (a >= b) { tmp = true; }
+       if (a >= c) { tmp = true; }
+       if (c >= d) { tmp = true; }
+       if (c >= e) { tmp = true; }
+       if (e >= f) { tmp = true; }
 
-       tmp = a <= b;
-       tmp = a <= c;
-       tmp = c <= d;
-       tmp = c <= e;
-       tmp = e <= f;
+       tmp &= a <= b;
+       tmp &= a <= c;
+       tmp &= c <= d;
+       tmp &= c <= e;
+       tmp &= e <= f;
 
-       if (a <= b) {}
-       if (a <= c) {}
-       if (c <= d) {}
-       if (c <= e) {}
-       if (e <= f) {}
+       if (a <= b) { tmp = true; }
+       if (a <= c) { tmp = true; }
+       if (c <= d) { tmp = true; }
+       if (c <= e) { tmp = true; }
+       if (e <= f) { tmp = true; }
 
-       tmp = a != b;
-       tmp = a != c;
-       tmp = c != d;
-       tmp = c != e;
-       tmp = e != f;
+       tmp &= a != b;
+       tmp &= a != c;
+       tmp &= c != d;
+       tmp &= c != e;
+       tmp &= e != f;
 
-       if (a != b) {}
-       if (a != c) {}
-       if (c != d) {}
-       if (c != e) {}
-       if (e != f) {}
+       if (a != b) { tmp = true; }
+       if (a != c) { tmp = true; }
+       if (c != d) { tmp = true; }
+       if (c != e) { tmp = true; }
+       if (e != f) { tmp = true; }
 
-       tmp = a > b;
-       tmp = a > c;
-       tmp = c > d;
-       tmp = c > e;
-       tmp = e > f;
+       tmp &= a > b;
+       tmp &= a > c;
+       tmp &= c > d;
+       tmp &= c > e;
+       tmp &= e > f;
 
-       if (a > b) {}
-       if (a > c) {}
-       if (c > d) {}
-       if (c > e) {}
-       if (e > f) {}
+       if (a > b) { tmp = true; }
+       if (a > c) { tmp = true; }
+       if (c > d) { tmp = true; }
+       if (c > e) { tmp = true; }
+       if (e > f) { tmp = true; }
 
-       tmp = a < b;
-       tmp = a < c;
-       tmp = c < d;
-       tmp = c < e;
-       tmp = e < f;
+       tmp &= a < b;
+       tmp &= a < c;
+       tmp &= c < d;
+       tmp &= c < e;
+       tmp &= e < f;
 
-       if (a < b) {}
-       if (a < c) {}
-       if (c < d) {}
-       if (c < e) {}
-       if (e < f) {}
+       if (a < b) { tmp = true; }
+       if (a < c) { tmp = true; }
+       if (c < d) { tmp = true; }
+       if (c < e) { tmp = true; }
+       if (e < f) { tmp = true; }
+
+       return tmp;
    }
 
    public static void Main() {}
