@@ -6,6 +6,8 @@ import org.apache.commons.io.FileUtils
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 
+import scala.util.Random
+
 final case class DotnetCompilationStep(target: String, sources: Seq[String], optimize: Boolean = false)
 
 final case class DotnetCompilation(steps: Seq[DotnetCompilationStep], `main-class`: Option[String] = None)
@@ -25,6 +27,7 @@ object DotnetCompilation {
   }
 
   val pravdaDir = Paths.get(System.getProperty("java.io.tmpdir"), "pravda")
+  private def randomTempFolder: Path = pravdaDir.resolve(Random.alphanumeric.take(20).mkString)
   private def readFileBytes(p: Path) = Files.readAllBytes(p)
 
   private def parsePeFile(p: Path): Either[String, ParsedPe] =
@@ -34,8 +37,8 @@ object DotnetCompilation {
     FileParser.parsePdb(readFileBytes(p))
 
   def run(compilation: DotnetCompilation): Either[String, List[ParsedDotnetFile]] = DotnetCompilation.synchronized {
-
-    Files.createDirectories(pravdaDir)
+    val tempFolder = randomTempFolder
+    Files.createDirectories(tempFolder)
 
     val (_, filesE) =
       compilation.steps.foldLeft((Vector.empty[String], Vector.empty[Either[String, ParsedDotnetFile]])) {
@@ -47,10 +50,10 @@ object DotnetCompilation {
               case None =>
                 def restorePath(s: String): Path = {
                   if (labels.contains(s)) {
-                    pravdaDir.resolve(s)
+                    tempFolder.resolve(s)
                   } else {
                     val path = Paths.get(s)
-                    val copyPath = pravdaDir.resolve(path.getFileName)
+                    val copyPath = tempFolder.resolve(path.getFileName)
                     // The standard Java 7 copy method fails with the strange error "NoSuchFileException"
                     // So we replaced that method to another implementation from Apache Commons IO
                     FileUtils.copyFile(path.toFile, copyPath.toFile)
@@ -60,8 +63,8 @@ object DotnetCompilation {
 
                 val dlls = sources.filter(_.endsWith(".dll")).map(s => restorePath(s))
                 val css = sources.filter(_.endsWith(".cs")).map(s => restorePath(s))
-                val targetP = pravdaDir.resolve(target)
-                val pdbP = pravdaDir.resolve(target.dropRight(4) + ".pdb")
+                val targetP = tempFolder.resolve(target)
+                val pdbP = tempFolder.resolve(target.dropRight(4) + ".pdb")
 
                 val isChanged =
                   if (Files.exists(targetP)) {
