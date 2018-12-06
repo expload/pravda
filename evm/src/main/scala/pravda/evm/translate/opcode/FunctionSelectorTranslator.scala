@@ -19,7 +19,7 @@ package pravda.evm.translate.opcode
 
 import pravda.evm.EVM
 import pravda.evm.EVM._
-import pravda.evm.abi.parse.ABIParser.ABIFunction
+import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.translate.Translator.Converted
 import pravda.vm.Opcodes
 
@@ -27,63 +27,63 @@ import scala.annotation.tailrec
 
 object FunctionSelectorTranslator {
 
-  def evmToOps(ops: List[EVM.Op], abi: List[ABIFunction]): List[Converted] = {
+  def evmToOps(ops: List[EVM.Op], abi: List[AbiFunction]): List[Converted] = {
     val destinations = ops
-      .dropWhile({
+      .dropWhile {
         case CallDataSize => false
         case _            => true
-      })
-      .takeWhile({
+      }
+      .takeWhile {
         case JumpDest(_) => false
         case _           => true
-      })
+      }
 
-    case class FunctionDestination(function: ABIFunction, address: Array[Byte])
+    case class FunctionDestination(function: AbiFunction, address: Array[Byte])
 
-    @tailrec def getJumps(ops: List[EVM.Op],
-                          lastFunction: Option[ABIFunction],
-                          acc: List[FunctionDestination]): List[FunctionDestination] =
+    @tailrec def jumps(ops: List[EVM.Op],
+                       lastFunction: Option[AbiFunction],
+                       acc: List[FunctionDestination]): List[FunctionDestination] =
       ops match {
         case Push(address) :: JumpI :: xs =>
           val addr = address.toArray
 
           lastFunction match {
-            case Some(f) => getJumps(xs, lastFunction, FunctionDestination(f, addr) :: acc)
-            case None    => getJumps(xs, lastFunction, acc)
+            case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, addr) :: acc)
+            case None    => jumps(xs, lastFunction, acc)
           }
         case Push(addr) :: xs =>
           val address = addr.toArray.toList
-          abi.find({ case f @ ABIFunction(_, _, _, _, _, _, _) => f.id == address }) match {
-            case Some(f) => getJumps(xs, Some(f), acc)
-            case None    => getJumps(xs, lastFunction, acc)
+          abi.find { case f @ AbiFunction(_, _, _, _, _, _, _) => f.id == address } match {
+            case Some(f) => jumps(xs, Some(f), acc)
+            case None    => jumps(xs, lastFunction, acc)
           }
         case x :: xs =>
-          getJumps(xs, lastFunction, acc)
+          jumps(xs, lastFunction, acc)
         case Nil => acc
       }
 
     destinations match {
       case Nil => ops.map(Left(_))
       case _ =>
-        val newJumps = getJumps(destinations, None, List.empty).flatMap(
+        val newJumps = jumps(destinations, None, List.empty).flatMap(
           f =>
-            codeToOps(Opcodes.DUP) ::: pushString(f.function.newName.getOrElse(f.function.name)) :: codeToOps(
-              Opcodes.EQ) ::: pushBigInt(BigInt(1, f.address)) :: jumpi)
+            codeToOps(Opcodes.DUP) ::: pushString(f.function.newName.getOrElse(f.function.name)) ::
+              codeToOps(Opcodes.EQ) ::: pushBigInt(BigInt(1, f.address)) :: jumpi)
 
         val l1 = ops
-          .takeWhile({
+          .takeWhile {
             case CallDataSize => false
             case _            => true
-          })
+          }
           .init
           .map(Left(_))
         val l2: List[Converted] =
           (newJumps ++ (pushString("incorrect function name") :: codeToOps(Opcodes.THROW))).map(op => Right(List(op)))
         val l3 = ops
-          .dropWhile({
+          .dropWhile {
             case JumpDest(_) => false
             case _           => true
-          })
+          }
           .map(Left(_))
         l1 ++ l2 ++ l3
     }

@@ -20,76 +20,75 @@ package pravda.evm.abi.parse
 import java.nio.charset.Charset
 
 import pravda.evm.EVM
-import pravda.evm.EVM.{Bool, SInt, UInt}
+import pravda.evm.EVM.{Bool, SInt, UInt, Unsupported}
 import tethys._
 import tethys.jackson._
-import tethys.derivation.auto._
 import tethys.derivation.semiauto._
 import scala.annotation.tailrec
 
-object ABIParser {
+object AbiParser {
 
-  implicit val aboObjReader: JsonReader[ABIObject] = JsonReader.builder
+  implicit val aboObjReader: JsonReader[AbiObject] = JsonReader.builder
     .addField[String]("type")
-    .selectReader[ABIObject] {
-      case "function"    => jsonReader[ABIFunction]
-      case "event"       => jsonReader[ABIEvent]
-      case "constructor" => jsonReader[ABIConstructor]
+    .selectReader[AbiObject] {
+      case "function"    => jsonReader[AbiFunction]
+      case "event"       => jsonReader[AbiEvent]
+      case "constructor" => jsonReader[AbiConstructor]
     }
 
-  trait ABIObject {
+  trait AbiObject {
     def inputs: Seq[Argument]
 
     val arguments: List[(Int, EVM.AbiType)] = inputs
       .map(variable => nameToType(variable.`type`))
-      .foldLeft((4, List.empty[(Int, EVM.AbiType)]))({
+      .foldLeft((4, List.empty[(Int, EVM.AbiType)])) {
         case ((pos, types), varType) =>
           (pos + 32, (pos, varType) :: types)
-      })
+      }
       ._2
       .reverse
   }
 
-  object ABIObject {
+  object AbiObject {
 
-    def unzip(abi: List[ABIObject]): (List[ABIFunction], List[ABIEvent], List[ABIConstructor]) = {
-      val funcs = abi.collect({ case a @ ABIFunction(_, _, _, _, _, _, _) => a })
-      val events = abi.collect({ case a @ ABIEvent(_, _, _)               => a })
-      val constructors = abi.collect({ case a @ ABIConstructor(_, _, _)   => a })
+    def unwrap(abi: List[AbiObject]): (List[AbiFunction], List[AbiEvent], List[AbiConstructor]) = {
+      val funcs = abi.collect { case a: AbiFunction           => a }
+      val events = abi.collect { case a: AbiEvent             => a }
+      val constructors = abi.collect { case a: AbiConstructor => a }
       (funcs, events, constructors)
     }
   }
 
-  case class ABIFunction(constant: Boolean,
+  case class AbiFunction(constant: Boolean,
                          name: String,
                          inputs: Seq[Argument],
                          outputs: Seq[Argument],
                          payable: Boolean,
                          stateMutability: String,
                          newName: Option[String])
-      extends ABIObject {
+      extends AbiObject {
 
-    val hashableName = s"$name(${inputs.map(_.`type`).mkString(",")})"
-    val id = hashKeccak256(hashableName).toList
+    lazy val hashableName = s"$name(${inputs.map(_.`type`).mkString(",")})"
+    lazy val id = hashKeccak256(hashableName).toList
   }
 
-  case class ABIEvent(name: String, inputs: Seq[Argument], anonymous: Boolean)                extends ABIObject
-  case class ABIConstructor(inputs: Seq[Argument], payable: Boolean, stateMutability: String) extends ABIObject
+  case class AbiEvent(name: String, inputs: Seq[Argument], anonymous: Boolean)                extends AbiObject
+  case class AbiConstructor(inputs: Seq[Argument], payable: Boolean, stateMutability: String) extends AbiObject
   case class Argument(name: String, `type`: String, indexed: Option[Boolean])
 
-  val nameToType: PartialFunction[String, EVM.AbiType] = {
-    case "bool" => Bool
-
-    case name if name.startsWith("uint") => UInt(name.substring(4).toInt)
-    case name if name.startsWith("int")  => SInt(name.substring(3).toInt)
-    case _                               => Bool //FIXME add another types
+  def nameToType(tpe: String): EVM.AbiType = tpe match {
+    case "bool"                    => Bool
+    case t if t.startsWith("uint") => UInt(t.substring(4).toInt)
+    case t if t.startsWith("int")  => SInt(t.substring(3).toInt)
+    case _                         => Unsupported
   }
 
-  def getContract(s: String): Either[String, List[ABIObject]] = s.jsonAs[List[ABIObject]] match {
+  def parseAbi(s: String): Either[String, List[AbiObject]] = s.jsonAs[List[AbiObject]] match {
     case Right(functions) =>
-      @tailrec def buildUniqueNames(funcs: List[ABIFunction],
-                                    acc: List[ABIFunction],
-                                    names: Map[String, Int]): List[ABIFunction] =
+      @tailrec
+      def buildUniqueNames(funcs: List[AbiFunction],
+                           acc: List[AbiFunction],
+                           names: Map[String, Int]): List[AbiFunction] =
         funcs match {
           case x :: xs =>
             if (names.contains(x.name))
@@ -100,7 +99,7 @@ object ABIParser {
           case Nil => acc
         }
 
-      val (funcs, events, consts) = ABIObject.unzip(functions)
+      val (funcs, events, consts) = AbiObject.unwrap(functions)
       Right(events ++ consts ++ buildUniqueNames(funcs, List.empty, Map.empty))
     case _ => Left(s"Invalid json $s")
   }

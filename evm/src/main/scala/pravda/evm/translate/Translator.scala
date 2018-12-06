@@ -23,7 +23,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
-import pravda.evm.abi.parse.ABIParser.{ABIObject}
+import pravda.evm.abi.parse.AbiParser.{AbiObject}
 import pravda.evm.translate.opcode.{FunctionSelectorTranslator, JumpDestinationPrepare, SimpleTranslation}
 
 object Translator {
@@ -39,14 +39,14 @@ object Translator {
 
   val startLabelName = "__start_evm_program"
 
-  def apply(ops: List[EVM.Op], abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
-    val (funcs, _, _) = ABIObject.unzip(abi)
+  def apply(ops: List[EVM.Op], abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
+    val (funcs, _, _) = AbiObject.unwrap(abi)
     FunctionSelectorTranslator
       .evmToOps(ops, funcs)
-      .map({
+      .map {
         case Left(op)     => SimpleTranslation.evmOpToOps(op)
         case Right(value) => Right(value)
-      })
+      }
       .map(_.left.map(op => s"incorrect op: ${op.toString}"))
       .sequence
       .map(_.flatten)
@@ -54,10 +54,10 @@ object Translator {
 
   def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
     ops
-      .takeWhile({
+      .takeWhile {
         case (_, CodeCopy) => false
         case _             => true
-      })
+      }
       .reverse
       .tail
       .headOption match {
@@ -65,7 +65,7 @@ object Translator {
         val offset = BigInt(1, address.toArray).intValue()
 
         val (creationCode, actualCode) = ops
-          .map({ case (ind, op) => ind - offset -> op })
+          .map { case (ind, op) => ind - offset -> op }
           .partition(_._1 < 0)
         Right((CreationCode(creationCode), ActualCode(actualCode)))
       case _ => Left("Parse error")
@@ -73,16 +73,16 @@ object Translator {
   }
 
   def translateActualContract(ops: List[Addressed[EVM.Op]],
-                              abi: List[ABIObject]): Either[String, List[asm.Operation]] = {
+                              abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
     import JumpDestinationPrepare._
 
-    split(ops).flatMap({
+    split(ops).flatMap {
       case (creationCode, actualContract) =>
         val filteredOps = actualContract.code.map(jumpDestToAddressed)
-        val jumpDests = filteredOps.collect({ case j @ JumpDest(x) => j }).zipWithIndex
+        val jumpDests = filteredOps.collect { case j @ JumpDest(x) => j }.zipWithIndex
         val prepare = prepared(jumpDests)
         Translator(filteredOps, abi).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
-    })
+    }
   }
 
 }

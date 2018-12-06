@@ -49,31 +49,31 @@ object Blocks {
   case class Jumpable(withJumpdest: List[WithJumpDest], withoutJumpdest: List[List[Op]])
 
   def jumpable(blocks: List[List[Op]]): Jumpable = {
-    val (withJ, withoutJ) = blocks.partition({
+    val (withJ, withoutJ) = blocks.partition {
       case JumpDest(addr) :: xs => true
       case xs                   => false
-    })
-    Jumpable(withJ.collect({
+    }
+    Jumpable(withJ.collect {
       case JumpDest(addr) :: xs => WithJumpDest(JumpDest(addr), xs)
-    }), withoutJ)
+    }, withoutJ)
   }
 
   def continuation(blocks: List[List[Op]]): List[WithJumpI] = {
-    blocks.collect({
+    blocks.collect {
       case SelfAddressedJumpI(addr) :: xs => WithJumpI(SelfAddressedJumpI(addr), xs)
-    })
+    }
   }
 
   def valuable(block: List[Op]): Boolean =
-    block.foldLeft(false)({
-      case (_, Jump)                  => true
-      case (_, JumpI)                 => true
-      case (_, SelfAddressedJump(n))  => true
-      case (_, SelfAddressedJumpI(n)) => true
-      case (_, JumpDest)              => true
-      case (_, CodeCopy)              => true
-      case (res, _)                   => res
-    })
+    block.exists {
+      case Jump                  => true
+      case JumpI                 => true
+      case SelfAddressedJump(n)  => true
+      case SelfAddressedJumpI(n) => true
+      case JumpDest              => true
+      case CodeCopy              => true
+      case _                     => false
+    }
 
   def splitToCreativeAndRuntime(ops: List[Addressed[EVM.Op]],
                                 length: Long): Option[(List[Addressed[EVM.Op]], List[Addressed[EVM.Op]])] = {
@@ -81,29 +81,27 @@ object Blocks {
     val offsetOpt: Option[Int] = blocks
       .filter(valuable)
       .map(bl => Emulator.eval(bl, new StackList(Nil), Nil))
-      .flatMap({ case (s, h) => h.collect({ case r @ HistoryRecord(CodeCopy, _ :: Number(n) :: _) => n }) })
+      .flatMap { case (s, h) => h.collect { case r @ HistoryRecord(CodeCopy, _ :: Number(n) :: _) => n } }
       .find(_ < length)
-      .map(_.intValue())
+      .map(_.toInt)
 
-    offsetOpt
-      .map({ offset =>
-        val (creative, runtime) = ops.partition(_._1 - offset < 0)
+    offsetOpt.map { offset =>
+      val (creative, runtime) = ops.partition(_._1 - offset < 0)
 
-        val addressedCreative = creative.map({
-          case (ind, JumpDest) => ind -> JumpDest(ind)
+      val addressedCreative = creative.map {
+        case (ind, JumpDest) => ind -> JumpDest(ind)
+        case (ind, x)        => ind -> x
+      }
 
-          case (ind, x) => ind -> x
-        })
+      val addressedRuntime = runtime.map {
+        case (ind, JumpDest)              => (ind - offset) -> JumpDest(ind - offset)
+        case (ind, SelfAddressedJump(_))  => (ind - offset) -> SelfAddressedJump(ind - offset)
+        case (ind, SelfAddressedJumpI(_)) => (ind - offset) -> SelfAddressedJumpI(ind - offset)
 
-        val addressedRuntime = runtime.map({
-          case (ind, JumpDest)              => (ind - offset) -> JumpDest(ind - offset)
-          case (ind, SelfAddressedJump(_))  => (ind - offset) -> SelfAddressedJump(ind - offset)
-          case (ind, SelfAddressedJumpI(_)) => (ind - offset) -> SelfAddressedJumpI(ind - offset)
-
-          case (ind, x) => (ind - offset) -> x
-        })
-        addressedCreative -> addressedRuntime
-      })
+        case (ind, x) => (ind - offset) -> x
+      }
+      addressedCreative -> addressedRuntime
+    }
   }
 
 }

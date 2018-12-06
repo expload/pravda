@@ -1,7 +1,7 @@
 package pravda.evm.abi.parser
 
-import pravda.evm.abi.parse.ABIParser
-import pravda.evm.abi.parse.ABIParser.{ABIConstructor, ABIEvent, ABIFunction, Argument}
+import pravda.evm.abi.parse.AbiParser
+import pravda.evm.abi.parse.AbiParser.{AbiConstructor, AbiEvent, AbiFunction, Argument}
 import pravda.evm.evm._
 import utest._
 
@@ -11,44 +11,43 @@ object ABIParserTests extends TestSuite {
 
     "ABI parse" - {
       val abi = readSolidityABI("SimpleStorageABIj.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = AbiParser.parseAbi(abi)
 
       parsedAbi ==> Right(
         List(
-          ABIFunction(true, "get", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
-          ABIFunction(false, "set", Vector(Argument("x", "uint256", None)), Vector(), false, "nonpayable", None)
+          AbiFunction(true, "get", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
+          AbiFunction(false, "set", Vector(Argument("x", "uint256", None)), Vector(), false, "nonpayable", None)
         )
       )
     }
 
     "Complex abi parse" - {
-
       val abi = readSolidityABI("complex/ComplexContractABI.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = AbiParser.parseAbi(abi)
 
       parsedAbi ==> Right(
         List(
-          ABIEvent("Transfer",
+          AbiEvent("Transfer",
                    Vector(Argument("from", "address", Some(true)),
                           Argument("to", "address", Some(true)),
                           Argument("value", "uint256", Some(false))),
                    false),
-          ABIEvent("Burn",
+          AbiEvent("Burn",
                    Vector(Argument("from", "address", Some(true)), Argument("value", "uint256", Some(false))),
                    false),
-          ABIConstructor(Vector(Argument("initialSupply", "uint256", None),
+          AbiConstructor(Vector(Argument("initialSupply", "uint256", None),
                                 Argument("tokenName", "string", None),
                                 Argument("tokenSymbol", "string", None)),
                          false,
                          "nonpayable"),
-          ABIFunction(true,
+          AbiFunction(true,
                       "allowance",
                       Vector(Argument("", "address", None), Argument("", "address", None)),
                       Vector(Argument("", "uint256", None)),
                       false,
                       "view",
                       None),
-          ABIFunction(
+          AbiFunction(
             false,
             "approveAndCall",
             Vector(Argument("_spender", "address", None),
@@ -59,15 +58,15 @@ object ABIParserTests extends TestSuite {
             "nonpayable",
             None
           ),
-          ABIFunction(false,
+          AbiFunction(false,
                       "transfer",
                       Vector(Argument("_to", "address", None), Argument("_value", "uint256", None)),
                       Vector(),
                       false,
                       "nonpayable",
                       None),
-          ABIFunction(true, "symbol", Vector(), Vector(Argument("", "string", None)), false, "view", None),
-          ABIFunction(
+          AbiFunction(true, "symbol", Vector(), Vector(Argument("", "string", None)), false, "view", None),
+          AbiFunction(
             false,
             "burnFrom",
             Vector(Argument("_from", "address", None), Argument("_value", "uint256", None)),
@@ -76,22 +75,22 @@ object ABIParserTests extends TestSuite {
             "nonpayable",
             None
           ),
-          ABIFunction(true,
+          AbiFunction(true,
                       "balanceOf",
                       Vector(Argument("", "address", None)),
                       Vector(Argument("", "uint256", None)),
                       false,
                       "view",
                       None),
-          ABIFunction(false,
+          AbiFunction(false,
                       "burn",
                       Vector(Argument("_value", "uint256", None)),
                       Vector(Argument("success", "bool", None)),
                       false,
                       "nonpayable",
                       None),
-          ABIFunction(true, "decimals", Vector(), Vector(Argument("", "uint8", None)), false, "view", None),
-          ABIFunction(
+          AbiFunction(true, "decimals", Vector(), Vector(Argument("", "uint8", None)), false, "view", None),
+          AbiFunction(
             false,
             "transferFrom",
             Vector(Argument("_from", "address", None),
@@ -102,8 +101,8 @@ object ABIParserTests extends TestSuite {
             "nonpayable",
             None
           ),
-          ABIFunction(true, "totalSupply", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
-          ABIFunction(
+          AbiFunction(true, "totalSupply", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
+          AbiFunction(
             false,
             "approve",
             Vector(Argument("_spender", "address", None), Argument("_value", "uint256", None)),
@@ -112,26 +111,26 @@ object ABIParserTests extends TestSuite {
             "nonpayable",
             None
           ),
-          ABIFunction(true, "name", Vector(), Vector(Argument("", "string", None)), false, "view", None)
+          AbiFunction(true, "name", Vector(), Vector(Argument("", "string", None)), false, "view", None)
         )
       )
     }
 
     "Overloading abi parse" - {
       val abi = readSolidityABI("ABIExampleWithOverloading.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = AbiParser.parseAbi(abi)
 
       parsedAbi ==> Right(
         List(
-          ABIFunction(false,
+          AbiFunction(false,
                       "set",
                       Vector(Argument("x", "int256", None)),
                       Vector(),
                       false,
                       "nonpayable",
                       Option("set0")),
-          ABIFunction(true, "get", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
-          ABIFunction(false, "set", Vector(Argument("x", "uint256", None)), Vector(), false, "nonpayable", None)
+          AbiFunction(true, "get", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
+          AbiFunction(false, "set", Vector(Argument("x", "uint256", None)), Vector(), false, "nonpayable", None)
         ))
 
     }

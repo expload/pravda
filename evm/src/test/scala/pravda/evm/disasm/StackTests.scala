@@ -21,7 +21,6 @@ object StackTests extends TestSuite {
       stack.dup(1) ==> StackList(3, 3, 2, 1)
       stack.dup(2) ==> StackList(2, 3, 2, 1)
       stack.dup(3) ==> StackList(1, 3, 2, 1)
-
     }
   }
 }

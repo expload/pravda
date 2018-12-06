@@ -10,12 +10,14 @@ import utest._
 
 object DisasmTests extends TestSuite {
 
+  // pizdec
   val tests = Tests {
 
     'Disasm - {
 
       val x: URL = Thread.currentThread().getContextClassLoader().getResource("disasm")
-      new File(x.toURI).listFiles.foreach({ f =>
+      // FIXME that's a wrong way to load resources
+      new File(x.toURI).listFiles.foreach { f =>
         val bytes = evm.readSolidityBinFile(f) //evm.readSolidityBinFile("SimpleStorage.bin")
 
         val parsed = Parser.parseWithIndices(bytes)
@@ -46,7 +48,7 @@ object DisasmTests extends TestSuite {
 
           }
         }
-      })
+      }
     }
   }
 }

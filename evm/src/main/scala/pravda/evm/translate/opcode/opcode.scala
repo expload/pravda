@@ -24,15 +24,14 @@ import pravda.vm.{Data, Opcodes, asm}
 //TODO merge with pravda.dotnet.translation.opcode.opcode
 package object opcode {
 
-  def getNameByAddress(n: Int): String = s"_lbl_$n"
-  def getNameByNumber(n: Int): String = s"__switch_branch_$n"
+  def nameByAddress(n: Int): String = s"_lbl_$n"
+  def nameByNumber(n: Int): String = s"__switch_branch_$n"
 
   def push[T](value: T, toPrimitive: T => Data.Primitive): asm.Operation =
     asm.Operation.Push(toPrimitive(value))
 
-  val sub
-    : List[asm.Operation] = asm.Operation(Opcodes.SWAP) :: pushBigInt(BigInt(-1)) :: asm.Operation(Opcodes.MUL) :: asm
-    .Operation(Opcodes.ADD) :: Nil
+  val sub: List[asm.Operation] = asm.Operation(Opcodes.SWAP) :: pushBigInt(BigInt(-1)) ::
+    asm.Operation(Opcodes.MUL) :: asm.Operation(Opcodes.ADD) :: Nil
 
   val callExp: List[asm.Operation] = pushInt(3) :: asm.Operation(Opcodes.SCALL) :: Nil
 
@@ -67,16 +66,14 @@ package object opcode {
 
   def splitBy[T](list: List[T], splitter: T => Boolean): List[List[T]] = {
     list
-      .foldLeft((List.empty[T], List.empty[List[T]]))({
+      .foldLeft((List.empty[T], List.empty[List[T]])) {
         case ((current, acc), t) =>
           if (splitter(t)) (List.empty, current :: acc)
           else (t :: current, acc)
-      })
+      }
       ._2
-
   }
 
-  val jumpi: List[asm.Operation] = codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(
-    Some(getNameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
-
+  val jumpi: List[asm.Operation] = codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) :::
+    Operation.JumpI(Some(nameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
 }

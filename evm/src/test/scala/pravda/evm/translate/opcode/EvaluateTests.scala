@@ -5,7 +5,7 @@ import pravda.evm.Preconditions
 import pravda.common.domain.Address
 import pravda.evm.evm._
 import pravda.evm.EVM._
-import pravda.evm.abi.parse.ABIParser.ABIFunction
+import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.translate.Translator
 import pravda.vm.Data.Primitive.BigInt
 import pravda.vm.Effect.{StorageRead, StorageWrite}
@@ -20,7 +20,7 @@ object EvaluateTests extends TestSuite {
     //FIXME when memory usage will be fixed. All tests will be incorrect
     import pravda.vm.Data.Primitive._
     val precondition = Preconditions(balances = Map.empty, `watts-limit` = 1000L)
-    val abi = List(ABIFunction(true, "", Nil, Nil, true, "", None))
+    val abi = List(AbiFunction(true, "", Nil, Nil, true, "", None))
     /* FIXME remove
     "PUSH" - {
       run(evmOpToOps(Push(hex"0x80")), precondition) ==> Right(
@@ -187,11 +187,11 @@ object EvaluateTests extends TestSuite {
                                              ),
                                              abi),
           precondition
-        ).foreach({ expect =>
+        ).foreach { expect =>
           expect.`watts-spent` ==> 154L
           expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
           expect.error ==> None
-        })
+        }
 
         run(
           Translator.translateActualContract(List(
@@ -209,11 +209,11 @@ object EvaluateTests extends TestSuite {
                                              ),
                                              abi),
           precondition
-        ).foreach({ expect =>
+        ).foreach { expect =>
           expect.`watts-spent` ==> 173L
           expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
           expect.error ==> None
-        })
+        }
 
         run(
           Translator.translateActualContract(List(
@@ -231,14 +231,14 @@ object EvaluateTests extends TestSuite {
                                              ),
                                              abi),
           precondition
-        ).foreach({ expect =>
+        ).foreach { expect =>
           expect.`watts-spent` ==> 142L
           expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)),
                                        BigInt(scala.BigInt(4)),
                                        BigInt(scala.BigInt(4)),
                                        BigInt(scala.BigInt(4)))
           expect.error ==> None
-        })
+        }
       }
       "Several jumps" - {
         run(
@@ -266,11 +266,11 @@ object EvaluateTests extends TestSuite {
             abi
           ),
           precondition
-        ).foreach({ expect =>
+        ).foreach { expect =>
           expect.`watts-spent` ==> 246L
           expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(1)))
           expect.error ==> None
-        })
+        }
 
         run(
           Translator.translateActualContract(
@@ -296,11 +296,11 @@ object EvaluateTests extends TestSuite {
             abi
           ),
           precondition
-        ).foreach({ expect =>
+        ).foreach { expect =>
           expect.`watts-spent` ==> 227L
           expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(1)))
           expect.error ==> None
-        })
+        }
       }
 
       "Jump to bad destination" - {
@@ -320,11 +320,11 @@ object EvaluateTests extends TestSuite {
                                              ),
                                              abi),
           precondition
-        ).foreach({ expect =>
+        ).foreach { expect =>
           expect.`watts-spent` ==> 147L
           expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(4)))
           expect.error ==> Some(UserError("Incorrect destination"))
-        })
+        }
 
       }
     }
@@ -339,7 +339,7 @@ object EvaluateTests extends TestSuite {
                        SLoad
                      ),
                      abi),
-          precondition).foreach({ expect =>
+          precondition).foreach { expect =>
         expect.`watts-spent` ==> 193
         expect.effects ==> ArrayBuffer(
           StorageWrite(Address.Void, BigInt(scala.BigInt(3)), None, BigInt(scala.BigInt(4))),
@@ -347,7 +347,7 @@ object EvaluateTests extends TestSuite {
         )
         expect.stack ==> ArrayBuffer(BigInt(scala.BigInt(4)))
         expect.error ==> None
-      })
+      }
     }
 
   }

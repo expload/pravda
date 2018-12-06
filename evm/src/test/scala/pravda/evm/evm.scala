@@ -5,7 +5,7 @@ import java.io.{File, FileOutputStream}
 import com.google.protobuf.ByteString
 import fastparse.byte.all._
 import pravda.common.domain.Address
-import pravda.evm.abi.parse.ABIParser.{ABIConstructor, ABIEvent, ABIFunction, ABIObject, Argument}
+import pravda.evm.abi.parse.AbiParser.{AbiConstructor, AbiEvent, AbiFunction, AbiObject, Argument}
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
 import pravda.vm.VmSuiteData.Expectations
@@ -29,7 +29,7 @@ final case class Preconditions(`watts-limit`: Long = 0,
 package object evm {
 
   def run(opsE: Either[String, Seq[Operation]], input: Preconditions): Either[String, Expectations] = {
-    opsE.map({ ops =>
+    opsE.map { ops =>
       val sandboxVm = new VmImpl()
       val asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
       val heap = {
@@ -96,7 +96,7 @@ package object evm {
         case (d, i) => Data.Primitive.Ref(i) -> d
       }.toMap, effects, error.map(_.error))
 
-    })
+    }
   }
 
   def expectations(watts: Long = 0L,
@@ -157,21 +157,21 @@ package object evm {
     }
   }
 
-  def printToTest(fs: List[ABIObject]): List[String] = {
-    fs.map({
-      case ABIFunction(const, name, in, out, payable, statemut, newName) =>
+  def printToTest(fs: List[AbiObject]): List[String] = {
+    fs.map {
+      case AbiFunction(const, name, in, out, payable, statemut, newName) =>
         val input = s"Vector(${printSeq(in).mkString(",")})"
         val output = s"Vector(${printSeq(out).mkString(",")})"
         val newNam = printOpt(newName)
         s"""ABIFunction($const,"$name",$input,$output,$payable,"$statemut",$newNam)"""
-      case ABIEvent(name, in, anon) =>
+      case AbiEvent(name, in, anon) =>
         val input = s"Vector(${printSeq(in).mkString(",")})"
         s"""ABIEvent("$name",$input,$anon)"""
 
-      case ABIConstructor(in, pay, stat) =>
+      case AbiConstructor(in, pay, stat) =>
         val input = s"Vector(${printSeq(in).mkString(",")})"
         s"""ABIConstructor($input,$pay,"$stat")"""
 
-    })
+    }
   }
 }

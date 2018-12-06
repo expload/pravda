@@ -19,16 +19,16 @@ package pravda.evm.disasm
 
 import scala.annotation.tailrec
 
-trait Stack[+A] { self =>
+trait Stack[A] { self =>
 
   def pop(n: Int): (List[A], Stack[A]) = {
-    @tailrec def pop(n: Int, acc: (List[A], Stack[A])): (List[A], Stack[A]) = n match {
+    @tailrec def aux(n: Int, acc: (List[A], Stack[A])): (List[A], Stack[A]) = n match {
       case 0 => acc._1.reverse -> acc._2
       case _ =>
-        val (el, tail) = acc._2.pop
-        pop(n - 1, (el :: acc._1, tail))
+        val (el, tail) = acc._2.pop()
+        aux(n - 1, (el :: acc._1, tail))
     }
-    pop(n, (Nil, self))
+    aux(n, (Nil, self))
   }
   def pop(): (A, Stack[A])
   def push[B >: A](a: B): Stack[B]
@@ -37,20 +37,18 @@ trait Stack[+A] { self =>
   def size: Int
 }
 
-case class StackList[+A](state: List[A]) extends Stack[A] {
-  val size = state.size
+case class StackList[A](state: List[A]) extends Stack[A] {
+  lazy val size: Int = state.size
+
   def pop(): (A, Stack[A]) = state.head -> new StackList(state.tail)
   def push[B >: A](a: B): Stack[B] = new StackList(a :: state)
 
   def swap(n: Int): Stack[A] =
     new StackList(state(n) :: state.tail.take(n - 1) ::: state.head :: state.drop(n + 1))
   def dup(n: Int): Stack[A] = new StackList(state(n - 1) :: state)
-
-  override def toString: String = state.toString.replace("List", "Stack")
 }
 
 object StackList {
-
   def empty[A]: Stack[A] = new StackList(List.empty[A])
   def apply[A](a: A*): Stack[A] = new StackList(a.toList)
 }

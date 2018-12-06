@@ -51,7 +51,7 @@ object Emulator {
         val r = OpCodes.stackReadCount(op)
         val (args, s) = if (state.size >= r) state.pop(r) else state.pop(state.size)
         val w = OpCodes.stackWriteCount(op)
-        val resState = (1 to w).foldLeft(s)({ case (state, n) => state push CommandResult(op, n) })
+        val resState = (1 to w).foldLeft(s) { case (state, n) => state push CommandResult(op, n) }
         eval(ops, resState, HistoryRecord(op, args) :: history)
     }
   }
@@ -107,36 +107,35 @@ object Emulator {
       }
     }
 
-    val (jumps1, jumpDests1, jumpi1) = main.foldLeft((Set.empty[AddressedJumpOp], withJ, WithJumpI))({
+    val (jumps1, jumpDests1, jumpi1) = main.foldLeft((Set.empty[AddressedJumpOp], withJ, WithJumpI)) {
       case ((jumps, dests, contins), ops) =>
         evalChain(StackList.empty)(List.empty)(ops, dests, contins, jumps)
-    })
-    val (jumps2, jumpDests2, jumpi2) = jumpi1.foldLeft((jumps1, jumpDests1, WithJumpI))({
+    }
+    val (jumps2, jumpDests2, jumpi2) = jumpi1.foldLeft((jumps1, jumpDests1, WithJumpI)) {
       case ((jumps, dests, contins), (_, ops)) =>
         evalChain(StackList.empty)(List.empty)(ops.ops, dests, contins, jumps)
-    })
-    val (jumps3, jumpDests3, jumpi3) = jumpDests2.foldLeft((jumps2, jumpDests2, jumpi2))({
+    }
+    val (jumps3, jumpDests3, jumpi3) = jumpDests2.foldLeft((jumps2, jumpDests2, jumpi2)) {
       case ((jumps, dests, contins), (_, ops)) =>
         evalChain(StackList.empty)(List.empty)(ops.ops, dests, contins, jumps)
-    })
+    }
     jumps3 -> jumpDests3.values.toSet
   }
 
-  def jump(jump: List[HistoryRecord]): Option[HistoryRecord] = {
-    jump.collectFirst({
+  def jump(jump: List[HistoryRecord]): Option[HistoryRecord] =
+    jump.collectFirst {
       case h @ HistoryRecord(SelfAddressedJumpI(_), _) => h
       case h @ HistoryRecord(SelfAddressedJump(_), _)  => h
-    })
-  }
+    }
 
   def jumps(blocks: List[List[Op]]): (Set[AddressedJumpOp], Set[WithJumpDest]) = {
     val jumpable = Blocks.jumpable(blocks)
-    val main = jumpable.withoutJumpdest.filter({
+    val main = jumpable.withoutJumpdest.filter {
       case SelfAddressedJumpI(_) :: _ => false
       case _                          => true
-    })
-    val byJumpdest = jumpable.withJumpdest.groupBy(_.dest).map({ case (k, v)     => k.addr -> v.head })
-    val byJumpi = Blocks.continuation(blocks).groupBy(_.jumpi).map({ case (k, v) => k.addr -> v.head })
+    }
+    val byJumpdest = jumpable.withJumpdest.groupBy(_.dest).map { case (k, v)     => k.addr -> v.head }
+    val byJumpi = Blocks.continuation(blocks).groupBy(_.jumpi).map { case (k, v) => k.addr -> v.head }
     Emulator.eval(main, byJumpdest, byJumpi)
   }
 }

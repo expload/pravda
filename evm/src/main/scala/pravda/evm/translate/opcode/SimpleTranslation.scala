@@ -27,7 +27,7 @@ object SimpleTranslation {
 
   import pravda.evm.EVM._
 
-  val pow = scala.BigInt(2).pow(256) - 1
+  val pow2_256 = scala.BigInt(2).pow(256) - 1
 
   private val translate: PartialFunction[EVM.Op, List[asm.Operation]] = {
     case Push(bytes) => pushBigInt(BigInt(1, bytes.toArray)) :: Nil
@@ -40,15 +40,11 @@ object SimpleTranslation {
     case Mod => codeToOps(Opcodes.MOD) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
     case Sub => sub //FIXME result & (2^256 - 1)
     case AddMod =>
-      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) ::: codeToOps(Opcodes.SWAP,
-                                                                                               Opcodes.MOD,
-                                                                                               Opcodes.ADD,
-                                                                                               Opcodes.MOD)
+      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
+        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.ADD, Opcodes.MOD)
     case MulMod =>
-      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) ::: codeToOps(Opcodes.SWAP,
-                                                                                               Opcodes.MOD,
-                                                                                               Opcodes.MUL,
-                                                                                               Opcodes.MOD)
+      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
+        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.MUL, Opcodes.MOD)
 
     //  case Not => codeToOps(Opcodes.NOT) //TODO (2^256 - 1) - s[0]
 
@@ -75,7 +71,7 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case Jump  => Operation.Jump(Some(getNameByNumber(0))) :: Nil
+    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
     case JumpI => jumpi
     case Stop  => codeToOps(Opcodes.STOP)
 
@@ -85,13 +81,13 @@ object SimpleTranslation {
     case Balance => codeToOps(Opcodes.BALANCE)
     case Address => codeToOps(Opcodes.PADDR)
 
-    case JumpDest(address) => asm.Operation.Label(getNameByAddress(address)) :: Nil
+    case JumpDest(address) => asm.Operation.Label(nameByAddress(address)) :: Nil
 
     case SStore => codeToOps(Opcodes.SPUT)
     case SLoad  => codeToOps(Opcodes.SGET)
 
     //TODO DELETE ME
-    case Not       => pushBigInt(pow) :: sub ::: Nil
+    case Not       => pushBigInt(pow2_256) :: sub ::: Nil
     case Revert    => codeToOps(Opcodes.STOP)
     case CallValue => pushBigInt(scala.BigInt(100000)) :: Nil
   }

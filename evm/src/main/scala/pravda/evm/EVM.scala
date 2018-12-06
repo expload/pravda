@@ -191,5 +191,6 @@ object EVM {
   final case class UInt(bytes: Int) extends Fixed
   final case class SInt(bytes: Int) extends Fixed
   final case object Bool            extends Fixed
+  final case object Unsupported     extends AbiType
 
 }
