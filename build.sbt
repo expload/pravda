@@ -1,4 +1,5 @@
 import java.nio.file.{Files, Paths}
+import Dependencies._
 
 resolvers += "jitpack" at "https://jitpack.io"
 resolvers += Resolver.bintrayRepo("expload", "oss")
@@ -29,7 +30,7 @@ cleanupTestDirTask := {
 test in Test := (test in Test).dependsOn(cleanupTestDirTask).value
 
 val scalacheckOps = Seq(
-  libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+  libraryDependencies += scalaCheck % "test",
   testOptions in Test ++= Seq(
     Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
     Tests.Argument(TestFrameworks.ScalaCheck, "-workers", "1"),
@@ -48,9 +49,9 @@ val commonSettings = Seq(
   bintrayVcsUrl := Some("https://github.com/expload/pravda"),
   libraryDependencies ++= Seq(
     // Tests
-    "org.typelevel" %% "cats-core" % "1.0.1",
-    "org.rudogma" %% "supertagged" % "1.4",
-    "com.lihaoyi" %% "utest" % "0.6.3" % "test"
+    catsCore,
+    superTagged,
+    uTest % "test"
   ),
   testFrameworks += new TestFramework("utest.runner.Framework"),
   scalacOptions ++= Seq(
@@ -82,14 +83,14 @@ lazy val common = (project in file("common"))
   )
   .settings(
     libraryDependencies ++= Seq(
-      "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "com.propensive" %% "contextual" % "1.1.0",
-      "org.whispersystems" % "curve25519-java" % "0.4.1",
-      "org.rudogma" %% "supertagged" % "1.4",
-      "com.tethys-json" %% "tethys" % "0.7.0.2",
-      "com.tethys-json" %% "tethys-derivation" % "0.7.0.2",
-      "com.tethys-json" %% "tethys-json4s" % "0.7.0.2",
-      "org.json4s" %% "json4s-ast" % "3.6.1"
+      protobufJava,
+      contextual,
+      curve25519Java,
+      superTagged,
+      tethys,
+      tethysDerivation,
+      tethysJson4s,
+      json4sAst
     )
   )
 
@@ -106,9 +107,9 @@ lazy val `vm-api` = (project in file("vm-api"))
       Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
     ),
     libraryDependencies ++= Seq(
-      "com.google.protobuf" % "protobuf-java" % "3.5.0",
-      "com.lihaoyi" %% "fastparse" % "1.0.0",
-      "com.tethys-json" %% "tethys" % "0.7.0.2"
+      protobufJava,
+      fastParse,
+      tethys
     )
   )
   .dependsOn(common)
@@ -158,10 +159,10 @@ lazy val dotnet = (project in file("dotnet"))
   )
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "1.0.1",
-      "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
-      "com.lihaoyi" %% "pprint" % "0.5.3" % "test",
-      "commons-io" % "commons-io" % "2.6"
+      catsCore,
+      fastParseByte,
+      pprint % "test",
+      commonsIo
     ),
     testFrameworks := Seq(new TestFramework("pravda.common.PreserveColoursFramework"))
   )
@@ -179,7 +180,7 @@ lazy val `node-db` = (project in file("node-db"))
   )
   .settings(
     normalizedName := "pravda-node-db",
-    libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.10"
+    libraryDependencies += levelDb
   )
 
 lazy val node = (project in file("node"))
@@ -199,18 +200,18 @@ lazy val node = (project in file("node"))
     normalizedName := "pravda-node",
     libraryDependencies ++= Seq(
       // Networking
-      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
-      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
-      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
+      akkaActor,
+      akkaStream,
+      akkaHttp,
       // UI
-      "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0",
+      korolevServerAkkaHttp,
       // Other
-      "com.expload" %% "scala-abci-server" % "0.13.0",
-      "com.github.pureconfig" %% "pureconfig" % "0.9.1",
+      exploadAbciServer,
+      pureConfig,
       // Marshalling
-      "com.tethys-json" %% "tethys" % "0.7.0.2",
-      "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17",
-      "com.chuusai" %% "shapeless" % "2.3.3"
+      tethys,
+      akkaStreamUnixDomainSocket,
+      shapeless
     ),
     dependencyOverrides += "org.scala-lan" %% "scala-compiler" % "2.12.6",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
@@ -259,8 +260,8 @@ lazy val codegen = (project in file("codegen"))
   .settings(normalizedName := "pravda-codegen")
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "1.0.1",
-      "com.github.spullara.mustache.java" % "compiler" % "0.9.5"
+      catsCore,
+      javaCompiler
     ))
   .settings(scalacOptions ++= Seq(
     "-Ypartial-unification"
@@ -304,8 +305,8 @@ lazy val cli = (project in file("cli"))
     normalizedName := "pravda",
     mainClass in Compile := Some("pravda.cli.Pravda"),
     libraryDependencies ++= Seq(
-      "com.github.scopt" %% "scopt" % "3.7.0",
-      "org.typelevel" %% "cats-core" % "1.0.1",
+      scopt,
+      catsCore,
     ),
     bashScriptExtraDefines += """set -- -- "$@""""
   )
@@ -342,8 +343,8 @@ lazy val yaml4s = (project in file("yaml4s"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % "1.23",
-      "org.json4s" %% "json4s-native" % "3.6.1"
+      snakeYml,
+      json4sNative
     )
   )
 
@@ -352,7 +353,7 @@ lazy val plaintest = (project in file("plaintest"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "utest" % "0.6.3"
+      uTest
     )
   )
 
@@ -366,10 +367,10 @@ lazy val faucet = (project in file("faucet"))
     normalizedName := "pravda-faucet",
     libraryDependencies ++= Seq(
       // Networking
-      "com.typesafe.akka" %% "akka-actor" % "2.5.8",
-      "com.typesafe.akka" %% "akka-stream" % "2.5.8",
-      "com.typesafe.akka" %% "akka-http" % "10.1.0-RC1",
+      akkaActor,
+      akkaStream,
+      akkaHttp,
       // UI
-      "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0"
+      korolevServerAkkaHttp
     )
   )
