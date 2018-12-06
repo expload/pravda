@@ -124,13 +124,12 @@ object Translator {
       .filterNot(f =>
         tctx.signatures.get(f.signatureIdx).exists {
           case FieldSig(SigType.Generic(TypeDetectors.Mapping(), _)) => true
-          case _                                 => false
+          case _                                                     => false
       })
-      .flatMap(
-        f =>
-          List(Operation.Push(defaultFieldValue(f, tctx)),
-               Operation.Push(Data.Primitive.Utf8(s"p_${f.name}")),
-               Operation(Opcodes.SPUT)))
+      .flatMap(f =>
+        List(Operation.Push(defaultFieldValue(f, tctx)),
+             Operation.Push(Data.Primitive.Utf8(s"p_${f.name}")),
+             Operation(Opcodes.SPUT)))
   }
 
   private def eliminateDeadFuncs(methods: List[MethodTranslation],
@@ -177,11 +176,10 @@ object Translator {
 
     lazy val privateFields = typeDef.fields.map { f =>
       if (!FieldExtractors.isPrivate(f)) {
-        Left(
-          TranslationError(
-            InternalError(
-              s"All [Program] fields must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
-            None))
+        Left(TranslationError(
+          InternalError(
+            s"All [Program] fields must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
+          None))
       } else {
         Right(())
       }
