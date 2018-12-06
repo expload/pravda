@@ -1,0 +1,76 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Callers.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Callers.cs
+    optimize: true
+---
+methods: |-
+  List(
+    Method(
+      List(
+        Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "Callers", 16L)),
+        LdcI40,
+        LdElemRef,
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(List(Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(
+          Arr(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), ArrayShape(1, List(), List())),
+          false
+        ),
+        List()
+      )
+    ),
+    (
+      31L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Cls(TypeRefData(10L, "Bytes", "Expload.Pravda")), false),
+        List()
+      )
+    ),
+    (36L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

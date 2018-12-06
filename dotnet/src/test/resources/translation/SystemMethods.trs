@@ -1,0 +1,88 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: SystemMethods.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/SystemMethods.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "SystemMethods"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestSystemMethods"
+  eq
+  jumpi @method_TestSystemMethods
+  push "Wrong method name"
+  throw
+  @method_TestSystemMethods:
+  meta method {
+  "name":"TestSystemMethods","returnTpe":int8(0)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(57)
+  }
+  push x0000000000000000000000000000000000000000000000000000000000000000
+  balance
+  pop
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(54)
+  }
+  paddr
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(52)
+  }
+  push x0000000000000000000000000000000000000000000000000000000000000000
+  push int32(100)
+  push int8(4)
+  cast
+  transfer
+  meta source_mark {
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(63)
+  }
+  push x0000000000000000000000000000000000000000000000000000000000000000
+  push int32(200)
+  push int8(4)
+  cast
+  ptransfer
+  meta source_mark {
+  "sl":int32(16),"sc":int32(5),"el":int32(16),"src":"$PRAVDA_TMP_DIR/SystemMethods.cs","ec":int32(6)
+  }
+  jump @TestSystemMethods_lvc
+  @TestSystemMethods_lvc:
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

@@ -4,7 +4,7 @@ import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.cli.languages.{CompilersLanguage, IoLanguageStub}
+import pravda.node.client.{CompilersLanguage, IoLanguageStub}
 import pravda.vm.asm.Operation
 import utest._
 

@@ -3,7 +3,8 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.cli.languages.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
+import pravda.node.client.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
+import pravda.node.data.common.TransactionId
 import pravda.node.servers.Abci.TransactionResult
 import pravda.vm.FinalState
 import pravda.vm.asm.Operation
@@ -15,6 +16,7 @@ object BroadcastSuite extends TestSuite {
 
   final val expectedResult =
     s"""{
+       |  "transactionId" : "",
        |  "executionResult" : {
        |    "success" : {
        |      "spentWatts" : 0,
@@ -37,7 +39,8 @@ object BroadcastSuite extends TestSuite {
 
   val tests = Tests {
     "run -w w.json" - {
-      val api = new NodeLanguageStub(Right(TransactionResult(Right(FinalState.Empty), Nil)))
+      val api =
+        new NodeLanguageStub(Right(TransactionResult(TransactionId @@ ByteString.EMPTY, Right(FinalState.Empty), Nil)))
       val io = new IoLanguageStub(files = mutable.Map("w.json" -> Wallet))
       val compilers = new CompilersLanguage[Id] {
         def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
@@ -53,7 +56,8 @@ object BroadcastSuite extends TestSuite {
     }
 
     "run" - {
-      val api = new NodeLanguageStub(Right(TransactionResult(Right(FinalState.Empty), Nil)))
+      val api =
+        new NodeLanguageStub(Right(TransactionResult(TransactionId @@ ByteString.EMPTY, Right(FinalState.Empty), Nil)))
       val io = new IoLanguageStub()
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")

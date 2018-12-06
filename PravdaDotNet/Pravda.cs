@@ -10,10 +10,26 @@ namespace Expload.Pravda {
 
     // Access to the storage
     public class Mapping<K, V> {
-       public V get(K key) { return default(V); }
-       public bool exists(K key) { return false; }
-       public void put(K key, V value) { return; }
-       public V getDefault(K key, V def) { return default(V); }
+        
+        public V this[K k] {
+            get { 
+                return default(V);
+            } 
+            set {
+                return;
+            }
+        }
+
+        // Checks the specified key is present in the mapping.
+        public bool ContainsKey(K key) {
+            return false;
+        }
+        
+        // Gets the value associated with the specified key.
+        // If key is not fount returns defaultValue.
+        public V GetOrDefault(K key, V defaultValue) { 
+            return default(V); 
+        }
     }
 
     public class Info {
@@ -25,6 +41,20 @@ namespace Expload.Pravda {
 
         // Get program address
         public static Bytes ProgramAddress() { return null; }
+
+        // Get list of contract's callers' addresses
+        public static Bytes[] Callers() { return null; }
+
+        public static long Height() { return 0L; }
+        public static Bytes LastBlockHash() { return null; }
+    }
+
+    public class Actions {
+        // Transfer native coins from executor account
+        public static void Transfer(Bytes to, long amount) { return; }
+
+        // Transfer native coins from program account
+        public static void TransferFromProgram(Bytes to, long amount) { return; }
     }
 
     public class Log {
@@ -42,11 +72,11 @@ namespace Expload.Pravda {
        // Get the void address (32 zero bytes)
        public static Bytes VOID_ADDRESS = null;
 
-       public Bytes(params byte[] bytes) {}
+       public Bytes(params sbyte[] bytes) {}
        public Bytes(String hex) {}
 
        // Get the i-th byte
-       public byte this[int i] { get { return 0; } set { return; } }
+       public sbyte this[int i] { get { return 0; } }
        // Get the sub-array
        public Bytes Slice(int start, int length) { return null; }
        // Concatenate two Bytes
@@ -60,6 +90,7 @@ namespace Expload.Pravda {
         public static Bytes Ripemd160(String str) { return null; }
 
         public static Bytes HexToBytes(String hex) { return null; }
+        public static String BytesToHex(Bytes bytes) { return null; }
 
         public static bool ValidateEd25519Signature(Bytes pubKey, Bytes message, Bytes signature) { return false; }
         public static bool ValidateEd25519Signature(Bytes pubKey, String message, Bytes signature) { return false; }

@@ -1,0 +1,20 @@
+watts-limit: 1000
+code: |-
+  push "value"
+  push "key"
+  sput
+  push "key"
+  sget
+---
+watts-spent: 241
+stack:
+  - utf8.value
+effects:
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.key
+    value: utf8.value
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.key
+    value: utf8.value

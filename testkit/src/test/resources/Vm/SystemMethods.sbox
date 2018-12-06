@@ -1,0 +1,33 @@
+stack:
+  [utf8.TestSystemMethods]
+storage:
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: SystemMethods.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/SystemMethods.cs
+    optimize: true
+---
+effects:
+  - eventType: StorageRead
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: utf8.init
+    value: 'null'
+  - eventType: ShowBalance
+    address: '0000000000000000000000000000000000000000000000000000000000000000'
+    amount: 0
+  - eventType: Transfer
+    from: 0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+    to: '0000000000000000000000000000000000000000000000000000000000000000'
+    amount: 100
+  - eventType: Transfer
+    from: '0000000000000000000000000000000000000000000000000000000000000000'
+    to: '0000000000000000000000000000000000000000000000000000000000000000'
+    amount: 200
+

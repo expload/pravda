@@ -230,7 +230,7 @@ final class SystemOperations(program: ByteBuffer,
                           "create new event with name as given string and with given data.")
   def event(): Unit = {
 
-    def marshalData(data: Data) = {
+    def marshalData(data: Data): (Data, Map[Data.Primitive.Ref, Data]) = {
       // (Original -> (UpdatedData, AssignedRef))
       val pHeap = mutable.Map.empty[Data.Primitive.Ref, (Data.Primitive.Ref, Data)]
       def extract(ref: Data.Primitive.Ref) = {
@@ -276,6 +276,40 @@ final class SystemOperations(program: ByteBuffer,
       case Some(addr) => env.event(addr, name, data)
       case None       => throw ThrowableVmError(OperationDenied)
     }
+  }
+
+  @OpcodeImplementation(
+    opcode = CALLERS,
+    description = "Gets caller's 'call stack' (see CALL opcode) " +
+      "and pushes it to the stack"
+  )
+  def callers(): Unit = {
+    val cs = Data.Array.BytesArray(
+      memory.callStack.flatMap(_._1).toBuffer
+    )
+    wattCounter.memoryUsage(cs.volume.toLong)
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(memory.heapPut(cs))
+  }
+
+  @OpcodeImplementation(
+    opcode = HEIGHT,
+    description = "Gets current height of the blockchain and pushes it to the stack."
+  )
+  def chainHeight(): Unit = {
+    val data = env.chainHeight
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Int64(data))
+  }
+
+  @OpcodeImplementation(
+    opcode = HASH,
+    description = "Gets hash of the last block and pushes it to the stack."
+  )
+  def lastBlockHash(): Unit = {
+    val data = env.lastBlockHash
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Bytes(data))
   }
 }
 

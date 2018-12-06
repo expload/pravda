@@ -23,7 +23,8 @@ object StandardLibrary {
     standard.Ripemd160,
     standard.ValidateEd25519Signature,
     standard.ExponentialFunction,
-    standard.HexToBytes
+    standard.HexToBytes,
+    standard.BytesToHex
   )
 
   val Index: Map[Long, (Memory, WattCounter) => Unit] =

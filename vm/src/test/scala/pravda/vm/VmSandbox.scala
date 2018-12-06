@@ -12,7 +12,8 @@ object VmSandbox {
                            initStorages: Map[Address, Map[Primitive, Data]],
                            initBalances: Seq[(Address, Primitive.BigInt)],
                            initPrograms: Seq[(Address, Primitive.Bytes)],
-                           pExecutor: Address)
+                           pExecutor: Address,
+                           appStateInfo: AppStateInfo)
       extends Environment {
 
     private val balances = mutable.Map(initBalances: _*)
@@ -62,6 +63,9 @@ object VmSandbox {
 
     def event(address: Address, name: String, data: MarshalledData): Unit =
       effects += vm.Effect.Event(address, name, data)
+
+    def chainHeight = appStateInfo.height
+    def lastBlockHash = appStateInfo.`app-hash`
   }
 
   class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])

@@ -177,11 +177,14 @@ class VmImpl extends Vm {
           } else {
             throw ThrowableVmError(PcallDenied)
           }
-        case THROW => systemOperations.`throw`()
-        case EVENT => systemOperations.event()
-        case CODE  => systemOperations.code()
-        case META  => Meta.readFromByteBuffer(program)
-        case _     =>
+        case THROW   => systemOperations.`throw`()
+        case EVENT   => systemOperations.event()
+        case CALLERS => systemOperations.callers()
+        case HEIGHT  => systemOperations.chainHeight()
+        case HASH    => systemOperations.lastBlockHash()
+        case CODE    => systemOperations.code()
+        case META    => Meta.readFromByteBuffer(program)
+        case _       =>
       }
     }
   }

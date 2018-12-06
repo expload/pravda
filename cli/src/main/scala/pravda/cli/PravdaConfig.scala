@@ -58,6 +58,11 @@ object PravdaConfig {
                              endpoint: String = DefaultValues.Broadcast.ENDPOINT)
       extends PravdaConfig
 
+  final case class Execute(input: Option[String] = None,
+                           wallet: Option[String] = None,
+                           endpoint: String = DefaultValues.Broadcast.ENDPOINT)
+      extends PravdaConfig
+
   object Broadcast {
 
     sealed trait Mode
@@ -111,9 +116,5 @@ object PravdaConfig {
     case object Dotnet extends CodegenMode
   }
 
-  final case class Codegen(codegenMode: CodegenMode,
-                           input: Option[String] = None,
-                           outDir: Option[String] = None,
-                           excludeBigInteger: Boolean = false)
-      extends PravdaConfig
+  final case class Codegen(codegenMode: CodegenMode, input: Option[String] = None) extends PravdaConfig
 }

@@ -1,0 +1,65 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Callers.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Callers.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "PcallNamespaceCallers"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestCallers"
+  eq
+  jumpi @method_TestCallers
+  push "Wrong method name"
+  throw
+  @method_TestCallers:
+  meta method {
+  "name":"TestCallers","returnTpe":int8(14)
+  }
+  meta source_mark {
+  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Callers.cs","ec":int32(37)
+  }
+  callers
+  push int32(0)
+  array_get
+  jump @TestCallers_lvc
+  @TestCallers_lvc:
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

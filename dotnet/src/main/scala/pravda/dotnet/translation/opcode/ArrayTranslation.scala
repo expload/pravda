@@ -35,10 +35,11 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
     op match {
       case NewArr(TypeRefData(6, typeName, namespaceName)) =>
         val arrTypeF: PartialFunction[(String, String), Operation] = {
-          case ("System", "Byte")   => pushType(Data.Type.Int8)
+          case ("System", "SByte")  => pushType(Data.Type.Int8)
           case ("System", "Char")   => pushType(Data.Type.Int16)
+          case ("System", "Int16")  => pushType(Data.Type.Int16)
           case ("System", "Int32")  => pushType(Data.Type.Int32)
-          case ("System", "UInt32") => pushType(Data.Type.Uint32)
+          case ("System", "Int64")  => pushType(Data.Type.Int64)
           case ("System", "Double") => pushType(Data.Type.Number)
           case ("System", "String") => pushType(Data.Type.Utf8)
         }
@@ -71,7 +72,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           OpcodeDetectors.IntLoad(arraySize),
           NewArr(TypeRefData(_, typeName, namespaceName)),
           Dup,
-          LdToken(FieldData(_, fieldName, tokenSignIdx)),
+          LdToken(FieldData(_, _, fieldName, tokenSignIdx)),
           Call(MemberRefData(TypeRefData(_, "RuntimeHelpers", "System.Runtime.CompilerServices"), "InitializeArray", _))
           ) =>
         def bytesRva =
@@ -95,15 +96,15 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
           } yield size
 
         def data(bytes: fastparse.byte.all.Bytes): Option[Data] = (namespaceName, typeName) match {
-          case ("System", "Byte") => Some(Data.Array.Int8Array(bytes.toArray.toBuffer))
+          case ("System", "SByte") => Some(Data.Array.Int8Array(bytes.toArray.toBuffer))
           case ("System", "Char") =>
+            Some(Data.Array.Int16Array(bytes.grouped(2).map(_.toShort(ordering = ByteOrdering.LittleEndian)).toBuffer))
+          case ("System", "Int16") =>
             Some(Data.Array.Int16Array(bytes.grouped(2).map(_.toShort(ordering = ByteOrdering.LittleEndian)).toBuffer))
           case ("System", "Int32") =>
             Some(Data.Array.Int32Array(bytes.grouped(4).map(_.toInt(ordering = ByteOrdering.LittleEndian)).toBuffer))
-          case ("System", "UInt32") =>
-            Some(
-              Data.Array.Int32Array(
-                bytes.grouped(4).map(_.toInt(signed = false, ordering = ByteOrdering.LittleEndian)).toBuffer))
+          case ("System", "Int64") =>
+            Some(Data.Array.Int64Array(bytes.grouped(8).map(_.toLong(ordering = ByteOrdering.LittleEndian)).toBuffer))
           case ("System", "Double") =>
             Some(Data.Array.NumberArray(bytes.grouped(8).map(_.reverse.toByteBuffer.getDouble).toBuffer))
           case _ => None

@@ -1,0 +1,80 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Block.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Block.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "Block"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestHeightMethod"
+  eq
+  jumpi @method_TestHeightMethod
+  dup
+  push "TestLastBlockHash"
+  eq
+  jumpi @method_TestLastBlockHash
+  push "Wrong method name"
+  throw
+  @method_TestHeightMethod:
+  meta method {
+  "name":"TestHeightMethod","returnTpe":int8(5)
+  }
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(30)
+  }
+  height
+  jump @TestHeightMethod_lvc
+  @TestHeightMethod_lvc:
+  swap
+  pop
+  jump @stop
+  @method_TestLastBlockHash:
+  meta method {
+  "name":"TestLastBlockHash","returnTpe":int8(14)
+  }
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Block.cs","ec":int32(37)
+  }
+  hash
+  jump @TestLastBlockHash_lvc
+  @TestLastBlockHash_lvc:
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

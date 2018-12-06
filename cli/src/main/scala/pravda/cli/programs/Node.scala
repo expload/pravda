@@ -23,7 +23,7 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.Node.{Mode, Network}
-import pravda.cli.languages.{IoLanguage, NodeLanguage, RandomLanguage}
+import pravda.node.client.{IoLanguage, NodeLanguage, RandomLanguage}
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.{bytes, crypto}
 import pravda.node.data.PravdaConfig.Validator
@@ -65,7 +65,6 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    chain-id = "$chainId"
        |    validators = "${validators.mkString(",")}"
        |    app-hash = ""
-       |    distribution = true
        |  }
        |${if (isValidator) {
          s"""  validator {

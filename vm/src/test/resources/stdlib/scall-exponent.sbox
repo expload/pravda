@@ -1,10 +1,10 @@
 watts-limit: 1000
 code: |-
-  push 0x02
-  push 0x02
-  push 0x03
+  push 2
+  push 2
+  push 3
   scall
 ---
 watts-spent: 124
 stack:
-  - uint8.4
+  - int8.4

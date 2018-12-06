@@ -1,0 +1,34 @@
+stack:
+  [utf8.TestInheritance]
+storage:
+  utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Inheritance.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Inheritance.cs
+    optimize: true
+---
+stack:
+  - int32.387
+heap:
+  ref.0:
+    utf8.AVal: int32.100
+    utf8.Answer: offset.1231
+    utf8.AnswerPlus1: offset.2285
+  ref.1:
+    utf8.BVal: int32.200
+    utf8.Answer: offset.1684
+    utf8.AnswerPlus1: offset.2285
+storage:
+    utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"

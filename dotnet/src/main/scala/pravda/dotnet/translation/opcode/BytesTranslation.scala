@@ -55,7 +55,7 @@ object BytesTranslation extends OneToManyTranslator {
           // TODO good idea to make translator dependent `vm`
           // TODO instead of `vm-api`.
           Right(List(pushInt(0x04), Operation(Opcodes.SCALL)))
-        case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(Arr(U1, ArrayShape(1, Nil, Nil)), false)))) =>
+        case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(Arr(I1, ArrayShape(1, Nil, Nil)), false)))) =>
           Right(List(Operation.Call(Some("stdlib_array_to_bytes"))))
         case None =>
           Left(UnknownOpcode)

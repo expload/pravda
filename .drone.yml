@@ -6,6 +6,11 @@ workspace:
   base: /workdir
   path: code
 pipeline:
+  tag-the-image:
+    image: alpine/git:1.0.4
+    pull: false
+    commands:
+      - echo -n `git describe --tags | sed -e "s/^v//"`",latest" > .tags
   tests:
     image: gcr.io/time-coin/sbt:latest
     pull: true
@@ -16,7 +21,7 @@ pipeline:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
       - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
-  package-zip-and-publish-to-bintray:
+  package-zip:
     image: gcr.io/time-coin/sbt:latest
     volumes:
       - /var/lib/sbt-cache:/workdir/sbt
@@ -24,8 +29,7 @@ pipeline:
     commands:
       - export COURSIER_CACHE='/workdir/coursier/'
       - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage node/docker:stage publish
-    secrets: [ bintray_user, bintray_pass ]
+      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage faucet/universal:stage
     when:
       event: tag
   package-msi:
@@ -38,18 +42,27 @@ pipeline:
       - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
     when:
       event: tag
-  package-publish-nuget:
-    image: microsoft/dotnet:2.1-sdk
-    environment:
-      - PRAVDA_VERSION=${DRONE_TAG##v}
+  sign-msi:
+    image: byrnedo/alpine-curl
     commands:
-      - cd /workdir/code/PravdaDotNet
-      - dotnet pack -c Release
-      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json      
-    secrets: [ nuget_key ]
+      - find . -name *.msi -exec curl -F msi=@{} http://35.246.239.138:8080/sign-msi -o {} \;
+    when:
+      event: tag
+  publish-to-bintray:
+    group: publish
+    image: gcr.io/time-coin/sbt:latest
+    volumes:
+    - /var/lib/sbt-cache:/workdir/sbt
+    - /var/lib/coursier-cache:/workdir/coursier
+    commands:
+    - export COURSIER_CACHE='/workdir/coursier/'
+    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
+    secrets: [ bintray_user, bintray_pass ]
     when:
       event: tag
   publish-github-releases:
+    group: publish
     image: plugins/github-release
     files:
       - /workdir/code/win-installer/*.msi
@@ -58,30 +71,53 @@ pipeline:
     when:
       event: tag
   publish-docker-hub:
+    group: publish
     image: plugins/docker
     repo: expload/pravda
-    context: /workdir/code/node/target/docker/stage/
-    dockerfile: /workdir/code/node/target/docker/stage/Dockerfile
+    context: .
+    dockerfile: docker/images/pravda-cli/Dockerfile
     secrets: [ docker_username, docker_password ]
-    auto_tag: true
     when:
       event: tag
-  publish-docker-image-private:
-    image: plugins/gcr
-    registry: gcr.io/time-coin
-    repo: gcr.io/time-coin/expload-pravda-node
+  publish-pravda-faucet:
+    group: publish
+    image: plugins/docker
+    repo: expload/pravda-faucet
     context: .
-    dockerfile: ./docker/images/expload-pravda-node/Dockerfile
-    secrets: [ gcr_json_key ]
+    dockerfile: docker/images/pravda-faucet/Dockerfile
+    secrets: [ docker_username, docker_password ]
     when:
-      event: push
-      branch: master
-  publish-docker-image-private-tagged:
-    image: plugins/gcr
-    registry: gcr.io/time-coin
-    repo: gcr.io/time-coin/expload-pravda-node
+      event: tag
+  publish-broadcaster-to-docker:
+    group: publish
+    image: plugins/docker
+    repo: expload/pravda-broadcaster
     context: .
-    dockerfile: ./docker/images/expload-pravda-node/Dockerfile
-    secrets: [ gcr_json_key ]
+    dockerfile: docker/images/broadcaster/Dockerfile
+    secrets: [ docker_username, docker_password ]
+    when:
+      event: tag
+  publish-pravda-dll-nuget:
+    group: dotnet
+    image: microsoft/dotnet:2.1-sdk
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG##v}
+    commands:
+      - cd /workdir/code/PravdaDotNet
+      - dotnet pack -c Release
+      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+    secrets: [ nuget_key ]
+    when:
+      event: tag
+  publish-pravda-program-template-nuget:
+    group: dotnet
+    image: chicker/nuget:0.8
+    environment:
+      - PRAVDA_VERSION=${DRONE_TAG##v}
+    commands:
+      - cd /workdir/code/PravdaProgramTemplate
+      - nuget pack -Version $PRAVDA_VERSION Expload.PravdaProgramTemplate.nuspec
+      - dotnet nuget push Expload.PravdaProgramTemplate.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+    secrets: [ nuget_key ]
     when:
       event: tag

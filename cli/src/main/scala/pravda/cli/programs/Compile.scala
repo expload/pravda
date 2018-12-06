@@ -23,7 +23,7 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.cli.languages.{CompilersLanguage, IoLanguage}
+import pravda.node.client.{CompilersLanguage, IoLanguage}
 
 import scala.language.higherKinds
 
@@ -70,8 +70,8 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               }
 
             case DotNet =>
-              val (other, csfiles) = inputs.partition {
-                case (p, f) => !p.endsWith(".exe") && !p.endsWith(".dll") && !p.endsWith(".pdb") && p != "stdin"
+              val csfiles = inputs.filter {
+                case (p, f) => p.endsWith(".exe") || p.endsWith(".dll") || p.endsWith(".pdb") || p == "stdin"
               }
 
               val dotnetFilesE: Either[String, List[(ByteString, Option[ByteString])]] =
@@ -97,20 +97,12 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
                   .toList
                   .sequence
 
-              val compiled = dotnetFilesE match {
+              val compiled: F[Either[String, ByteString]] = dotnetFilesE match {
                 case Left(err)          => Monad[F].pure(Left(err))
                 case Right(dotnetFiles) => compilers.dotnet(dotnetFiles, config.mainClass)
               }
 
-              for {
-                _ <- if (other.nonEmpty) {
-                  io.writeStringToStdout(
-                    other.map(o => s"Warning: ${o._1} has wrong file extension").mkString("", "\n", "\n"))
-                } else {
-                  Monad[F].pure(())
-                }
-                c <- compiled
-              } yield c
+              compiled
             case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }

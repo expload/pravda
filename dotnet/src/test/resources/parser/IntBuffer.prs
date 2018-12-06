@@ -1,0 +1,243 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: IntBuffer.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/IntBuffer.cs
+    optimize: true
+---
+methods: |-
+  List(
+    Method(
+      List(
+        LdArg0,
+        Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
+        LdArg0,
+        LdcI4S(16),
+        NewArr(TypeRefData(6L, "Int32", "System")),
+        StFld(FieldData(1, 1, "buffer", 59L)),
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(
+      List(
+        LdArg0,
+        Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
+        LdArg0,
+        LdArg1,
+        NewArr(TypeRefData(6L, "Int32", "System")),
+        StFld(FieldData(1, 1, "buffer", 59L)),
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(
+      List(
+        LdArg0,
+        LdFld(FieldData(0, 1, "size", 56L)),
+        LdArg0,
+        LdFld(FieldData(1, 1, "buffer", 59L)),
+        LdLen,
+        ConvI4,
+        BneUnS(55),
+        LdArg0,
+        LdFld(FieldData(1, 1, "buffer", 59L)),
+        LdLen,
+        ConvI4,
+        LdcI42,
+        Mul,
+        LdcI41,
+        Add,
+        NewArr(TypeRefData(6L, "Int32", "System")),
+        StLoc0,
+        LdcI40,
+        StLoc1,
+        BrS(15),
+        LdLoc0,
+        LdLoc1,
+        LdArg0,
+        LdFld(FieldData(1, 1, "buffer", 59L)),
+        LdLoc1,
+        LdElemI4,
+        StElemI4,
+        LdLoc1,
+        LdcI41,
+        Add,
+        StLoc1,
+        LdLoc1,
+        LdArg0,
+        LdFld(FieldData(1, 1, "buffer", 59L)),
+        LdLen,
+        ConvI4,
+        BltS(-26),
+        LdArg0,
+        LdLoc0,
+        StFld(FieldData(1, 1, "buffer", 59L)),
+        LdArg0,
+        LdFld(FieldData(1, 1, "buffer", 59L)),
+        LdArg0,
+        LdFld(FieldData(0, 1, "size", 56L)),
+        LdArg1,
+        StElemI4,
+        LdArg0,
+        LdArg0,
+        LdFld(FieldData(0, 1, "size", 56L)),
+        LdcI41,
+        Add,
+        StFld(FieldData(0, 1, "size", 56L)),
+        Ret
+      ),
+      4,
+      Some(21L)
+    ),
+    Method(List(LdArg0, LdFld(FieldData(1, 1, "buffer", 59L)), LdArg1, LdElemI4, Ret), 0, None),
+    Method(
+      List(LdArg0, LdFld(FieldData(1, 1, "buffer", 59L)), LdArg1, LdArg2, StElemI4, Ret),
+      0,
+      None
+    ),
+    Method(
+      List(
+        LdcI42,
+        NewObj(MethodDefData(1, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "initSize")))),
+        Dup,
+        LdcI41,
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI43,
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI45,
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI47,
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI4S(9),
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI4S(11),
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI4S(13),
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI4S(15),
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI4S(17),
+        CallVirt(MethodDefData(2, 0, 134, "Append", 1L, Vector(ParamData(0, 1, "elem")))),
+        Dup,
+        LdcI40,
+        CallVirt(MethodDefData(3, 0, 2182, "get_Item", 63L, Vector(ParamData(0, 1, "i")))),
+        StLoc0,
+        Dup,
+        LdcI41,
+        CallVirt(MethodDefData(3, 0, 2182, "get_Item", 63L, Vector(ParamData(0, 1, "i")))),
+        StLoc1,
+        Dup,
+        LdcI42,
+        CallVirt(MethodDefData(3, 0, 2182, "get_Item", 63L, Vector(ParamData(0, 1, "i")))),
+        StLoc2,
+        Dup,
+        LdcI41,
+        LdcI4S(10),
+        CallVirt(
+          MethodDefData(
+            4,
+            0,
+            2182,
+            "set_Item",
+            68L,
+            Vector(ParamData(0, 1, "i"), ParamData(0, 2, "value"))
+          )
+        ),
+        LdcI41,
+        CallVirt(MethodDefData(3, 0, 2182, "get_Item", 63L, Vector(ParamData(0, 1, "i")))),
+        StLoc3,
+        LdLoc0,
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToString", 34L)),
+        LdLoc1,
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToString", 34L)),
+        LdLoc2,
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToString", 34L)),
+        LdLoc3,
+        Call(MemberRefData(TypeRefData(6L, "Convert", "System"), "ToString", 34L)),
+        Call(MemberRefData(TypeRefData(6L, "String", "System"), "Concat", 39L)),
+        Ret
+      ),
+      4,
+      Some(27L)
+    ),
+    Method(List(Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (16L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(String, false)))),
+    (
+      21L,
+      LocalVarSig(List(LocalVar(Arr(I4, ArrayShape(1, List(), List())), false), LocalVar(I4, false)))
+    ),
+    (
+      27L,
+      LocalVarSig(
+        List(LocalVar(I4, false), LocalVar(I4, false), LocalVar(I4, false), LocalVar(I4, false))
+      )
+    ),
+    (34L, MethodRefDefSig(false, false, false, false, 0, Tpe(String, false), List(Tpe(I4, false)))),
+    (
+      39L,
+      MethodRefDefSig(
+        false,
+        false,
+        false,
+        false,
+        0,
+        Tpe(String, false),
+        List(Tpe(String, false), Tpe(String, false), Tpe(String, false), Tpe(String, false))
+      )
+    ),
+    (56L, FieldSig(I4)),
+    (59L, FieldSig(Arr(I4, ArrayShape(1, List(), List())))),
+    (63L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List(Tpe(I4, false)))),
+    (
+      68L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(I4, false), Tpe(I4, false))
+      )
+    ),
+    (74L, MethodRefDefSig(true, false, false, false, 0, Tpe(String, false), List())),
+    (78L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

@@ -1,0 +1,34 @@
+stack:
+  ["null", utf8.BalanceOf]
+storage:
+  utf8.init: "null"
+  bytes.42616C616E6365730011: int32.10
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: SmartProgram.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/SmartProgram.cs
+    optimize: true
+---
+stack:
+  - "null"
+  - utf8.BalanceOf
+  - bytes.42616c616e636573
+  - "null"
+  - int32.0
+storage:
+  bytes.42616c616e6365730011: int32.10
+  utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"
+error:
+  code: 701
+  message: "Unexpected type: Null"
