@@ -4,7 +4,7 @@ using Expload.Pravda;
 [Program]
 public class SmartProgram
 {
-    Mapping<Bytes, int> Balances = new Mapping<Bytes, int>();
+    private Mapping<Bytes, int> Balances = new Mapping<Bytes, int>();
 
     public int BalanceOf(Bytes tokenOwner)
     {

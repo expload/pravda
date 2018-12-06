@@ -226,7 +226,7 @@ translation: |-
   push "init"
   sput
   meta source_mark {
-  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"$PRAVDA_TMP_DIR/SmartProgram.cs","ec":int32(62)
+  "sl":int32(7),"sc":int32(5),"el":int32(7),"src":"$PRAVDA_TMP_DIR/SmartProgram.cs","ec":int32(70)
   }
   jump @ctor_lvc
   @ctor_lvc:

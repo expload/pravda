@@ -78,7 +78,7 @@ object SmartProgramTests extends TestSuite {
                                           SequencePoint(4, 27, 13, 27, 72),
                                           SequencePoint(31, 29, 5, 29, 6))),
           MethodDebugInformationData(Some(src), List(SequencePoint(0, 31, 32, 31, 33))),
-          MethodDebugInformationData(Some(src), List(SequencePoint(0, 7, 5, 7, 62)))
+          MethodDebugInformationData(Some(src), List(SequencePoint(0, 7, 5, 7, 70)))
         )
       )
     }

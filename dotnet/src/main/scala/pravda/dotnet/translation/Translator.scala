@@ -87,36 +87,49 @@ object Translator {
     }.toList
   }
 
-  private def initStructFields(typeDefData: TypeDefData, tctx: TranslationCtx): List[Operation] = {
-    def initField(f: FieldData): List[Operation] = {
-      val defaultValue = (for {
-        sig <- tctx.signatures.get(f.signatureIdx)
-      } yield {
-        sig match {
-          case FieldSig(tpe) =>
-            tpe match {
-              case SigType.Boolean       => Data.Primitive.Bool.False
-              case SigType.I1            => Data.Primitive.Int8(0)
-              case SigType.I2            => Data.Primitive.Int16(0)
-              case SigType.I4            => Data.Primitive.Int32(0)
-              case SigType.I8            => Data.Primitive.Int64(0L)
-              case SigType.U1            => Data.Primitive.Int16(0)
-              case SigType.U2            => Data.Primitive.Int32(0)
-              case SigType.U4            => Data.Primitive.Int64(0L)
-              case SigType.R4            => Data.Primitive.Number(0.0)
-              case SigType.R8            => Data.Primitive.Number(0.0)
-              case TypeDetectors.Bytes() => Data.Primitive.Bytes(ByteString.EMPTY)
-              case SigType.String        => Data.Primitive.Utf8("")
-              case _                     => Data.Primitive.Null
-            }
-          case _ => Data.Primitive.Null
-        }
-      }).getOrElse(Data.Primitive.Null)
+  private def defaultFieldValue(f: FieldData, tctx: TranslationCtx): Data.Primitive =
+    (for {
+      sig <- tctx.signatures.get(f.signatureIdx)
+    } yield {
+      sig match {
+        case FieldSig(tpe) =>
+          tpe match {
+            case SigType.Boolean       => Data.Primitive.Bool.False
+            case SigType.I1            => Data.Primitive.Int8(0)
+            case SigType.I2            => Data.Primitive.Int16(0)
+            case SigType.I4            => Data.Primitive.Int32(0)
+            case SigType.I8            => Data.Primitive.Int64(0L)
+            case SigType.U1            => Data.Primitive.Int16(0)
+            case SigType.U2            => Data.Primitive.Int32(0)
+            case SigType.U4            => Data.Primitive.Int64(0L)
+            case SigType.R4            => Data.Primitive.Number(0.0)
+            case SigType.R8            => Data.Primitive.Number(0.0)
+            case TypeDetectors.Bytes() => Data.Primitive.Bytes(ByteString.EMPTY)
+            case SigType.String        => Data.Primitive.Utf8("")
+            case _                     => Data.Primitive.Null
+          }
+        case _ => Data.Primitive.Null
+      }
+    }).getOrElse(Data.Primitive.Null)
 
-      List(Operation(Opcodes.DUP), Operation.Push(defaultValue), Operation.StructMut(Some(Data.Primitive.Utf8(f.name))))
-    }
+  private def initStructFields(typeDefData: TypeDefData, tctx: TranslationCtx): List[Operation] =
+    typeDefData.fields.toList.flatMap(
+      f =>
+        List(Operation(Opcodes.DUP),
+             Operation.Push(defaultFieldValue(f, tctx)),
+             Operation.StructMut(Some(Data.Primitive.Utf8(f.name)))))
 
-    typeDefData.fields.toList.flatMap(initField)
+  private def initProgramFields(typeDefData: TypeDefData, tctx: TranslationCtx): List[Operation] = {
+    typeDefData.fields.toList
+      .filterNot(f =>
+        tctx.signatures.get(f.signatureIdx).exists {
+          case FieldSig(SigType.Generic(TypeDetectors.Mapping(), _)) => true
+          case _                                                     => false
+      })
+      .flatMap(f =>
+        List(Operation.Push(defaultFieldValue(f, tctx)),
+             Operation.Push(Data.Primitive.Utf8(s"p_${f.name}")),
+             Operation(Opcodes.SPUT)))
   }
 
   private def eliminateDeadFuncs(methods: List[MethodTranslation],
@@ -161,17 +174,12 @@ object Translator {
       }
     }
 
-    lazy val privateMappings = typeDef.fields.map { f =>
-      val isMapping = for {
-        parentSig <- tctx.signatures.get(f.signatureIdx)
-      } yield CallsTranslation.detectMapping(parentSig)
-
-      if (isMapping.getOrElse(false) && !FieldExtractors.isPrivate(f)) {
-        Left(
-          TranslationError(
-            InternalError(
-              s"All Mapping must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
-            None))
+    lazy val privateFields = typeDef.fields.map { f =>
+      if (!FieldExtractors.isPrivate(f)) {
+        Left(TranslationError(
+          InternalError(
+            s"All [Program] fields must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
+          None))
       } else {
         Right(())
       }
@@ -179,7 +187,7 @@ object Translator {
 
     for {
       _ <- staticFields
-      _ <- privateMappings
+      _ <- privateFields
     } yield ()
   }
 
@@ -469,7 +477,7 @@ object Translator {
             Operation.Push(Data.Primitive.Null),
             Operation.Push(Data.Primitive.Utf8("init")),
             Operation(Opcodes.SPUT)
-          )
+          ) ++ initProgramFields(tctx.mainProgramClass, tctx)
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, "ctor"),

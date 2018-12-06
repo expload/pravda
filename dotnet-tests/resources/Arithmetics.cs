@@ -3,7 +3,7 @@ using Expload.Pravda;
 
 [Program]
 public class Arithmetics {
-    public int X = 10;
+    private int X = 10;
 
     public int TestBasicOperations()
     {

@@ -33,7 +33,7 @@ object TranslationErrorTests extends TestSuite {
       val pdb = files.last.parsedPdb.get
 
       Translator.translateAsm(pe, Some(pdb)).left.get.mkString ==>
-        "All Mapping must be private: M in PublicMapping is not private"
+        "All [Program] fields must be private: SomeField in PublicMapping is not private"
     }
   }
 }

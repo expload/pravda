@@ -25,8 +25,19 @@ effects:
   - eventType: StorageWrite
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     key: utf8.p_ZooCnt
-    value: int32.1
+    value: int32.0
   - eventType: StorageWrite
     program: "0000000000000000000000000000000000000000000000000000000000000000"
     key: utf8.p_PetId
+    value: int32.0
+  - program: '0000000000000000000000000000000000000000000000000000000000000000'
+    eventType: StorageWrite
+    previous: int32.0
+    key: utf8.p_ZooCnt
     value: int32.1
+  - program: '0000000000000000000000000000000000000000000000000000000000000000'
+    eventType: StorageWrite
+    previous: int32.0
+    key: utf8.p_PetId
+    value: int32.1
+
