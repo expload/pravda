@@ -1,8 +1,11 @@
 package pravda.evm
 
+import java.io.{File, FileOutputStream}
+
 import com.google.protobuf.ByteString
 import fastparse.byte.all._
 import pravda.common.domain.Address
+import pravda.evm.abi.parse.ABIParser.{ABIConstructor, ABIEvent, ABIFunction, ABIObject, Argument}
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
 import pravda.vm.VmSuiteData.Expectations
@@ -110,5 +113,65 @@ package object evm {
     allBytes.dropRight(43)
     // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
     // we just drop auxdata
+  }
+
+  def readSolidityBinFile(file: File): Bytes = {
+
+    val s = Source.fromFile(file).mkString
+    val allBytes = Bytes(s.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte))
+    allBytes.dropRight(43)
+    // for dropRight(43) see https://ethereum.stackexchange.com/questions/42584/what-is-auxdata-in-the-asm-output-from-solc
+    // we just drop auxdata
+  }
+
+  def writeSolidityBinFile(filename: String): Bytes = {
+
+    val s = Source.fromResource(filename).mkString
+    val allBytes = Bytes(s.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte))
+
+    var out = None: Option[FileOutputStream]
+    try {
+      out = Some(new FileOutputStream("bla"))
+      allBytes.toArray.foreach(c => out.get.write(c.toInt))
+
+    } finally {
+      println("entered finally ...")
+      if (out.isDefined) out.get.close
+    }
+
+    allBytes
+  }
+
+  def readSolidityABI(filename: String): String = Source.fromResource(filename).mkString
+
+  def printSeq(vars: Seq[Argument]): Seq[String] = {
+    vars.map(
+      { case Argument(name, t, indexed) => s"""Variable("$name","$t",$indexed)""" }
+    )
+  }
+
+  def printOpt(vars: Option[String]): String = {
+    vars match {
+      case Some(s) => s"""Option("$s")"""
+      case None    => "None"
+    }
+  }
+
+  def printToTest(fs: List[ABIObject]): List[String] = {
+    fs.map({
+      case ABIFunction(const, name, in, out, payable, statemut, newName) =>
+        val input = s"Vector(${printSeq(in).mkString(",")})"
+        val output = s"Vector(${printSeq(out).mkString(",")})"
+        val newNam = printOpt(newName)
+        s"""ABIFunction($const,"$name",$input,$output,$payable,"$statemut",$newNam)"""
+      case ABIEvent(name, in, anon) =>
+        val input = s"Vector(${printSeq(in).mkString(",")})"
+        s"""ABIEvent("$name",$input,$anon)"""
+
+      case ABIConstructor(in, pay, stat) =>
+        val input = s"Vector(${printSeq(in).mkString(",")})"
+        s"""ABIConstructor($input,$pay,"$stat")"""
+
+    })
   }
 }

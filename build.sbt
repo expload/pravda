@@ -142,7 +142,8 @@ lazy val evm = (project in file("evm")).
   settings( commonSettings: _* ).
   settings(
     libraryDependencies ++= Seq (
-      "com.lihaoyi" %% "fastparse-byte" % "1.0.0"
+      "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
+      "org.bouncycastle" % "bcprov-jdk15on" % "1.60"
     )
   )
 

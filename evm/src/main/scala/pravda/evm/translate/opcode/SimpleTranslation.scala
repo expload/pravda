@@ -18,6 +18,7 @@
 package pravda.evm.translate.opcode
 
 import pravda.evm.EVM
+import pravda.evm.translate.Translator.Converted
 import pravda.vm.asm
 import pravda.vm._
 import pravda.vm.asm.Operation
@@ -25,6 +26,8 @@ import pravda.vm.asm.Operation
 object SimpleTranslation {
 
   import pravda.evm.EVM._
+
+  val pow = scala.BigInt(2).pow(256) - 1
 
   private val translate: PartialFunction[EVM.Op, List[asm.Operation]] = {
     case Push(bytes) => pushBigInt(BigInt(1, bytes.toArray)) :: Nil
@@ -48,6 +51,7 @@ object SimpleTranslation {
                                                                                                Opcodes.MOD)
 
     //  case Not => codeToOps(Opcodes.NOT) //TODO (2^256 - 1) - s[0]
+
     case And => codeToOps(Opcodes.AND)
     case Or  => codeToOps(Opcodes.OR)
     case Xor => codeToOps(Opcodes.XOR)
@@ -71,11 +75,9 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case Jump => Operation.Jump(Some(getNameByNumber(0))) :: Nil
-    case JumpI =>
-      codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(Some(getNameByNumber(0))) :: codeToOps(
-        Opcodes.POP) ::: Nil
-    case Stop => codeToOps(Opcodes.STOP)
+    case Jump  => Operation.Jump(Some(getNameByNumber(0))) :: Nil
+    case JumpI => jumpi
+    case Stop  => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
@@ -87,8 +89,13 @@ object SimpleTranslation {
 
     case SStore => codeToOps(Opcodes.SPUT)
     case SLoad  => codeToOps(Opcodes.SGET)
+
+    //TODO DELETE ME
+    case Not       => pushBigInt(pow) :: sub ::: Nil
+    case Revert    => codeToOps(Opcodes.STOP)
+    case CallValue => pushBigInt(scala.BigInt(100000)) :: Nil
   }
 
-  def evmOpToOps(op: EVM.Op): Either[String, List[asm.Operation]] =
-    translate.lift(op).toRight(s"Unknown opcode $op")
+  def evmOpToOps(op: EVM.Op): Converted =
+    translate.lift(op).toRight(op)
 }

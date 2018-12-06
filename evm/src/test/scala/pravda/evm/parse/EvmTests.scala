@@ -152,6 +152,7 @@ object EvmTests extends TestSuite {
             Jump,
             Stop
           ))
+
     }
   }
 }
