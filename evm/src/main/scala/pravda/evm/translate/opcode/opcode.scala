@@ -24,8 +24,8 @@ import pravda.vm.{Data, Opcodes, asm}
 //TODO merge with pravda.dotnet.translation.opcode.opcode
 package object opcode {
 
-  def getNameByAddress(n: Int): String = s"_lbl_$n"
-  def getNameByNumber(n: Int): String = s"__switch_branch_$n"
+  def nameByAddress(n: Int): String = s"_lbl_$n"
+  def nameByNumber(n: Int): String = s"__switch_branch_$n"
 
   def push[T](value: T, toPrimitive: T => Data.Primitive): asm.Operation =
     asm.Operation.Push(toPrimitive(value))
@@ -41,6 +41,9 @@ package object opcode {
 
   def pushInt(i: Int): asm.Operation =
     push(i, Data.Primitive.Int32)
+
+  def pushByte(i: Byte): asm.Operation =
+    push(i, Data.Primitive.Int8)
 
   def pushFloat(d: Double): asm.Operation =
     push(d, Data.Primitive.Number)
@@ -77,6 +80,6 @@ package object opcode {
   }
 
   val jumpi: List[asm.Operation] = codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) ::: Operation.JumpI(
-    Some(getNameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
+    Some(nameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
 
 }

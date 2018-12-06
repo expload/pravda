@@ -23,7 +23,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
-import pravda.evm.abi.parse.ABIParser.{ABIObject}
+import pravda.evm.abi.parse.ABIParser.ABIObject
 import pravda.evm.translate.opcode.{FunctionSelectorTranslator, JumpDestinationPrepare, SimpleTranslation}
 
 object Translator {
@@ -53,23 +53,8 @@ object Translator {
   }
 
   def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
-    ops
-      .takeWhile({
-        case (_, CodeCopy) => false
-        case _             => true
-      })
-      .reverse
-      .tail
-      .headOption match {
-      case Some((_, Push(address))) =>
-        val offset = BigInt(1, address.toArray).intValue()
-
-        val (creationCode, actualCode) = ops
-          .map({ case (ind, op) => ind - offset -> op })
-          .partition(_._1 < 0)
-        Right((CreationCode(creationCode), ActualCode(actualCode)))
-      case _ => Left("Parse error")
-    }
+    ???
+    //JumpTargetRecognizer(ops)
   }
 
   def translateActualContract(ops: List[Addressed[EVM.Op]],

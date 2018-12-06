@@ -40,32 +40,32 @@ object FunctionSelectorTranslator {
 
     case class FunctionDestination(function: ABIFunction, address: Array[Byte])
 
-    @tailrec def getJumps(ops: List[EVM.Op],
-                          lastFunction: Option[ABIFunction],
-                          acc: List[FunctionDestination]): List[FunctionDestination] =
+    @tailrec def jumps(ops: List[EVM.Op],
+                       lastFunction: Option[ABIFunction],
+                       acc: List[FunctionDestination]): List[FunctionDestination] =
       ops match {
         case Push(address) :: JumpI :: xs =>
           val addr = address.toArray
 
           lastFunction match {
-            case Some(f) => getJumps(xs, lastFunction, FunctionDestination(f, addr) :: acc)
-            case None    => getJumps(xs, lastFunction, acc)
+            case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, addr) :: acc)
+            case None    => jumps(xs, lastFunction, acc)
           }
         case Push(addr) :: xs =>
           val address = addr.toArray.toList
           abi.find({ case f @ ABIFunction(_, _, _, _, _, _, _) => f.id == address }) match {
-            case Some(f) => getJumps(xs, Some(f), acc)
-            case None    => getJumps(xs, lastFunction, acc)
+            case Some(f) => jumps(xs, Some(f), acc)
+            case None    => jumps(xs, lastFunction, acc)
           }
         case x :: xs =>
-          getJumps(xs, lastFunction, acc)
+          jumps(xs, lastFunction, acc)
         case Nil => acc
       }
 
     destinations match {
       case Nil => ops.map(Left(_))
       case _ =>
-        val newJumps = getJumps(destinations, None, List.empty).flatMap(
+        val newJumps = jumps(destinations, None, List.empty).flatMap(
           f =>
             codeToOps(Opcodes.DUP) ::: pushString(f.function.newName.getOrElse(f.function.name)) :: codeToOps(
               Opcodes.EQ) ::: pushBigInt(BigInt(1, f.address)) :: jumpi)

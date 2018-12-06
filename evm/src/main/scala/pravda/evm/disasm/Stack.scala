@@ -42,8 +42,11 @@ case class StackList[+A](state: List[A]) extends Stack[A] {
   def pop(): (A, Stack[A]) = state.head -> new StackList(state.tail)
   def push[B >: A](a: B): Stack[B] = new StackList(a :: state)
 
-  def swap(n: Int): Stack[A] =
-    new StackList(state(n) :: state.tail.take(n - 1) ::: state.head :: state.drop(n + 1))
+  def swap(n: Int): Stack[A] = {
+    val (f, s) = state.splitAt(n)
+    StackList(s.head :: f.tail ::: f.head :: s.tail)
+  }
+  //new StackList(state(n) :: state.tail.take(n - 1) ::: state.head :: state.drop(n + 1))
   def dup(n: Int): Stack[A] = new StackList(state(n - 1) :: state)
 
   override def toString: String = state.toString.replace("List", "Stack")

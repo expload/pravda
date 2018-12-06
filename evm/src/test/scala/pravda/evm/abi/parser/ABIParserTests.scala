@@ -11,7 +11,7 @@ object ABIParserTests extends TestSuite {
 
     "ABI parse" - {
       val abi = readSolidityABI("SimpleStorageABIj.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = ABIParser.contract(abi)
 
       parsedAbi ==> Right(
         List(
@@ -24,7 +24,7 @@ object ABIParserTests extends TestSuite {
     "Complex abi parse" - {
 
       val abi = readSolidityABI("complex/ComplexContractABI.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = ABIParser.contract(abi)
 
       parsedAbi ==> Right(
         List(
@@ -119,7 +119,7 @@ object ABIParserTests extends TestSuite {
 
     "Overloading abi parse" - {
       val abi = readSolidityABI("ABIExampleWithOverloading.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = ABIParser.contract(abi)
 
       parsedAbi ==> Right(
         List(

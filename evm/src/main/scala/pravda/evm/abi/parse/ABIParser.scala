@@ -85,7 +85,7 @@ object ABIParser {
     case _                               => Bool //FIXME add another types
   }
 
-  def getContract(s: String): Either[String, List[ABIObject]] = s.jsonAs[List[ABIObject]] match {
+  def contract(s: String): Either[String, List[ABIObject]] = s.jsonAs[List[ABIObject]] match {
     case Right(functions) =>
       @tailrec def buildUniqueNames(funcs: List[ABIFunction],
                                     acc: List[ABIFunction],

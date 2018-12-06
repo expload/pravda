@@ -75,7 +75,7 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case Jump  => Operation.Jump(Some(getNameByNumber(0))) :: Nil
+    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
     case JumpI => jumpi
     case Stop  => codeToOps(Opcodes.STOP)
 
@@ -85,7 +85,7 @@ object SimpleTranslation {
     case Balance => codeToOps(Opcodes.BALANCE)
     case Address => codeToOps(Opcodes.PADDR)
 
-    case JumpDest(address) => asm.Operation.Label(getNameByAddress(address)) :: Nil
+    case JumpDest(address) => asm.Operation.Label(nameByAddress(address)) :: Nil
 
     case SStore => codeToOps(Opcodes.SPUT)
     case SLoad  => codeToOps(Opcodes.SGET)

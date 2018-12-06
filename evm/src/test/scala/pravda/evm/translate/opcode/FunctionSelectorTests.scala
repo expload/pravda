@@ -23,7 +23,7 @@ object FunctionSelectorTests extends TestSuite {
 
     "Func call define" - {
       val abi = evm.readSolidityABI("ABIExampleWithOverloading.json")
-      val parsedAbi = ABIParser.getContract(abi)
+      val parsedAbi = ABIParser.contract(abi)
       parsedAbi.isRight ==> true
 
       parsedAbi.map({

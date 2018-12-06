@@ -17,6 +17,9 @@ object StackTests extends TestSuite {
 
       stack.swap(1) ==> StackList(2, 3, 1)
       stack.swap(2) ==> StackList(1, 2, 3)
+      stack.swap(1).swap(1) ==> stack
+      stack.swap(1).swap(1).swap(2).swap(2) ==> stack
+      stack.swap(1).swap(2) ==> StackList(1, 3, 2)
 
       stack.dup(1) ==> StackList(3, 3, 2, 1)
       stack.dup(2) ==> StackList(2, 3, 2, 1)

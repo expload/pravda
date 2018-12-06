@@ -11,11 +11,11 @@ object DisasmTests extends TestSuite {
     'Disasm - {
 
       DisasmTestHelper({ (ops, length) =>
-        val opt = JumpTargetRecognizer(ops, length)
-        opt.nonEmpty ==> true
-        opt
+        val either = JumpTargetRecognizer(ops)
+        either.isRight ==> true
+        either
           .map({
-            case ((CreationCode(newOps1), ActualCode(newOps2)), others) =>
+            case (CreationCode(newOps1), ActualCode(newOps2)) =>
               ops
                 .zip(newOps1 ::: newOps2)
                 .map({
@@ -39,7 +39,9 @@ object DisasmTests extends TestSuite {
                 })
                 .foldLeft(true)({ case (acc, bool) => acc && bool })
           })
+          .right
           .get
+
       })
     }
   }
