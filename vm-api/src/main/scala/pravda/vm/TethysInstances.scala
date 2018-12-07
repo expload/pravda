@@ -208,11 +208,11 @@ trait TethysInstances {
   implicit val primitiveBytesWriter: JsonWriter[Data.Primitive.Bytes] =
     JsonWriter.stringWriter.contramap(s => s"bytes.${bytes.byteString2hex(s.data)}")
 
-  implicit val primitiveBigIntReader: JsonReader[Data.Primitive.BigInt] =
-    JsonReader.stringReader.map(s => Data.Primitive.BigInt(BigInt(s.stripPrefix("bigint."))))
+  implicit val primitiveInt64Reader: JsonReader[Data.Primitive.Int64] =
+    JsonReader.stringReader.map(s => Data.Primitive.Int64(s.stripPrefix("int64.").toLong))
 
-  implicit val primitiveBigIntWriter: JsonWriter[Data.Primitive.BigInt] =
-    JsonWriter.stringWriter.contramap(b => s"bigint.$b")
+  implicit val primitiveInt64Writer: JsonWriter[Data.Primitive.Int64] =
+    JsonWriter.stringWriter.contramap(b => s"int64.$b")
 
   implicit val primitiveRefSupport: MapKeySupport[Data.Primitive.Ref] = new MapKeySupport[Data.Primitive.Ref] {
     def show(s: Data.Primitive.Ref): String = s"ref:${s.data}"

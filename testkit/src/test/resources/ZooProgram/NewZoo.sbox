@@ -1,9 +1,10 @@
-stack:
-  [utf8.NewZoo]
-storage:
-  utf8.p_ZooCnt: int32.1
-  utf8.p_PetId: int32.1
-  utf8.init: "null"
+vm:
+  stack:
+    [utf8.NewZoo]
+  storage:
+    utf8.p_ZooCnt: int32.1
+    utf8.p_PetId: int32.1
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll

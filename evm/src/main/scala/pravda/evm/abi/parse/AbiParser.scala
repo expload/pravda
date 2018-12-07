@@ -23,6 +23,7 @@ import pravda.evm.EVM
 import pravda.evm.EVM.{Bool, SInt, UInt, Unsupported}
 import tethys._
 import tethys.jackson._
+import tethys.derivation.auto._
 import tethys.derivation.semiauto._
 import scala.annotation.tailrec
 

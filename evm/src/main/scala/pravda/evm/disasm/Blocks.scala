@@ -80,7 +80,7 @@ object Blocks {
     val blocks = Blocks.split(ops.map(_._2))
     val offsetOpt: Option[Int] = blocks
       .filter(valuable)
-      .map(bl => Emulator.eval(bl, new StackList(Nil), Nil))
+      .map(bl => Emulator.eval(bl, new StackList(List.empty[StackItem]), List.empty[HistoryRecord]))
       .flatMap { case (s, h) => h.collect { case r @ HistoryRecord(CodeCopy, _ :: Number(n) :: _) => n } }
       .find(_ < length)
       .map(_.toInt)

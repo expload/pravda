@@ -1,8 +1,9 @@
-stack:
-  [bytes.01, bytes.02, bytes.03, bytes.04, bytes.05, bytes.06, bytes.07, bytes.08, utf8.Deal]
-storage:
-  utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
-  utf8.init: "null"
+vm:
+  stack:
+    [bytes.01, bytes.02, bytes.03, bytes.04, bytes.05, bytes.06, bytes.07, bytes.08, utf8.Deal]
+  storage:
+    utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll

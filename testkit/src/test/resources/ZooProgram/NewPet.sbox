@@ -1,10 +1,11 @@
-stack:
-  [int32.1, utf8.NewPet]
-storage:
-  utf8.p_ZooCnt: int32.2
-  utf8.p_PetId: int32.1
-  bytes.5A6F6F546F4F776E657200000001: bytes.0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20
-  utf8.init: "null"
+vm:
+  stack:
+    [int32.1, utf8.NewPet]
+  storage:
+    utf8.p_ZooCnt: int32.2
+    utf8.p_PetId: int32.1
+    bytes.5A6F6F546F4F776E657200000001: bytes.0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll

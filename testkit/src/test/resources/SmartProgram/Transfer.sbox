@@ -1,8 +1,9 @@
-stack:
-  [bytes.0011, int32.50, utf8.Transfer]
-storage:
-  utf8.init: "null"
-  bytes.42616C616E6365730102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20: int32.100
+vm:
+  stack:
+    [bytes.0011, int32.50, utf8.Transfer]
+  storage:
+    utf8.init: "null"
+    bytes.42616C616E6365730102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20: int32.100
 dotnet-compilation:
   steps:
   - target: Pravda.dll

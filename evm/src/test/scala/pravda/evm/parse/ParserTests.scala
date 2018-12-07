@@ -5,7 +5,7 @@ import pravda.evm._
 import pravda.evm.EVM._
 import utest._
 
-object EvmTests extends TestSuite {
+object ParserTests extends TestSuite {
 
   val tests = Tests {
     'SimpleStorage - {
@@ -152,7 +152,6 @@ object EvmTests extends TestSuite {
             Jump,
             Stop
           ))
-
     }
   }
 }

@@ -20,13 +20,14 @@ package pravda.vm
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.vm.Data.Primitive._
-import pravda.vm.Error.{InvalidAddress, InvalidCoinAmount, WrongType}
+import pravda.vm.Error.{InvalidAddress, WrongType}
 
 package object operations {
 
   /**
     * Applies `f` to two top items from stack.
     * Pushes application result to stack.
+    *
     * @param f binary operation
     */
   def binaryOperation(memory: Memory, wattCounter: WattCounter)(f: (Data, Data) => Data.Primitive): Unit = {
@@ -79,9 +80,8 @@ package object operations {
   def bytes(a: ByteString): Bytes = Bytes(a)
 
   def coins(a: Data): NativeCoin = a match {
-    case BigInt(data) if data < Long.MinValue || data > Long.MaxValue => throw ThrowableVmError(InvalidCoinAmount)
-    case BigInt(data)                                                 => NativeCoin @@ data.toLong
-    case _                                                            => throw ThrowableVmError(WrongType)
+    case Int64(data) => NativeCoin @@ data
+    case _           => throw ThrowableVmError(WrongType)
   }
 
   def coins(a: NativeCoin): Data.Primitive = Int64(a)

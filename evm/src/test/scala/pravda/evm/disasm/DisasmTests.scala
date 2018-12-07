@@ -1,7 +1,6 @@
 package pravda.evm.disasm
 
 import java.io.File
-import java.net.URL
 
 import pravda.evm.EVM._
 import pravda.evm._
@@ -10,44 +9,33 @@ import utest._
 
 object DisasmTests extends TestSuite {
 
-  // pizdec
   val tests = Tests {
-
     'Disasm - {
+      new File(getClass.getResource("/disasm").getPath).listFiles.foreach { f =>
+        val bytes = evm.readSolidityBinFile(f)
+        val Right(ops) = Parser.parseWithIndices(bytes)
 
-      val x: URL = Thread.currentThread().getContextClassLoader().getResource("disasm")
-      // FIXME that's a wrong way to load resources
-      new File(x.toURI).listFiles.foreach { f =>
-        val bytes = evm.readSolidityBinFile(f) //evm.readSolidityBinFile("SimpleStorage.bin")
-
-        val parsed = Parser.parseWithIndices(bytes)
-
-        parsed.isRight ==> true
-        parsed.map { ops =>
-          JumpTargetRecognizer(ops, bytes.length).foreach {
-            case (newOps, others) =>
-              ops.zip(newOps).foreach {
-                case ((_, JumpI), (_, j)) =>
-                  true ==> (j match {
-                    case JumpI(_, _) => true
-                    case _           => false
-                  })
-                case ((_, Jump), (_, j)) =>
-                  true ==> (j match {
-                    case Jump(_, _) => true
-                    case _          => false
-                  })
-                case ((_, JumpDest), (_, j)) =>
-                  true ==> (j match {
-                    case JumpDest(_) => true
-                    case _           => false
-                  })
-
-                case (a, b) => ()
-              }
-
-          }
-        }
+        Predef.assert(!JumpTargetRecognizer(ops, bytes.length).exists {
+          case (newOps, _) =>
+            ops.zip(newOps).exists {
+              case ((_, JumpI), (_, j)) =>
+                j match {
+                  case JumpI(_, _) => false
+                  case _           => true
+                }
+              case ((_, Jump), (_, j)) =>
+                j match {
+                  case Jump(_, _) => false
+                  case _          => true
+                }
+              case ((_, JumpDest), (_, j)) =>
+                j match {
+                  case JumpDest(_) => false
+                  case _           => true
+                }
+              case _ => false
+            }
+        }, s"Error in ${f.getAbsolutePath}")
       }
     }
   }
