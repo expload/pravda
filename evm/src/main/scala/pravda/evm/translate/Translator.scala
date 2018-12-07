@@ -23,7 +23,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
-import pravda.evm.abi.parse.AbiParser.{AbiObject}
+import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.translate.opcode.{FunctionSelectorTranslator, JumpDestinationPrepare, SimpleTranslation}
 
 object Translator {

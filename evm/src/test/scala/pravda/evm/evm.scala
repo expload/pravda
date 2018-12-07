@@ -1,4 +1,4 @@
-package pravda.evm
+package pravda
 
 import java.io.File
 

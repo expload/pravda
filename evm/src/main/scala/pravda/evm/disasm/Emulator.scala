@@ -17,8 +17,8 @@
 
 package pravda.evm.disasm
 
-import pravda.evm.EVM.{Op, _}
-import pravda.evm.disasm.Blocks.{WithJumpI, WithJumpDest}
+import pravda.evm.EVM.{AddressedJumpOp, Op, _}
+import pravda.evm.disasm.Blocks.{WithJumpDest, WithJumpI}
 
 import scala.annotation.tailrec
 
@@ -26,12 +26,16 @@ trait StackItem
 
 trait Expr extends StackItem
 
-case class Expr0(op: Op)                                                                extends Expr
-case class Expr1(op: Op, operand1: StackItem)                                           extends Expr
-case class Expr2(op: Op, operand1: StackItem, operand2: StackItem)                      extends Expr
+case class Expr0(op: Op) extends Expr
+
+case class Expr1(op: Op, operand1: StackItem) extends Expr
+
+case class Expr2(op: Op, operand1: StackItem, operand2: StackItem) extends Expr
+
 case class Expr3(op: Op, operand1: StackItem, operand2: StackItem, operand3: StackItem) extends Expr
 
-case class Number(n: BigInt)                extends StackItem
+case class Number(n: BigInt) extends StackItem
+
 case class CommandResult(op: Op, numb: Int) extends StackItem
 
 case class HistoryRecord(op: Op, args: List[StackItem])
@@ -97,8 +101,8 @@ object Emulator {
           val (jumps2, dests2, contins2) =
             evalChain(newStack)(newHistory)(WithJumpI(addr).ops, withJ - dest, WithJumpI - addr, acc + j)
           val dests = dests1.keySet.intersect(dests2.keySet).map(k => k -> dests1(k)).toMap
-          val contins = contins1.keySet.intersect(contins2.keySet).map(k => k -> contins1(k)).toMap
-          (jumps1 ++ jumps2 ++ acc, dests, contins)
+          val withJumpi = contins1.keySet.intersect(contins2.keySet).map(k => k -> contins1(k)).toMap
+          (jumps1 ++ jumps2 ++ acc, dests, withJumpi)
 
         case Some(j @ Jump(addr, dest)) => (acc + j, withJ, WithJumpI)
 

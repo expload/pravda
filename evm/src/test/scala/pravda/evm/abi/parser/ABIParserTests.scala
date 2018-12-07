@@ -1,8 +1,8 @@
-package pravda.evm.abi.parser
+package pravda.evm
+package abi.parser
 
 import pravda.evm.abi.parse.AbiParser
 import pravda.evm.abi.parse.AbiParser.{AbiConstructor, AbiEvent, AbiFunction, Argument}
-import pravda.evm.evm._
 import utest._
 
 object ABIParserTests extends TestSuite {

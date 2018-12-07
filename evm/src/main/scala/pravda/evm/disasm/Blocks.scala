@@ -33,6 +33,10 @@ object Blocks {
       case SelfAddressedJump(n) :: xs => split(xs, Nil :: (SelfAddressedJump(n) :: acc.head).reverse :: acc.tail)
       case SelfAddressedJumpI(n) :: xs =>
         split(xs, (SelfAddressedJumpI(n) :: Nil) :: (SelfAddressedJumpI(n) :: acc.head).reverse :: acc.tail)
+
+      case Jump(addr, dest) :: xs => split(xs, Nil :: (Jump(addr, dest) :: acc.head).reverse :: acc.tail)
+      case JumpI(addr, dest) :: xs =>
+        split(xs, (JumpI(addr, dest) :: Nil) :: (JumpI(addr, dest) :: acc.head).reverse :: acc.tail)
       case Return :: xs       => split(xs, Nil :: (Return :: acc.head).reverse :: acc.tail)
       case SelfDestruct :: xs => split(xs, Nil :: (SelfDestruct :: acc.head).reverse :: acc.tail)
       case Stop :: xs         => split(xs, Nil :: (Stop :: acc.head).reverse :: acc.tail)
@@ -64,24 +68,12 @@ object Blocks {
     }
   }
 
-  def valuable(block: List[Op]): Boolean =
-    block.exists {
-      case Jump                  => true
-      case JumpI                 => true
-      case SelfAddressedJump(n)  => true
-      case SelfAddressedJumpI(n) => true
-      case JumpDest              => true
-      case CodeCopy              => true
-      case _                     => false
-    }
-
   def splitToCreativeAndRuntime(ops: List[Addressed[EVM.Op]],
                                 length: Long): Option[(List[Addressed[EVM.Op]], List[Addressed[EVM.Op]])] = {
     val blocks = Blocks.split(ops.map(_._2))
     val offsetOpt: Option[Int] = blocks
-      .filter(valuable)
       .map(bl => Emulator.eval(bl, new StackList(List.empty[StackItem]), List.empty[HistoryRecord]))
-      .flatMap { case (s, h) => h.collect { case r @ HistoryRecord(CodeCopy, _ :: Number(n) :: _) => n } }
+      .flatMap{ case (s, h) => h.collect{ case r @ HistoryRecord(CodeCopy, _ :: Number(n) :: _) => n } }
       .find(_ < length)
       .map(_.toInt)
 

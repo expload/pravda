@@ -1,4 +1,5 @@
-package pravda.evm.parse
+package pravda.evm
+package parse
 
 import fastparse.byte.all._
 import pravda.evm._
@@ -9,7 +10,7 @@ object ParserTests extends TestSuite {
 
   val tests = Tests {
     'SimpleStorage - {
-      val bytes = evm.readSolidityBinFile("SimpleStorage.bin")
+      val bytes = readSolidityBinFile("SimpleStorage.bin")
 
       Parser(bytes) ==>
         Right(

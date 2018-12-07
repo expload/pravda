@@ -22,6 +22,18 @@ import pravda.evm.EVM._
 
 object OpCodes {
 
+  val terminate: PartialFunction[EVM.Op, Boolean] = {
+
+    case Return       => true
+    case SelfDestruct => true
+    case Stop         => true
+    case Invalid      => true
+    case Revert       => true
+    case _            => false
+  }
+
+  def handle(op: EVM.Op, size: Int): Int = size - stackReadCount(op) + stackWriteCount(op)
+
   val stackReadCount: PartialFunction[EVM.Op, Int] = {
     case Dup(n)  => n
     case Swap(n) => n + 1
@@ -40,6 +52,7 @@ object OpCodes {
     case Jump                 => 1
     case SelfDestruct         => 1
     case SelfAddressedJump(_) => 1
+    case Jump(_, _)           => 1
 
     case Add                   => 2
     case Mul                   => 2
@@ -64,6 +77,7 @@ object OpCodes {
     case SStore                => 2
     case JumpI                 => 2
     case SelfAddressedJumpI(_) => 2
+    case JumpI(_, _)           => 2
     case Return                => 2
 
     case AddMod       => 3
@@ -95,6 +109,8 @@ object OpCodes {
     case JumpI                 => 0
     case SelfAddressedJump(_)  => 0
     case SelfAddressedJumpI(_) => 0
+    case Jump(_, _)            => 0
+    case JumpI(_, _)           => 0
 
     case JumpDest     => 0
     case JumpDest(_)  => 0

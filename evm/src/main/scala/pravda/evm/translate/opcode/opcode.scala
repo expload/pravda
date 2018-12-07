@@ -41,6 +41,9 @@ package object opcode {
   def pushInt(i: Int): asm.Operation =
     push(i, Data.Primitive.Int32)
 
+  def pushByte(i: Byte): asm.Operation =
+    push(i, Data.Primitive.Int8)
+
   def pushFloat(d: Double): asm.Operation =
     push(d, Data.Primitive.Number)
 

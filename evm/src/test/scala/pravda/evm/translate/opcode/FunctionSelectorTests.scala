@@ -1,9 +1,10 @@
-package pravda.evm.translate.opcode
+package pravda.evm
+package translate.opcode
 
 import fastparse.byte.all._
 import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser
-import pravda.evm.{EvmSandbox, evm}
+import pravda.evm.EvmSandbox
 import pravda.vm.Data.Primitive._
 import pravda.vm.Error.UserError
 import pravda.vm.VmSandbox
@@ -20,7 +21,7 @@ object FunctionSelectorTests extends TestSuite {
     val `4` = hex"0x4"
 
     "Func call define" - {
-      val abi = evm.readSolidityABI("ABIExampleWithOverloading.json")
+      val abi = readSolidityABI("ABIExampleWithOverloading.json")
       val Right(abis) = AbiParser.parseAbi(abi)
 
       val opcodes = List(

@@ -53,7 +53,7 @@ object FunctionSelectorTranslator {
           }
         case Push(addr) :: xs =>
           val address = addr.toArray.toList
-          abi.find { case f @ AbiFunction(_, _, _, _, _, _, _) => f.id == address } match {
+          abi.find { case f: AbiFunction => f.id == address } match {
             case Some(f) => jumps(xs, Some(f), acc)
             case None    => jumps(xs, lastFunction, acc)
           }
