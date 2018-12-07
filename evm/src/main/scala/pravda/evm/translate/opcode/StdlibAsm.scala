@@ -75,36 +75,116 @@ object StdlibAsm {
    *         word(BigInt)
    *         ref to byte array
    */
-  val writeWord: List[Operation] = Operation(Opcodes.SWAP) :: bigintToByteString ++
+  lazy val writeWord: List[Operation] =
+    List(pushInt(3), Operation(Opcodes.SWAPN), pushInt(3), Operation(Opcodes.DUPN)) ++
+      expandArray ++
+      List(
+        pushInt(3),
+        Operation(Opcodes.SWAPN)
+      ) ++
+      (Operation(Opcodes.SWAP) :: bigintToByteString) ++
+      List(
+        Operation(Opcodes.SWAP),
+        pushInt(0),
+        Operation.Label("write_words_loop"),
+        Operation(Opcodes.DUP),
+        pushInt(3),
+        Operation(Opcodes.DUPN),
+        Operation(Opcodes.SWAP),
+        pushInt(5),
+        Operation(Opcodes.DUPN),
+        Operation(Opcodes.SWAP),
+        Operation(Opcodes.ARRAY_GET),
+        pushType(Data.Type.Int8),
+        Operation(Opcodes.CAST),
+        pushInt(6),
+        Operation(Opcodes.DUPN),
+        pushInt(3),
+        Operation(Opcodes.SWAPN),
+        Operation(Opcodes.ARRAY_MUT),
+        Operation(Opcodes.SWAP),
+        pushInt(1),
+        Operation(Opcodes.ADD),
+        Operation(Opcodes.SWAP),
+        pushInt(1),
+        Operation(Opcodes.ADD),
+        Operation(Opcodes.DUP),
+        pushInt(32),
+        Operation(Opcodes.GT),
+        Operation.JumpI(Some("write_words_loop")),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.POP),
+      )
+
+  /*
+   * Stack:
+   *         index
+   *         ref to byte array
+   * Stack:
+   *        ref to expanded or same array
+   */
+  lazy val expandArray: List[Operation] =
     List(
+      pushInt(32),
+      Operation(Opcodes.ADD),
       Operation(Opcodes.SWAP),
-      pushInt(0),
-      Operation.Label("write_words_loop"),
       Operation(Opcodes.DUP),
+      Operation(Opcodes.LENGTH),
+      Operation(Opcodes.SWAP),
+      pushInt(3),
+      Operation(Opcodes.SWAPN),
+      Operation(Opcodes.LT),
+      Operation.JumpI(Some("end_of_expand_array_loop")),
+      Operation.Label("start_of_expand_array_loop"),
+      Operation(Opcodes.DUP),
+      Operation(Opcodes.LENGTH),
+      pushInt(2),
+      Operation(Opcodes.MUL),
+      pushType(Data.Type.Int8),
+      Operation(Opcodes.NEW_ARRAY),
+      Operation(Opcodes.SWAP),
+      pushInt(2),
+      Operation(Opcodes.DUPN),
+      Operation(Opcodes.SWAP)
+    ) ++
+      StdlibAsm.copyArray ++
+      List() ++
+      List(Operation.Label("end_of_expand_array_loop"))
+
+  /*
+   * Stack:
+   *         source array
+   *         target array
+   *         target.length >= source.length
+   */
+  val copyArray: List[Operation] =
+    List(
+      Operation(Opcodes.DUP),
+      Operation(Opcodes.LENGTH),
+      pushInt(0),
+      Operation.Label("array_copy_loop"),
       pushInt(3),
       Operation(Opcodes.DUPN),
-      Operation(Opcodes.SWAP),
-      pushInt(5),
+      pushInt(2),
+      Operation(Opcodes.DUPN),
+      Operation(Opcodes.ARRAY_GET),
+      pushInt(2),
       Operation(Opcodes.DUPN),
       Operation(Opcodes.SWAP),
-      Operation(Opcodes.ARRAY_GET),
-      pushType(Data.Type.Int8),
-      Operation(Opcodes.CAST),
       pushInt(6),
       Operation(Opcodes.DUPN),
       pushInt(3),
       Operation(Opcodes.SWAPN),
       Operation(Opcodes.ARRAY_MUT),
-      Operation(Opcodes.SWAP),
-      pushInt(1),
-      Operation(Opcodes.ADD),
-      Operation(Opcodes.SWAP),
       pushInt(1),
       Operation(Opcodes.ADD),
       Operation(Opcodes.DUP),
-      pushInt(32),
+      pushInt(3),
+      Operation(Opcodes.DUPN),
       Operation(Opcodes.GT),
-      Operation.JumpI(Some("write_words_loop")),
+      Operation.JumpI(Some("array_copy_loop")),
       Operation(Opcodes.POP),
       Operation(Opcodes.POP),
       Operation(Opcodes.POP),
@@ -147,5 +227,21 @@ object StdlibAsm {
       Operation(Opcodes.POP),
       //    Operation(Opcodes.RET)
     )
+
+  def createByteArray(arr: List[Byte]): List[Operation] = {
+    List(
+      pushInt(arr.size),
+      pushType(Data.Type.Int8),
+      Operation(Opcodes.NEW_ARRAY)
+    ) ++ arr.zipWithIndex.flatMap({
+      case (el, ind) =>
+        List(
+          Operation(Opcodes.DUP),
+          pushByte(el),
+          pushInt(ind),
+          Operation(Opcodes.ARRAY_MUT),
+        )
+    })
+  }
 
 }
