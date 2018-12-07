@@ -1,4 +1,5 @@
 package pravda.evm
+
 package disasm
 
 import java.io.File
@@ -16,27 +17,30 @@ object DisasmTests extends TestSuite {
         val bytes = readSolidityBinFile(f)
         val Right(ops) = Parser.parseWithIndices(bytes)
 
-        Predef.assert(!JumpTargetRecognizer(ops).exists {
-          case (CreationCode(newOps1), ActualCode(newOps2)) =>
-            ops.zip(newOps1 ::: newOps2).exists {
-              case ((_, JumpI), (_, j)) =>
-                j match {
-                  case JumpI(_, _) => false
-                  case _           => true
-                }
-              case ((_, Jump), (_, j)) =>
-                j match {
-                  case Jump(_, _) => false
-                  case _          => true
-                }
-              case ((_, JumpDest), (_, j)) =>
-                j match {
-                  case JumpDest(_) => false
-                  case _           => true
-                }
-              case _ => false
-            }
-        }, s"Error in ${f.getAbsolutePath}")
+        Predef.assert(
+          !JumpTargetRecognizer(ops).exists {
+            case (CreationCode(newOps1), ActualCode(newOps2)) =>
+              ops.zip(newOps1 ::: newOps2).exists {
+                case ((_, JumpI), (_, j)) =>
+                  j match {
+                    case JumpI(_, _) => false
+                    case _           => true
+                  }
+                case ((_, Jump), (_, j)) =>
+                  j match {
+                    case Jump(_, _) => false
+                    case _          => true
+                  }
+                case ((_, JumpDest), (_, j)) =>
+                  j match {
+                    case JumpDest(_) => false
+                    case _           => true
+                  }
+                case _ => false
+              }
+          },
+          s"Error in ${f.getAbsolutePath}"
+        )
       }
     }
   }

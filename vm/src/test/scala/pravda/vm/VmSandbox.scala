@@ -142,6 +142,7 @@ object VmSandbox {
                                             error: Option[vm.Error] = None)
 
   object ExpectationsWithoutWatts {
+
     def fromExpectations(e: Expectations): ExpectationsWithoutWatts =
       ExpectationsWithoutWatts(e.stack, e.heap, e.effects, e.error)
   }

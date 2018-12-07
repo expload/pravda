@@ -1,4 +1,5 @@
 package pravda.evm
+
 package parse
 
 import fastparse.byte.all._

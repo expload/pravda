@@ -33,7 +33,7 @@ object JumpTargetRecognizer {
     Blocks
       .splitToCreativeAndRuntime(ops, ops.last._1.toLong)
       .toRight(Set.empty[WithJumpDest])
-      .flatMap{
+      .flatMap {
         case (creative, runtime) =>
           val creativeBlocks = Blocks.split(creative.map(_._2))
           val creativeJumps = Emulator.jumps(creativeBlocks)
