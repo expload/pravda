@@ -137,7 +137,7 @@ translation: |-
   dupn
   push int32(1)
   push int32(7)
-  push int8(4)
+  push int8(5)
   cast
   swap
   array_mut

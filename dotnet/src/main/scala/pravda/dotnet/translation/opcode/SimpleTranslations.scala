@@ -55,7 +55,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case ConvU2 => cast(Data.Type.Int16)
       case ConvI4 => cast(Data.Type.Int32)
       case ConvU4 => cast(Data.Type.Int32)
-      case ConvI8 => cast(Data.Type.BigInt)
+      case ConvI8 => cast(Data.Type.Int64)
       case ConvU8 => cast(Data.Type.BigInt)
 
       case ConvR4 => cast(Data.Type.Number)

@@ -1,8 +1,9 @@
-stack:
-  - utf8.hello world
-  - utf8.Ripemd160
-storage:
-  utf8.init: "null"
+vm:
+  stack:
+    - utf8.hello world
+    - utf8.Ripemd160
+  storage:
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll

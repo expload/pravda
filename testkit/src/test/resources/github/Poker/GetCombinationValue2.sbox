@@ -1,8 +1,9 @@
-stack:
-  [int32.0, int32.2, int32.4, int32.6, int32.80, utf8.GetCombinationValue]
-storage:
-  utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
-  utf8.init: "null"
+vm:
+  stack:
+    [int32.0, int32.2, int32.4, int32.6, int32.80, utf8.GetCombinationValue]
+  storage:
+    utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll

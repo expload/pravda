@@ -49,7 +49,7 @@ translation: |-
   }
   push x0000000000000000000000000000000000000000000000000000000000000000
   push int32(100)
-  push int8(4)
+  push int8(5)
   cast
   transfer
   meta source_mark {
@@ -57,7 +57,7 @@ translation: |-
   }
   push x0000000000000000000000000000000000000000000000000000000000000000
   push int32(200)
-  push int8(4)
+  push int8(5)
   cast
   ptransfer
   meta source_mark {

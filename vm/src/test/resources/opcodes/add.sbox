@@ -1,7 +1,8 @@
-watts-limit: 1000
-stack:
-  - int32.2
-  - int32.2
+vm:
+  watts-limit: 1000
+  stack:
+    - int32.2
+    - int32.2
 code: |-
   add
 ---

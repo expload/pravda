@@ -1,8 +1,9 @@
-stack:
-  ["null", utf8.BalanceOf]
-storage:
-  utf8.init: "null"
-  bytes.42616C616E6365730011: int32.10
+vm:
+  stack:
+    ["null", utf8.BalanceOf]
+  storage:
+    utf8.init: "null"
+    bytes.42616C616E6365730011: int32.10
 dotnet-compilation:
   steps:
   - target: Pravda.dll

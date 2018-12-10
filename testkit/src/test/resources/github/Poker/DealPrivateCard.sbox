@@ -1,9 +1,10 @@
-stack:
-  [int32.0, bytes.1234, utf8.DealPrivateCard]
-storage:
-  bytes.506C617965727300000000: bytes.01
-  utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
-  utf8.init: "null"
+vm:
+  stack:
+    [int32.0, bytes.1234, utf8.DealPrivateCard]
+  storage:
+    bytes.506C617965727300000000: bytes.01
+    utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll

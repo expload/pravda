@@ -72,7 +72,7 @@ translation: |-
   "sl":int32(12),"sc":int32(8),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(20)
   }
   push int32(5)
-  push int8(4)
+  push int8(5)
   cast
   push int32(4)
   swapn
@@ -81,7 +81,7 @@ translation: |-
   "sl":int32(13),"sc":int32(8),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(20)
   }
   push int32(6)
-  push int8(4)
+  push int8(5)
   cast
   push int32(3)
   swapn
@@ -148,7 +148,7 @@ translation: |-
   dupn
   push int32(6)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   push int32(5)
   dupn
@@ -261,7 +261,7 @@ translation: |-
   @TestCompare_br89:
   push int32(5)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   meta source_mark {
   "sl":int32(25),"sc":int32(22),"el":int32(25),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
@@ -382,7 +382,7 @@ translation: |-
   dupn
   push int32(6)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   push int32(5)
   dupn
@@ -496,7 +496,7 @@ translation: |-
   meta source_mark {
   "sl":int32(37),"sc":int32(22),"el":int32(37),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
-  push int8(4)
+  push int8(5)
   cast
   push int32(4)
   dupn
@@ -606,7 +606,7 @@ translation: |-
   dupn
   push int32(6)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   push int32(5)
   dupn
@@ -720,7 +720,7 @@ translation: |-
   meta source_mark {
   "sl":int32(49),"sc":int32(22),"el":int32(49),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
-  push int8(4)
+  push int8(5)
   cast
   push int32(4)
   dupn
@@ -827,7 +827,7 @@ translation: |-
   dupn
   push int32(6)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   push int32(5)
   dupn
@@ -936,7 +936,7 @@ translation: |-
   meta source_mark {
   "sl":int32(61),"sc":int32(22),"el":int32(61),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(33)
   }
-  push int8(4)
+  push int8(5)
   cast
   push int32(4)
   dupn
@@ -1032,7 +1032,7 @@ translation: |-
   dupn
   push int32(6)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   push int32(5)
   dupn
@@ -1156,7 +1156,7 @@ translation: |-
   meta source_mark {
   "sl":int32(74),"sc":int32(8),"el":int32(74),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(18)
   }
-  push int8(4)
+  push int8(5)
   cast
   push int32(4)
   dupn
@@ -1264,7 +1264,7 @@ translation: |-
   dupn
   push int32(6)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   push int32(5)
   dupn
@@ -1385,7 +1385,7 @@ translation: |-
   @TestCompare_br574:
   push int32(5)
   dupn
-  push int8(4)
+  push int8(5)
   cast
   meta source_mark {
   "sl":int32(86),"sc":int32(21),"el":int32(86),"src":"$PRAVDA_TMP_DIR/Compare.cs","ec":int32(32)

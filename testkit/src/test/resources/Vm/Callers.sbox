@@ -1,7 +1,8 @@
-stack:
-  [utf8.TestCallers]
-storage:
-  utf8.init: "null"
+vm:
+  stack:
+    [utf8.TestCallers]
+  storage:
+    utf8.init: "null"
 dotnet-compilation:
   steps:
   - target: Pravda.dll
