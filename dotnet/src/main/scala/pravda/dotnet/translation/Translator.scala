@@ -377,9 +377,11 @@ object Translator {
           f.parsedPdb.map(_.tablesData)
         )
 
+        val typeDefs = f.parsedPe.cilData.tables.typeDefTable
+
         for {
-          _ <- programClasses.map(td => inspectProgramTypeDef(td, translationCtx)).sequence
-          _ <- structs.map(td => inspectStructTypeDef(td, translationCtx)).sequence
+          _ <- typeDefs.filter(programClasses.contains).map(td => inspectProgramTypeDef(td, translationCtx)).sequence
+          _ <- typeDefs.filterNot(programClasses.contains).map(td => inspectStructTypeDef(td, translationCtx)).sequence
           res <- translateAllMethods(f.parsedPe.methods, translationCtx)
         } yield res
       }
