@@ -99,12 +99,12 @@ pipeline:
       event: tag
   publish-pravda-dll-nuget:
     group: dotnet
-    image: microsoft/dotnet:2.1-sdk
+    image: microsoft/dotnet:2.2-sdk
     environment:
       - PRAVDA_VERSION=${DRONE_TAG##v}
     commands:
       - cd /workdir/code/PravdaDotNet
-      - dotnet pack -c Release
+      - dotnet pack -c Release  --include-symbols -p:SymbolPackageFormat=snupkg
       - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
     secrets: [ nuget_key ]
     when:
