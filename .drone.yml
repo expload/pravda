@@ -104,7 +104,7 @@ pipeline:
       - PRAVDA_VERSION=${DRONE_TAG##v}
     commands:
       - cd /workdir/code/PravdaDotNet
-      - dotnet pack -c Release  --include-symbols -p:SymbolPackageFormat=snupkg
+      - dotnet pack -c Release
       - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
     secrets: [ nuget_key ]
     when:
