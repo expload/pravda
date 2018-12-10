@@ -3,5 +3,6 @@
     <PackageId>Expload.Pravda</PackageId>
     <PackageVersion>$(PRAVDA_VERSION)</PackageVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 </Project>
