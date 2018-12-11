@@ -16,16 +16,10 @@ object RunTests extends TestSuite {
 
   import VmSandbox.{ExpectationsWithoutWatts => Expectations}
 
-
-
-
-
   val tests = Tests {
 
-    val preconditions = VmSandbox.Preconditions(balances = Map.empty, `watts-limit` = 1000L)
+    val preconditions = VmSandbox.Preconditions(`watts-limit` = 10000L)
     val abi = List(AbiFunction(true, "", Nil, Nil, true, "", None))
-
-
 
     "SimpleStorage" - {
       val abi = readSolidityABI("SimpleStorageABIj.json")
@@ -194,7 +188,7 @@ object RunTests extends TestSuite {
             6 -> Push(`4`),
             7 -> Push(`4`),
             7 -> JumpDest,
-            8 -> Revert,
+            8 -> Revert
           ),
           abi
         ) ==> Right(
@@ -216,8 +210,7 @@ object RunTests extends TestSuite {
             6 -> Push(`4`),
             7 -> Push(`4`),
             7 -> JumpDest,
-            8 -> Revert,
-
+            8 -> Revert
           ),
           abi
         ) ==> Right(
@@ -239,7 +232,7 @@ object RunTests extends TestSuite {
             6 -> Push(`4`),
             7 -> Push(`4`),
             7 -> JumpDest,
-            8 -> Revert,
+            8 -> Revert
           ),
           abi
         ) ==> Right(
@@ -270,9 +263,7 @@ object RunTests extends TestSuite {
             12 -> Push(`4`),
             13 -> Push(`4`),
             14 -> JumpDest,
-            8 -> Revert,
-
-
+            15 -> Revert
           ),
           abi
         ) ==> Right(
@@ -300,8 +291,7 @@ object RunTests extends TestSuite {
             12 -> Push(`4`),
             13 -> Push(`4`),
             14 -> JumpDest,
-            8 -> Revert,
-
+            15 -> Revert
           ),
           abi
         ) ==> Right(
@@ -327,8 +317,7 @@ object RunTests extends TestSuite {
             6 -> Push(`4`),
             7 -> Push(`4`),
             7 -> JumpDest,
-            8 -> Revert,
-
+            8 -> Revert
           ),
           abi) ==> Left("Set(WithJumpDest(JumpDest(3),List()))")
       }

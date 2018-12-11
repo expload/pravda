@@ -253,6 +253,5 @@ object StdlibAsm {
           Operation(Opcodes.ARRAY_MUT),
         )
     })
-  }
 
 }

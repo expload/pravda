@@ -23,15 +23,13 @@ import scala.annotation.tailrec
 
 object StackSizePredictor {
 
-
-  def clear(ops: List[(Op, Int)]):List[Op] =
+  def clear(ops: List[(Op, Int)]): List[Op] =
     ops.map {
-        case (MLoad,ind) => MLoad(ind)
-        case (MStore,ind) => MStore(ind)
-        case (MStore8,ind) => MStore8(ind)
-        case (op,_) => op
-      }
-
+      case (MLoad, ind)   => MLoad(ind)
+      case (MStore, ind)  => MStore(ind)
+      case (MStore8, ind) => MStore8(ind)
+      case (op, _)        => op
+    }
 
   def emulate(ops: List[Op]): List[(Op, Int)] = {
     val ops1 = ops.map(_ -> -1).toArray
@@ -63,10 +61,10 @@ object StackSizePredictor {
           val (to, cont, s) = emulate(ind, size)
           to match {
             case Some(addr) =>
-              emulateS(ops1.indexWhere({
+              emulateS(ops1.indexWhere {
                 case (JumpDest(`addr`), i) if i < 0 => true
                 case _                              => false
-              }), s)
+              }, s)
             case _ =>
           }
 

@@ -17,15 +17,14 @@
 
 package pravda.evm.translate
 
-import pravda.vm.{Data, Opcodes, asm}
 import cats.instances.list._
-import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.disasm.{JumpTargetRecognizer, StackSizePredictor}
 import pravda.evm.translate.opcode.{FunctionSelectorTranslator, SimpleTranslation, pushInt, pushType}
 import pravda.vm.asm.Operation
+import pravda.vm.{Data, Opcodes, asm}
 
 object Translator {
 

@@ -29,58 +29,63 @@ object SimpleTranslation {
 
   val pow2_256 = scala.BigInt(2).pow(256) - 1
 
+  private def bigintOps(asmOps: List[asm.Operation]): List[Operation] =
+    cast(Data.Type.BigInt) ++
+      codeToOps(Opcodes.SWAP) ++
+      cast(Data.Type.BigInt) ++
+      codeToOps(Opcodes.SWAP) ++
+      asmOps ++
+      cast(Data.Type.Bytes)
+
+  private def bigintOp(asmOp: asm.Operation): List[Operation] =
+    bigintOps(List(asmOp))
+
   private val translate: PartialFunction[EVM.Op, List[asm.Operation]] = {
-    case Push(bytes) => pushBigInt(BigInt(1, bytes.toArray)) :: Nil
+    case Push(bytes) => pushBytes(bytes.toArray) :: Nil
 
     case Pop => codeToOps(Opcodes.POP)
 
-    case Add => codeToOps(Opcodes.ADD) //FIXME result % 2^256
-    case Mul => codeToOps(Opcodes.MUL)
-    case Div => codeToOps(Opcodes.DIV) //FIXME 0 if stack[1] == 0 othervise s[0] / s[1]
-    case Mod => codeToOps(Opcodes.MOD) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
-    case Sub => sub //FIXME result & (2^256 - 1)
-    case AddMod =>
-      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
-        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.ADD, Opcodes.MOD)
-    case MulMod =>
-      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
-        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.MUL, Opcodes.MOD)
+    case Add => bigintOp(Operation(Opcodes.ADD)) //FIXME result % 2^256
+    case Mul => bigintOp(Operation(Opcodes.MUL))
+    case Div => bigintOp(Operation(Opcodes.DIV)) //FIXME 0 if stack[1] == 0 othervise s[0] / s[1]
+    case Mod => bigintOp(Operation(Opcodes.MOD)) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
+    case Sub => bigintOps(sub) //FIXME result & (2^256 - 1)
+//    case AddMod =>
+//      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
+//        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.ADD, Opcodes.MOD)
+//    case MulMod =>
+//      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
+//        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.MUL, Opcodes.MOD)
 
     //  case Not => codeToOps(Opcodes.NOT) //TODO (2^256 - 1) - s[0]
 
-    case And => codeToOps(Opcodes.AND)
-    case Or  => codeToOps(Opcodes.OR)
-    case Xor => codeToOps(Opcodes.XOR)
+    case And => bigintOp(Operation(Opcodes.AND))
+    case Or  => bigintOp(Operation(Opcodes.OR))
+    case Xor => bigintOp(Operation(Opcodes.XOR))
 
     case Byte =>
-      List(
-        pushBigInt(31) :: Nil,
-        sub,
-        pushBigInt(8) :: Nil,
-        codeToOps(Opcodes.MUL),
-        pushBigInt(2) :: Nil,
-        callExp,
-        codeToOps(Opcodes.SWAP),
-        codeToOps(Opcodes.DIV),
-        pushBigInt(0xff) :: Nil,
-        codeToOps(Opcodes.AND)
-      ).flatten
+      cast(Data.Type.BigInt) ++
+        List(pushBigInt(31)) ++
+        sub ++
+        List(pushBigInt(8)) ++
+        codeToOps(Opcodes.MUL) ++
+        List(pushBigInt(2)) ++
+        callExp ++
+        codeToOps(Opcodes.SWAP) ++
+        codeToOps(Opcodes.DIV) ++
+        List(pushBigInt(0xff)) ++
+        codeToOps(Opcodes.AND) ++
+        cast(Data.Type.Bytes)
 
-    case IsZero => pushBigInt(BigInt(0)) :: codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
+    case IsZero => pushBytes(0) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes)
     case Lt     => codeToOps(Opcodes.LT) ::: cast(Data.Type.BigInt)
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
-
-//    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
-//    case JumpI => jumpi
 
     case Jump(_,dest)  =>  codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
     case JumpI(_,dest) => jumpi(dest)
 
     case Stop  => codeToOps(Opcodes.STOP)
-
-
-
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
@@ -100,15 +105,19 @@ object SimpleTranslation {
        pushInt(size + 1)  :: codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN,Opcodes.SWAP)  ::: StdlibAsm.writeWord :::
         pushInt(size - 4) :: codeToOps(Opcodes.SWAPN,Opcodes.POP)
 
+    case MStore8(stackSize) => List(Operation.Meta(Meta.Custom(s"MStore8_$stackSize")))
+    case CallDataSize       => List(Operation.Meta(Meta.Custom("CallDataSize")))
+    case CallDataLoad       => List(Operation.Meta(Meta.Custom("CallDataLoad")))
+    case Return             => List(Operation.Meta(Meta.Custom("Return")))
 
     //TODO DELETE ME
     case Not       => pushBigInt(pow2_256) :: sub ::: Nil
     case Revert     => codeToOps(Opcodes.STOP)
     case Return     => codeToOps(Opcodes.RET)
 
-    case CallValue => pushBigInt(scala.BigInt(0)) :: Nil
-    case CallDataSize =>  pushBigInt(scala.BigInt(1000)) :: Nil
-    case CallDataLoad =>  codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
+    case CallValue => pushBigInt(scala.BigInt(10)) :: cast(Data.Type.Bytes)
+//    case CallDataSize =>  pushBigInt(scala.BigInt(1000)) :: Nil
+//    case CallDataLoad =>  codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
     case Invalid  => codeToOps(Opcodes.STOP)
 
   }
