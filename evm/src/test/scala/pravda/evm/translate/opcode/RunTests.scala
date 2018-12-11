@@ -7,13 +7,16 @@ import pravda.evm.EvmSandbox
 import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.vm.Data.Primitive.BigInt
 import pravda.vm.Effect.{StorageRead, StorageWrite}
-import pravda.vm.Error.UserError
 import pravda.vm.VmSandbox
 import utest._
 
 object RunTests extends TestSuite {
 
   import VmSandbox.{ExpectationsWithoutWatts => Expectations}
+
+
+
+
 
   val tests = Tests {
 
@@ -164,6 +167,7 @@ object RunTests extends TestSuite {
             0 -> Push(`4`),
             2 -> Push(`0`),
             3 -> CodeCopy,
+            3 -> Revert,
             4 -> Push(`4`),
             4 -> Push(`3`),
             5 -> Jump,
@@ -278,13 +282,16 @@ object RunTests extends TestSuite {
           ))
       }
 
+
       "Jump to bad destination" - {
+
         EvmSandbox.runAddressedCode(
           preconditions,
           List(
             0 -> Push(`4`),
             2 -> Push(`0`),
             3 -> CodeCopy,
+            3 -> Revert,
             4 -> Push(`4`),
             4 -> Push(`4`),
             5 -> Jump,
@@ -293,12 +300,7 @@ object RunTests extends TestSuite {
             7 -> Push(`4`),
             7 -> JumpDest,
           ),
-          abi
-        ) ==>
-          Right(
-            Expectations(stack = Seq(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(4))),
-                         error = Some(UserError("Incorrect destination"))))
-
+          abi) ==> Left("Set(WithJumpDest(JumpDest(3),List()))")
       }
     }
 

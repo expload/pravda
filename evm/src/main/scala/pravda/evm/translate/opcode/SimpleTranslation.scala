@@ -71,8 +71,12 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
-    case JumpI => jumpi
+//    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
+//    case JumpI => jumpi
+
+    case Jump(_,dest)  =>  codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
+    case JumpI(_,dest) => jumpi(dest)
+
     case Stop  => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)

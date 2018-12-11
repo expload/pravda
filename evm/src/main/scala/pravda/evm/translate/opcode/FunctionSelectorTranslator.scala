@@ -38,17 +38,17 @@ object FunctionSelectorTranslator {
         case _           => true
       }
 
-    case class FunctionDestination(function: AbiFunction, address: Array[Byte])
+    case class FunctionDestination(function: AbiFunction, address: Int)
 
     @tailrec def jumps(ops: List[EVM.Op],
                        lastFunction: Option[AbiFunction],
                        acc: List[FunctionDestination]): List[FunctionDestination] =
       ops match {
-        case Push(address) :: JumpI :: xs =>
-          val addr = address.toArray
+        case Push(_) :: JumpI(_,dest) :: xs =>
+
 
           lastFunction match {
-            case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, addr) :: acc)
+            case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, dest) :: acc)
             case None    => jumps(xs, lastFunction, acc)
           }
         case Push(addr) :: xs =>
@@ -68,7 +68,7 @@ object FunctionSelectorTranslator {
         val newJumps = jumps(destinations, None, List.empty).flatMap(
           f =>
             codeToOps(Opcodes.DUP) ::: pushString(f.function.newName.getOrElse(f.function.name)) ::
-              codeToOps(Opcodes.EQ) ::: pushBigInt(BigInt(1, f.address)) :: jumpi)
+              codeToOps(Opcodes.EQ) ::: pushInt(f.address) :: jumpi(f.address))
 
         val l1 = ops
           .takeWhile {

@@ -17,11 +17,22 @@
 
 package pravda.evm.disasm
 
-import pravda.evm.EVM.{Jump, JumpDest, JumpI, Op}
+import pravda.evm.EVM._
 
 import scala.annotation.tailrec
 
 object StackSizePredictor {
+
+
+  def clear(ops: List[(Op, Int)]):List[Op] =
+    ops.map(
+      {
+        case (MLoad,ind) => MLoad(ind)
+        case (MStore,ind) => MStore(ind)
+        case (MStore8,ind) => MStore8(ind)
+        case (op,_) => op
+      }
+    )
 
   def emulate(ops: List[Op]): List[(Op, Int)] = {
     val ops1 = ops.map(_ -> -1).toArray

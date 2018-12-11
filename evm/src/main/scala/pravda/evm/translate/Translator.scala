@@ -17,14 +17,14 @@
 
 package pravda.evm.translate
 
-import pravda.evm.EVM._
 import pravda.vm.asm
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.abi.parse.AbiParser.AbiObject
-import pravda.evm.translate.opcode.{FunctionSelectorTranslator, JumpDestinationPrepare, SimpleTranslation}
+import pravda.evm.disasm.{JumpTargetRecognizer, StackSizePredictor}
+import pravda.evm.translate.opcode.{FunctionSelectorTranslator, SimpleTranslation}
 
 object Translator {
 
@@ -53,35 +53,22 @@ object Translator {
   }
 
   def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
-    ops
-      .takeWhile {
-        case (_, CodeCopy) => false
-        case _             => true
-      }
-      .reverse
-      .tail
-      .headOption match {
-      case Some((_, Push(address))) =>
-        val offset = BigInt(1, address.toArray).intValue()
-
-        val (creationCode, actualCode) = ops
-          .map { case (ind, op) => ind - offset -> op }
-          .partition(_._1 < 0)
-        Right((CreationCode(creationCode), ActualCode(actualCode)))
-      case _ => Left("Parse error")
-    }
+    JumpTargetRecognizer(ops)
+      .left.map(_.toString)
   }
 
   def translateActualContract(ops: List[Addressed[EVM.Op]],
                               abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
-    import JumpDestinationPrepare._
 
     split(ops).flatMap {
       case (creationCode, actualContract) =>
-        val filteredOps = actualContract.code.map(jumpDestToAddressed)
-        val jumpDests = filteredOps.collect { case j @ JumpDest(x) => j }.zipWithIndex
-        val prepare = prepared(jumpDests)
-        Translator(filteredOps, abi).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
+     //   val filteredCreationOps = actualContract.code.map(jumpDestToAddressed)
+
+        val filteredActualOps = actualContract.code.map(_._2)
+        val ops = StackSizePredictor.clear(StackSizePredictor.emulate(filteredActualOps))
+       // val jumpDests = filteredOps.collect { case j @ JumpDest(x) => j }.zipWithIndex
+       // val prepare = prepared(jumpDests)
+        Translator(ops, abi).map(opcodes => asm.Operation.Label(startLabelName) :: opcodes)
     }
   }
 

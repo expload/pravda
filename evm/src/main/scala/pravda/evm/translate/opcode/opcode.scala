@@ -77,6 +77,6 @@ package object opcode {
       ._2
   }
 
-  val jumpi: List[asm.Operation] = codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) :::
-    Operation.JumpI(Some(nameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
+  def jumpi(addr: Int): List[asm.Operation] = codeToOps(Opcodes.POP) ::: cast(Data.Type.Boolean) :::
+    Operation.JumpI(Some(nameByAddress(addr))) :: Nil
 }
