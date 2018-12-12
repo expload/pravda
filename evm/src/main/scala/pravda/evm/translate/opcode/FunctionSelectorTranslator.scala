@@ -78,7 +78,7 @@ object FunctionSelectorTranslator {
           .init
           .map(Left(_))
         val l2: List[Converted] =
-          (newJumps ++ (pushString("incorrect function name") :: codeToOps(Opcodes.THROW))).map(op => Right(List(op)))
+          (codeToOps(Opcodes.SWAP) ++ newJumps ++ (pushString("incorrect function name") :: codeToOps(Opcodes.THROW))).map(op => Right(List(op)))
         val l3 = ops
           .dropWhile {
             case JumpDest(_) => false

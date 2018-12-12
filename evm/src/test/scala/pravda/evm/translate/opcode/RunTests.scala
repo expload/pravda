@@ -3,9 +3,11 @@ package pravda.evm.translate.opcode
 import fastparse.byte.all._
 import pravda.common.domain.Address
 import pravda.evm.EVM._
-import pravda.evm.EvmSandbox
+import pravda.evm.abi.parse.AbiParser
+import pravda.evm.{EvmSandbox, readSolidityABI, readSolidityBinFile}
 import pravda.evm.abi.parse.AbiParser.AbiFunction
-import pravda.vm.Data.Primitive.BigInt
+import pravda.evm.parse.Parser
+import pravda.vm.Data.Primitive.{BigInt, Utf8}
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import pravda.vm.VmSandbox
 import utest._
@@ -22,6 +24,23 @@ object RunTests extends TestSuite {
 
     val preconditions = VmSandbox.Preconditions(balances = Map.empty, `watts-limit` = 1000L)
     val abi = List(AbiFunction(true, "", Nil, Nil, true, "", None))
+
+
+
+    "SimpleStorage" - {
+      val abi = readSolidityABI("SimpleStorageABIj.json")
+      val parsedAbi = AbiParser.parseAbi(abi)
+
+      for {
+        ops <- Parser.parseWithIndices(readSolidityBinFile("SimpleStorage0.5.1.bin"))
+        ab <- parsedAbi
+      }{
+        val preconditions = VmSandbox.Preconditions(stack=Seq(Utf8("get")),balances = Map.empty, `watts-limit` = 1000000L)
+
+        println(EvmSandbox.runAddressedCode(preconditions, ops, ab))
+      }
+    }
+
 
     "DUP" - {
       EvmSandbox.runCode(preconditions, List(Push(hex"0x80"), Dup(1)), abi) ==>

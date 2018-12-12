@@ -79,6 +79,9 @@ object SimpleTranslation {
 
     case Stop  => codeToOps(Opcodes.STOP)
 
+
+
+
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
 
@@ -90,10 +93,24 @@ object SimpleTranslation {
     case SStore => codeToOps(Opcodes.SPUT)
     case SLoad  => codeToOps(Opcodes.SGET)
 
+    case MLoad(size) =>
+      pushInt(size + 1):: codeToOps(Opcodes.DUPN,Opcodes.SWAP) ::: StdlibAsm.readWord
+
+    case MStore(size) =>
+       pushInt(size + 1)  :: codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN,Opcodes.SWAP)  ::: StdlibAsm.writeWord :::
+        pushInt(size - 4) :: codeToOps(Opcodes.SWAPN,Opcodes.POP)
+
+
     //TODO DELETE ME
     case Not       => pushBigInt(pow2_256) :: sub ::: Nil
-    case Revert    => codeToOps(Opcodes.STOP)
-    case CallValue => pushBigInt(scala.BigInt(100000)) :: Nil
+    case Revert     => codeToOps(Opcodes.STOP)
+    case Return     => codeToOps(Opcodes.RET)
+
+    case CallValue => pushBigInt(scala.BigInt(0)) :: Nil
+    case CallDataSize =>  pushBigInt(scala.BigInt(1000)) :: Nil
+    case CallDataLoad =>  codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
+    case Invalid  => codeToOps(Opcodes.STOP)
+
   }
 
   def evmOpToOps(op: EVM.Op): Converted =

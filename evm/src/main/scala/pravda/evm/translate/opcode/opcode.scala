@@ -77,6 +77,13 @@ package object opcode {
       ._2
   }
 
+   def createArray(size: Int):List[Operation] =
+    List(
+      pushInt(size),
+      pushType(Data.Type.Int8),
+      Operation(Opcodes.NEW_ARRAY)
+    )
+
   def jumpi(addr: Int): List[asm.Operation] = codeToOps(Opcodes.POP) ::: cast(Data.Type.Boolean) :::
     Operation.JumpI(Some(nameByAddress(addr))) :: Nil
 }

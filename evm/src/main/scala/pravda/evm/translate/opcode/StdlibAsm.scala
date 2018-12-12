@@ -23,6 +23,23 @@ import pravda.vm.{Data, Opcodes}
 
 object StdlibAsm {
 
+  case class Function(name:String,code: List[Operation])
+
+  lazy val readWordFunction = Function("read_word",
+    List(Operation.Label("read_word")) ++
+      readWord ++ List(Operation(Opcodes.RET))
+  )
+
+  lazy val readByteFunction = Function("read_byte",
+    List(Operation.Label("read_byte")) ++
+      readByte ++ List(Operation(Opcodes.RET))
+  )
+
+  lazy val writeWordFunction = Function("write_word",
+    List(Operation.Label("write_word")) ++
+      writeWord ++ List(Operation(Opcodes.RET))
+  )
+
   /*
    * Stack:
    *         index
@@ -115,7 +132,6 @@ object StdlibAsm {
         Operation(Opcodes.POP),
         Operation(Opcodes.POP),
         Operation(Opcodes.POP),
-        Operation(Opcodes.POP),
       )
 
   /*
@@ -150,7 +166,6 @@ object StdlibAsm {
       Operation(Opcodes.SWAP)
     ) ++
       StdlibAsm.copyArray ++
-      List() ++
       List(Operation.Label("end_of_expand_array_loop"))
 
   /*
@@ -229,11 +244,7 @@ object StdlibAsm {
     )
 
   def createByteArray(arr: List[Byte]): List[Operation] = {
-    List(
-      pushInt(arr.size),
-      pushType(Data.Type.Int8),
-      Operation(Opcodes.NEW_ARRAY)
-    ) ++ arr.zipWithIndex.flatMap({
+    createArray(arr.size) ++ arr.zipWithIndex.flatMap({
       case (el, ind) =>
         List(
           Operation(Opcodes.DUP),
