@@ -53,10 +53,8 @@ object Translator {
       .map(_.flatten)
   }
 
-  def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
-    JumpTargetRecognizer(ops)
-      .left.map(_.toString)
-  }
+  def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] =
+    JumpTargetRecognizer(ops).left.map(_.toString)
 
   def translateActualContract(ops: List[Addressed[EVM.Op]],
                               abi: List[AbiObject]): Either[String, List[asm.Operation]] = {

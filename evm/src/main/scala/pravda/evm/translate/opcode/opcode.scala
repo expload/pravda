@@ -85,6 +85,5 @@ package object opcode {
     )
 
   def jumpi(addr: Int): List[asm.Operation] =
-    codeToOps(Opcodes.POP) ::: cast(Data.Type.Boolean) :::
-      Operation.JumpI(Some(nameByAddress(addr))) :: Nil
+    codeToOps(Opcodes.POP) ++ cast(Data.Type.Boolean) ++ List(Operation.JumpI(Some(nameByAddress(addr))))
 }

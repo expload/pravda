@@ -22,6 +22,7 @@ import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.translate.Translator.Converted
 import pravda.vm.Opcodes
+import pravda.vm.asm.Operation
 
 import scala.annotation.tailrec
 
@@ -44,9 +45,7 @@ object FunctionSelectorTranslator {
                        lastFunction: Option[AbiFunction],
                        acc: List[FunctionDestination]): List[FunctionDestination] =
       ops match {
-        case Push(_) :: JumpI(_,dest) :: xs =>
-
-
+        case Push(_) :: JumpI(_, dest) :: xs =>
           lastFunction match {
             case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, dest) :: acc)
             case None    => jumps(xs, lastFunction, acc)
@@ -67,8 +66,11 @@ object FunctionSelectorTranslator {
       case _ =>
         val newJumps = jumps(destinations, None, List.empty).flatMap(
           f =>
-            codeToOps(Opcodes.DUP) ::: pushString(f.function.newName.getOrElse(f.function.name)) ::
-              codeToOps(Opcodes.EQ) ::: pushInt(f.address) :: jumpi(f.address))
+            codeToOps(Opcodes.DUP) ++
+              List(pushString(f.function.newName.getOrElse(f.function.name))) ++
+              codeToOps(Opcodes.EQ) ++
+              List(Operation.JumpI(Some(nameByAddress(f.address))))
+        )
 
         val l1 = ops
           .takeWhile {

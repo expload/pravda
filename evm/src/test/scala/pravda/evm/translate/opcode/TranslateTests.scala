@@ -44,7 +44,7 @@ object TranslateTests extends TestSuite {
           |@__start_evm_program:
           |push bigint(128)
           |push bigint(64)
-          |meta custom "MStore_2"
+          |meta custom "MStoreev_2"
           |dup
           |push "get"
           |eq

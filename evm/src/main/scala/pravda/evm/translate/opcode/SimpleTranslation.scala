@@ -77,13 +77,13 @@ object SimpleTranslation {
         codeToOps(Opcodes.AND) ++
         cast(Data.Type.Bytes)
 
-    case IsZero => pushBytes(0) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes)
-    case Lt     => codeToOps(Opcodes.LT) ::: cast(Data.Type.BigInt)
-    case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
-    case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
+    case IsZero => pushBytes(Array.fill(32)(0)) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes) // ???
+    case Lt => bigintOp(Operation(Opcodes.LT))
+    case Gt => bigintOp(Operation(Opcodes.GT))
+    case Eq => bigintOp(Operation(Opcodes.EQ))
 
-    case Jump(_,dest)  =>  codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
-    case JumpI(_,dest) => jumpi(dest)
+    case Jump(_, dest)  => codeToOps(Opcodes.POP) ++ List(Operation.Jump(Some(nameByAddress(dest))))
+    case JumpI(_, dest) => jumpi(dest)
 
     case Stop  => codeToOps(Opcodes.STOP)
 
