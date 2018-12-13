@@ -21,9 +21,11 @@ package servers
 
 import java.util.Base64
 
+import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
+import akka.http.scaladsl.server.{PathMatcher1, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import com.google.protobuf.ByteString
 import pravda.common.bytes
@@ -34,14 +36,13 @@ import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
-import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.bjson._
-import tethys._
 import pravda.node.data.serialization._
+import pravda.node.data.serialization.json._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
-import pravda.node.servers.Abci.TransactionResult
+import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
+import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
@@ -56,6 +57,7 @@ import scala.util.{Failure, Random, Success, Try}
 class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
+  import pravda.node.persistence.implicits._
 
   type R = Either[RpcError, TransactionResult]
 
@@ -69,6 +71,9 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
     Unmarshaller.strict(s => s.toInt)
 
   val balances: Entry[Address, NativeCoin] = balanceEntry(db)
+  val eventsByAddress: Entry[Address, Seq[TransactionEffects]] = eventsEntry(db)
+  val transferEffectsByAddress: Entry[Address, Seq[TransactionEffects]] = transferEffectsEntry(db)
+  val transactionsByAddress: Entry[Address, Seq[TransactionEffects]] = transactionsEntry(db)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -253,6 +258,49 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
               }
             }
           }
+        } ~
+        pathPrefix("account") {
+          pathPrefix(AddressPathMatcher) { address =>
+            path("transfers") {
+              /*
+               * Returns transfer effects from each transaction which affects to the
+               * XCoins balance of the given address. In particular, will be returned
+               * transfers FROM the given address and TO the given address.
+               */
+              get {
+                onSuccess(transferEffectsByAddress.get(address)) { maybeEffectItems =>
+                  complete(
+                    maybeEffectItems.fold(Seq.empty[TransactionEffects])(identity)
+                  )
+                }
+              }
+            } ~
+              path("events") {
+                /*
+                 * Returns all events from each transaction those were signed by the
+                 * given address.
+                 */
+                get {
+                  onSuccess(eventsByAddress.get(address)) { maybeEffectItems =>
+                    complete(
+                      maybeEffectItems.fold(Seq.empty[TransactionEffects])(identity)
+                    )
+                  }
+                }
+              } ~
+              path("transactions") {
+                /*
+                 * Returns all transactions were signed by the given address.
+                 */
+                get {
+                  onSuccess(transactionsByAddress.get(address)) { maybeTransactions =>
+                    complete(
+                      maybeTransactions.fold(Seq.empty[TransactionEffects])(identity)
+                    )
+                  }
+                }
+              }
+          }
         }
     }
 }
@@ -260,6 +308,15 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
 object ApiRoute {
 
   final val MaxEventCount = 1000
+
+  object AddressPathMatcher extends PathMatcher1[Address] {
+
+    def apply(path: Path) = path match {
+      case Path.Segment(segment, tail) ⇒
+        Address.tryFromHex(segment).fold(_ => Unmatched, addr => Matched(tail, Tuple1(addr)))
+      case _ ⇒ Unmatched
+    }
+  }
 
   final case class EventItem(offset: Int, transactionId: TransactionId, data: MarshalledData)
 }

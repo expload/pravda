@@ -21,7 +21,11 @@ import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.db.DB
 import pravda.node.persistence.implicits._
 import pravda.node.data.serialization.json._
+import pravda.node.servers.Abci.TransactionEffects
 
 object BlockChainStore {
   def balanceEntry(db: DB): Entry[Address, NativeCoin] = Entry[Address, NativeCoin](db, "balance")
+  def transferEffectsEntry(db: DB) = Entry[Address, Seq[TransactionEffects]](db, "transferEffectsByAddress")
+  def eventsEntry(db: DB) = Entry[Address, Seq[TransactionEffects]](db, "eventsByAddress")
+  def transactionsEntry(db: DB) = Entry[Address, Seq[TransactionEffects]](db, "transactionsByAddress")
 }

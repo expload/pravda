@@ -38,7 +38,6 @@ import pravda.common.json._
 import pravda.node.data.cryptography.EncryptedPrivateKey
 import pravda.node.data.domain.Wallet
 import pravda.vm.json._
-
 import pravda.common.bytes.{byteString2hex, hex2byteString}
 
 trait TethysInstances {
@@ -145,6 +144,18 @@ trait TethysInstances {
 
   implicit val eventItemWriter: JsonWriter[ApiRoute.EventItem] =
     jsonWriter[ApiRoute.EventItem]
+
+  implicit val additionalDataReader: JsonReader[Abci.AdditionalDataForAddress] =
+    jsonReader[Abci.AdditionalDataForAddress]
+
+  implicit val additionalDataWriter: JsonWriter[Abci.AdditionalDataForAddress] =
+    jsonWriter[Abci.AdditionalDataForAddress]
+
+  implicit val transactionEffectsReader: JsonReader[Abci.TransactionEffects] =
+    jsonReader[Abci.TransactionEffects]
+
+  implicit val transactionEffectsWriter: JsonWriter[Abci.TransactionEffects] =
+    jsonWriter[Abci.TransactionEffects]
 
   //---------------------------------------------------------------------------
   // ABCI
