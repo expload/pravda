@@ -102,9 +102,12 @@ object EVM {
   case class Jump(addr: Int, dest: Int)    extends AddressedJumpOp
   case class JumpI(addr: Int, dest: Int)   extends AddressedJumpOp
 
-  case class MLoad(stackSize: Int)   extends Op
-  case class MStore(stackSize: Int)  extends Op
-  case class MStore8(stackSize: Int) extends Op
+  case class MLoad(stackOffset: Int)   extends Op
+  case class MStore(stackOffset: Int)  extends Op
+  case class MStore8(stackOffset: Int) extends Op
+
+  case class CallDataLoad(stackOffset: Int) extends Op
+  case class CallDataSize(stackOffset: Int) extends Op
 
   val singleOps: Map[Int, Op] = Map(
     0x00 -> Stop,

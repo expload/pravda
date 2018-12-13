@@ -17,16 +17,31 @@
 
 package pravda.evm.translate.opcode
 
+import com.google.protobuf.ByteString
 import pravda.evm.EVM
 import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.translate.Translator.Converted
-import pravda.vm.Opcodes
+import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
 import scala.annotation.tailrec
 
 object FunctionSelectorTranslator {
+
+  private def createCallData(argsNum: Int): List[Operation] =
+    (argsNum + 1).to(2, -1).toList.flatMap(i => List(pushInt(i), Operation(Opcodes.SWAPN))) ++
+      argsNum.to(1, -1).toList.flatMap(i => List(pushInt(i), Operation(Opcodes.SWAPN))) ++
+      List(Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY))) ++
+      (1 to argsNum)
+        .flatMap(
+          i =>
+            List(Operation(Opcodes.SWAP)) :::
+              cast(Data.Type.Bytes) :::
+              List(pushInt(9), Operation(Opcodes.SCALL), Operation(Opcodes.CONCAT))
+        )
+        .toList ++
+      List(pushInt(2), Operation(Opcodes.SWAPN), Operation(Opcodes.SWAP))
 
   def evmToOps(ops: List[EVM.Op], abi: List[AbiFunction]): List[Converted] = {
     val destinations = ops
@@ -68,8 +83,10 @@ object FunctionSelectorTranslator {
           f =>
             codeToOps(Opcodes.DUP) ++
               List(pushString(f.function.newName.getOrElse(f.function.name))) ++
-              codeToOps(Opcodes.EQ) ++
-              List(Operation.JumpI(Some(nameByAddress(f.address))))
+              codeToOps(Opcodes.EQ, Opcodes.NOT) ++
+              List(Operation.JumpI(Some(s"not_${f.function.name}"))) ++
+              createCallData(f.function.inputs.length) ++
+              List(Operation.Jump(Some(nameByAddress(f.address))), Operation.Label(s"not_${f.function.name}"))
         )
 
         val l1 = ops

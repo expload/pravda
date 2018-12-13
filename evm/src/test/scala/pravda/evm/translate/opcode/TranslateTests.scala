@@ -37,16 +37,21 @@ object TranslateTests extends TestSuite {
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
       val Right(asm) = Translator.translateActualContract(ops, abi)
 
+      println(PravdaAssembler.render(asm))
+
       PravdaAssembler.render(asm) ==>
         """@__start_evm_program:
-          |push int32(2000)
+          |push int32(1024)
           |push int8(1)
           |new_array
-          |push x80
-          |push x40
+          |push x8000000000000000000000000000000000000000000000000000000000000000
+          |push x4000000000000000000000000000000000000000000000000000000000000000
+          |push int8(4)
+          |cast
           |push int32(3)
           |dupn
-          |call @stdlib_write_word
+          |push int8(7)
+          |scall
           |push int32(2)
           |swapn
           |pop
@@ -62,9 +67,10 @@ object TranslateTests extends TestSuite {
           |push "incorrect function name"
           |throw
           |@_lbl_73:
-          |push x00
+          |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
-          |stop
+          |push "Revert"
+          |throw
           |@_lbl_78:
           |push bigint(10)
           |push int8(14)
@@ -74,18 +80,19 @@ object TranslateTests extends TestSuite {
           |eq
           |push int8(14)
           |cast
-          |push x59
+          |push x5900000000000000000000000000000000000000000000000000000000000000
           |pop
           |push int8(9)
           |cast
           |jumpi @_lbl_89
-          |push x00
+          |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
-          |stop
+          |push "Revert"
+          |throw
           |@_lbl_89:
           |pop
-          |push x76
-          |push x04
+          |push x7600000000000000000000000000000000000000000000000000000000000000
+          |push x0400000000000000000000000000000000000000000000000000000000000000
           |dup
           |push x04
           |push int8(4)
@@ -115,9 +122,9 @@ object TranslateTests extends TestSuite {
           |dup
           |dup
           |pop
-          |push x10
+          |push x1234
           |swap
-          |push x20
+          |push x2000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
           |cast
           |swap
@@ -136,7 +143,7 @@ object TranslateTests extends TestSuite {
           |pop
           |pop
           |pop
-          |push xA0
+          |push xA000000000000000000000000000000000000000000000000000000000000000
           |pop
           |jump @_lbl_160
           |@_lbl_118:
@@ -150,37 +157,44 @@ object TranslateTests extends TestSuite {
           |eq
           |push int8(14)
           |cast
-          |push x83
+          |push x8300000000000000000000000000000000000000000000000000000000000000
           |pop
           |push int8(9)
           |cast
           |jumpi @_lbl_131
-          |push x00
+          |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
-          |stop
+          |push "Revert"
+          |throw
           |@_lbl_131:
           |pop
-          |push x8A
-          |push xAA
+          |push x8A00000000000000000000000000000000000000000000000000000000000000
+          |push xAA00000000000000000000000000000000000000000000000000000000000000
           |pop
           |jump @_lbl_170
           |@_lbl_138:
-          |push x40
+          |push x4000000000000000000000000000000000000000000000000000000000000000
+          |push int8(4)
+          |cast
           |push int32(4)
           |dupn
-          |call @stdlib_read_word
+          |push int8(6)
+          |scall
           |dup
           |push int32(3)
           |dupn
           |push int32(2)
           |dupn
+          |push int8(4)
+          |cast
           |push int32(7)
           |dupn
-          |call @stdlib_write_word
+          |push int8(7)
+          |scall
           |push int32(6)
           |swapn
           |pop
-          |push x20
+          |push x2000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
           |cast
           |swap
@@ -194,10 +208,13 @@ object TranslateTests extends TestSuite {
           |swapn
           |pop
           |pop
-          |push x40
+          |push x4000000000000000000000000000000000000000000000000000000000000000
+          |push int8(4)
+          |cast
           |push int32(4)
           |dupn
-          |call @stdlib_read_word
+          |push int8(6)
+          |scall
           |dup
           |push int32(3)
           |swapn
@@ -214,10 +231,24 @@ object TranslateTests extends TestSuite {
           |push int8(14)
           |cast
           |swap
-          |ret
+          |push int8(4)
+          |cast
+          |swap
+          |push int8(4)
+          |cast
+          |swap
+          |push int32(4)
+          |dupn
+          |push int32(8)
+          |scall
+          |swap
+          |pop
+          |swap
+          |pop
+          |stop
           |@_lbl_160:
           |dup
-          |push x00
+          |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int32(2)
           |dupn
           |swap
@@ -227,7 +258,7 @@ object TranslateTests extends TestSuite {
           |pop
           |jump @_lbl_118
           |@_lbl_170:
-          |push x00
+          |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
           |sget
           |swap

@@ -74,7 +74,7 @@ object Translator {
     }
   }
 
-  def createArray(size: Int): List[Operation] =
+  private def createArray(size: Int): List[Operation] =
     List(
       pushInt(size),
       pushType(Data.Type.Int8),

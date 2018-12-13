@@ -27,7 +27,8 @@ object StandardLibrary {
     standard.BytesToHex,
     standard.ReadEvmWord,
     standard.WriteEvmWord,
-    standard.SliceEvmMemory
+    standard.SliceEvmMemory,
+    standard.ExpandBytesEvm
   )
 
   val Index: Map[Long, (Memory, WattCounter) => Unit] =
