@@ -23,16 +23,19 @@ import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.abi.parse.AbiParser.AbiObject
-import pravda.evm.disasm.{JumpTargetRecognizer, StackSizePredictor}
-import pravda.evm.translate.opcode.{FunctionSelectorTranslator, SimpleTranslation, pushInt, pushType}
+import pravda.evm.disasm.{Blocks, JumpTargetRecognizer, StackSizePredictor}
+import pravda.evm.translate.opcode._
 import pravda.vm.asm.Operation
 
 object Translator {
 
-  trait EvmCode
+  trait EvmCode {
+    def code: List[Addressed[EVM.Op]]
+  }
 
   case class CreationCode(code: List[Addressed[EVM.Op]]) extends EvmCode
   case class ActualCode(code: List[Addressed[EVM.Op]])   extends EvmCode
+  case class Code(code: List[Addressed[EVM.Op]])         extends EvmCode
 
   type Converted = Either[EVM.Op, List[asm.Operation]]
   type Addressed[T] = (Int, T)
@@ -54,28 +57,20 @@ object Translator {
       .map(_.flatten)
   }
 
-  def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
-    JumpTargetRecognizer(ops)
-      .left.map(_.toString)
-  }
-
   def translateActualContract(ops: List[Addressed[EVM.Op]],
                               abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
 
-    split(ops).flatMap {
-      case (creationCode, actualContract) =>
-     //   val filteredCreationOps = actualContract.code.map(jumpDestToAddressed)
-
-        val filteredActualOps = actualContract.code.map(_._2)
-        val ops = StackSizePredictor.clear(StackSizePredictor.emulate(filteredActualOps))
-       // val jumpDests = filteredOps.collect { case j @ JumpDest(x) => j }.zipWithIndex
-       // val prepare = prepared(jumpDests)
-        Translator(ops, abi).map(opcodes => asm.Operation.Label(startLabelName) :: createArray(defaultMemorySize) :::  opcodes)
-    }
+    for {
+      code <- Blocks.splitToCreativeAndRuntime(ops)
+      code <- JumpTargetRecognizer(code._2).left.map(_.toString)
+      ops1 = StackSizePredictor.clear(StackSizePredictor.emulate(code.map(_._2)))
+      res <- Translator(ops1, abi).map(opcodes =>
+        asm.Operation
+          .Label(startLabelName) :: createArray(defaultMemorySize) ::: opcodes ::: StdlibAsm.readWordFunction.code ::: StdlibAsm.writeWordFunction.code)
+    } yield res
   }
 
-
-  def createArray(size: Int):List[Operation] =
+  def createArray(size: Int): List[Operation] =
     List(
       pushInt(size),
       pushType(Data.Type.Int8),

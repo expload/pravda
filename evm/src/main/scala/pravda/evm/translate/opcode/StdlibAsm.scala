@@ -23,22 +23,19 @@ import pravda.vm.{Data, Opcodes}
 
 object StdlibAsm {
 
-  case class Function(name:String,code: List[Operation])
+  case class Function(name: String, code: List[Operation])
 
   lazy val readWordFunction = Function("read_word",
-    List(Operation.Label("read_word")) ++
-      readWord ++ List(Operation(Opcodes.RET))
-  )
+                                       List(Operation.Label("read_word")) ++
+                                         readWord ++ List(Operation(Opcodes.RET)))
 
   lazy val readByteFunction = Function("read_byte",
-    List(Operation.Label("read_byte")) ++
-      readByte ++ List(Operation(Opcodes.RET))
-  )
+                                       List(Operation.Label("read_byte")) ++
+                                         readByte ++ List(Operation(Opcodes.RET)))
 
   lazy val writeWordFunction = Function("write_word",
-    List(Operation.Label("write_word")) ++
-      writeWord ++ List(Operation(Opcodes.RET))
-  )
+                                        List(Operation.Label("write_word")) ++
+                                          writeWord ++ List(Operation(Opcodes.RET)))
 
   /*
    * Stack:
@@ -47,6 +44,11 @@ object StdlibAsm {
    */
   lazy val readWord: List[Operation] = StdlibAsm.sliceArray ++ StdlibAsm.byteStringToBigint
 
+  /*
+   * Stack:
+   *         index
+   *         Ref to byte array
+   */
   val readByte: List[Operation] =
     List(
       Operation(Opcodes.ARRAY_GET),

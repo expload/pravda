@@ -74,13 +74,10 @@ object SimpleTranslation {
 //    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
 //    case JumpI => jumpi
 
-    case Jump(_,dest)  =>  codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
-    case JumpI(_,dest) => jumpi(dest)
+    case Jump(_, dest)  => codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
+    case JumpI(_, dest) => jumpi(dest)
 
-    case Stop  => codeToOps(Opcodes.STOP)
-
-
-
+    case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
@@ -94,23 +91,24 @@ object SimpleTranslation {
     case SLoad  => codeToOps(Opcodes.SGET)
 
     case MLoad(size) =>
-      pushInt(size + 1):: codeToOps(Opcodes.DUPN,Opcodes.SWAP) ::: StdlibAsm.readWord
+      pushInt(size + 1) :: codeToOps(Opcodes.DUPN, Opcodes.SWAP) ::: Operation.Call(Some("read_word")) :: Nil
 
     case MStore(size) =>
-       pushInt(size + 1)  :: codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN,Opcodes.SWAP)  ::: StdlibAsm.writeWord :::
-        pushInt(size - 4) :: codeToOps(Opcodes.SWAPN,Opcodes.POP)
-
+      pushInt(size + 1) ::
+        codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN, Opcodes.SWAP) :::
+        Operation.Call(Some("write_word")) ::
+        pushInt(size) ::
+        codeToOps(Opcodes.SWAPN, Opcodes.POP)
 
     //TODO DELETE ME
-    case Not       => pushBigInt(pow2_256) :: sub ::: Nil
-    case Revert     => codeToOps(Opcodes.STOP)
-    case Return     => codeToOps(Opcodes.RET)
+    case Not    => pushBigInt(pow2_256) :: sub ::: Nil
+    case Revert => codeToOps(Opcodes.STOP)
+    case Return => codeToOps(Opcodes.RET)
 
-    case CallValue => pushBigInt(scala.BigInt(0)) :: Nil
-    case CallDataSize =>  pushBigInt(scala.BigInt(1000)) :: Nil
-    case CallDataLoad =>  codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
-    case Invalid  => codeToOps(Opcodes.STOP)
-
+    case CallValue    => pushBigInt(scala.BigInt(0)) :: Nil
+    case CallDataSize => pushBigInt(scala.BigInt(1000)) :: Nil
+    case CallDataLoad => codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
+    case Invalid      => codeToOps(Opcodes.STOP)
   }
 
   def evmOpToOps(op: EVM.Op): Converted =

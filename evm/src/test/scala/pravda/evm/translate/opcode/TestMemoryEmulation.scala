@@ -63,8 +63,8 @@ object TestMemoryEmulation extends TestSuite {
                                        pushInt(1)) ++ StdlibAsm.writeWord)
       ) ==>
         Expectations(
-          4840,
-          stack = ArrayBuffer(),
+          4839,
+          stack = ArrayBuffer(Ref(1)),
           heap = Map(
             Ref(0) -> Int8Array(arr.toBuffer),
             Ref(1) -> Int8Array((0.toByte :: arr.take(32) ::: List.fill[Byte](arr.size - 33)(0)).toBuffer)
@@ -85,8 +85,8 @@ object TestMemoryEmulation extends TestSuite {
                                        pushInt(31)) ++ StdlibAsm.writeWord)
       ) ==>
         Expectations(
-          6515,
-          stack = ArrayBuffer(),
+          6514,
+          stack = ArrayBuffer(Ref(2)),
           heap = Map(
             Ref(0) -> Int8Array(arr.toBuffer),
             Ref(1) -> Int8Array(List.fill[Byte](arr.size)(0).toBuffer),

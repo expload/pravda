@@ -44,9 +44,7 @@ object FunctionSelectorTranslator {
                        lastFunction: Option[AbiFunction],
                        acc: List[FunctionDestination]): List[FunctionDestination] =
       ops match {
-        case Push(_) :: JumpI(_,dest) :: xs =>
-
-
+        case Push(_) :: JumpI(_, dest) :: xs =>
           lastFunction match {
             case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, dest) :: acc)
             case None    => jumps(xs, lastFunction, acc)
@@ -78,7 +76,8 @@ object FunctionSelectorTranslator {
           .init
           .map(Left(_))
         val l2: List[Converted] =
-          (codeToOps(Opcodes.SWAP) ++ newJumps ++ (pushString("incorrect function name") :: codeToOps(Opcodes.THROW))).map(op => Right(List(op)))
+          (codeToOps(Opcodes.SWAP) ++ newJumps ++ (pushString("incorrect function name") :: codeToOps(Opcodes.THROW)))
+            .map(op => Right(List(op)))
         val l3 = ops
           .dropWhile {
             case JumpDest(_) => false
