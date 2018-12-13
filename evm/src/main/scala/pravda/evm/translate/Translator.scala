@@ -18,11 +18,12 @@
 package pravda.evm.translate
 
 import cats.instances.list._
+import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.disasm.{JumpTargetRecognizer, StackSizePredictor}
-import pravda.evm.translate.opcode.{FunctionSelectorTranslator, SimpleTranslation, pushInt, pushType}
+import pravda.evm.translate.opcode._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}
 
@@ -38,7 +39,7 @@ object Translator {
   type ContractCode = (CreationCode, ActualCode)
 
   val startLabelName = "__start_evm_program"
-  val defaultMemorySize = 2000
+  val defaultMemorySize = 1024
 
   def apply(ops: List[EVM.Op], abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
     val (funcs, _, _) = AbiObject.unwrap(abi)
@@ -61,18 +62,19 @@ object Translator {
 
     split(ops).flatMap {
       case (creationCode, actualContract) =>
-     //   val filteredCreationOps = actualContract.code.map(jumpDestToAddressed)
-
         val filteredActualOps = actualContract.code.map(_._2)
         val ops = StackSizePredictor.clear(StackSizePredictor.emulate(filteredActualOps))
-       // val jumpDests = filteredOps.collect { case j @ JumpDest(x) => j }.zipWithIndex
-       // val prepare = prepared(jumpDests)
-        Translator(ops, abi).map(opcodes => asm.Operation.Label(startLabelName) :: createArray(defaultMemorySize) :::  opcodes)
+
+        Translator(ops, abi).map(
+          opcodes =>
+            asm.Operation.Label(startLabelName) ::
+              createArray(defaultMemorySize) :::
+              opcodes
+        )
     }
   }
 
-
-  def createArray(size: Int):List[Operation] =
+  def createArray(size: Int): List[Operation] =
     List(
       pushInt(size),
       pushType(Data.Type.Int8),

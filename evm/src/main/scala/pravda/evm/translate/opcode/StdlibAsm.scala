@@ -23,36 +23,30 @@ import pravda.vm.{Data, Opcodes}
 
 object StdlibAsm {
 
-  case class Function(name:String,code: List[Operation])
+  case class Function(name: String, code: List[Operation])
 
-  lazy val readWordFunction = Function("read_word",
-    List(Operation.Label("read_word")) ++
-      readWord ++ List(Operation(Opcodes.RET))
-  )
-
-  lazy val readByteFunction = Function("read_byte",
-    List(Operation.Label("read_byte")) ++
-      readByte ++ List(Operation(Opcodes.RET))
-  )
-
-  lazy val writeWordFunction = Function("write_word",
-    List(Operation.Label("write_word")) ++
-      writeWord ++ List(Operation(Opcodes.RET))
-  )
+  private def stdlibFunc(name: String, ops: List[Operation]): Function = {
+    val fname = s"stdlib_$name"
+    Function(fname,
+             List(Operation.Label(fname)) ++
+               ops ++ List(Operation(Opcodes.RET)))
+  }
 
   /*
    * Stack:
    *         index
    *         Ref to byte array
    */
-  lazy val readWord: List[Operation] = StdlibAsm.sliceArray ++ StdlibAsm.byteStringToBigint
+  val readWord: List[Operation] = List(Operation(Opcodes.POP),
+                                       Operation(Opcodes.POP),
+                                       Operation.Push(Data.Primitive.Bytes(ByteString.copyFrom(Array.fill[Byte](32)(0)))))
 
-  val readByte: List[Operation] =
-    List(
-      Operation(Opcodes.ARRAY_GET),
-      pushType(Data.Type.BigInt),
-      Operation(Opcodes.CAST),
-    )
+//  private val readByte: List[Operation] =
+//    List(
+//      Operation(Opcodes.ARRAY_GET),
+//      pushType(Data.Type.BigInt),
+//      Operation(Opcodes.CAST),
+//    )
 
   val byteStringToBigint: List[Operation] =
     List(
@@ -85,88 +79,6 @@ object StdlibAsm {
       Operation.JumpI(Some("bigint_to_bytes_loop")),
       Operation.Label("end_of_bigint_to_bytes_loop"),
     )
-
-  /*
-   * Stack:
-   *         index
-   *         word(BigInt)
-   *         ref to byte array
-   */
-  lazy val writeWord: List[Operation] =
-    List(pushInt(3), Operation(Opcodes.SWAPN), pushInt(3), Operation(Opcodes.DUPN)) ++
-      expandArray ++
-      List(
-        pushInt(3),
-        Operation(Opcodes.SWAPN)
-      ) ++
-      (Operation(Opcodes.SWAP) :: bigintToByteString) ++
-      List(
-        Operation(Opcodes.SWAP),
-        pushInt(0),
-        Operation.Label("write_words_loop"),
-        Operation(Opcodes.DUP),
-        pushInt(3),
-        Operation(Opcodes.DUPN),
-        Operation(Opcodes.SWAP),
-        pushInt(5),
-        Operation(Opcodes.DUPN),
-        Operation(Opcodes.SWAP),
-        Operation(Opcodes.ARRAY_GET),
-        pushType(Data.Type.Int8),
-        Operation(Opcodes.CAST),
-        pushInt(6),
-        Operation(Opcodes.DUPN),
-        pushInt(3),
-        Operation(Opcodes.SWAPN),
-        Operation(Opcodes.ARRAY_MUT),
-        Operation(Opcodes.SWAP),
-        pushInt(1),
-        Operation(Opcodes.ADD),
-        Operation(Opcodes.SWAP),
-        pushInt(1),
-        Operation(Opcodes.ADD),
-        Operation(Opcodes.DUP),
-        pushInt(32),
-        Operation(Opcodes.GT),
-        Operation.JumpI(Some("write_words_loop")),
-        Operation(Opcodes.POP),
-        Operation(Opcodes.POP),
-        Operation(Opcodes.POP),
-      )
-
-  /*
-   * Stack:
-   *         index
-   *         ref to byte array
-   * Stack:
-   *        ref to expanded or same array
-   */
-  lazy val expandArray: List[Operation] =
-    List(
-      pushInt(32),
-      Operation(Opcodes.ADD),
-      Operation(Opcodes.SWAP),
-      Operation(Opcodes.DUP),
-      Operation(Opcodes.LENGTH),
-      Operation(Opcodes.SWAP),
-      pushInt(3),
-      Operation(Opcodes.SWAPN),
-      Operation(Opcodes.LT),
-      Operation.JumpI(Some("end_of_expand_array_loop")),
-      Operation.Label("start_of_expand_array_loop"),
-      Operation(Opcodes.DUP),
-      Operation(Opcodes.LENGTH),
-      pushInt(2),
-      Operation(Opcodes.MUL),
-      pushType(Data.Type.Int8),
-      Operation(Opcodes.NEW_ARRAY),
-      Operation(Opcodes.SWAP),
-      pushInt(2),
-      Operation(Opcodes.DUPN),
-      Operation(Opcodes.SWAP)
-    ) ++
-      StdlibAsm.copyArray ++
-      List(Operation.Label("end_of_expand_array_loop"))
 
   /*
    * Stack:
@@ -206,6 +118,49 @@ object StdlibAsm {
       Operation(Opcodes.POP),
     )
 
+  /*
+   * Stack:
+   *         index
+   *         ref to byte array
+   * Stack:
+   *        ref to expanded or same array
+   */
+  val expandArray: List[Operation] =
+    List(
+      pushInt(32),
+      Operation(Opcodes.ADD),
+      Operation(Opcodes.SWAP),
+      Operation(Opcodes.DUP),
+      Operation(Opcodes.LENGTH),
+      Operation(Opcodes.SWAP),
+      pushInt(3),
+      Operation(Opcodes.SWAPN),
+      Operation(Opcodes.LT),
+      Operation.JumpI(Some("end_of_expand_array_loop")),
+      Operation.Label("start_of_expand_array_loop"),
+      Operation(Opcodes.DUP),
+      Operation(Opcodes.LENGTH),
+      pushInt(2),
+      Operation(Opcodes.MUL),
+      pushType(Data.Type.Int8),
+      Operation(Opcodes.NEW_ARRAY),
+      Operation(Opcodes.SWAP),
+      pushInt(2),
+      Operation(Opcodes.DUPN),
+      Operation(Opcodes.SWAP)
+    ) ++
+      StdlibAsm.copyArray ++
+      List(Operation.Label("end_of_expand_array_loop"))
+
+  /*
+   * Stack:
+   *         index
+   *         word(BigInt)
+   *         ref to byte array
+   */
+  val writeWord: List[Operation] =
+    List(Operation(Opcodes.SWAP), Operation(Opcodes.POP), Operation(Opcodes.SWAP), Operation(Opcodes.POP))
+
   val sliceArray: List[Operation] =
     List(
       Operation(Opcodes.DUP),
@@ -244,7 +199,7 @@ object StdlibAsm {
     )
 
   def createByteArray(arr: List[Byte]): List[Operation] = {
-    createArray(arr.size) ++ arr.zipWithIndex.flatMap({
+    createArray(arr.size) ++ arr.zipWithIndex.flatMap {
       case (el, ind) =>
         List(
           Operation(Opcodes.DUP),
@@ -252,6 +207,11 @@ object StdlibAsm {
           pushInt(ind),
           Operation(Opcodes.ARRAY_MUT),
         )
-    })
+    }
+  }
 
+  val stdlibFuncs = List(
+    stdlibFunc("read_word", readWord),
+    stdlibFunc("write_word", writeWord)
+  )
 }

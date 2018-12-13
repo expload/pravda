@@ -37,71 +37,96 @@ object TranslateTests extends TestSuite {
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
       val Right(asm) = Translator.translateActualContract(ops, abi)
 
-      println(PravdaAssembler.render(asm))
-
-      asm ==> PravdaAssembler.parse(
-        """
-          |@__start_evm_program:
-          |push bigint(128)
-          |push bigint(64)
-          |meta custom "MStoreev_2"
+      PravdaAssembler.render(asm) ==>
+        """@__start_evm_program:
+          |push int32(2000)
+          |push int8(1)
+          |new_array
+          |push x80
+          |push x40
+          |push int32(3)
+          |dupn
+          |call @stdlib_write_word
+          |push int32(2)
+          |swapn
+          |pop
+          |swap
           |dup
           |push "get"
           |eq
-          |push int32(120)
-          |pop
-          |push int8(9)
-          |cast
           |jumpi @_lbl_120
           |dup
           |push "set"
           |eq
-          |push int32(78)
-          |pop
-          |push int8(9)
-          |cast
           |jumpi @_lbl_78
           |push "incorrect function name"
           |throw
           |@_lbl_73:
-          |push bigint(0)
+          |push x00
           |dup
           |stop
           |@_lbl_78:
-          |push bigint(100000)
-          |dup
-          |push bigint(0)
-          |eq
-          |push int8(4)
+          |push bigint(10)
+          |push int8(14)
           |cast
-          |push bigint(89)
+          |dup
+          |push x0000000000000000000000000000000000000000000000000000000000000000
+          |eq
+          |push int8(14)
+          |cast
+          |push x59
           |pop
           |push int8(9)
           |cast
           |jumpi @_lbl_89
-          |push bigint(0)
+          |push x00
           |dup
           |stop
           |@_lbl_89:
           |pop
-          |push bigint(118)
-          |push bigint(4)
+          |push x76
+          |push x04
           |dup
-          |meta custom "CallDataSize"
+          |push x04
+          |push int8(4)
+          |cast
+          |swap
+          |push int8(4)
+          |cast
+          |swap
           |swap
           |push bigint(-1)
           |mul
           |add
+          |push int8(14)
+          |cast
           |push int32(2)
           |dupn
+          |push int8(4)
+          |cast
+          |swap
+          |push int8(4)
+          |cast
+          |swap
           |add
+          |push int8(14)
+          |cast
           |swap
           |dup
           |dup
-          |meta custom "CallDataLoad"
+          |pop
+          |push x10
           |swap
-          |push bigint(32)
+          |push x20
+          |push int8(4)
+          |cast
+          |swap
+          |push int8(4)
+          |cast
+          |swap
           |add
+          |push int8(14)
+          |cast
           |swap
           |push int32(4)
           |swapn
@@ -111,61 +136,88 @@ object TranslateTests extends TestSuite {
           |pop
           |pop
           |pop
-          |push bigint(160)
+          |push xA0
           |pop
           |jump @_lbl_160
           |@_lbl_118:
           |stop
           |@_lbl_120:
-          |push bigint(100000)
-          |dup
-          |push bigint(0)
-          |eq
-          |push int8(4)
+          |push bigint(10)
+          |push int8(14)
           |cast
-          |push bigint(131)
+          |dup
+          |push x0000000000000000000000000000000000000000000000000000000000000000
+          |eq
+          |push int8(14)
+          |cast
+          |push x83
           |pop
           |push int8(9)
           |cast
           |jumpi @_lbl_131
-          |push bigint(0)
+          |push x00
           |dup
           |stop
           |@_lbl_131:
           |pop
-          |push bigint(138)
-          |push bigint(170)
+          |push x8A
+          |push xAA
           |pop
           |jump @_lbl_170
           |@_lbl_138:
-          |push bigint(64)
-          |meta custom "Mload_3"
+          |push x40
+          |push int32(4)
+          |dupn
+          |call @stdlib_read_word
           |dup
           |push int32(3)
           |dupn
           |push int32(2)
           |dupn
-          |meta custom "MStore_6"
-          |push bigint(32)
+          |push int32(7)
+          |dupn
+          |call @stdlib_write_word
+          |push int32(6)
+          |swapn
+          |pop
+          |push x20
+          |push int8(4)
+          |cast
+          |swap
+          |push int8(4)
+          |cast
+          |swap
           |add
+          |push int8(14)
+          |cast
           |push int32(3)
           |swapn
           |pop
           |pop
-          |push bigint(64)
-          |meta custom "Mload_3"
+          |push x40
+          |push int32(4)
+          |dupn
+          |call @stdlib_read_word
           |dup
           |push int32(3)
           |swapn
+          |push int8(4)
+          |cast
+          |swap
+          |push int8(4)
+          |cast
+          |swap
           |swap
           |push bigint(-1)
           |mul
           |add
+          |push int8(14)
+          |cast
           |swap
-          |meta custom "Return"
+          |ret
           |@_lbl_160:
           |dup
-          |push bigint(0)
+          |push x00
           |push int32(2)
           |dupn
           |swap
@@ -175,7 +227,7 @@ object TranslateTests extends TestSuite {
           |pop
           |jump @_lbl_118
           |@_lbl_170:
-          |push bigint(0)
+          |push x00
           |dup
           |sget
           |swap
@@ -183,8 +235,7 @@ object TranslateTests extends TestSuite {
           |swap
           |pop
           |jump @_lbl_138
-          |stop
-        """.stripMargin)
+          |stop""" .stripMargin
     }
   }
 }

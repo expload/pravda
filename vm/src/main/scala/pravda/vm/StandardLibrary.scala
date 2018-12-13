@@ -24,7 +24,10 @@ object StandardLibrary {
     standard.ValidateEd25519Signature,
     standard.ExponentialFunction,
     standard.HexToBytes,
-    standard.BytesToHex
+    standard.BytesToHex,
+    standard.ReadEvmWord,
+    standard.WriteEvmWord,
+    standard.SliceEvmMemory
   )
 
   val Index: Map[Long, (Memory, WattCounter) => Unit] =

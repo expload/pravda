@@ -22,6 +22,7 @@ import pravda.evm.translate.Translator.Converted
 import pravda.vm.asm
 import pravda.vm._
 import pravda.vm.asm.Operation
+import pravda.evm.utils._
 
 object SimpleTranslation {
 
@@ -41,7 +42,7 @@ object SimpleTranslation {
     bigintOps(List(asmOp))
 
   private val translate: PartialFunction[EVM.Op, List[asm.Operation]] = {
-    case Push(bytes) => pushBytes(bytes.toArray) :: Nil
+    case Push(bytes) => List(Operation.Push(evmWord(bytes.toArray)))
 
     case Pop => codeToOps(Opcodes.POP)
 
@@ -77,15 +78,15 @@ object SimpleTranslation {
         codeToOps(Opcodes.AND) ++
         cast(Data.Type.Bytes)
 
-    case IsZero => pushBytes(Array.fill(32)(0)) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes) // ???
-    case Lt => bigintOp(Operation(Opcodes.LT))
-    case Gt => bigintOp(Operation(Opcodes.GT))
-    case Eq => bigintOp(Operation(Opcodes.EQ))
+    case IsZero => pushBytes(Array.fill(32)(0)) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes)
+    case Lt     => bigintOp(Operation(Opcodes.LT))
+    case Gt     => bigintOp(Operation(Opcodes.GT))
+    case Eq     => bigintOp(Operation(Opcodes.EQ))
 
     case Jump(_, dest)  => codeToOps(Opcodes.POP) ++ List(Operation.Jump(Some(nameByAddress(dest))))
     case JumpI(_, dest) => jumpi(dest)
 
-    case Stop  => codeToOps(Opcodes.STOP)
+    case Stop => codeToOps(Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
@@ -99,27 +100,42 @@ object SimpleTranslation {
     case SLoad  => codeToOps(Opcodes.SGET)
 
     case MLoad(size) =>
-      pushInt(size + 1):: codeToOps(Opcodes.DUPN,Opcodes.SWAP) ::: StdlibAsm.readWord
-
+      cast(Data.Type.BigInt) ::: pushInt(size + 1) :: codeToOps(Opcodes.DUPN) ::: List(
+        Operation.Push(Data.Primitive.Int8(6)),
+        Operation(Opcodes.SCALL))
     case MStore(size) =>
-       pushInt(size + 1)  :: codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN,Opcodes.SWAP)  ::: StdlibAsm.writeWord :::
-        pushInt(size - 4) :: codeToOps(Opcodes.SWAPN,Opcodes.POP)
+      cast(Data.Type.BigInt) ::: pushInt(size + 1) :: codeToOps(Opcodes.DUPN) ::: List(
+        Operation.Push(Data.Primitive.Int8(7)),
+        Operation(Opcodes.SCALL)) :::
+        pushInt(size) :: codeToOps(Opcodes.SWAPN, Opcodes.POP)
 
     case MStore8(stackSize) => List(Operation.Meta(Meta.Custom(s"MStore8_$stackSize")))
-    case CallDataSize       => List(Operation.Meta(Meta.Custom("CallDataSize")))
-    case CallDataLoad       => List(Operation.Meta(Meta.Custom("CallDataLoad")))
-    case Return             => List(Operation.Meta(Meta.Custom("Return")))
 
-    //TODO DELETE ME
-    case Not       => pushBigInt(pow2_256) :: sub ::: Nil
-    case Revert     => codeToOps(Opcodes.STOP)
-    case Return     => codeToOps(Opcodes.RET)
+    case Not    => pushBigInt(pow2_256) :: sub ::: Nil
+    case Revert => List(Operation.Push(Data.Primitive.Utf8("Revert")), Operation(Opcodes.THROW))
+    case Return =>
+      cast(Data.Type.BigInt) :::
+        List(Operation(Opcodes.SWAP)) :::
+        cast(Data.Type.BigInt) :::
+        List(Operation(Opcodes.SWAP)) :::
+        List(
+        pushInt(4),
+        Operation(Opcodes.DUPN),
+        pushInt(8),
+        Operation(Opcodes.SCALL),
+        Operation(Opcodes.SWAP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.SWAP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.STOP)
+      )
 
-    case CallValue => pushBigInt(scala.BigInt(10)) :: cast(Data.Type.Bytes)
-//    case CallDataSize =>  pushBigInt(scala.BigInt(1000)) :: Nil
-//    case CallDataLoad =>  codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
-    case Invalid  => codeToOps(Opcodes.STOP)
-
+    case CallValue    => pushBigInt(scala.BigInt(10)) :: cast(Data.Type.Bytes)
+    case CallDataSize =>
+      List(pushBytes(Array(0x04)))
+    case CallDataLoad =>
+      codeToOps(Opcodes.POP) ::: pushBytes(Array(0x12, 0x34)) :: Nil
+    case Invalid      => codeToOps(Opcodes.STOP)
   }
 
   def evmOpToOps(op: EVM.Op): Converted =

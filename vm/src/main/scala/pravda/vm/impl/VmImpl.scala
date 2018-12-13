@@ -109,6 +109,7 @@ class VmImpl extends Vm {
     var continue = true
     while (continue && program.hasRemaining) {
       counter.cpuUsage(CpuBasic)
+      println(mem.stack.map(_.mkString()).mkString(" "))
       val op = program.get() & 0xff
       mem.setCounter(program.position())
       (op: @switch) match {
