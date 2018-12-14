@@ -36,7 +36,6 @@ import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
-import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
@@ -74,7 +73,8 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
     Unmarshaller.strict(s => s.toLong)
 
   val balances: Entry[Address, NativeCoin] = balanceEntry(db)
-  val eventsByAddress = eventsEntry(db)
+  val eventsByAddress = eventsByAddressEntry(db)
+  val events = eventsEntry(db)
   val transferEffectsByAddress = transferEffectsEntry(db)
   val transactionsByAddress = transactionsEntry(db)
 
@@ -233,22 +233,13 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                 'program.as(hexUnmarshaller),
                 'name,
                 'transactionId.as(hexUnmarshaller).?,
-                'offset.as(intUnmarshaller).?,
-                'count.as(intUnmarshaller).?
+                'offset.as(longUnmarshaller).?,
+                'count.as(longUnmarshaller).?
               )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
-              val offset = maybeOffset.getOrElse(0)
+              val offset = maybeOffset.getOrElse(0L)
               val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
-              val eventuallyResult = db
-                .startsWith(
-                  bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
-                  bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
-                  count.toLong
-                )
-                .map { records =>
-                  records.map(value =>
-                    transcode(BJson @@ value.bytes)
-                      .to[(TransactionId, MarshalledData)])
-                }
+              val eventuallyResult =
+                events.startsWith[(TransactionId, MarshalledData)](eventKey(Address @@ address, name), offset, count)
 
               onSuccess(eventuallyResult) { result =>
                 val items = {
@@ -338,7 +329,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
 
 object ApiRoute {
 
-  final val MaxEventCount = 1000
+  final val MaxEventCount = 1000L
   final val MaxRecordsCount = 1000L
 
   object AddressPathMatcher extends PathMatcher1[Address] {
@@ -350,5 +341,5 @@ object ApiRoute {
     }
   }
 
-  final case class EventItem(offset: Int, transactionId: TransactionId, data: MarshalledData)
+  final case class EventItem(offset: Long, transactionId: TransactionId, data: MarshalledData)
 }
