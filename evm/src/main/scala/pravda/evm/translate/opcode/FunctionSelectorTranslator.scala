@@ -17,7 +17,6 @@
 
 package pravda.evm.translate.opcode
 
-import com.google.protobuf.ByteString
 import pravda.evm.EVM
 import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser.AbiFunction
@@ -25,14 +24,13 @@ import pravda.evm.translate.Translator.Converted
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
-import scala.annotation.tailrec
-
 object FunctionSelectorTranslator {
 
   private def createCallData(argsNum: Int): List[Operation] =
-    (argsNum + 1).to(2, -1).toList.flatMap(i => List(pushInt(i), Operation(Opcodes.SWAPN))) ++
-      argsNum.to(1, -1).toList.flatMap(i => List(pushInt(i), Operation(Opcodes.SWAPN))) ++
-      List(Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY))) ++
+    (argsNum + 2).to(3, -1).toList.flatMap(i => List(pushInt(i), Operation(Opcodes.SWAPN))) ++
+      List(Operation(Opcodes.SWAP)) ++
+      (argsNum + 1).to(2, -1).toList.flatMap(i => List(pushInt(i), Operation(Opcodes.SWAPN))) ++
+      List(pushBytes(Array())) ++
       (1 to argsNum)
         .flatMap(
           i =>
@@ -41,70 +39,36 @@ object FunctionSelectorTranslator {
               List(pushInt(9), Operation(Opcodes.SCALL), Operation(Opcodes.CONCAT))
         )
         .toList ++
-      List(pushInt(2), Operation(Opcodes.SWAPN), Operation(Opcodes.SWAP))
+      List(pushBytes(Array(0x0, 0x0, 0x0, 0x0)), Operation(Opcodes.CONCAT)) ++
+      List(pushInt(3), Operation(Opcodes.SWAPN))
 
   def evmToOps(ops: List[EVM.Op], abi: List[AbiFunction]): List[Converted] = {
-    val destinations = ops
-      .dropWhile {
-        case CallDataSize => false
-        case _            => true
+
+    def aux(code: List[EVM.Op]): List[Converted] = {
+      import fastparse.byte.all.Bytes
+
+      code match {
+        case (firstOp @ Dup(1)) ::
+              Push(Bytes(hash @ _*)) ::
+              Eq ::
+              Push(Bytes(_)) ::
+              JumpI(_, addr) :: rest =>
+          abi.find(_.id == hash) match {
+            case Some(f) =>
+              Right(
+                codeToOps(Opcodes.DUP) ++
+                  List(pushString(f.newName.getOrElse(f.name))) ++
+                  codeToOps(Opcodes.EQ, Opcodes.NOT) ++
+                  List(Operation.JumpI(Some(s"not_${f.name}"))) ++
+                  createCallData(f.inputs.length) ++
+                  List(Operation.Jump(Some(nameByAddress(addr))), Operation.Label(s"not_${f.name}"))) :: aux(rest)
+            case None => Left(firstOp) :: aux(code.tail)
+          }
+        case h :: t => Left(h) :: aux(t)
+        case _      => List.empty
       }
-      .takeWhile {
-        case JumpDest(_) => false
-        case _           => true
-      }
-
-    case class FunctionDestination(function: AbiFunction, address: Int)
-
-    @tailrec def jumps(ops: List[EVM.Op],
-                       lastFunction: Option[AbiFunction],
-                       acc: List[FunctionDestination]): List[FunctionDestination] =
-      ops match {
-        case Push(_) :: JumpI(_, dest) :: xs =>
-          lastFunction match {
-            case Some(f) => jumps(xs, lastFunction, FunctionDestination(f, dest) :: acc)
-            case None    => jumps(xs, lastFunction, acc)
-          }
-        case Push(addr) :: xs =>
-          val address = addr.toArray.toList
-          abi.find(_.id == address) match {
-            case Some(f) => jumps(xs, Some(f), acc)
-            case None    => jumps(xs, lastFunction, acc)
-          }
-        case x :: xs =>
-          jumps(xs, lastFunction, acc)
-        case Nil => acc
-      }
-
-    destinations match {
-      case Nil => ops.map(Left(_))
-      case _ =>
-        val newJumps = jumps(destinations, None, List.empty).flatMap(
-          f =>
-            codeToOps(Opcodes.DUP) ++
-              List(pushString(f.function.newName.getOrElse(f.function.name))) ++
-              codeToOps(Opcodes.EQ, Opcodes.NOT) ++
-              List(Operation.JumpI(Some(s"not_${f.function.name}"))) ++
-              createCallData(f.function.inputs.length) ++
-              List(Operation.Jump(Some(nameByAddress(f.address))), Operation.Label(s"not_${f.function.name}"))
-        )
-
-        val l1 = ops
-          .takeWhile {
-            case CallDataSize => false
-            case _            => true
-          }
-          .init
-          .map(Left(_))
-        val l2: List[Converted] =
-          (codeToOps(Opcodes.SWAP) ++ newJumps ++ (pushString("incorrect function name") :: codeToOps(Opcodes.THROW))).map(op => Right(List(op)))
-        val l3 = ops
-          .dropWhile {
-            case JumpDest(_) => false
-            case _           => true
-          }
-          .map(Left(_))
-        l1 ++ l2 ++ l3
     }
+
+    aux(ops)
   }
 }

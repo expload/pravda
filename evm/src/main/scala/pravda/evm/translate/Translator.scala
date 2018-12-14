@@ -21,6 +21,7 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
+import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.disasm.{JumpTargetRecognizer, StackSizePredictor}
 import pravda.evm.translate.opcode._
@@ -57,6 +58,48 @@ object Translator {
   def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] =
     JumpTargetRecognizer(ops).left.map(_.toString)
 
+  def filterCode(ops: List[EVM.Op]): List[EVM.Op] = {
+    import fastparse.byte.all.Bytes
+
+    ops match {
+      case Push(Bytes(-128)) ::
+            Push(Bytes(0x40)) ::
+            MStore(_) ::
+            rest =>
+        filterCode(rest)
+      case Push(Bytes(0x04)) ::
+            CallDataSize(1) ::
+            Lt ::
+            Push(Bytes(_)) ::
+            JumpI(_, _)
+            :: rest =>
+        filterCode(rest)
+      case Push(Bytes(0x00)) ::
+            CallDataLoad(1) ::
+            Push(bs1: Bytes) ::
+            Swap(1) ::
+            Div ::
+            Push(bs2: Bytes) ::
+            And ::
+            rest
+          if bs1 == Bytes.fromHex("0x0100000000000000000000000000000000000000000000000000000000").get &&
+            bs2 == Bytes.fromHex("0xffffffff").get =>
+        filterCode(rest)
+      case CallValue ::
+            Dup(1) ::
+            IsZero ::
+            Push(Bytes(_)) ::
+            JumpI(_, _) ::
+            Push(Bytes(0x00)) ::
+            Dup(1) ::
+            Revert :: rest =>
+        filterCode(rest)
+
+      case h :: t => h :: filterCode(t)
+      case _      => List.empty
+    }
+  }
+
   def translateActualContract(ops: List[Addressed[EVM.Op]],
                               abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
 
@@ -64,12 +107,17 @@ object Translator {
       case (creationCode, actualContract) =>
         val filteredActualOps = actualContract.code.map(_._2)
         val ops = StackSizePredictor.clear(StackSizePredictor.emulate(filteredActualOps))
+        //println(ops.mkString("\n"))
+        val filtered = filterCode(ops)
+        //println("---")
+        //println(filtered.mkString("\n"))
 
-        Translator(ops, abi).map(
+        Translator(filtered, abi).map(
           opcodes =>
-            asm.Operation.Label(startLabelName) ::
+            Operation.Label(startLabelName) ::
               createArray(defaultMemorySize) :::
-              opcodes
+              Operation(Opcodes.SWAP) ::
+            opcodes
         )
     }
   }

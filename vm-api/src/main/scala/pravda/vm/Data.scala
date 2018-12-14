@@ -17,7 +17,7 @@
 
 package pravda.vm
 
-import java.nio.ByteBuffer
+import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
@@ -357,6 +357,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(2)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putShort(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -374,6 +375,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(4)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putInt(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -391,6 +393,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(8)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putLong(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -408,6 +411,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(4)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putInt(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -425,6 +429,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(8)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putDouble(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
