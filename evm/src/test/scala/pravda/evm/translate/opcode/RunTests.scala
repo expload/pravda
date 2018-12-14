@@ -3,13 +3,11 @@ package pravda.evm.translate.opcode
 import fastparse.byte.all._
 import pravda.common.domain.Address
 import pravda.evm.EVM._
-import pravda.evm.abi.parse.AbiParser
-import pravda.evm.{EvmSandbox, readSolidityABI, readSolidityBinFile}
+import pravda.evm.EvmSandbox
 import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.disasm.JumpTargetRecognizer
-import pravda.evm.parse.Parser
 import pravda.evm.translate.Translator.{ActualCode, Addressed}
-import pravda.vm.Data.Primitive.{BigInt, Utf8}
+import pravda.vm.Data.Primitive.BigInt
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import pravda.vm.VmSandbox
 import utest._
