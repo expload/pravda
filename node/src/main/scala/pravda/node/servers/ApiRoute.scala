@@ -46,7 +46,7 @@ import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Random, Success, Try}
@@ -70,10 +70,13 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
   val intUnmarshaller: Unmarshaller[String, Int] =
     Unmarshaller.strict(s => s.toInt)
 
+  val longUnmarshaller: Unmarshaller[String, Long] =
+    Unmarshaller.strict(s => s.toLong)
+
   val balances: Entry[Address, NativeCoin] = balanceEntry(db)
-  val eventsByAddress: Entry[Address, Seq[TransactionEffects]] = eventsEntry(db)
-  val transferEffectsByAddress: Entry[Address, Seq[TransactionEffects]] = transferEffectsEntry(db)
-  val transactionsByAddress: Entry[Address, Seq[TransactionEffects]] = transactionsEntry(db)
+  val eventsByAddress = eventsEntry(db)
+  val transferEffectsByAddress = transferEffectsEntry(db)
+  val transactionsByAddress = transactionsEntry(db)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -268,10 +271,19 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                * transfers FROM the given address and TO the given address.
                */
               get {
-                onSuccess(transferEffectsByAddress.get(address)) { maybeEffectItems =>
-                  complete(
-                    maybeEffectItems.fold(Seq.empty[TransactionEffects])(identity)
+                parameters(
+                  ('offset.as(longUnmarshaller).?, 'count.as(longUnmarshaller).?)
+                ) { (maybeOffset, maybeCount) =>
+                  val offset = maybeOffset.getOrElse(0L)
+                  val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
+
+                  val eventuallyResult = transferEffectsByAddress.startsWith[TransactionEffects](
+                    bytes.byteString2hex(address),
+                    offset,
+                    count
                   )
+
+                  onSuccess(eventuallyResult)(complete(_))
                 }
               }
             } ~
@@ -281,10 +293,19 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                  * given address.
                  */
                 get {
-                  onSuccess(eventsByAddress.get(address)) { maybeEffectItems =>
-                    complete(
-                      maybeEffectItems.fold(Seq.empty[TransactionEffects])(identity)
+                  parameters(
+                    ('offset.as(longUnmarshaller).?, 'count.as(longUnmarshaller).?)
+                  ) { (maybeOffset, maybeCount) =>
+                    val offset = maybeOffset.getOrElse(0L)
+                    val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
+
+                    val eventuallyResult = eventsByAddress.startsWith[TransactionEffects](
+                      bytes.byteString2hex(address),
+                      offset,
+                      count
                     )
+
+                    onSuccess(eventuallyResult)(complete(_))
                   }
                 }
               } ~
@@ -293,11 +314,21 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                  * Returns all transactions were signed by the given address.
                  */
                 get {
-                  onSuccess(transactionsByAddress.get(address)) { maybeTransactions =>
-                    complete(
-                      maybeTransactions.fold(Seq.empty[TransactionEffects])(identity)
+                  parameters(
+                    ('offset.as(longUnmarshaller).?, 'count.as(longUnmarshaller).?)
+                  ) { (maybeOffset, maybeCount) =>
+                    val offset = maybeOffset.getOrElse(0L)
+                    val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
+
+                    val eventuallyResult = transactionsByAddress.startsWith[TransactionEffects](
+                      bytes.byteString2hex(address),
+                      offset,
+                      count
                     )
+
+                    onSuccess(eventuallyResult)(complete(_))
                   }
+
                 }
               }
           }
@@ -308,6 +339,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
 object ApiRoute {
 
   final val MaxEventCount = 1000
+  final val MaxRecordsCount = 1000L
 
   object AddressPathMatcher extends PathMatcher1[Address] {
 

@@ -292,15 +292,8 @@ object Abci {
                                         transactionId: TransactionId,
                                         effects: Seq[Effect],
                                         transactionNumber: Long): Unit = {
-        val hexAddr = byteUtils.byteString2hex(address)
-        val previousValue =
-          dbPath
-            .getAs[Seq[TransactionEffects]](hexAddr)
-            .fold(Seq.empty[TransactionEffects])(identity)
-        dbPath.put(
-          hexAddr,
-          previousValue :+ TransactionEffects(transactionNumber, transactionId, effects)
-        )
+        val key = keyWithOffset(byteUtils.byteString2hex(address), transactionNumber - 1)
+        dbPath.put(key, TransactionEffects(transactionNumber, transactionId, effects))
       }
 
       private def getAdditionalDataByAddress(addr: Address): AdditionalDataForAddress =
@@ -561,4 +554,5 @@ object Abci {
 
   }
 
+  def keyWithOffset(key: String, offset: Long) = f"$key:$offset%016x"
 }
