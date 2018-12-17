@@ -86,7 +86,7 @@ object SimpleTranslation {
     case Jump(_, dest)  => codeToOps(Opcodes.POP) ++ List(Operation.Jump(Some(nameByAddress(dest))))
     case JumpI(_, dest) => jumpi(dest)
 
-    case Stop => codeToOps(Opcodes.STOP, Opcodes.POP, Opcodes.POP, Opcodes.POP)
+    case Stop => codeToOps(Opcodes.POP, Opcodes.POP, Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
@@ -119,7 +119,7 @@ object SimpleTranslation {
         cast(Data.Type.BigInt) :::
         List(Operation(Opcodes.SWAP)) :::
         List(
-        pushInt(4),
+        pushInt(3),
         Operation(Opcodes.DUPN),
         pushInt(8),
         Operation(Opcodes.SCALL),
