@@ -23,17 +23,20 @@ import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser.AbiObject
-import pravda.evm.disasm.{JumpTargetRecognizer, StackSizePredictor}
+import pravda.evm.disasm.{Blocks, JumpTargetRecognizer, StackSizePredictor}
 import pravda.evm.translate.opcode._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}
 
 object Translator {
 
-  trait EvmCode
+  trait EvmCode {
+    def code: List[Addressed[EVM.Op]]
+  }
 
   case class CreationCode(code: List[Addressed[EVM.Op]]) extends EvmCode
   case class ActualCode(code: List[Addressed[EVM.Op]])   extends EvmCode
+  case class Code(code: List[Addressed[EVM.Op]])         extends EvmCode
 
   type Converted = Either[EVM.Op, List[asm.Operation]]
   type Addressed[T] = (Int, T)
@@ -54,9 +57,6 @@ object Translator {
       .sequence
       .map(_.flatten)
   }
-
-  def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] =
-    JumpTargetRecognizer(ops).left.map(_.toString)
 
   def filterCode(ops: List[EVM.Op]): List[EVM.Op] = {
     import fastparse.byte.all.Bytes
@@ -102,24 +102,20 @@ object Translator {
 
   def translateActualContract(ops: List[Addressed[EVM.Op]],
                               abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
-
-    split(ops).flatMap {
-      case (creationCode, actualContract) =>
-        val filteredActualOps = actualContract.code.map(_._2)
-        val ops = StackSizePredictor.clear(StackSizePredictor.emulate(filteredActualOps))
-        //println(ops.mkString("\n"))
-        val filtered = filterCode(ops)
-        //println("---")
-        //println(filtered.mkString("\n"))
-
-        Translator(filtered, abi).map(
-          opcodes =>
-            Operation.Label(startLabelName) ::
-              createArray(defaultMemorySize) :::
-              Operation(Opcodes.SWAP) ::
+    for {
+      code1 <- Blocks.splitToCreativeAndRuntime(ops)
+      (creationCode1, actualContract1) = code1
+      code2 <- JumpTargetRecognizer(actualContract1).left.map(_.toString)
+      ops = StackSizePredictor.clear(StackSizePredictor.emulate(code2.map(_._2)))
+      filtered = filterCode(ops)
+      res <- Translator(filtered, abi).map(
+        opcodes =>
+          Operation.Label(startLabelName) ::
+            createArray(defaultMemorySize) :::
+            Operation(Opcodes.SWAP) ::
             opcodes
-        )
-    }
+      )
+    } yield res
   }
 
   private def createArray(size: Int): List[Operation] =

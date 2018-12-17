@@ -17,57 +17,30 @@
 
 package pravda.evm.disasm
 
-import pravda.evm.EVM.{Op, _}
+import pravda.evm.EVM._
 import pravda.evm.disasm.Blocks.WithJumpDest
-import pravda.evm.translate.Translator.{ActualCode, Addressed, CreationCode}
+import pravda.evm.translate.Translator._
 
 object JumpTargetRecognizer {
 
-  def apply(ops1: List[Addressed[Op]]): Either[Set[WithJumpDest], (CreationCode, ActualCode)] = {
-    val ops = ops1.map {
-      case (ind, JumpI) => ind -> SelfAddressedJumpI(ind)
-      case (ind, Jump)  => ind -> SelfAddressedJump(ind)
-      case a            => a
+  def apply(ops: EvmCode): Either[Set[WithJumpDest], List[Addressed[Op]]] = {
+
+    val blocks = Blocks.split(ops.code.map(_._2))
+    val (jumps, jumpdests) = Emulator.jumps(blocks)
+
+    val jumpsMap: Map[Int, AddressedJumpOp] = jumps.map {
+      case j @ JumpI(addr, _) => addr -> j
+      case j @ Jump(addr, _)  => addr -> j
+    }.toMap
+
+    val newOps = ops.code.map {
+      case (ind, SelfAddressedJumpI(ind1)) if jumpsMap.contains(ind1) => ind -> jumpsMap(ind1)
+      case (ind, SelfAddressedJump(ind1)) if jumpsMap.contains(ind1)  => ind -> jumpsMap(ind1)
+      case a                                                          => a
     }
 
-    Blocks
-      .splitToCreativeAndRuntime(ops, ops.last._1.toLong)
-      .toRight(Set.empty[WithJumpDest])
-      .flatMap {
-        case (creative, runtime) =>
-          val creativeBlocks = Blocks.split(creative.map(_._2))
-          val creativeJumps = Emulator.jumps(creativeBlocks)
-
-          val runtimeBlocks = Blocks.split(runtime.map(_._2))
-          val runtimeJumps = Emulator.jumps(runtimeBlocks)
-
-          val creativeJumpsMap: Map[Int, AddressedJumpOp] = creativeJumps._1.map {
-            case j @ JumpI(addr, _) => addr -> j
-            case j @ Jump(addr, _)  => addr -> j
-          }.toMap
-
-          val newCreativeOps = creative.map {
-            case (ind, SelfAddressedJumpI(ind1)) if creativeJumpsMap.contains(ind1) => ind -> creativeJumpsMap(ind1)
-            case (ind, SelfAddressedJump(ind1)) if creativeJumpsMap.contains(ind1)  => ind -> creativeJumpsMap(ind1)
-            case a                                                                  => a
-          }
-
-          val runtimeJumpsMap: Map[Int, AddressedJumpOp] = runtimeJumps._1.map {
-            case j @ JumpI(addr, _) => addr -> j
-            case j @ Jump(addr, _)  => addr -> j
-          }.toMap
-
-          val newRuntimeOps = runtime.map {
-            case (ind, SelfAddressedJumpI(ind1)) if runtimeJumpsMap.contains(ind1) => ind -> runtimeJumpsMap(ind1)
-            case (ind, SelfAddressedJump(ind1)) if runtimeJumpsMap.contains(ind1)  => ind -> runtimeJumpsMap(ind1)
-            case a                                                                 => a
-          }
-
-          val j = creativeJumps._2 ++ runtimeJumps._2
-
-          if (j.isEmpty)
-            Right((CreationCode(newCreativeOps), ActualCode(newRuntimeOps)))
-          else Left(j)
-      }
+    if (jumpdests.isEmpty)
+      Right(newOps)
+    else Left(jumpdests)
   }
 }

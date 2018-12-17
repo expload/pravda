@@ -6,6 +6,9 @@ import pravda.evm.EVM._
 import pravda.evm.EvmSandbox
 import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.utils._
+//import pravda.evm.disasm.JumpTargetRecognizer
+//import pravda.evm.translate.Translator.{ActualCode, Addressed}
+//import pravda.vm.Data.Primitive.BigInt
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import pravda.vm.VmSandbox
 import utest._
@@ -124,156 +127,134 @@ object RunTests extends TestSuite {
 //    val `1` = hex"0x1"
     val `3` = hex"0x3"
     val `4` = hex"0x4"
-//    val `10` = hex"0xa"
-
+//    val `7` = hex"0x7"
+//    val `8` = hex"0x8"
+//    val `14` = hex"0xe"
+//
 //    "JUMPS" - {
+//      val run: List[Addressed[Op]] => Either[String, VmSandbox.ExpectationsWithoutWatts] = ops =>
+//        JumpTargetRecognizer(ActualCode(ops)).left
+//          .map(_.toString)
+//          .flatMap(
+//            code =>
+//              EvmSandbox.runCode(
+//                preconditions,
+//                code.map(_._2),
+//                abi
+//            ))
+//
 //      "One jump" - {
-//        EvmSandbox.runAddressedCode(
-//          preconditions,
+//
+//        run(
 //          List(
 //            0 -> Push(`4`),
-//            2 -> Push(`0`),
-//            3 -> CodeCopy,
-//            3 -> Revert,
-//            4 -> Push(`4`),
-//            4 -> Push(`3`),
-//            5 -> Jump,
-//            5 -> Push(`4`),
-//            6 -> Push(`4`),
-//            7 -> Push(`4`),
-//            7 -> JumpDest,
-//            8 -> Revert
-//          ),
-//          abi
-//        ) ==> Right(
+//            1 -> Push(`3`),
+//            2 -> SelfAddressedJump(2),
+//            3 -> Push(`4`),
+//            3 -> Push(`4`),
+//            3 -> Push(`4`),
+//            3 -> JumpDest(3),
+//            5 -> Revert,
+//          )) ==> Right(
 //          Expectations(
-//            stack = Seq(evmWord(Array(0x04)))
+//            stack = Seq(BigInt(scala.BigInt(4)))
 //          ))
 //
-//        EvmSandbox.runAddressedCode(
-//          preconditions,
+//        run(
 //          List(
-//            0 -> Push(`4`),
-//            2 -> Push(`0`),
-//            3 -> CodeCopy,
-//            4 -> Push(`4`),
-//            5 -> Push(`1`),
-//            6 -> Push(`3`),
-//            5 -> JumpI,
+//            1 -> Push(`4`),
+//            2 -> Push(`1`),
+//            3 -> Push(`8`),
+//            4 -> SelfAddressedJumpI(4),
 //            5 -> Push(`4`),
 //            6 -> Push(`4`),
 //            7 -> Push(`4`),
-//            7 -> JumpDest,
-//            8 -> Revert
-//          ),
-//          abi
-//        ) ==> Right(
+//            8 -> JumpDest(8),
+//            9 -> Revert,
+//          )) ==> Right(
 //          Expectations(
-//            stack = Seq(evmWord(Array(0x04)))
+//            stack = Seq(BigInt(scala.BigInt(4)))
 //          ))
 //
-//        EvmSandbox.runAddressedCode(
-//          preconditions,
+//        run(
 //          List(
 //            0 -> Push(`4`),
-//            2 -> Push(`0`),
-//            3 -> CodeCopy,
+//            1 -> Push(`0`),
+//            2 -> Push(`8`),
+//            3 -> SelfAddressedJumpI(3),
 //            4 -> Push(`4`),
-//            5 -> Push(`0`),
-//            6 -> Push(`3`),
-//            5 -> JumpI,
 //            5 -> Push(`4`),
 //            6 -> Push(`4`),
-//            7 -> Push(`4`),
-//            7 -> JumpDest,
-//            8 -> Revert
-//          ),
-//          abi
-//        ) ==> Right(
+//            8 -> JumpDest(8),
+//            8 -> Revert,
+//          )) ==> Right(
 //          Expectations(
 //            stack =
-//              Seq(evmWord(Array(0x04)), evmWord(Array(0x04)), evmWord(Array(0x04)), evmWord(Array(0x04)))
+//              Seq(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(4)), BigInt(scala.BigInt(4)), BigInt(scala.BigInt(4)))
 //          ))
 //      }
 //      "Several jumps" - {
-//        EvmSandbox.runAddressedCode(
-//          preconditions,
+//        run(
 //          List(
-//            0 -> Push(`4`),
-//            2 -> Push(`0`),
-//            3 -> CodeCopy,
 //            4 -> Push(`4`),
 //            5 -> Push(`1`),
-//            6 -> Push(`3`),
-//            5 -> JumpI,
+//            6 -> Push(`7`),
+//            5 -> SelfAddressedJumpI(5),
 //            5 -> Push(`4`),
 //            6 -> Push(`4`),
 //            7 -> Push(`4`),
-//            7 -> JumpDest,
+//            7 -> JumpDest(7),
 //            8 -> Push(`1`),
-//            9 -> Push(`10`),
-//            10 -> Jump,
+//            9 -> Push(`14`),
+//            10 -> SelfAddressedJump(10),
 //            11 -> Push(`4`),
 //            12 -> Push(`4`),
 //            13 -> Push(`4`),
-//            14 -> JumpDest,
-//            15 -> Revert
-//          ),
-//          abi
+//            14 -> JumpDest(14),
+//            8 -> Revert,
+//          )
 //        ) ==> Right(
 //          Expectations(
-//            stack = Seq(evmWord(Array(0x04)), evmWord(Array(0x01)))
+//            stack = Seq(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(1)))
 //          ))
 //
-//        EvmSandbox.runAddressedCode(
-//          preconditions,
+//        run(
 //          List(
-//            0 -> Push(`4`),
-//            2 -> Push(`0`),
-//            3 -> CodeCopy,
 //            4 -> Push(`4`),
-//            6 -> Push(`3`),
-//            5 -> Jump,
+//            6 -> Push(`7`),
+//            5 -> SelfAddressedJump(5),
 //            5 -> Push(`4`),
 //            6 -> Push(`4`),
 //            7 -> Push(`4`),
-//            7 -> JumpDest,
+//            7 -> JumpDest(7),
 //            8 -> Push(`1`),
-//            9 -> Push(`10`),
-//            10 -> Jump,
+//            9 -> Push(`14`),
+//            10 -> SelfAddressedJump(10),
 //            11 -> Push(`4`),
 //            12 -> Push(`4`),
 //            13 -> Push(`4`),
-//            14 -> JumpDest,
-//            15 -> Revert
-//          ),
-//          abi
+//            14 -> JumpDest(14),
+//            8 -> Revert,
+//          )
 //        ) ==> Right(
 //          Expectations(
-//            stack = Seq(evmWord(Array(0x04)), evmWord(Array(0x01)))
+//            stack = Seq(BigInt(scala.BigInt(4)), BigInt(scala.BigInt(1)))
 //          ))
 //      }
 //
-//
 //      "Jump to bad destination" - {
 //
-//        EvmSandbox.runAddressedCode(
-//          preconditions,
+//        run(
 //          List(
-//            0 -> Push(`4`),
-//            2 -> Push(`0`),
-//            3 -> CodeCopy,
-//            3 -> Revert,
 //            4 -> Push(`4`),
 //            4 -> Push(`4`),
-//            5 -> Jump,
+//            5 -> SelfAddressedJump(5),
 //            5 -> Push(`4`),
 //            6 -> Push(`4`),
 //            7 -> Push(`4`),
-//            7 -> JumpDest,
-//            8 -> Revert
-//          ),
-//          abi) ==> Left("Set(WithJumpDest(JumpDest(3),List()))")
+//            7 -> JumpDest(7),
+//            8 -> Revert,
+//          )) ==> Left("Set(WithJumpDest(JumpDest(7),List(Revert)))")
 //      }
 //    }
 
