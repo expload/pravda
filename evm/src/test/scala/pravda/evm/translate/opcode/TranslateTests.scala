@@ -8,6 +8,7 @@ import pravda.evm.{readSolidityABI, readSolidityBinFile}
 import pravda.evm.translate.Translator
 import pravda.vm.Opcodes
 import pravda.vm.asm.{Operation, PravdaAssembler}
+import pravda.evm.utils._
 import utest._
 
 object TranslateTests extends TestSuite {
@@ -18,7 +19,7 @@ object TranslateTests extends TestSuite {
 
     'Basic - {
       "push" - {
-        evmOpToOps(Push(hex"0x80")) ==> Right(List(pushBigInt(BigInt(128))))
+        evmOpToOps(Push(hex"0x80")) ==> Right(List(Operation.Push(evmWord(Array(-128)))))
       }
 
       "dup" - {
@@ -105,6 +106,8 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
+          |push int8(9)
+          |scall
           |push int32(2)
           |dupn
           |push int8(4)
@@ -116,6 +119,8 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
+          |push int8(9)
+          |scall
           |swap
           |dup
           |dup
@@ -140,6 +145,8 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
+          |push int8(9)
+          |scall
           |swap
           |push int32(4)
           |swapn
@@ -195,6 +202,8 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
+          |push int8(9)
+          |scall
           |push int32(3)
           |swapn
           |pop
@@ -221,6 +230,8 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
+          |push int8(9)
+          |scall
           |swap
           |push int8(4)
           |cast

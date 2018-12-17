@@ -36,7 +36,8 @@ object SimpleTranslation {
       cast(Data.Type.BigInt) ++
       codeToOps(Opcodes.SWAP) ++
       asmOps ++
-      cast(Data.Type.Bytes)
+      cast(Data.Type.Bytes) ++
+      List(Operation.Push(Data.Primitive.Int8(9)), Operation(Opcodes.SCALL))
 
   private def bigintOp(asmOp: asm.Operation): List[Operation] =
     bigintOps(List(asmOp))
@@ -64,19 +65,19 @@ object SimpleTranslation {
     case Or  => bigintOp(Operation(Opcodes.OR))
     case Xor => bigintOp(Operation(Opcodes.XOR))
 
-    case Byte =>
-      cast(Data.Type.BigInt) ++
-        List(pushBigInt(31)) ++
-        sub ++
-        List(pushBigInt(8)) ++
-        codeToOps(Opcodes.MUL) ++
-        List(pushBigInt(2)) ++
-        callExp ++
-        codeToOps(Opcodes.SWAP) ++
-        codeToOps(Opcodes.DIV) ++
-        List(pushBigInt(0xff)) ++
-        codeToOps(Opcodes.AND) ++
-        cast(Data.Type.Bytes)
+//    case Byte =>
+//      cast(Data.Type.BigInt) ++
+//        List(pushBigInt(31)) ++
+//        sub ++
+//        List(pushBigInt(8)) ++
+//        codeToOps(Opcodes.MUL) ++
+//        List(pushBigInt(2)) ++
+//        callExp ++
+//        codeToOps(Opcodes.SWAP) ++
+//        codeToOps(Opcodes.DIV) ++
+//        List(pushBigInt(0xff)) ++
+//        codeToOps(Opcodes.AND) ++
+//        cast(Data.Type.Bytes)
 
     case IsZero => pushBytes(Array.fill(32)(0)) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes)
     case Lt     => bigintOp(Operation(Opcodes.LT))
