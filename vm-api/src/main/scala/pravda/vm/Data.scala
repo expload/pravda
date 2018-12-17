@@ -449,6 +449,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         }
       case value @ Bytes(data) =>
         lazy val buffer = data.asReadOnlyByteBuffer()
+        buffer.order(ByteOrder.LITTLE_ENDIAN)
         `type` match {
           case Type.Int8    => Int8(buffer.get)
           case Type.Int16   => Int16(buffer.getShort)
