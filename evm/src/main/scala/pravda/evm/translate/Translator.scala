@@ -70,7 +70,7 @@ object Translator {
       case Push(Bytes(0x04)) ::
             CallDataSize(1) ::
             Lt ::
-            Push(Bytes(_)) ::
+            Push(_: Bytes) ::
             JumpI(_, _)
             :: rest =>
         filterCode(rest)
@@ -85,10 +85,17 @@ object Translator {
           if bs1 == Bytes.fromHex("0x0100000000000000000000000000000000000000000000000000000000").get &&
             bs2 == Bytes.fromHex("0xffffffff").get =>
         filterCode(rest)
+      case Push(Bytes(0x00)) ::
+            CallDataLoad(1) ::
+            Push(bs1: Bytes) ::
+            Swap(1) ::
+            Div ::
+            rest if bs1 == Bytes.fromHex("0x0100000000000000000000000000000000000000000000000000000000").get =>
+        filterCode(rest)
       case CallValue ::
             Dup(1) ::
             IsZero ::
-            Push(Bytes(_)) ::
+            Push(_: Bytes) ::
             JumpI(_, _) ::
             Push(Bytes(0x00)) ::
             Dup(1) ::
@@ -107,13 +114,16 @@ object Translator {
       (creationCode1, actualContract1) = code1
       code2 <- JumpTargetRecognizer(actualContract1).left.map(_.toString)
       ops = StackSizePredictor.clear(StackSizePredictor.emulate(code2.map(_._2)))
-      filtered = filterCode(ops)
+      filtered = {
+        println(ops.mkString("\n"))
+        filterCode(ops)
+      }
       res <- Translator(filtered, abi).map(
         opcodes =>
           Operation.Label(startLabelName) ::
             createArray(defaultMemorySize) :::
             Operation(Opcodes.SWAP) ::
-            opcodes
+          opcodes
       )
     } yield res
   }

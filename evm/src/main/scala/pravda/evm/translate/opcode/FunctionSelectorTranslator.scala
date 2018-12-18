@@ -51,7 +51,7 @@ object FunctionSelectorTranslator {
         case (firstOp @ Dup(1)) ::
               Push(Bytes(hash @ _*)) ::
               Eq ::
-              Push(Bytes(_)) ::
+              Push(_: Bytes) ::
               JumpI(_, addr) :: rest =>
           abi.find(_.id == hash) match {
             case Some(f) =>

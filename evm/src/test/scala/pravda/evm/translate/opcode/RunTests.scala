@@ -12,6 +12,7 @@ import pravda.evm.utils._
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import pravda.vm.VmSandbox
 import utest._
+import pravda.evm._
 
 object RunTests extends TestSuite {
 

@@ -38,6 +38,9 @@ package object opcode {
   def pushBigInt(value: scala.BigInt): asm.Operation =
     push(value, Data.Primitive.BigInt)
 
+  def pushInt8(b: Byte): asm.Operation =
+    push(b, Data.Primitive.Int8)
+
   def pushInt(i: Int): asm.Operation =
     push(i, Data.Primitive.Int32)
 

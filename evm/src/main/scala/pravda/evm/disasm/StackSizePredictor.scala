@@ -30,6 +30,7 @@ object StackSizePredictor {
       case (MStore8, ind)      => MStore8(ind)
       case (CallDataSize, ind) => CallDataSize(ind)
       case (CallDataLoad, ind) => CallDataLoad(ind)
+      case (Sha3, ind)         => Sha3(ind)
       case (op, _)             => op
     }
 

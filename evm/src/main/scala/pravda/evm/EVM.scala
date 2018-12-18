@@ -109,6 +109,9 @@ object EVM {
   case class CallDataLoad(stackOffset: Int) extends Op
   case class CallDataSize(stackOffset: Int) extends Op
 
+  case class Sha3(stackOffset: Int)   extends Op
+  case class Return(stackOffset: Int) extends Op
+
   val singleOps: Map[Int, Op] = Map(
     0x00 -> Stop,
     0x01 -> Add,
@@ -197,7 +200,8 @@ object EVM {
 
   final case class UInt(bytes: Int) extends Fixed
   final case class SInt(bytes: Int) extends Fixed
-  final case object Bool            extends Fixed
-  final case object Unsupported     extends AbiType
+
+  final case object Bool        extends Fixed
+  final case object Unsupported extends AbiType
 
 }

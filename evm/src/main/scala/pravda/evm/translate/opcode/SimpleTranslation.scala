@@ -59,32 +59,30 @@ object SimpleTranslation {
 //      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
 //        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.MUL, Opcodes.MOD)
 
-    //  case Not => codeToOps(Opcodes.NOT) //TODO (2^256 - 1) - s[0]
+    case And => codeToOps(Opcodes.AND)
+    case Or  => codeToOps(Opcodes.OR)
+    case Xor => codeToOps(Opcodes.XOR)
 
-    case And => bigintOp(Operation(Opcodes.AND))
-    case Or  => bigintOp(Operation(Opcodes.OR))
-    case Xor => bigintOp(Operation(Opcodes.XOR))
+    case Byte =>
+      List(
+        pushBigInt(31) :: Nil,
+        sub,
+        pushBigInt(8) :: Nil,
+        codeToOps(Opcodes.MUL),
+        pushBigInt(2) :: Nil,
+        callExp,
+        codeToOps(Opcodes.SWAP),
+        codeToOps(Opcodes.DIV),
+        pushBigInt(0xff) :: Nil,
+        codeToOps(Opcodes.AND)
+      ).flatten
 
-//    case Byte =>
-//      cast(Data.Type.BigInt) ++
-//        List(pushBigInt(31)) ++
-//        sub ++
-//        List(pushBigInt(8)) ++
-//        codeToOps(Opcodes.MUL) ++
-//        List(pushBigInt(2)) ++
-//        callExp ++
-//        codeToOps(Opcodes.SWAP) ++
-//        codeToOps(Opcodes.DIV) ++
-//        List(pushBigInt(0xff)) ++
-//        codeToOps(Opcodes.AND) ++
-//        cast(Data.Type.Bytes)
+    case IsZero => pushBigInt(BigInt(0)) :: codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
+    case Lt     => codeToOps(Opcodes.LT) ::: cast(Data.Type.BigInt)
+    case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
+    case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-    case IsZero => pushBytes(Array.fill(32)(0)) :: codeToOps(Opcodes.EQ) ++ cast(Data.Type.Bytes)
-    case Lt     => bigintOp(Operation(Opcodes.LT))
-    case Gt     => bigintOp(Operation(Opcodes.GT))
-    case Eq     => bigintOp(Operation(Opcodes.EQ))
-
-    case Jump(_, dest)  => codeToOps(Opcodes.POP) ++ List(Operation.Jump(Some(nameByAddress(dest))))
+    case Jump(_, dest)  => codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
     case JumpI(_, dest) => jumpi(dest)
 
     case Stop => codeToOps(Opcodes.POP, Opcodes.POP, Opcodes.STOP)
@@ -143,6 +141,15 @@ object SimpleTranslation {
         pushInt(32) ::
         codeToOps(Opcodes.ADD, Opcodes.SWAP, Opcodes.SLICE)
     case Invalid => codeToOps(Opcodes.STOP)
+    case Sha3(offset) =>
+      cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) ::: List(
+        pushInt8(6),
+        Operation(Opcodes.SCALL),
+        pushInt8(10),
+        Operation(Opcodes.SCALL)
+      )
+
+    case Caller => codeToOps(Opcodes.FROM)
   }
 
   def evmOpToOps(op: EVM.Op): Converted =
