@@ -11,6 +11,7 @@ import pravda.vm.Data.Primitive.BigInt
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import pravda.vm.VmSandbox
 import utest._
+import pravda.evm._
 
 object RunTests extends TestSuite {
 
@@ -22,14 +23,17 @@ object RunTests extends TestSuite {
     val abi = List(AbiFunction(true, "", Nil, Nil, true, "", None))
 
 //    "SimpleStorage" - {
-//      val abi = readSolidityABI("SimpleStorageABIj.json")
+//      val abi = readSolidityABI("erc20ABI.json")
 //      val parsedAbi = AbiParser.parseAbi(abi)
 //
 //      for {
-//        ops <- Parser.parseWithIndices(readSolidityBinFile("SimpleStorage0.5.1.bin"))
+//        ops <- Parser.parseWithIndices(readSolidityBinFile("erc20.bin"))
 //        ab <- parsedAbi
 //      }{
-//        val preconditions = VmSandbox.Preconditions(stack=Seq(Utf8("set")),balances = Map.empty, `watts-limit` = 1000000L)
+//        val preconditions = VmSandbox.Preconditions(
+//          stack=Seq(Utf8("balanceOfThatf")),
+//          storage = Map(BigInt(scala.BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639936000",10)) -> BigInt(scala.BigInt(12))),
+//          balances = Map.empty, `watts-limit` = 1000000L)
 //
 //        println(EvmSandbox.runAddressedCode(preconditions, ops, ab))
 //      }

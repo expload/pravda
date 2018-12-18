@@ -64,9 +64,13 @@ object Translator {
       code <- Blocks.splitToCreativeAndRuntime(ops)
       code <- JumpTargetRecognizer(code._2).left.map(_.toString)
       ops1 = StackSizePredictor.clear(StackSizePredictor.emulate(code.map(_._2)))
-      res <- Translator(ops1, abi).map(opcodes =>
-        asm.Operation
-          .Label(startLabelName) :: createArray(defaultMemorySize) ::: opcodes ::: StdlibAsm.readWordFunction.code ::: StdlibAsm.writeWordFunction.code)
+      res <- Translator(ops1, abi).map(
+        opcodes =>
+          asm.Operation
+            .Label(startLabelName) :: createArray(defaultMemorySize) ::: opcodes :::
+            StdlibAsm.readWordFunction.code :::
+            StdlibAsm.writeWordFunction.code :::
+            StdlibAsm.readBytesFunction.code)
     } yield res
   }
 

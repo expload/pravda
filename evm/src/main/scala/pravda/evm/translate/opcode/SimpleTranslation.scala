@@ -71,9 +71,6 @@ object SimpleTranslation {
     case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
     case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
 
-//    case Jump  => Operation.Jump(Some(nameByNumber(0))) :: Nil
-//    case JumpI => jumpi
-
     case Jump(_, dest)  => codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
     case JumpI(_, dest) => jumpi(dest)
 
@@ -104,11 +101,22 @@ object SimpleTranslation {
     case Not    => pushBigInt(pow2_256) :: sub ::: Nil
     case Revert => codeToOps(Opcodes.STOP)
     case Return => codeToOps(Opcodes.RET)
+    case Return(size) =>
+      pushInt(size + 1) ::
+        codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN, Opcodes.SWAP) :::
+        Operation.Call(Some("read_bytes")) :: codeToOps(Opcodes.STOP) ::: Nil
 
     case CallValue    => pushBigInt(scala.BigInt(0)) :: Nil
     case CallDataSize => pushBigInt(scala.BigInt(1000)) :: Nil
     case CallDataLoad => codeToOps(Opcodes.POP) ::: pushBigInt(scala.BigInt(1000)) :: Nil
     case Invalid      => codeToOps(Opcodes.STOP)
+    case Sha3(size) =>
+      pushInt(size + 1) ::
+        codeToOps(Opcodes.DUPN) ::: pushInt(3) :: codeToOps(Opcodes.SWAPN, Opcodes.SWAP) :::
+        Operation.Call(Some("read_bytes")) :: Nil
+
+    case Caller => codeToOps(Opcodes.FROM)
+
   }
 
   def evmOpToOps(op: EVM.Op): Converted =

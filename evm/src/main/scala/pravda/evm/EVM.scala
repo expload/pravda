@@ -105,6 +105,8 @@ object EVM {
   case class MLoad(stackSize: Int)   extends Op
   case class MStore(stackSize: Int)  extends Op
   case class MStore8(stackSize: Int) extends Op
+  case class Sha3(stackSize: Int)    extends Op
+  case class Return(stackSize: Int)  extends Op
 
   val singleOps: Map[Int, Op] = Map(
     0x00 -> Stop,
@@ -194,7 +196,8 @@ object EVM {
 
   final case class UInt(bytes: Int) extends Fixed
   final case class SInt(bytes: Int) extends Fixed
-  final case object Bool            extends Fixed
-  final case object Unsupported     extends AbiType
+
+  final case object Bool        extends Fixed
+  final case object Unsupported extends AbiType
 
 }

@@ -29,6 +29,10 @@ object StdlibAsm {
                                        List(Operation.Label("read_word")) ++
                                          readWord ++ List(Operation(Opcodes.RET)))
 
+  lazy val readBytesFunction = Function("read_bytes",
+                                        List(Operation.Label("read_bytes")) ++
+                                          readBytes ++ List(Operation(Opcodes.RET)))
+
   lazy val readByteFunction = Function("read_byte",
                                        List(Operation.Label("read_byte")) ++
                                          readByte ++ List(Operation(Opcodes.RET)))
@@ -42,7 +46,16 @@ object StdlibAsm {
    *         index
    *         Ref to byte array
    */
-  lazy val readWord: List[Operation] = StdlibAsm.sliceArray ++ StdlibAsm.byteStringToBigint
+  lazy val readWord
+    : List[Operation] = List(pushInt(32), Operation(Opcodes.SWAP)) ++ StdlibAsm.sliceArray ++ StdlibAsm.byteStringToBigint
+
+  /*
+   * Stack:
+   *         index
+   *         length
+   *         Ref to byte array
+   */
+  lazy val readBytes: List[Operation] = StdlibAsm.sliceArray ++ StdlibAsm.byteStringToBigint
 
   /*
    * Stack:
@@ -96,7 +109,7 @@ object StdlibAsm {
    */
   lazy val writeWord: List[Operation] =
     List(pushInt(3), Operation(Opcodes.SWAPN), pushInt(3), Operation(Opcodes.DUPN)) ++
-      expandArray ++
+      List(pushInt(32)) ++ expandArray ++
       List(
         pushInt(3),
         Operation(Opcodes.SWAPN)
@@ -138,6 +151,7 @@ object StdlibAsm {
 
   /*
    * Stack:
+   *         length
    *         index
    *         ref to byte array
    * Stack:
@@ -145,7 +159,7 @@ object StdlibAsm {
    */
   lazy val expandArray: List[Operation] =
     List(
-      pushInt(32),
+      //   pushInt(32),
       Operation(Opcodes.ADD),
       Operation(Opcodes.SWAP),
       Operation(Opcodes.DUP),
@@ -208,10 +222,18 @@ object StdlibAsm {
       Operation(Opcodes.POP),
     )
 
+  /*
+   * Stack:
+   *         index
+   *         length
+   *         ref to array
+   *
+   */
   val sliceArray: List[Operation] =
     List(
       Operation(Opcodes.DUP),
-      pushInt(32),
+      pushInt(3),
+      Operation(Opcodes.SWAPN),
       Operation(Opcodes.ADD),
       Operation(Opcodes.SWAP),
       Operation.Push(Data.Primitive.Bytes(ByteString.EMPTY)),
@@ -241,8 +263,7 @@ object StdlibAsm {
       Operation(Opcodes.SWAP),
       Operation(Opcodes.POP),
       Operation(Opcodes.SWAP),
-      Operation(Opcodes.POP),
-      //    Operation(Opcodes.RET)
+      Operation(Opcodes.POP)
     )
 
   def createByteArray(arr: List[Byte]): List[Operation] = {

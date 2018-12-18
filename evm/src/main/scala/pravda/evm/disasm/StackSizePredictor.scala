@@ -28,6 +28,8 @@ object StackSizePredictor {
       case (MLoad, ind)   => MLoad(ind)
       case (MStore, ind)  => MStore(ind)
       case (MStore8, ind) => MStore8(ind)
+      case (Return, ind)  => Return(ind)
+      case (Sha3, ind)    => Sha3(ind)
       case (op, _)        => op
     }
 

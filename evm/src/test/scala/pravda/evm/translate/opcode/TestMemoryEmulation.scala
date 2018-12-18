@@ -29,7 +29,7 @@ object TestMemoryEmulation extends TestSuite {
         assemble(StdlibAsm.createByteArray(arr) ++ List(pushInt(0)) ++ StdlibAsm.readWord)
       ) ==>
         Expectations(
-          2446L,
+          2449L,
           stack = ArrayBuffer(BigInt(scala.BigInt(1, arr.take(32).toArray))),
           heap = Map(Ref(0) -> Int8Array(arr.toBuffer))
         )
@@ -41,7 +41,7 @@ object TestMemoryEmulation extends TestSuite {
             List(pushInt(2)) ++ StdlibAsm.readWord)
       ) ==>
         Expectations(
-          2446L,
+          2449L,
           stack = ArrayBuffer(BigInt(scala.BigInt(1, arr.slice(2, 34).toArray))),
           heap = Map(Ref(0) -> Int8Array(arr.toBuffer))
         )
@@ -63,7 +63,7 @@ object TestMemoryEmulation extends TestSuite {
                                        pushInt(1)) ++ StdlibAsm.writeWord)
       ) ==>
         Expectations(
-          4839,
+          4842L,
           stack = ArrayBuffer(Ref(1)),
           heap = Map(
             Ref(0) -> Int8Array(arr.toBuffer),
@@ -85,7 +85,7 @@ object TestMemoryEmulation extends TestSuite {
                                        pushInt(31)) ++ StdlibAsm.writeWord)
       ) ==>
         Expectations(
-          6514,
+          6517L,
           stack = ArrayBuffer(Ref(2)),
           heap = Map(
             Ref(0) -> Int8Array(arr.toBuffer),
@@ -103,6 +103,7 @@ object TestMemoryEmulation extends TestSuite {
           StdlibAsm.createByteArray(arr) ++
             List(
               pushInt(1),
+              pushInt(32),
             ) ++ StdlibAsm.expandArray
         )
       )
@@ -122,6 +123,7 @@ object TestMemoryEmulation extends TestSuite {
           StdlibAsm.createByteArray(arr) ++
             List(
               pushInt(arr.size - 2),
+              pushInt(32),
             ) ++ StdlibAsm.expandArray
         )
       ) ==>
