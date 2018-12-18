@@ -20,7 +20,7 @@ package pravda.vm
 object StandardLibrary {
 
   val All = Seq(
-    standard.Ripemd160,
+    standard.Sha3,
     standard.ValidateEd25519Signature,
     standard.ExponentialFunction,
     standard.HexToBytes,

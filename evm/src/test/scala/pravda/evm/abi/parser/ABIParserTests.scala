@@ -22,6 +22,50 @@ object ABIParserTests extends TestSuite {
       )
     }
 
+    'SimpleToken - {
+      val abi = readSolidityABI("SimpleToken/SimpleToken.abi")
+      val parsedAbi = AbiParser.parseAbi(abi)
+
+      println(parsedAbi)
+
+      parsedAbi ==> Right(
+        List(
+          AbiFunction(
+            false,
+            "emitTokens",
+            Vector(Argument("owner", "address", None), Argument("token", "uint256", None)),
+            Vector(Argument("success", "bool", None)),
+            false,
+            "nonpayable",
+            None
+          ),
+          AbiFunction(
+            false,
+            "transfer",
+            Vector(Argument("to", "address", None), Argument("token", "uint256", None)),
+            Vector(Argument("success", "bool", None)),
+            false,
+            "nonpayable",
+            None
+          ),
+          AbiFunction(true,
+                      "balanceOf",
+                      Vector(Argument("tokenOwner", "address", None)),
+                      Vector(Argument("balance", "uint256", None)),
+                      false,
+                      "view",
+                      None),
+          AbiFunction(true,
+                      "balances",
+                      Vector(Argument("", "address", None)),
+                      Vector(Argument("", "uint256", None)),
+                      false,
+                      "view",
+                      None)
+        )
+      )
+    }
+
     "Complex abi parse" - {
       val abi = readSolidityABI("complex/ComplexContractABI.json")
       val parsedAbi = AbiParser.parseAbi(abi)

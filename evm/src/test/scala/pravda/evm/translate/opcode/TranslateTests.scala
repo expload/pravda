@@ -34,12 +34,14 @@ object TranslateTests extends TestSuite {
     }
 
     'Contracts - {
-      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
-      val Right(asm) = Translator.translateActualContract(ops, abi)
 
-      PravdaAssembler.render(asm) ==>
-        """@__start_evm_program:
+      'SimpleStorage - {
+        val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
+        val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+        val Right(asm) = Translator.translateActualContract(ops, abi)
+
+        PravdaAssembler.render(asm) ==>
+          """@__start_evm_program:
           |push int32(1024)
           |push int8(1)
           |new_array
@@ -272,7 +274,18 @@ object TranslateTests extends TestSuite {
           |jump @_lbl_138
           |pop
           |pop
-          |stop""" .stripMargin
+          |stop""".stripMargin
+      }
+
+      'SimpleToken - {
+        val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleToken/SimpleToken.bin"))
+        val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
+        val Right(asm) = Translator.translateActualContract(ops, abi)
+
+        println(PravdaAssembler.render(asm))
+
+        PravdaAssembler.render(asm) ==> ""
+      }
     }
   }
 }

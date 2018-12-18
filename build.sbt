@@ -122,6 +122,7 @@ lazy val vm = (project in file("vm"))
     description := "Pravda Virtual Machine",
     sources in doc := Seq.empty,
     publishArtifact in packageDoc := false,
+    libraryDependencies += "org.bouncycastle" % "bcprov-jdk15on" % "1.60"
   )
   .settings(
     sources in doc := Seq.empty,
