@@ -1,7 +1,7 @@
 package pravda.evm.translate.opcode
 
 import fastparse.byte.all._
-import pravda.common.domain.Address
+//import pravda.common.domain.Address
 import pravda.evm.EVM._
 import pravda.evm.EvmSandbox
 import pravda.evm.abi.parse.AbiParser.AbiFunction
@@ -9,7 +9,7 @@ import pravda.evm.utils._
 //import pravda.evm.disasm.JumpTargetRecognizer
 //import pravda.evm.translate.Translator.{ActualCode, Addressed}
 //import pravda.vm.Data.Primitive.BigInt
-import pravda.vm.Effect.{StorageRead, StorageWrite}
+//import pravda.vm.Effect.{StorageRead, StorageWrite}
 import pravda.vm.VmSandbox
 import utest._
 import pravda.evm._
@@ -126,8 +126,8 @@ object RunTests extends TestSuite {
 
 //    val `0` = hex"0x0"
 //    val `1` = hex"0x1"
-    val `3` = hex"0x3"
-    val `4` = hex"0x4"
+//    val `3` = hex"0x3"
+//    val `4` = hex"0x4"
 //    val `7` = hex"0x7"
 //    val `8` = hex"0x8"
 //    val `14` = hex"0xe"
@@ -259,25 +259,25 @@ object RunTests extends TestSuite {
 //      }
 //    }
 
-    "SSTORE SLOAD" - {
-
-      EvmSandbox.runCode(preconditions,
-                         List(
-                           Push(`4`),
-                           Push(`3`),
-                           SStore,
-                           Push(`3`),
-                           SLoad
-                         ),
-                         abi) ==> Right(
-        Expectations(
-          effects = Seq(
-            StorageWrite(Address.Void, evmWord(Array(0x03)), None, evmWord(Array(0x04))),
-            StorageRead(Address.Void, evmWord(Array(0x03)), Some(evmWord(Array(0x04))))
-          ),
-          stack = Seq(evmWord(Array(0x04)))
-        ))
-    }
+//    "SSTORE SLOAD" - {
+//
+//      EvmSandbox.runCode(preconditions,
+//                         List(
+//                           Push(`4`),
+//                           Push(`3`),
+//                           SStore,
+//                           Push(`3`),
+//                           SLoad
+//                         ),
+//                         abi) ==> Right(
+//        Expectations(
+//          effects = Seq(
+//            StorageWrite(Address.Void, evmWord(Array(0x03)), None, evmWord(Array(0x04))),
+//            StorageRead(Address.Void, evmWord(Array(0x03)), Some(evmWord(Array(0x04))))
+//          ),
+//          stack = Seq(evmWord(Array(0x04)))
+//        ))
+//    }
 
   }
 

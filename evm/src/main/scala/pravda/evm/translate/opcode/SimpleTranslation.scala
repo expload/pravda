@@ -86,7 +86,7 @@ object SimpleTranslation {
     case Jump(_, dest)  => codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
     case JumpI(_, dest) => jumpi(dest)
 
-    case Stop => codeToOps(Opcodes.POP, Opcodes.POP, Opcodes.STOP)
+    case Stop => codeToOps(Opcodes.POP, Opcodes.POP, Opcodes.POP, Opcodes.STOP)
 
     case Dup(n)  => if (n > 1) dupn(n) else codeToOps(Opcodes.DUP)
     case Swap(n) => if (n > 1) swapn(n + 1) else codeToOps(Opcodes.SWAP)
@@ -128,9 +128,8 @@ object SimpleTranslation {
         Operation(Opcodes.POP),
         Operation(Opcodes.SWAP),
         Operation(Opcodes.POP),
-        Operation(Opcodes.STOP),
-        Operation(Opcodes.POP),
-        Operation(Opcodes.STOP)
+        Operation(Opcodes.SWAP),
+        Operation.Jump(Some("convert_result"))
       )
 
     case CallValue => pushBigInt(scala.BigInt(10)) :: cast(Data.Type.Bytes)
@@ -142,7 +141,7 @@ object SimpleTranslation {
         codeToOps(Opcodes.DUPN, Opcodes.SWAP, Opcodes.DUP) :::
         pushInt(32) ::
         codeToOps(Opcodes.ADD, Opcodes.SWAP, Opcodes.SLICE)
-    case Invalid => codeToOps(Opcodes.STOP)
+    case Invalid => List(Operation.Push(Data.Primitive.Utf8("Invalid")), Operation(Opcodes.THROW))
     case Sha3(offset) =>
       cast(Data.Type.BigInt) :::
         codeToOps(Opcodes.SWAP) :::

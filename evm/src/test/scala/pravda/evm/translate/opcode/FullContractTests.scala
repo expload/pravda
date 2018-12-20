@@ -30,7 +30,7 @@ object FullContractTests extends TestSuite {
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
-          stack = Seq(evmWord(Array(1))),
+          stack = Seq(BigInt(scala.BigInt(1))),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -65,8 +65,13 @@ object FullContractTests extends TestSuite {
               Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
               evmWord(Array(0)),
               Some(evmWord(Array(1)))
-            )),
-          None
+            ),
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              evmWord(Array(0)),
+              Some(evmWord(Array(1)))
+            ),
+          )
         ))
     }
 
@@ -137,7 +142,7 @@ object FullContractTests extends TestSuite {
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
-          stack = Seq(Bytes(ByteString.copyFrom(hex"0100000000000000000000000000000000000000000000000000000000000000"))),
+          stack = Seq(Bool.True),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -201,7 +206,7 @@ object FullContractTests extends TestSuite {
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
-          stack = Seq(Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000"))),
+          stack = Seq(BigInt(scala.BigInt(10))),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -251,8 +256,7 @@ object FullContractTests extends TestSuite {
         `watts-limit` = 10000L,
         stack = Seq(
           Data.Primitive.Bytes(ByteString.copyFrom((2 to 33).toArray.map(_.toByte))),
-          Data.Primitive.Bytes(
-            ByteString.copyFrom(hex"0200000000000000000000000000000000000000000000000000000000000000")),
+          Data.Primitive.Int64(2),
           Data.Primitive.Utf8("transfer")
         ),
         storage = Map(
@@ -268,7 +272,7 @@ object FullContractTests extends TestSuite {
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
-          stack = Seq(Bytes(ByteString.copyFrom(hex"0100000000000000000000000000000000000000000000000000000000000000"))),
+          stack = Seq(Bool.True),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -333,9 +337,6 @@ object FullContractTests extends TestSuite {
             )
           )
         ))
-
     }
-
-    //3b92ad5fdb196e1ab7df6126be9a99dcd51fcd55e21de9fc19c40e3951836661
   }
 }
