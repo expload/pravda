@@ -77,11 +77,12 @@ object SimpleTranslation {
         codeToOps(Opcodes.AND)
       ).flatten
 
-    case IsZero => pushBigInt(BigInt(0)) :: codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
-    case Lt     => codeToOps(Opcodes.LT) ::: cast(Data.Type.BigInt)
-    case Gt     => codeToOps(Opcodes.GT) ::: cast(Data.Type.BigInt)
-    case Eq     => codeToOps(Opcodes.EQ) ::: cast(Data.Type.BigInt)
-
+    case IsZero =>
+      pushBytes(Array.fill[Byte](32)(0)) :: codeToOps(Opcodes.EQ) :::
+        cast(Data.Type.Bytes) ++ List(Operation.Push(Data.Primitive.Int8(9)), Operation(Opcodes.SCALL))
+    case Lt             => bigintOp(Operation(Opcodes.LT))
+    case Gt             => bigintOp(Operation(Opcodes.GT))
+    case Eq             => bigintOp(Operation(Opcodes.EQ))
     case Jump(_, dest)  => codeToOps(Opcodes.POP) ::: Operation.Jump(Some(nameByAddress(dest))) :: Nil
     case JumpI(_, dest) => jumpi(dest)
 
@@ -96,12 +97,13 @@ object SimpleTranslation {
     case JumpDest(address) => asm.Operation.Label(nameByAddress(address)) :: Nil
 
     case SStore => codeToOps(Opcodes.SPUT)
-    case SLoad  => codeToOps(Opcodes.SGET)
+    case SLoad  => List(Operation.Call(Some("stdlib_evm_sget")))
 
     case MLoad(offset) =>
-      cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) ::: List(
-        Operation.Push(Data.Primitive.Int8(6)),
-        Operation(Opcodes.SCALL))
+      pushBigInt(scala.BigInt(32)) :: codeToOps(Opcodes.SWAP) :::
+        cast(Data.Type.BigInt) :::
+        pushInt(offset + 1) :: codeToOps(Opcodes.DUPN) :::
+        List(Operation.Push(Data.Primitive.Int8(6)), Operation(Opcodes.SCALL))
     case MStore(offset) =>
       cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) ::: List(
         Operation.Push(Data.Primitive.Int8(7)),
@@ -142,7 +144,12 @@ object SimpleTranslation {
         codeToOps(Opcodes.ADD, Opcodes.SWAP, Opcodes.SLICE)
     case Invalid => codeToOps(Opcodes.STOP)
     case Sha3(offset) =>
-      cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) ::: List(
+      cast(Data.Type.BigInt) :::
+        codeToOps(Opcodes.SWAP) :::
+        cast(Data.Type.BigInt) :::
+        codeToOps(Opcodes.SWAP) :::
+        pushInt(offset) ::
+        codeToOps(Opcodes.DUPN) ::: List(
         pushInt8(6),
         Operation(Opcodes.SCALL),
         pushInt8(10),

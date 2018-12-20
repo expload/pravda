@@ -114,16 +114,13 @@ object Translator {
       (creationCode1, actualContract1) = code1
       code2 <- JumpTargetRecognizer(actualContract1).left.map(_.toString)
       ops = StackSizePredictor.clear(StackSizePredictor.emulate(code2.map(_._2)))
-      filtered = {
-        println(ops.mkString("\n"))
-        filterCode(ops)
-      }
+      filtered = filterCode(ops)
       res <- Translator(filtered, abi).map(
         opcodes =>
           Operation.Label(startLabelName) ::
             createArray(defaultMemorySize) :::
             Operation(Opcodes.SWAP) ::
-          opcodes
+          opcodes ::: StdlibAsm.stdlibFuncs.flatMap(_.code)
       )
     } yield res
   }
