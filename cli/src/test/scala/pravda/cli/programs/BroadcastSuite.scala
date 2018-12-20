@@ -49,6 +49,7 @@ object BroadcastSuite extends TestSuite {
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
+        def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
@@ -66,6 +67,8 @@ object BroadcastSuite extends TestSuite {
         def disasm(source: ByteString): Id[String] = ""
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
+
+        def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run))
