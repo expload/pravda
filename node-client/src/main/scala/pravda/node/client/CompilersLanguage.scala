@@ -28,4 +28,5 @@ trait CompilersLanguage[F[_]] {
   def disasm(source: ByteString): F[String]
   def disasmToOps(source: ByteString): F[Seq[(Int, Operation)]]
   def dotnet(sources: Seq[(ByteString, Option[ByteString])], mainClass: Option[String]): F[Either[String, ByteString]]
+  def evm(source: ByteString, abi: ByteString): F[Either[String, ByteString]]
 }

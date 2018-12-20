@@ -103,6 +103,27 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               }
 
               compiled
+
+            case Evm =>
+              val (bins, abis) = inputs.partition { case (f, _) => f.endsWith(".bin") }
+
+              val h = bins.map(_._2).zip(abis.map(_._2))
+
+              val compiled = h.head match {
+                case (bin, abi) =>
+                  compilers.evm(bin, abi)
+              }
+
+              for {
+                _ <- if (bins.size > 1) {
+                  io.writeStringToStdout(
+                    bins.drop(1).map(o => s"Warning: ${o._1} wasn't been compiled").mkString("", "\n", "\n"))
+                } else {
+                  Monad[F].pure(())
+                }
+                c <- compiled
+              } yield c
+
             case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }
