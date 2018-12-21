@@ -332,3 +332,43 @@ This method allows you to sign arbitrary binary data
   }
 }
 ```
+
+## Check the user was authenticated
+
+This method aims to check the current user has access to its private key.
+
+A caller can send some arbitrary data and when the result (signature-like footprint.) will be returned, the caller can verify it. 
+
+The result (the value of `signedData` key) is composed from the following steps:
+
+- Input binary data is preceded by the special constant string `EXPLOAD_NOT_AUTHORIZED_SIGNATURE`
+- The hash of the above data is calculated by using either `sha-256` or `ripemd-160` depending of the input `hash` parameter
+- The hash above **is signed by the user's private key**.
+- Resulting binary data are encdoded to hex-string
+
+**Note**. The call of that method does not occur any user's interaction.
+
+### Request
+
+`POST api/auth[?hash=sha-256|ripemd-160]`
+
+```
+{
+  "app": "<name of your dapp>",
+  "bytes": "<hex formatted binary data>"
+}
+```
+
+If the `hash` query parameter was omitted, `sha-256` hash function will be used by default.
+
+### Response
+
+```
+{
+  "error": "",
+  "errorCode": "",
+  "data": { 
+    "signedData": "<hex formatted data>"
+  }
+}
+```
