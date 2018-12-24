@@ -65,12 +65,11 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
     val source = sourceBytes.toStringUtf8.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte).dropRight(43)
     val abiS = abiBytes.toStringUtf8
 
-    parseAbi(abiS).flatMap { abi =>
-      parseWithIndices(source).flatMap { ops =>
-        translateActualContract(ops, abi).map { ops =>
-          PravdaAssembler.assemble(ops, saveLabels = true)
-        }
-      }
-    }
+    for {
+      abi <- parseAbi(abiS)
+      ops <- parseWithIndices(source)
+      ops <- translateActualContract(ops, abi)
+    } yield PravdaAssembler.assemble(ops, saveLabels = true)
+
   }
 }
