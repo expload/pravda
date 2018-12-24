@@ -36,279 +36,307 @@ object TranslateTests extends TestSuite {
     'Contracts - {
 
       'SimpleStorage - {
-        val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-        val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+        val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
+        val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
         val Right(asm) = Translator.translateActualContract(ops, abi)
 
         PravdaAssembler.render(asm) ==>
           """@__start_evm_program:
-          |push int32(1024)
-          |push int8(1)
-          |new_array
-          |swap
-          |dup
-          |push "set"
-          |eq
-          |not
-          |jumpi @not_set
-          |push int32(3)
-          |swapn
-          |swap
-          |push int32(2)
-          |swapn
-          |push x
-          |swap
-          |push int8(14)
-          |cast
-          |push int32(9)
-          |scall
-          |concat
-          |push x00000000
-          |concat
-          |swap
-          |push null
-          |jump @_lbl_78
-          |@not_set:
-          |dup
-          |push "get"
-          |eq
-          |not
-          |jumpi @not_get
-          |swap
-          |push x
-          |push x00000000
-          |concat
-          |swap
-          |push null
-          |jump @_lbl_120
-          |@not_get:
-          |@_lbl_73:
-          |push x0000000000000000000000000000000000000000000000000000000000000000
-          |dup
-          |push "Revert"
-          |throw
-          |@_lbl_78:
-          |@_lbl_89:
-          |pop
-          |push x7600000000000000000000000000000000000000000000000000000000000000
-          |push x0400000000000000000000000000000000000000000000000000000000000000
-          |dup
-          |push int32(5)
-          |dupn
-          |length
-          |push int8(4)
-          |cast
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |swap
-          |push bigint(-1)
-          |mul
-          |add
-          |push int8(14)
-          |cast
-          |push int8(9)
-          |scall
-          |push int32(2)
-          |dupn
-          |push int8(4)
-          |cast
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |add
-          |push int8(14)
-          |cast
-          |push int8(9)
-          |scall
-          |swap
-          |dup
-          |dup
-          |push int8(4)
-          |cast
-          |push int32(7)
-          |dupn
-          |swap
-          |dup
-          |push int32(32)
-          |add
-          |swap
-          |slice
-          |swap
-          |push x2000000000000000000000000000000000000000000000000000000000000000
-          |push int8(4)
-          |cast
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |add
-          |push int8(14)
-          |cast
-          |push int8(9)
-          |scall
-          |swap
-          |push int32(4)
-          |swapn
-          |push int32(3)
-          |swapn
-          |swap
-          |pop
-          |pop
-          |pop
-          |push xA000000000000000000000000000000000000000000000000000000000000000
-          |pop
-          |jump @_lbl_160
-          |@_lbl_118:
-          |pop
-          |pop
-          |pop
-          |stop
-          |@_lbl_120:
-          |@_lbl_131:
-          |pop
-          |push x8A00000000000000000000000000000000000000000000000000000000000000
-          |push xAA00000000000000000000000000000000000000000000000000000000000000
-          |pop
-          |jump @_lbl_170
-          |@_lbl_138:
-          |push x4000000000000000000000000000000000000000000000000000000000000000
-          |push bigint(32)
-          |swap
-          |push int8(4)
-          |cast
-          |push int32(4)
-          |dupn
-          |push int8(6)
-          |scall
-          |dup
-          |push int32(3)
-          |dupn
-          |push int32(2)
-          |dupn
-          |push int8(4)
-          |cast
-          |push int32(6)
-          |dupn
-          |push int8(7)
-          |scall
-          |push int32(5)
-          |swapn
-          |pop
-          |push x2000000000000000000000000000000000000000000000000000000000000000
-          |push int8(4)
-          |cast
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |add
-          |push int8(14)
-          |cast
-          |push int8(9)
-          |scall
-          |push int32(3)
-          |swapn
-          |pop
-          |pop
-          |push x4000000000000000000000000000000000000000000000000000000000000000
-          |push bigint(32)
-          |swap
-          |push int8(4)
-          |cast
-          |push int32(4)
-          |dupn
-          |push int8(6)
-          |scall
-          |dup
-          |push int32(3)
-          |swapn
-          |push int8(4)
-          |cast
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |swap
-          |push bigint(-1)
-          |mul
-          |add
-          |push int8(14)
-          |cast
-          |push int8(9)
-          |scall
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |push int8(4)
-          |cast
-          |swap
-          |push int32(3)
-          |dupn
-          |push int32(8)
-          |scall
-          |swap
-          |pop
-          |swap
-          |pop
-          |swap
-          |jump @convert_result
-          |@_lbl_160:
-          |dup
-          |push x0000000000000000000000000000000000000000000000000000000000000000
-          |push int32(2)
-          |dupn
-          |swap
-          |sput
-          |pop
-          |pop
-          |pop
-          |jump @_lbl_118
-          |@_lbl_170:
-          |push x0000000000000000000000000000000000000000000000000000000000000000
-          |dup
-          |call @stdlib_evm_sget
-          |swap
-          |pop
-          |swap
-          |pop
-          |jump @_lbl_138
-          |pop
-          |pop
-          |pop
-          |stop
-          |@stdlib_evm_sget:
-          |dup
-          |sexist
-          |jumpi @stdlib_evm_sget_non_zero
-          |pop
-          |push x0000000000000000000000000000000000000000000000000000000000000000
-          |ret
-          |@stdlib_evm_sget_non_zero:
-          |sget
-          |ret
-          |@convert_result:
-          |dup
-          |push "get"
-          |eq
-          |not
-          |jumpi @convert_result_not_get
-          |pop
-          |push int8(4)
-          |cast
-          |stop
-          |@convert_result_not_get:
-          |dup
-          |push "set"
-          |eq
-          |not
-          |jumpi @convert_result_not_set
-          |pop
-          |stop
-          |@convert_result_not_set:""".stripMargin
+            |push int32(1024)
+            |push int8(1)
+            |new_array
+            |swap
+            |dup
+            |push "set"
+            |eq
+            |not
+            |jumpi @not_set
+            |push int32(3)
+            |swapn
+            |swap
+            |push int32(2)
+            |swapn
+            |push x
+            |swap
+            |push int8(14)
+            |cast
+            |push int32(9)
+            |scall
+            |concat
+            |push x00000000
+            |concat
+            |swap
+            |push null
+            |jump @_lbl_78
+            |@not_set:
+            |dup
+            |push "get"
+            |eq
+            |not
+            |jumpi @not_get
+            |swap
+            |push x
+            |push x00000000
+            |concat
+            |swap
+            |push null
+            |jump @_lbl_133
+            |@not_get:
+            |@_lbl_73:
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |dup
+            |push "Revert"
+            |throw
+            |@_lbl_78:
+            |@_lbl_89:
+            |pop
+            |push x8300000000000000000000000000000000000000000000000000000000000000
+            |push x0400000000000000000000000000000000000000000000000000000000000000
+            |dup
+            |push int32(5)
+            |dupn
+            |length
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |swap
+            |push bigint(-1)
+            |mul
+            |add
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |push x2000000000000000000000000000000000000000000000000000000000000000
+            |push int32(2)
+            |dupn
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |lt
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |eq
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |push x6E00000000000000000000000000000000000000000000000000000000000000
+            |pop
+            |push int8(9)
+            |cast
+            |jumpi @_lbl_110
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |dup
+            |push "Revert"
+            |throw
+            |@_lbl_110:
+            |push int32(2)
+            |dupn
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |add
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |swap
+            |dup
+            |dup
+            |push int8(4)
+            |cast
+            |push int32(7)
+            |dupn
+            |swap
+            |dup
+            |push int32(32)
+            |add
+            |swap
+            |slice
+            |swap
+            |push x2000000000000000000000000000000000000000000000000000000000000000
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |add
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |swap
+            |push int32(4)
+            |swapn
+            |push int32(3)
+            |swapn
+            |swap
+            |pop
+            |pop
+            |pop
+            |push xAD00000000000000000000000000000000000000000000000000000000000000
+            |pop
+            |jump @_lbl_173
+            |@_lbl_131:
+            |pop
+            |pop
+            |pop
+            |stop
+            |@_lbl_133:
+            |@_lbl_144:
+            |pop
+            |push x9700000000000000000000000000000000000000000000000000000000000000
+            |push xB700000000000000000000000000000000000000000000000000000000000000
+            |pop
+            |jump @_lbl_183
+            |@_lbl_151:
+            |push x4000000000000000000000000000000000000000000000000000000000000000
+            |push bigint(32)
+            |swap
+            |push int8(4)
+            |cast
+            |push int32(4)
+            |dupn
+            |push int8(6)
+            |scall
+            |dup
+            |push int32(3)
+            |dupn
+            |push int32(2)
+            |dupn
+            |push int8(4)
+            |cast
+            |push int32(6)
+            |dupn
+            |push int8(7)
+            |scall
+            |push int32(5)
+            |swapn
+            |pop
+            |push x2000000000000000000000000000000000000000000000000000000000000000
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |add
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |push int32(3)
+            |swapn
+            |pop
+            |pop
+            |push x4000000000000000000000000000000000000000000000000000000000000000
+            |push bigint(32)
+            |swap
+            |push int8(4)
+            |cast
+            |push int32(4)
+            |dupn
+            |push int8(6)
+            |scall
+            |dup
+            |push int32(3)
+            |swapn
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |swap
+            |push bigint(-1)
+            |mul
+            |add
+            |push int8(14)
+            |cast
+            |push int8(9)
+            |scall
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |push int8(4)
+            |cast
+            |swap
+            |push int32(3)
+            |dupn
+            |push int32(8)
+            |scall
+            |swap
+            |pop
+            |swap
+            |pop
+            |swap
+            |jump @convert_result
+            |@_lbl_173:
+            |dup
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |push int32(2)
+            |dupn
+            |swap
+            |sput
+            |pop
+            |pop
+            |pop
+            |jump @_lbl_131
+            |@_lbl_183:
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |dup
+            |call @stdlib_evm_sget
+            |swap
+            |pop
+            |swap
+            |pop
+            |jump @_lbl_151
+            |push "Invalid"
+            |throw
+            |@stdlib_evm_sget:
+            |dup
+            |sexist
+            |jumpi @stdlib_evm_sget_non_zero
+            |pop
+            |push x0000000000000000000000000000000000000000000000000000000000000000
+            |ret
+            |@stdlib_evm_sget_non_zero:
+            |sget
+            |ret
+            |@convert_result:
+            |dup
+            |push "get"
+            |eq
+            |not
+            |jumpi @convert_result_not_get
+            |pop
+            |push int8(4)
+            |cast
+            |stop
+            |@convert_result_not_get:
+            |dup
+            |push "set"
+            |eq
+            |not
+            |jumpi @convert_result_not_set
+            |pop
+            |stop
+            |@convert_result_not_set:""".stripMargin
       }
 
       'SimpleToken - {

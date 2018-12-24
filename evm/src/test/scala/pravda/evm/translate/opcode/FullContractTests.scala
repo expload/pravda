@@ -25,8 +25,8 @@ object FullContractTests extends TestSuite {
                                                   stack = Seq(Data.Primitive.Utf8("get")),
                                                   storage = Map(evmWord(Array(0)) -> evmWord(Array(1))))
 
-      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
@@ -82,8 +82,8 @@ object FullContractTests extends TestSuite {
         storage = Map()
       )
 
-      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(

@@ -11,7 +11,7 @@ object ParserTests extends TestSuite {
 
   val tests = Tests {
     'SimpleStorage - {
-      val bytes = readSolidityBinFile("SimpleStorage.bin")
+      val bytes = readSolidityBinFile("SimpleStorage/SimpleStorage.bin")
 
       Parser(bytes) ==>
         Right(
@@ -29,14 +29,14 @@ object ParserTests extends TestSuite {
             Revert,
             JumpDest,
             Pop,
-            Push(hex"0xdf"),
+            Push(hex"0xec"),
             Dup(1),
             Push(hex"0x001f"),
             Push(hex"0x00"),
             CodeCopy,
             Push(hex"0x00"),
             Return,
-            Stop,
+            Invalid,
             Push(hex"0x80"),
             Push(hex"0x40"),
             MStore,
@@ -60,7 +60,7 @@ object ParserTests extends TestSuite {
             Dup(1),
             Push(hex"0x6d4ce63c"),
             Eq,
-            Push(hex"0x78"),
+            Push(hex"0x85"),
             JumpI,
             JumpDest,
             Push(hex"0x00"),
@@ -77,11 +77,21 @@ object ParserTests extends TestSuite {
             Revert,
             JumpDest,
             Pop,
-            Push(hex"0x76"),
+            Push(hex"0x83"),
             Push(hex"0x04"),
             Dup(1),
             CallDataSize,
             Sub,
+            Push(hex"0x20"),
+            Dup(2),
+            Lt,
+            IsZero,
+            Push(hex"0x6e"),
+            JumpI,
+            Push(hex"0x00"),
+            Dup(1),
+            Revert,
+            JumpDest,
             Dup(2),
             Add,
             Swap(1),
@@ -98,7 +108,7 @@ object ParserTests extends TestSuite {
             Pop,
             Pop,
             Pop,
-            Push(hex"0xa0"),
+            Push(hex"0xad"),
             Jump,
             JumpDest,
             Stop,
@@ -106,15 +116,15 @@ object ParserTests extends TestSuite {
             CallValue,
             Dup(1),
             IsZero,
-            Push(hex"0x83"),
+            Push(hex"0x90"),
             JumpI,
             Push(hex"0x00"),
             Dup(1),
             Revert,
             JumpDest,
             Pop,
-            Push(hex"0x8a"),
-            Push(hex"0xaa"),
+            Push(hex"0x97"),
+            Push(hex"0xb7"),
             Jump,
             JumpDest,
             Push(hex"0x40"),
@@ -152,7 +162,7 @@ object ParserTests extends TestSuite {
             Pop,
             Swap(1),
             Jump,
-            Stop
+            Invalid
           ))
     }
 
