@@ -25,9 +25,8 @@ object StandardLibrary {
     standard.ExponentialFunction,
     standard.HexToBytes,
     standard.BytesToHex,
-    standard.ReadWord,
-    standard.WriteEvmWord,
-    standard.SliceEvmMemory,
+    standard.SliceByteArray,
+    standard.WriteSliceByteArray,
     standard.ExpandBytesEvm,
     standard.Sha3
   )

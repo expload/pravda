@@ -60,7 +60,7 @@ object TranslateTests extends TestSuite {
             |swap
             |push int8(14)
             |cast
-            |push int32(9)
+            |push int32(8)
             |scall
             |concat
             |push x00000000
@@ -108,7 +108,7 @@ object TranslateTests extends TestSuite {
             |add
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |push x2000000000000000000000000000000000000000000000000000000000000000
             |push int32(2)
@@ -122,13 +122,13 @@ object TranslateTests extends TestSuite {
             |lt
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |push x0000000000000000000000000000000000000000000000000000000000000000
             |eq
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |push x6E00000000000000000000000000000000000000000000000000000000000000
             |pop
@@ -151,7 +151,7 @@ object TranslateTests extends TestSuite {
             |add
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |swap
             |dup
@@ -177,7 +177,7 @@ object TranslateTests extends TestSuite {
             |add
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |swap
             |push int32(4)
@@ -218,6 +218,10 @@ object TranslateTests extends TestSuite {
             |dupn
             |push int32(2)
             |dupn
+            |swap
+            |push int8(8)
+            |scall
+            |swap
             |push int8(4)
             |cast
             |push int32(6)
@@ -237,7 +241,7 @@ object TranslateTests extends TestSuite {
             |add
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |push int32(3)
             |swapn
@@ -267,7 +271,7 @@ object TranslateTests extends TestSuite {
             |add
             |push int8(14)
             |cast
-            |push int8(9)
+            |push int8(8)
             |scall
             |swap
             |push int8(4)
@@ -278,7 +282,7 @@ object TranslateTests extends TestSuite {
             |swap
             |push int32(3)
             |dupn
-            |push int32(8)
+            |push int8(6)
             |scall
             |swap
             |pop
@@ -364,7 +368,7 @@ object TranslateTests extends TestSuite {
           |swap
           |push int8(14)
           |cast
-          |push int32(9)
+          |push int32(8)
           |scall
           |concat
           |push x00000000
@@ -387,7 +391,7 @@ object TranslateTests extends TestSuite {
           |swap
           |push int8(14)
           |cast
-          |push int32(9)
+          |push int32(8)
           |scall
           |concat
           |push x00000000
@@ -414,13 +418,13 @@ object TranslateTests extends TestSuite {
           |swap
           |push int8(14)
           |cast
-          |push int32(9)
+          |push int32(8)
           |scall
           |concat
           |swap
           |push int8(14)
           |cast
-          |push int32(9)
+          |push int32(8)
           |scall
           |concat
           |push x00000000
@@ -447,13 +451,13 @@ object TranslateTests extends TestSuite {
           |swap
           |push int8(14)
           |cast
-          |push int32(9)
+          |push int32(8)
           |scall
           |concat
           |swap
           |push int8(14)
           |cast
-          |push int32(9)
+          |push int32(8)
           |scall
           |concat
           |push x00000000
@@ -488,7 +492,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x2000000000000000000000000000000000000000000000000000000000000000
           |push int32(2)
@@ -502,13 +506,13 @@ object TranslateTests extends TestSuite {
           |lt
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x008A000000000000000000000000000000000000000000000000000000000000
           |pop
@@ -531,7 +535,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |dup
@@ -559,7 +563,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(4)
@@ -588,6 +592,10 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(7)
@@ -607,7 +615,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push int32(3)
           |swapn
@@ -637,7 +645,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int8(4)
@@ -648,7 +656,7 @@ object TranslateTests extends TestSuite {
           |swap
           |push int32(3)
           |dupn
-          |push int32(8)
+          |push int8(6)
           |scall
           |swap
           |pop
@@ -677,7 +685,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x2000000000000000000000000000000000000000000000000000000000000000
           |push int32(2)
@@ -691,13 +699,13 @@ object TranslateTests extends TestSuite {
           |lt
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x00EF000000000000000000000000000000000000000000000000000000000000
           |pop
@@ -720,7 +728,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |dup
@@ -748,7 +756,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(4)
@@ -777,6 +785,10 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(6)
@@ -796,7 +808,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push int32(3)
           |swapn
@@ -826,7 +838,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int8(4)
@@ -837,7 +849,7 @@ object TranslateTests extends TestSuite {
           |swap
           |push int32(3)
           |dupn
-          |push int32(8)
+          |push int8(6)
           |scall
           |swap
           |pop
@@ -866,7 +878,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x4000000000000000000000000000000000000000000000000000000000000000
           |push int32(2)
@@ -880,13 +892,13 @@ object TranslateTests extends TestSuite {
           |lt
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0154000000000000000000000000000000000000000000000000000000000000
           |pop
@@ -909,7 +921,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |dup
@@ -937,7 +949,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(4)
@@ -967,7 +979,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(4)
@@ -998,28 +1010,32 @@ object TranslateTests extends TestSuite {
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(6)
@@ -1039,7 +1055,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push int32(3)
           |swapn
@@ -1069,7 +1085,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int8(4)
@@ -1080,7 +1096,7 @@ object TranslateTests extends TestSuite {
           |swap
           |push int32(3)
           |dupn
-          |push int32(8)
+          |push int8(6)
           |scall
           |swap
           |pop
@@ -1109,7 +1125,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x4000000000000000000000000000000000000000000000000000000000000000
           |push int32(2)
@@ -1123,13 +1139,13 @@ object TranslateTests extends TestSuite {
           |lt
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x01C7000000000000000000000000000000000000000000000000000000000000
           |pop
@@ -1152,7 +1168,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |dup
@@ -1180,7 +1196,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(4)
@@ -1210,7 +1226,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(4)
@@ -1241,28 +1257,32 @@ object TranslateTests extends TestSuite {
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |eq
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(6)
@@ -1282,7 +1302,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push int32(3)
           |swapn
@@ -1312,7 +1332,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int8(4)
@@ -1323,7 +1343,7 @@ object TranslateTests extends TestSuite {
           |swap
           |push int32(3)
           |dupn
-          |push int32(8)
+          |push int8(6)
           |scall
           |swap
           |pop
@@ -1334,6 +1354,10 @@ object TranslateTests extends TestSuite {
           |@_lbl_535:
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push x2000000000000000000000000000000000000000000000000000000000000000
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(5)
@@ -1345,6 +1369,10 @@ object TranslateTests extends TestSuite {
           |pop
           |dup
           |push x0000000000000000000000000000000000000000000000000000000000000000
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(5)
@@ -1366,7 +1394,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int32(3)
@@ -1391,6 +1419,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(8)
@@ -1410,11 +1442,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(7)
@@ -1434,7 +1470,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1447,7 +1483,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |call @stdlib_evm_sget
           |swap
@@ -1471,6 +1507,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(10)
@@ -1490,11 +1530,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(9)
@@ -1514,7 +1558,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1527,7 +1571,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |call @stdlib_evm_sget
           |push int8(4)
@@ -1542,7 +1586,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
@@ -1553,6 +1597,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(10)
@@ -1572,11 +1620,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(9)
@@ -1596,7 +1648,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1609,7 +1661,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |push int32(2)
           |dupn
@@ -1628,6 +1680,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(10)
@@ -1647,11 +1703,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(9)
@@ -1671,7 +1731,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1684,7 +1744,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |call @stdlib_evm_sget
           |push int8(4)
@@ -1696,7 +1756,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
@@ -1708,6 +1768,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(10)
@@ -1727,11 +1791,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(9)
@@ -1751,7 +1819,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1764,7 +1832,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |push int32(2)
           |dupn
@@ -1796,6 +1864,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(10)
@@ -1815,11 +1887,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(9)
@@ -1839,7 +1915,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1852,7 +1928,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |call @stdlib_evm_sget
           |push int8(4)
@@ -1864,7 +1940,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |dup
@@ -1876,6 +1952,10 @@ object TranslateTests extends TestSuite {
           |and
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(10)
@@ -1895,11 +1975,15 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |swap
           |push int32(2)
           |dupn
+          |swap
+          |push int8(8)
+          |scall
+          |swap
           |push int8(4)
           |cast
           |push int32(9)
@@ -1919,7 +2003,7 @@ object TranslateTests extends TestSuite {
           |add
           |push int8(14)
           |cast
-          |push int8(9)
+          |push int8(8)
           |scall
           |push x0000000000000000000000000000000000000000000000000000000000000000
           |push int8(4)
@@ -1932,7 +2016,7 @@ object TranslateTests extends TestSuite {
           |dupn
           |push int8(6)
           |scall
-          |push int8(10)
+          |push int8(9)
           |scall
           |push int32(2)
           |dupn

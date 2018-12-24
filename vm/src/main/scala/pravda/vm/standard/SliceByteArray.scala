@@ -8,16 +8,16 @@ import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 import pravda.vm.operations._
 
-object SliceEvmMemory extends FunctionDefinition {
+object SliceByteArray extends FunctionDefinition {
 
-  val id = 0x08L
+  val id = 0x06L
 
   val description =
-    "Takes byte array, index, size stack. Returns slice of the array between ind and ind + size."
+    "Takes byte array, index and size from stack. Returns size bytes from given index in the given array."
 
   val args: Seq[(String, Seq[Type])] = Seq(
     "size" -> Seq(Data.Type.BigInt),
-    "ind" -> Seq(Data.Type.BigInt),
+    "index" -> Seq(Data.Type.BigInt),
     "array" -> Seq(Data.Type.Array)
   )
 

@@ -36,7 +36,7 @@ object FunctionSelectorTranslator {
           i =>
             List(Operation(Opcodes.SWAP)) :::
               cast(Data.Type.Bytes) :::
-              List(pushInt(9), Operation(Opcodes.SCALL), Operation(Opcodes.CONCAT))
+              List(pushInt(8), Operation(Opcodes.SCALL), Operation(Opcodes.CONCAT))
         )
         .toList ++
       List(pushBytes(Array(0x0, 0x0, 0x0, 0x0)),

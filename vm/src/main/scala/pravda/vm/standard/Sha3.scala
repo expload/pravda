@@ -25,10 +25,10 @@ import pravda.vm._
 
 object Sha3 extends FunctionDefinition {
 
-  val id: Long = 0x0AL
+  val id: Long = 0x09L
 
   val description: String =
-    "Calculate Keccak-256 hash for message. See https://homes.esat.kuleuven.be/~bosselae/ripemd160.html"
+    "Calculate Keccak-256 hash for message."
 
   val returns = Seq(Data.Type.Bytes)
 

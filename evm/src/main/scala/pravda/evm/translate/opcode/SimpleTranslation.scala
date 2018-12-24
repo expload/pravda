@@ -37,7 +37,7 @@ object SimpleTranslation {
       codeToOps(Opcodes.SWAP) ++
       asmOps ++
       cast(Data.Type.Bytes) ++
-      List(Operation.Push(Data.Primitive.Int8(9)), Operation(Opcodes.SCALL))
+      List(Operation.Push(Data.Primitive.Int8(8)), Operation(Opcodes.SCALL))
 
   private def bigintOp(asmOp: asm.Operation): List[Operation] =
     bigintOps(List(asmOp))
@@ -79,7 +79,7 @@ object SimpleTranslation {
 
     case IsZero =>
       pushBytes(Array.fill[Byte](32)(0)) :: codeToOps(Opcodes.EQ) :::
-        cast(Data.Type.Bytes) ++ List(Operation.Push(Data.Primitive.Int8(9)), Operation(Opcodes.SCALL))
+        cast(Data.Type.Bytes) ++ List(Operation.Push(Data.Primitive.Int8(8)), Operation(Opcodes.SCALL))
     case Lt             => bigintOp(Operation(Opcodes.LT))
     case Gt             => bigintOp(Operation(Opcodes.GT))
     case Eq             => bigintOp(Operation(Opcodes.EQ))
@@ -105,9 +105,9 @@ object SimpleTranslation {
         pushInt(offset + 1) :: codeToOps(Opcodes.DUPN) :::
         List(Operation.Push(Data.Primitive.Int8(6)), Operation(Opcodes.SCALL))
     case MStore(offset) =>
-      cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) ::: List(
-        Operation.Push(Data.Primitive.Int8(7)),
-        Operation(Opcodes.SCALL)) :::
+      codeToOps(Opcodes.SWAP) ::: List(pushInt8(8)) ::: codeToOps(Opcodes.SCALL, Opcodes.SWAP) :::
+      cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) :::
+        List(pushInt8(7), Operation(Opcodes.SCALL)) :::
         pushInt(offset - 1) :: codeToOps(Opcodes.SWAPN, Opcodes.POP)
 
     case MStore8(offset) => List(Operation.Meta(Meta.Custom(s"MStore8_$offset")))
@@ -122,7 +122,7 @@ object SimpleTranslation {
         List(
         pushInt(3),
         Operation(Opcodes.DUPN),
-        pushInt(8),
+        pushInt8(6),
         Operation(Opcodes.SCALL),
         Operation(Opcodes.SWAP),
         Operation(Opcodes.POP),
@@ -132,7 +132,7 @@ object SimpleTranslation {
         Operation.Jump(Some("convert_result"))
       )
 
-    case CallValue => pushBigInt(scala.BigInt(10)) :: cast(Data.Type.Bytes)
+    case CallValue => List(pushBytes(Array(0x01)))
     case CallDataSize(offset) =>
       pushInt(offset + 1) :: codeToOps(Opcodes.DUPN, Opcodes.LENGTH)
     case CallDataLoad(offset) =>
@@ -151,7 +151,7 @@ object SimpleTranslation {
         codeToOps(Opcodes.DUPN) ::: List(
         pushInt8(6),
         Operation(Opcodes.SCALL),
-        pushInt8(10),
+        pushInt8(9),
         Operation(Opcodes.SCALL)
       )
 
