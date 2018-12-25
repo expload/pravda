@@ -22,6 +22,11 @@ methods: |-
       0,
       None
     ),
+    Method(
+      List(Call(MemberRefData(TypeRefData(10L, "Info", "Expload.Pravda"), "LastBlockTime", 16L)), Ret),
+      0,
+      None
+    ),
     Method(List(Ret), 0, None),
     Method(
       List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),

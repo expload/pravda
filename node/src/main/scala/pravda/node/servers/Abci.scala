@@ -34,6 +34,7 @@ import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
 import pravda.node.persistence.{FileStore, _}
+import pravda.node.utils
 import pravda.vm
 import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
@@ -57,7 +58,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
   def info(request: RequestInfo): Future[ResponseInfo] = {
     FileStore.readApplicationStateInfoAsync().map { maybeInfo =>
-      val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
+      val info = maybeInfo.getOrElse(ApplicationStateInfo.Empty)
       ResponseInfo(lastBlockHeight = info.blockHeight, lastBlockAppHash = info.appHash)
     }
   }
@@ -69,7 +70,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
     for {
       _ <- FileStore
-        .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators))
+        .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators, 0L))
       _ <- Future.sequence(initialDistribution.map {
         case CoinDistributionMember(address, amount) =>
           balances.put(address, amount)
@@ -78,8 +79,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
   }
 
+  /*
+   *  request.header contains header of the last comitted block. The `header` field has an `Option` type,
+   *  but in the Protobuf specification this field is not an `optional`, so we can use `getHeader` method safely.
+   */
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
+
+    // Timestamp of the last comitted block
+    val lastBlockTime = utils.protoTimestampToLong(request.getHeader.getTime)
+
     val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.getValidator.address))
     val absent = request.getLastCommitInfo.votes.collect {
       case VoteInfo(validator, signedLastBlock) if !signedLastBlock =>
@@ -87,9 +96,9 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     }.flatten
 
     FileStore
-      .readApplicationStateInfoAsync()
+      .modifyApplicationStateInfoAsync(_.copy(blockTimestamp = lastBlockTime))
       .map { maybeInfo =>
-        val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
+        val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address], 0L))
         validators = info.validators.filter(address => !malicious.contains(address) && !absent.contains(address))
       }
       .map(_ => ResponseBeginBlock())
@@ -178,7 +187,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     mempoolEnv.clear()
     val hash = ByteString.copyFrom(applicationStateDb.stateHash)
     FileStore
-      .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, hash, validators))
+      .modifyApplicationStateInfoAsync(_.copy(blockHeight = proposedHeight, appHash = hash, validators = validators))
       .map(_ => ResponseCommit(hash))
   }
 
@@ -361,6 +370,12 @@ object Abci {
         FileStore
           .readApplicationStateInfo()
           .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.appHash)
+      }
+
+      def lastBlockTime: Long = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.blockTimestamp)
       }
     }
 

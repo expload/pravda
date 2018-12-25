@@ -1,12 +1,12 @@
 vm:
   stack:
-    [utf8.TestLastBlockHash]
+    [utf8.TestLastBlockTime]
   storage:
     utf8.init: "null"
   app-state-info:
     app-hash: 62099c6a16853f70fcf2e5a24da6e46faaf0b2541658bec668527b0436d32ece
     height: 4
-    timestamp: 0
+    timestamp: 1545738157299
 dotnet-compilation:
   steps:
   - target: Pravda.dll
@@ -20,7 +20,7 @@ dotnet-compilation:
     optimize: true
 ---
 stack:
-  - bytes.62099c6a16853f70fcf2e5a24da6e46faaf0b2541658bec668527b0436d32ece
+  - int64.1545738157299
 storage:
   utf8.init: "null"
 effects:

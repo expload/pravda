@@ -64,7 +64,6 @@ object YamlMethods {
           (k.asInstanceOf[String], java2jvalue(v.asInstanceOf[AnyRef], ubdfd))
       }.toList
       JObject(pairs)
-    case i: Integer => JInt(BigInt(i))
     case f: java.lang.Double =>
       if (ubdfd) JDecimal(BigDecimal(f))
       else JDouble(f)
@@ -72,6 +71,8 @@ object YamlMethods {
       if (ubdfd) JDecimal(BigDecimal(f.toDouble))
       else JDouble(f.toDouble)
     case b: java.lang.Boolean    => JBool(b)
+    case i: Integer              => JInt(BigInt(i))
+    case l: java.lang.Long       => JLong(l)
     case i: java.math.BigInteger => JInt(BigInt(i))
   }
 

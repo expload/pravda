@@ -14,5 +14,10 @@ public class Block
         return Info.LastBlockHash();
     }
 
+    public long TestLastBlockTime()
+    {
+        return Info.LastBlockTime();
+    } 
+
     public static void Main() {}
 }
