@@ -29,6 +29,7 @@ trait Environment {
 
   def chainHeight: Long
   def lastBlockHash: ByteString
+  def lastBlockTime: Long
 
   // Programs
   def sealProgram(address: Address): Unit
