@@ -11,6 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Expload.Pravda" Version="0.*" />
   </ItemGroup>
+  <Target Name="_ResolvePublishNuGetPackagePdbs" AfterTargets="RunResolvePublishAssemblies">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(ResolvedAssembliesToPublish->'%(RootDir)%(Directory)%(Filename).pdb')" RelativePath="$([System.IO.Path]::ChangeExtension(%(ResolvedAssembliesToPublish.DestinationSubPath), '.pdb'))" DestinationSubPath="$([System.IO.Path]::ChangeExtension(%(ResolvedAssembliesToPublish.DestinationSubPath), '.pdb'))" Condition="'%(ResolvedAssembliesToPublish.PackageName)' != '' and Exists('%(RootDir)%(Directory)%(Filename).pdb')" />
+    </ItemGroup>
+  </Target>
   <Target Name="BuildPravdaAfterPublish" AfterTargets="Publish" Condition="'$(Configuration)' == 'Debug'">
     <Exec Command="pravda compile dotnet -i &quot;bin/Debug/netstandard2.0/publish&quot; -o bin/$(PackageName).pravda --main-class $(PackageId)" />
   </Target>
