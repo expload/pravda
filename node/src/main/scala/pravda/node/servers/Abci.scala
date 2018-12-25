@@ -21,6 +21,7 @@ package servers
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
+import tethys._
 import pravda.common.domain._
 import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
@@ -233,7 +234,41 @@ object Abci {
 
   final case class StoredProgram(code: ByteString, `sealed`: Boolean)
 
-  final case class TransactionEffects(num: Long, transactionId: TransactionId, effects: Seq[Effect])
+  sealed trait TransactionEffects {
+    def num: Long
+    def transactionId: TransactionId
+    def identifier: String
+  }
+
+  object TransactionEffects {
+    final case class Transfers(num: Long, transactionId: TransactionId, transfers: Seq[Effect.Transfer])
+        extends TransactionEffects {
+      override val identifier = Transfers.identifier
+    }
+
+    object Transfers {
+      lazy val identifier = "Transfers"
+    }
+
+    final case class ProgramEvents(num: Long, transactionId: TransactionId, events: Seq[Effect.Event])
+        extends TransactionEffects {
+      override val identifier = ProgramEvents.identifier
+    }
+
+    object ProgramEvents {
+      lazy val identifier = "ProgramEvents"
+    }
+
+    final case class AllEffects(num: Long, transactionId: TransactionId, effects: Seq[Effect])
+        extends TransactionEffects {
+      override val identifier = AllEffects.identifier
+    }
+
+    object AllEffects {
+      lazy val identifier = "AllEffects"
+    }
+  }
+
   final case class AdditionalDataForAddress(transfersLastTransactionNumber: Long = 1L,
                                             eventsLastTransactionNumber: Long = 1L,
                                             lastTransactionNumber: Long = 1L)
@@ -287,13 +322,9 @@ object Abci {
         storeEventsToAddress(eventsByAddressPath, executor, transactionId, transactionEffects)
       }
 
-      private def storeEffectsByAddress(dbPath: DbPath,
-                                        address: Address,
-                                        transactionId: TransactionId,
-                                        effects: Seq[Effect],
-                                        transactionNumber: Long): Unit = {
-        val key = keyWithOffset(byteUtils.byteString2hex(address), transactionNumber - 1)
-        dbPath.put(key, TransactionEffects(transactionNumber, transactionId, effects))
+      private def putByOffset[A: JsonWriter](dbPath: DbPath, address: Address, offset: Long, objToStore: A): Unit = {
+        val key = keyWithOffset(byteUtils.byteString2hex(address), offset)
+        dbPath.put(key, objToStore)
       }
 
       private def getAdditionalDataByAddress(addr: Address): AdditionalDataForAddress =
@@ -306,8 +337,8 @@ object Abci {
                                              transactionId: TransactionId,
                                              transactionEffects: Seq[Effect]): Unit = {
         val additionalData = getAdditionalDataByAddress(executor)
-
-        storeEffectsByAddress(dbPath, executor, transactionId, transactionEffects, additionalData.lastTransactionNumber)
+        val num = additionalData.lastTransactionNumber
+        putByOffset(dbPath, executor, num - 1, TransactionEffects.AllEffects(num, transactionId, transactionEffects))
 
         additionalDataByAddressPath.put(
           byteUtils.byteString2hex(executor),
@@ -321,21 +352,21 @@ object Abci {
         def storeTransferEffects(dbPath: DbPath,
                                  address: Address,
                                  transactionId: TransactionId,
-                                 effects: Seq[Effect]): Unit = {
+                                 transfers: Seq[Effect.Transfer]): Unit = {
           val additionalData = getAdditionalDataByAddress(address)
+          val num = additionalData.transfersLastTransactionNumber
 
-          storeEffectsByAddress(dbPath, address, transactionId, effects, additionalData.transfersLastTransactionNumber)
+          putByOffset(dbPath, address, num - 1, TransactionEffects.Transfers(num, transactionId, transfers))
 
-          additionalDataByAddressPath.put(
-            byteUtils.byteString2hex(address),
-            additionalData.copy(transfersLastTransactionNumber = additionalData.transfersLastTransactionNumber + 1L))
+          additionalDataByAddressPath.put(byteUtils.byteString2hex(address),
+                                          additionalData.copy(transfersLastTransactionNumber = num + 1L))
         }
 
-        val executorTransferEffects = transferEffects.collect {
+        val executorTransferEffects: Seq[Effect.Transfer] = transferEffects.collect {
           case e @ Effect.Transfer(from, _, _) if from == executor => e
         }
 
-        val transferToAnotherAddress = transferEffects.collect {
+        val transferToAnotherAddress: Seq[(Address, Effect.Transfer)] = transferEffects.collect {
           case e @ Effect.Transfer(_, to, _) => (to, e)
         }
 
@@ -357,17 +388,21 @@ object Abci {
                                        executor: Address,
                                        transactionId: TransactionId,
                                        effects: Seq[Effect]): Unit = {
-        def storeEvents(dbPath: DbPath, address: Address, transactionId: TransactionId, effects: Seq[Effect]): Unit = {
+        def storeEvents(dbPath: DbPath,
+                        address: Address,
+                        transactionId: TransactionId,
+                        events: Seq[Effect.Event]): Unit = {
           val additionalData = getAdditionalDataByAddress(address)
+          val num = additionalData.eventsLastTransactionNumber
+          putByOffset(dbPath, address, num - 1, TransactionEffects.ProgramEvents(num, transactionId, events))
 
-          storeEffectsByAddress(dbPath, address, transactionId, effects, additionalData.eventsLastTransactionNumber)
-
-          additionalDataByAddressPath.put(
-            byteUtils.byteString2hex(address),
-            additionalData.copy(eventsLastTransactionNumber = additionalData.eventsLastTransactionNumber + 1L))
+          additionalDataByAddressPath.put(byteUtils.byteString2hex(address),
+                                          additionalData.copy(eventsLastTransactionNumber = num + 1L))
         }
 
-        val events = effects.filter(_.isInstanceOf[Effect.Event])
+        val events = effects collect {
+          case e: Effect.Event => e
+        }
 
         if (events.nonEmpty) {
           storeEvents(dbPath, executor, transactionId, events)
