@@ -32,24 +32,30 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
   override def asmOpsOne(op: Op,
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
+
+    def newArrByTypeName(typeName: String, namespaceName: String): Either[InnerTranslationError, List[Operation]] = {
+      val arrTypeF: PartialFunction[(String, String), Operation] = {
+        case ("System", "SByte")  => pushType(Data.Type.Int8)
+        case ("System", "Char")   => pushType(Data.Type.Int16)
+        case ("System", "Int16")  => pushType(Data.Type.Int16)
+        case ("System", "Int32")  => pushType(Data.Type.Int32)
+        case ("System", "Int64")  => pushType(Data.Type.Int64)
+        case ("System", "Double") => pushType(Data.Type.Number)
+        case ("System", "String") => pushType(Data.Type.Utf8)
+        case _                    => pushType(Data.Type.Ref)
+      }
+
+      val asmOps = arrTypeF
+        .lift((namespaceName, typeName))
+        .map(List(_, Operation(Opcodes.NEW_ARRAY)))
+        .toRight(UnknownOpcode)
+
+      asmOps
+    }
+
     op match {
-      case NewArr(TypeRefData(6, typeName, namespaceName)) =>
-        val arrTypeF: PartialFunction[(String, String), Operation] = {
-          case ("System", "SByte")  => pushType(Data.Type.Int8)
-          case ("System", "Char")   => pushType(Data.Type.Int16)
-          case ("System", "Int16")  => pushType(Data.Type.Int16)
-          case ("System", "Int32")  => pushType(Data.Type.Int32)
-          case ("System", "Int64")  => pushType(Data.Type.Int64)
-          case ("System", "Double") => pushType(Data.Type.Number)
-          case ("System", "String") => pushType(Data.Type.Utf8)
-        }
-
-        val asmOps = arrTypeF
-          .lift((namespaceName, typeName))
-          .map(List(_, Operation(Opcodes.NEW_ARRAY)))
-          .toRight(UnknownOpcode)
-
-        asmOps
+      case NewArr(TypeDefData(_, _, typeName, namespaceName, _, _, _)) => newArrByTypeName(typeName, namespaceName)
+      case NewArr(TypeRefData(_, typeName, namespaceName))             => newArrByTypeName(typeName, namespaceName)
       case StElem(_) | StElemI1 | StElemI2 | StElemI4 | StElemI8 | StElemR4 | StElemR8 | StElemRef =>
         Right(List(Operation(Opcodes.SWAP), Operation(Opcodes.ARRAY_MUT)))
       case LdElem(_) | LdElemI1 | LdElemI2 | LdElemI4 | LdElemI8 | LdElemR4 | LdElemR8 | LdElemRef | LdElemU1 |
