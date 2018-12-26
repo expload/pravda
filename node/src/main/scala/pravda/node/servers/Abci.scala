@@ -53,7 +53,16 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   val consensusEnv = new BlockDependentEnvironment(applicationStateDb)
   val mempoolEnv = new BlockDependentEnvironment(applicationStateDb)
 
-  var lastBlockHeight = 0L
+  // It is updated each time when EndBlock called. It is a height of the proposed block,
+  // but since this value is updated after a transactions already processed, thus when a transaction
+  // is processed that value will be the height of the last block
+  var lastBlockHeight = 1L
+  // It is updated each time when BeginBlock called.
+  var proposedHeight = 1L
+  // It is updated each time when BeginBlock called. The value is taken from the header
+  // of the current proposed block (header is passed in BeginBlock callback)
+  var proposedBlockTimestamp = 0L
+
   var validators: Vector[Address] = Vector.empty[Address]
   val balances: Entry[Address, NativeCoin] = balanceEntry(applicationStateDb)
 
@@ -71,7 +80,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
     for {
       _ <- FileStore
-        .updateApplicationStateInfoAsync(ApplicationStateInfo(lastBlockHeight, ByteString.EMPTY, initValidators))
+        .updateApplicationStateInfoAsync(ApplicationStateInfo(lastBlockHeight, ByteString.EMPTY, initValidators, 0L))
       _ <- Future.sequence(initialDistribution.map {
         case CoinDistributionMember(address, amount) =>
           balances.put(address, amount)
@@ -81,14 +90,15 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   }
 
   /*
-   *  request.header contains header of the last comitted block. The `header` field has an `Option` type,
+   *  request.header contains header of the current proposed block. The `header` field has an `Option` type,
    *  but in the Protobuf specification this field is not an `optional`, so we can use `getHeader` method safely.
    */
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
 
-    // Timestamp of the last comitted block
-    val lastBlockTime = utils.protoTimestampToLong(request.getHeader.getTime)
+    // Timestamp of the current proposed block
+    proposedBlockTimestamp = utils.protoTimestampToLong(request.getHeader.getTime)
+    proposedHeight = request.getHeader.height
 
     val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.getValidator.address))
     val absent = request.getLastCommitInfo.votes.collect {
@@ -97,9 +107,9 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
     }.flatten
 
     FileStore
-      .modifyApplicationStateInfoAsync(_.copy(blockTimestamp = lastBlockTime))
+      .modifyApplicationStateInfoAsync(_.copy(blockTimestamp = proposedBlockTimestamp))
       .map { maybeInfo =>
-        val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address], 0L))
+        val info = maybeInfo.getOrElse(ApplicationStateInfo.Empty)
         validators = info.validators.filter(address => !malicious.contains(address) && !absent.contains(address))
       }
       .map(_ => ResponseBeginBlock())
@@ -118,8 +128,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   def verifyTx(tx: Transaction, id: TransactionId, ep: BlockDependentEnvironment): Try[TransactionResult] = {
 
     val vm = new VmImpl()
-    val proposedHeight = lastBlockHeight + 1
-    val env = ep.transactionEnvironment(tx.from, id, proposedHeight)
+    val env = ep.transactionEnvironment(tx.from, id, proposedHeight, proposedBlockTimestamp)
     val wattPayer = tx.wattPayer.fold(tx.from)(identity)
 
     for {
@@ -179,7 +188,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   }
 
   def endBlock(request: RequestEndBlock): Future[ResponseEndBlock] = {
-    // save the height of the just committed block
+    // save the height of the current proposed block. It will be stored later as a last block height
     lastBlockHeight = request.height
     // TODO: Validators update
     Future.successful(ResponseEndBlock.defaultInstance)
@@ -241,12 +250,14 @@ object Abci {
     def transactionId: TransactionId
     // A height of the block that the transaction was committed in
     def blockHeight: Long
+    def blockTimestamp: Long
     def identifier: String
   }
 
   object TransactionEffects {
     final case class Transfers(num: Long,
                                blockHeight: Long,
+                               blockTimestamp: Long,
                                transactionId: TransactionId,
                                transfers: Seq[Effect.Transfer])
         extends TransactionEffects {
@@ -259,6 +270,7 @@ object Abci {
 
     final case class ProgramEvents(num: Long,
                                    blockHeight: Long,
+                                   blockTimestamp: Long,
                                    transactionId: TransactionId,
                                    events: Seq[Effect.Event])
         extends TransactionEffects {
@@ -269,7 +281,11 @@ object Abci {
       lazy val identifier = "ProgramEvents"
     }
 
-    final case class AllEffects(num: Long, blockHeight: Long, transactionId: TransactionId, effects: Seq[Effect])
+    final case class AllEffects(num: Long,
+                                blockHeight: Long,
+                                blockTimestamp: Long,
+                                transactionId: TransactionId,
+                                effects: Seq[Effect])
         extends TransactionEffects {
       override val identifier = AllEffects.identifier
     }
@@ -304,14 +320,16 @@ object Abci {
 
     def transactionEnvironment(executor: Address,
                                tid: TransactionId,
-                               proposedHeight: Long = 0): TransactionDependentEnvironment = {
+                               proposedHeight: Long = 0,
+                               proposedBlockTimestamp: Long = 0): TransactionDependentEnvironment = {
       val effects = mutable.Buffer.empty[Effect]
       effectsMap += (tid -> effects)
-      new TransactionDependentEnvironment(executor, proposedHeight, tid, effects)
+      new TransactionDependentEnvironment(executor, proposedHeight, proposedBlockTimestamp, tid, effects)
     }
 
     final class TransactionDependentEnvironment(val executor: Address,
                                                 proposedHeight: Long,
+                                                proposedBlockTimestamp: Long,
                                                 transactionId: TransactionId,
                                                 effects: mutable.Buffer[Effect])
         extends Environment {
@@ -351,10 +369,11 @@ object Abci {
                                              transactionEffects: Seq[Effect]): Unit = {
         val additionalData = getAdditionalDataByAddress(executor)
         val num = additionalData.lastTransactionNumber
-        putByOffset(dbPath,
-                    executor,
-                    num - 1,
-                    TransactionEffects.AllEffects(num, proposedHeight, transactionId, transactionEffects))
+        putByOffset(
+          dbPath,
+          executor,
+          num - 1,
+          TransactionEffects.AllEffects(num, proposedHeight, proposedBlockTimestamp, transactionId, transactionEffects))
 
         additionalDataByAddressPath.put(
           byteUtils.byteString2hex(executor),
@@ -372,10 +391,11 @@ object Abci {
           val additionalData = getAdditionalDataByAddress(address)
           val num = additionalData.transfersLastTransactionNumber
 
-          putByOffset(dbPath,
-                      address,
-                      num - 1,
-                      TransactionEffects.Transfers(num, proposedHeight, transactionId, transfers))
+          putByOffset(
+            dbPath,
+            address,
+            num - 1,
+            TransactionEffects.Transfers(num, proposedHeight, proposedBlockTimestamp, transactionId, transfers))
 
           additionalDataByAddressPath.put(byteUtils.byteString2hex(address),
                                           additionalData.copy(transfersLastTransactionNumber = num + 1L))
@@ -413,10 +433,11 @@ object Abci {
                         events: Seq[Effect.Event]): Unit = {
           val additionalData = getAdditionalDataByAddress(address)
           val num = additionalData.eventsLastTransactionNumber
-          putByOffset(dbPath,
-                      address,
-                      num - 1,
-                      TransactionEffects.ProgramEvents(num, proposedHeight, transactionId, events))
+          putByOffset(
+            dbPath,
+            address,
+            num - 1,
+            TransactionEffects.ProgramEvents(num, proposedHeight, proposedBlockTimestamp, transactionId, events))
 
           additionalDataByAddressPath.put(byteUtils.byteString2hex(address),
                                           additionalData.copy(eventsLastTransactionNumber = num + 1L))

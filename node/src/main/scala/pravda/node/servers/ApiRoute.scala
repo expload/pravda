@@ -268,11 +268,12 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                   val offset = maybeOffset.getOrElse(0L)
                   val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
 
-                  val eventuallyResult = transferEffectsByAddress.startsWith[TransactionEffects.Transfers](
-                    bytes.byteString2hex(address),
-                    offset,
-                    count
-                  )
+                  val eventuallyResult =
+                    transferEffectsByAddress.startsWith[TransactionEffects.Transfers](
+                      bytes.byteString2hex(address),
+                      offset,
+                      count
+                    )
 
                   onSuccess(eventuallyResult)(complete(_))
                 }
