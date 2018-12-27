@@ -43,6 +43,15 @@ object launcher extends App {
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
+  java.security.Security.setProperty(
+    "networkaddress.cache.ttl",
+    pravdaConfig.networkAddressCache.ttl.toString
+  )
+  java.security.Security.setProperty(
+    "networkaddress.cache.negative.ttl",
+    pravdaConfig.networkAddressCache.negativeTtl.toString
+  )
+
   val abciClient = new AbciClient(pravdaConfig.tendermint.rpcPort)
 
   val applicationStateDb = DB(
