@@ -5,7 +5,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Id
 
-`0x09`
+`0x08`
 ### Signature
 
 `(bytes: bytes): bytes`

@@ -60,13 +60,13 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
             case Asm =>
               inputs match {
                 case List(("stdin", f)) => compilers.asm(f.toStringUtf8)
-                case List((path, f)) => compilers.asm(path, f.toStringUtf8)
-                case _ => Monad[F].pure(Left("Asm compilation takes only one file."))
+                case List((path, f))    => compilers.asm(path, f.toStringUtf8)
+                case _                  => Monad[F].pure(Left("Asm compilation takes only one file."))
               }
             case Disasm =>
               inputs match {
                 case List((path, f)) => compilers.disasm(f).map(s => Right(ByteString.copyFromUtf8(s)))
-                case _ => Monad[F].pure(Left("Disassembly takes only one file."))
+                case _               => Monad[F].pure(Left("Disassembly takes only one file."))
               }
 
             case DotNet =>
@@ -98,30 +98,27 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
                   .sequence
 
               val compiled: F[Either[String, ByteString]] = dotnetFilesE match {
-                case Left(err) => Monad[F].pure(Left(err))
+                case Left(err)          => Monad[F].pure(Left(err))
                 case Right(dotnetFiles) => compilers.dotnet(dotnetFiles, config.mainClass)
               }
 
               compiled
 
             case Evm =>
-              val (bins, abis) = inputs.partition { case (f, _) => f.endsWith(".bin") }
+              val err: F[Either[String, ByteString]] = Monad[F].pure(Left(
+                "Required 2 file .abi and .bin with identical names(Use https://solidity.readthedocs.io/en/latest/installing-solidity.html)"))
+              if (inputs.size == 2) {
+                val (bins, abis) = inputs.partition { case (f, _) => f.endsWith(".bin") }
+                val compiled = for {
+                  bin <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".bin") => r }
+                  abi <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".abi") => r }
+                  binName = bin._1.stripSuffix(".bin")
+                  abiName = abi._1.stripSuffix(".abi")
+                  if binName == abiName
+                } yield compilers.evm(bin._2, abi._2)
 
-              if (bins.size == 1 && abis.size == 1 && abis.head._1.endsWith(".abi")) {
-
-                val binName = bins.head._1.replace(".bin","")
-                val abiName = abis.head._1.replace(".abi","")
-                if (binName == abiName) {
-                  val h = bins.map(_._2).zip(abis.map(_._2))
-
-                  val compiled = h.head match {
-                    case (bin, abi) =>
-                      compilers.evm(bin, abi)
-                  }
-                 compiled
-
-                }else Monad[F].pure(Left("Required 2 file .abi and .bin with identical names(Use https://solidity.readthedocs.io/en/latest/installing-solidity.html)"))
-              } else Monad[F].pure(Left("Required 2 file .abi and .bin with identical names(Use https://solidity.readthedocs.io/en/latest/installing-solidity.html)"))
+                compiled.getOrElse(err)
+              } else err
 
             case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }

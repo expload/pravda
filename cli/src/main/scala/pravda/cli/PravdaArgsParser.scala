@@ -152,7 +152,8 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               ),
             cmd("evm")
               .text(
-                "Compile .bin produced by solc compiler to Pravda VM bytecode. " +
+                "[THIS COMPILATION MODE IS EXPERIMENTAL]" +
+                  "Compile .bin produced by solc compiler to Pravda VM bytecode. " +
                   "Input files are .bin contract and .abi. " +
                   "Output is binary Pravda program. " +
                   "By default read from stdin and print to stdout")
