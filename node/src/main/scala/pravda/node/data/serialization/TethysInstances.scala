@@ -38,7 +38,6 @@ import pravda.common.json._
 import pravda.node.data.cryptography.EncryptedPrivateKey
 import pravda.node.data.domain.Wallet
 import pravda.vm.json._
-
 import pravda.common.bytes.{byteString2hex, hex2byteString}
 
 trait TethysInstances {
@@ -145,6 +144,44 @@ trait TethysInstances {
 
   implicit val eventItemWriter: JsonWriter[ApiRoute.EventItem] =
     jsonWriter[ApiRoute.EventItem]
+
+  implicit val additionalDataReader: JsonReader[Abci.AdditionalDataForAddress] =
+    jsonReader[Abci.AdditionalDataForAddress]
+
+  implicit val additionalDataWriter: JsonWriter[Abci.AdditionalDataForAddress] =
+    jsonWriter[Abci.AdditionalDataForAddress]
+
+  implicit val transferEffectsReader: JsonReader[Abci.TransactionEffects.Transfers] =
+    jsonReader[Abci.TransactionEffects.Transfers]
+
+  implicit val transferEffectsWriter: JsonObjectWriter[Abci.TransactionEffects.Transfers] =
+    jsonWriter[Abci.TransactionEffects.Transfers]
+
+  implicit val programEventsReader: JsonReader[Abci.TransactionEffects.ProgramEvents] =
+    jsonReader[Abci.TransactionEffects.ProgramEvents]
+
+  implicit val programEventsWriter: JsonObjectWriter[Abci.TransactionEffects.ProgramEvents] =
+    jsonWriter[Abci.TransactionEffects.ProgramEvents]
+
+  implicit val transactionAllEffectsReader: JsonReader[Abci.TransactionEffects.AllEffects] =
+    jsonReader[Abci.TransactionEffects.AllEffects]
+
+  implicit val transactionAllEffectsWriter: JsonObjectWriter[Abci.TransactionEffects.AllEffects] =
+    jsonWriter[Abci.TransactionEffects.AllEffects]
+
+  implicit val transactionEffectsReader: JsonReader[Abci.TransactionEffects] =
+    JsonReader.builder
+      .addField[String]("transactionEffectsType")
+      .selectReader[Abci.TransactionEffects] {
+        case Abci.TransactionEffects.Transfers.identifier     => jsonReader[Abci.TransactionEffects.Transfers]
+        case Abci.TransactionEffects.ProgramEvents.identifier => jsonReader[Abci.TransactionEffects.ProgramEvents]
+        case Abci.TransactionEffects.AllEffects.identifier    => jsonReader[Abci.TransactionEffects.AllEffects]
+      }
+
+  implicit val transactionEffectsWriter: JsonWriter[Abci.TransactionEffects] =
+    JsonWriter
+      .obj[Abci.TransactionEffects]
+      .addField[String]("transactionEffectsType")(_.identifier) ++ jsonWriter[Abci.TransactionEffects]
 
   //---------------------------------------------------------------------------
   // ABCI

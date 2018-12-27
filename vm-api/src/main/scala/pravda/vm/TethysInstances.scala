@@ -274,6 +274,7 @@ trait TethysInstances {
       case "Transfer"      => jsonReader[vm.Effect.Transfer]
     }
 
+  implicit val effectEventReader: JsonReader[vm.Effect.Event] = jsonReader[vm.Effect.Event]
   implicit val effectEventWriter: JsonObjectWriter[vm.Effect.Event] = jsonWriter[vm.Effect.Event]
 
   implicit val effectProgramCreateWriter: JsonObjectWriter[vm.Effect.ProgramCreate] =
@@ -293,6 +294,7 @@ trait TethysInstances {
 
   implicit val effectStorageWriteWriter: JsonObjectWriter[vm.Effect.StorageWrite] = jsonWriter[vm.Effect.StorageWrite]
 
+  implicit val effectTransferReader: JsonReader[vm.Effect.Transfer] = jsonReader[vm.Effect.Transfer]
   implicit val effectTransferWriter: JsonObjectWriter[vm.Effect.Transfer] = jsonWriter[vm.Effect.Transfer]
 
   implicit val effectWriter: JsonWriter[vm.Effect] =
