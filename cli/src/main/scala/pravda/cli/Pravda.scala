@@ -32,6 +32,8 @@ import scala.sys.process.stderr
   * Pravda CLI entry point.
   */
 object Pravda extends App {
+  private lazy val NETWORKD_ADDRESS_CACHE_TTL = 60
+  private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 60
 
   implicit val system: ActorSystem = ActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -51,6 +53,15 @@ object Pravda extends App {
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
   lazy val codegen = new Codegen(io, codeGenerators)
   lazy val execute = new Execute(io, nodeLanguage)
+
+  java.security.Security.setProperty(
+    "networkaddress.cache.ttl",
+    NETWORKD_ADDRESS_CACHE_TTL.toString
+  )
+  java.security.Security.setProperty(
+    "networkaddress.cache.negative.ttl",
+    NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL.toString
+  )
 
   // FIXME programs should be composed by another one
   val eventuallyExitCode = PravdaArgsParser.parse(args.toList, PravdaConfig.Nope) match {
