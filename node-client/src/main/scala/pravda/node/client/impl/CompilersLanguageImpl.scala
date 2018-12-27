@@ -68,8 +68,7 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
     for {
       abi <- parseAbi(abiS)
       ops <- parseWithIndices(source)
-      ops <- translateActualContract(ops, abi)
-    } yield PravdaAssembler.assemble(ops, saveLabels = true)
-
+      asmOps <- translateActualContract(ops, abi)
+    } yield PravdaAssembler.assemble(asmOps, saveLabels = true)
   }
 }

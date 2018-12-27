@@ -9,7 +9,7 @@ import pravda.vm.operations._
 
 object ExpandBytesEvm extends FunctionDefinition {
 
-  val id = 0x09L
+  val id = 0x08L
 
   val description =
     "Takes bytes from stack. Return expanded to 32 length bytes. "

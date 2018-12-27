@@ -33,7 +33,7 @@ package object opcode {
   val sub: List[asm.Operation] = asm.Operation(Opcodes.SWAP) :: pushBigInt(BigInt(-1)) ::
     asm.Operation(Opcodes.MUL) :: asm.Operation(Opcodes.ADD) :: Nil
 
-  val callExp: List[asm.Operation] = pushInt(3) :: asm.Operation(Opcodes.SCALL) :: Nil
+  val callExp: List[asm.Operation] = pushInt8(3) :: asm.Operation(Opcodes.SCALL) :: Nil
 
   def pushBigInt(value: scala.BigInt): asm.Operation =
     push(value, Data.Primitive.BigInt)

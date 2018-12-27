@@ -22,6 +22,7 @@ import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
 import pravda.evm.EVM._
+import pravda.evm.abi.parse.AbiParser
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.disasm.{Blocks, JumpTargetRecognizer, StackSizePredictor}
 import pravda.evm.translate.opcode._
@@ -114,16 +115,15 @@ object Translator {
       (creationCode1, actualContract1) = code1
       code2 <- JumpTargetRecognizer(actualContract1).left.map(_.toString)
       ops = StackSizePredictor.clear(StackSizePredictor.emulate(code2.map(_._2)))
-      filtered = {
-        println(ops.mkString("\n"))
-        filterCode(ops)
-      }
+      filtered = filterCode(ops)
       res <- Translator(filtered, abi).map(
         opcodes =>
           Operation.Label(startLabelName) ::
             createArray(defaultMemorySize) :::
             Operation(Opcodes.SWAP) ::
-          opcodes
+            opcodes :::
+            StdlibAsm.stdlibFuncs.flatMap(_.code) :::
+            convertResult(abi)
       )
     } yield res
   }
@@ -134,4 +134,40 @@ object Translator {
       pushType(Data.Type.Int8),
       Operation(Opcodes.NEW_ARRAY)
     )
+
+  private def convertResult(abi: List[AbiObject]): List[Operation] = {
+    val (funcs, _, _) = AbiObject.unwrap(abi)
+
+    def castResult(arg: AbiParser.Argument): List[Operation] = AbiParser.nameToType(arg.`type`) match {
+      case EVM.UInt(num) =>
+        num match {
+          case 8                 => cast(Data.Type.Int16)
+          case 16 | 24           => cast(Data.Type.Int32)
+          case 32 | 40 | 48 | 56 => cast(Data.Type.Int64)
+          case _                 => cast(Data.Type.BigInt)
+        }
+      case EVM.SInt(num) =>
+        num match {
+          case 8                 => cast(Data.Type.Int8)
+          case 16                => cast(Data.Type.Int16)
+          case 24 | 32           => cast(Data.Type.Int32)
+          case 40 | 48 | 56 | 64 => cast(Data.Type.Int64)
+          case _                 => cast(Data.Type.BigInt)
+        }
+      case EVM.Bool        => cast(Data.Type.Boolean)
+      case EVM.Unsupported => List.empty
+    }
+
+    List(Operation.Label("convert_result")) ++ funcs.flatMap { f =>
+      List(
+        Operation(Opcodes.DUP),
+        Operation.Push(Data.Primitive.Utf8(f.name)),
+        Operation(Opcodes.EQ),
+        Operation(Opcodes.NOT),
+        Operation.JumpI(Some(s"convert_result_not_${f.name}"))
+      ) ++ List(Operation(Opcodes.POP)) ++
+        f.outputs.headOption.map(h => castResult(h)).toList.flatten ++
+        List(Operation(Opcodes.STOP), Operation.Label(s"convert_result_not_${f.name}"))
+    }
+  }
 }

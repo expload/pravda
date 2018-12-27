@@ -20,15 +20,15 @@ package pravda.vm
 object StandardLibrary {
 
   val All = Seq(
-    standard.Sha3,
+    standard.Ripemd160,
     standard.ValidateEd25519Signature,
     standard.ExponentialFunction,
     standard.HexToBytes,
     standard.BytesToHex,
-    standard.ReadEvmWord,
-    standard.WriteEvmWord,
-    standard.SliceEvmMemory,
-    standard.ExpandBytesEvm
+    standard.SliceByteArray,
+    standard.WriteSliceByteArray,
+    standard.ExpandBytesEvm,
+    standard.Sha3
   )
 
   val Index: Map[Long, (Memory, WattCounter) => Unit] =

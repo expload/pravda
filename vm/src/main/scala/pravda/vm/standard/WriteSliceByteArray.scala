@@ -1,6 +1,5 @@
 package pravda.vm.standard
 
-import com.google.protobuf.ByteString
 import pravda.vm.Data.Array.Int8Array
 import pravda.vm.Data.Type
 import pravda.vm.Error.{InvalidArgument, WrongType}
@@ -8,15 +7,13 @@ import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 import pravda.vm.operations._
 
-object WriteEvmWord extends FunctionDefinition {
-
-  val MaxMemorySize = 1024 * 1024
+object WriteSliceByteArray extends FunctionDefinition {
 
   val id = 0x07L
 
   val description =
     "Takes byte array, index from stack, bytes to write. " +
-      "Writes 32 bytes, fill with zeros if necessary, from given index in the given array. " +
+      "Writes given bytes from given index in the given array. " +
       "Returns reference to array"
 
   val args: Seq[(String, Seq[Type])] = Seq(
@@ -34,15 +31,15 @@ object WriteEvmWord extends FunctionDefinition {
         val ind = memory.pop() match {
           case Data.Primitive.BigInt(b) =>
             if (b < 0) throw ThrowableVmError(InvalidArgument)
-            else if (b > MaxMemorySize) throw ThrowableVmError(InvalidArgument)
+            else if (b > data.length) throw ThrowableVmError(InvalidArgument)
             else b.toInt
           case _ => throw ThrowableVmError(WrongType)
         }
 
         val bytes = memory.pop() match {
           case Data.Primitive.Bytes(b) =>
-            if (b.size() > 32) throw ThrowableVmError(InvalidArgument)
-            else b.concat(ByteString.copyFrom(Array.fill[Byte](32 - b.size())(0)))
+            if (ind + b.size() > data.length) throw ThrowableVmError(InvalidArgument)
+            else b
           case _ => throw ThrowableVmError(WrongType)
         }
 
@@ -50,7 +47,7 @@ object WriteEvmWord extends FunctionDefinition {
           case (b, i) => data(ind + i) = b
         }
 
-        wattCounter.cpuUsage(32 * CpuArithmetic)
+        wattCounter.cpuUsage(bytes.size() * CpuArithmetic)
 
         r
 

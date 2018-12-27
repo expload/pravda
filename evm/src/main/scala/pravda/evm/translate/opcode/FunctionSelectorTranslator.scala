@@ -36,11 +36,13 @@ object FunctionSelectorTranslator {
           i =>
             List(Operation(Opcodes.SWAP)) :::
               cast(Data.Type.Bytes) :::
-              List(pushInt(9), Operation(Opcodes.SCALL), Operation(Opcodes.CONCAT))
+              List(pushInt(8), Operation(Opcodes.SCALL), Operation(Opcodes.CONCAT))
         )
         .toList ++
-      List(pushBytes(Array(0x0, 0x0, 0x0, 0x0)), Operation(Opcodes.CONCAT)) ++
-      List(pushInt(3), Operation(Opcodes.SWAPN))
+      List(pushBytes(Array(0x0, 0x0, 0x0, 0x0)),
+           Operation(Opcodes.CONCAT),
+           Operation(Opcodes.SWAP),
+           Operation.Push(Data.Primitive.Null))
 
   def evmToOps(ops: List[EVM.Op], abi: List[AbiFunction]): List[Converted] = {
 

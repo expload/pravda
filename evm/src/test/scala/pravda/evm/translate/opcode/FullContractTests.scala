@@ -12,6 +12,7 @@ import pravda.common.domain.Address
 import pravda.vm.Data.Array.Int8Array
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import utest._
+import pravda.common.bytes.hex._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -24,12 +25,12 @@ object FullContractTests extends TestSuite {
                                                   stack = Seq(Data.Primitive.Utf8("get")),
                                                   storage = Map(evmWord(Array(0)) -> evmWord(Array(1))))
 
-      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
-          stack = Seq(evmWord(Array(1))),
+          stack = Seq(BigInt(scala.BigInt(1))),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -64,8 +65,13 @@ object FullContractTests extends TestSuite {
               Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
               evmWord(Array(0)),
               Some(evmWord(Array(1)))
-            )),
-          None
+            ),
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              evmWord(Array(0)),
+              Some(evmWord(Array(1)))
+            ),
+          )
         ))
     }
 
@@ -76,8 +82,8 @@ object FullContractTests extends TestSuite {
         storage = Map()
       )
 
-      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
@@ -122,7 +128,7 @@ object FullContractTests extends TestSuite {
         ))
     }
 
-    'SimpleTokenGet - {
+    'SimpleTokenEmit - {
       val preconditions = VmSandbox.Preconditions(
         `watts-limit` = 10000L,
         stack = Seq(Data.Primitive.Bytes(ByteString.copyFrom((1 to 32).toArray.map(_.toByte))),
@@ -131,13 +137,13 @@ object FullContractTests extends TestSuite {
         storage = Map()
       )
 
-      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage.bin"))
-      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorageABIj.json"))
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleToken/SimpleToken.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
         Expectations(
-          stack = Seq(),
-          heap = Map(Ref(0) -> Int8Array(ArrayBuffer(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          stack = Seq(Bool.True),
+          heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -167,13 +173,169 @@ object FullContractTests extends TestSuite {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
           ArrayBuffer(
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
+              None
+            ),
             StorageWrite(
               Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
-              evmWord(Array(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
               None,
-              evmWord(Array(10))
-            )),
+              Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000"))
+            )
+          ),
           None
+        ))
+    }
+
+    'SimpleTokenBalance - {
+      val preconditions = VmSandbox.Preconditions(
+        `watts-limit` = 10000L,
+        stack = Seq(
+          Data.Primitive.Bytes(ByteString.copyFrom((1 to 32).toArray.map(_.toByte))),
+          Data.Primitive.Utf8("balanceOf")
+        ),
+        storage = Map(
+          Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")) ->
+            Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000")))
+      )
+
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleToken/SimpleToken.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
+
+      EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
+        Expectations(
+          stack = Seq(BigInt(scala.BigInt(10))),
+          heap = Map(Ref(0) -> Int8Array(ArrayBuffer(10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
+          ArrayBuffer(
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
+              Some(Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000")))
+            ),
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
+              Some(Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000")))
+            )
+          )
+        ))
+    }
+
+    'SimpleTokenTransfer - {
+      val preconditions = VmSandbox.Preconditions(
+        `watts-limit` = 10000L,
+        stack = Seq(
+          Data.Primitive.Bytes(ByteString.copyFrom((2 to 33).toArray.map(_.toByte))),
+          Data.Primitive.Int64(2),
+          Data.Primitive.Utf8("transfer")
+        ),
+        storage = Map(
+          Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")) ->
+            Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000")),
+          Bytes(ByteString.copyFrom(hex"3b92ad5fdb196e1ab7df6126be9a99dcd51fcd55e21de9fc19c40e3951836661")) ->
+            Bytes(ByteString.copyFrom(hex"0b00000000000000000000000000000000000000000000000000000000000000"))
+        )
+      )
+
+      val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleToken/SimpleToken.bin"))
+      val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
+
+      EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
+        Expectations(
+          stack = Seq(Bool.True),
+          heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))),
+          ArrayBuffer(
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
+              Some(Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000")))
+            ),
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
+              Some(Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000")))
+            ),
+            StorageWrite(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"1e1e7f10bf6e615fa5a4e56786997be589a0a77fc0b37a4c3fdec08afbe4ed8c")),
+              Some(Bytes(ByteString.copyFrom(hex"0a00000000000000000000000000000000000000000000000000000000000000"))),
+              Bytes(ByteString.copyFrom(hex"0800000000000000000000000000000000000000000000000000000000000000"))
+            ),
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"3b92ad5fdb196e1ab7df6126be9a99dcd51fcd55e21de9fc19c40e3951836661")),
+              Some(Bytes(ByteString.copyFrom(hex"0b00000000000000000000000000000000000000000000000000000000000000")))
+            ),
+            StorageRead(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"3b92ad5fdb196e1ab7df6126be9a99dcd51fcd55e21de9fc19c40e3951836661")),
+              Some(Bytes(ByteString.copyFrom(hex"0b00000000000000000000000000000000000000000000000000000000000000")))
+            ),
+            StorageWrite(
+              Address @@ ByteString.copyFrom(Array.fill[Byte](32)(0)),
+              Bytes(ByteString.copyFrom(hex"3b92ad5fdb196e1ab7df6126be9a99dcd51fcd55e21de9fc19c40e3951836661")),
+              Some(Bytes(ByteString.copyFrom(hex"0b00000000000000000000000000000000000000000000000000000000000000"))),
+              Bytes(ByteString.copyFrom(hex"0d00000000000000000000000000000000000000000000000000000000000000"))
+            )
+          )
         ))
     }
   }
