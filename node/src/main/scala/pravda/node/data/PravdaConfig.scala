@@ -23,7 +23,7 @@ import pravda.common.domain.Address
 import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 
-final case class PravdaConfig(networkAddressCache: PravdaConfig.NetworkAddressCache,
+final case class PravdaConfig(networkAddressCache: Option[PravdaConfig.NetworkAddressCache],
                               genesis: PravdaConfig.Genesis,
                               validator: Option[PravdaConfig.Validator],
                               coinDistribution: Seq[CoinDistributionMember],
