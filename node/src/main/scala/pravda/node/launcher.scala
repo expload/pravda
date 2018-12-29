@@ -39,17 +39,20 @@ object launcher extends App {
     sys.props.put("config.file", path)
   }
 
+  private lazy val NETWORKD_ADDRESS_CACHE_TTL = 60
+  private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 20
+
   private implicit val system: ActorSystem = ActorSystem("pravda-system")
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
   java.security.Security.setProperty(
     "networkaddress.cache.ttl",
-    pravdaConfig.networkAddressCache.ttl.toString
+    pravdaConfig.networkAddressCache.map(_.ttl).getOrElse(NETWORKD_ADDRESS_CACHE_TTL).toString
   )
   java.security.Security.setProperty(
     "networkaddress.cache.negative.ttl",
-    pravdaConfig.networkAddressCache.negativeTtl.toString
+    pravdaConfig.networkAddressCache.map(_.negativeTtl).getOrElse(NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL).toString
   )
 
   val abciClient = new AbciClient(pravdaConfig.tendermint.rpcPort)

@@ -33,7 +33,7 @@ import scala.sys.process.stderr
   */
 object Pravda extends App {
   private lazy val NETWORKD_ADDRESS_CACHE_TTL = 60
-  private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 60
+  private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 20
 
   implicit val system: ActorSystem = ActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
