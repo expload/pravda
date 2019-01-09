@@ -108,7 +108,6 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               val err: F[Either[String, ByteString]] = Monad[F].pure(Left(
                 "Required 2 file .abi and .bin with identical names(Use https://solidity.readthedocs.io/en/latest/installing-solidity.html)"))
               if (inputs.size == 2) {
-                val (bins, abis) = inputs.partition { case (f, _) => f.endsWith(".bin") }
                 val compiled = for {
                   bin <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".bin") => r }
                   abi <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".abi") => r }
