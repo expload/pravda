@@ -6,7 +6,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>$(PackageId)</AssemblyName>
     <WattsLimit>500000</WattsLimit>
-    <PravdaApi>http://publicnode.expload.com/api/public</PravdaApi> 
+    <PravdaApi>https://publicnode.expload.com/api/public</PravdaApi> 
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Expload.Pravda" Version="0.*" />
