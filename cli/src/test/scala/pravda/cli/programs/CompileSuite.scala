@@ -83,6 +83,6 @@ object CompileSuite extends TestSuite {
       compile(PravdaConfig.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
-    
+
   }
 }
