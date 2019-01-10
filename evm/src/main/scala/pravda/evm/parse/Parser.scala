@@ -32,7 +32,6 @@ object Parser {
 
   def parseWithIndices(bytes: Array[Byte]): Either[String, List[Addressed[EVM.Op]]] = parseWithIndices(Bytes(bytes))
 
-
   def parseWithIndices(bytes: Bytes): Either[String, List[Addressed[EVM.Op]]] =
     opsWithIndices
       .parse(bytes)

@@ -524,10 +524,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class BigInt(data: scala.BigInt) extends Numeric[scala.BigInt]
     final case class Number(data: Double)       extends Numeric[Double]
     final case class Utf8(data: String)         extends Primitive with Array
-    final case class Bytes(data: ByteString)    extends Primitive with Array {
+    final case class Bytes(data: ByteString) extends Primitive with Array {
       override def toString: String = s"Bytes(0x${byteString2hex(data)})"
     }
-    final case class Ref(data: Int)             extends Primitive
+    final case class Ref(data: Int) extends Primitive
 
     /**
       * Special primitive to present offsets in program.

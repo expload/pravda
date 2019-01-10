@@ -106,7 +106,7 @@ object SimpleTranslation {
         List(Operation.Push(Data.Primitive.Int8(6)), Operation(Opcodes.SCALL))
     case MStore(offset) =>
       codeToOps(Opcodes.SWAP) ::: List(pushInt8(8)) ::: codeToOps(Opcodes.SCALL, Opcodes.SWAP) :::
-      cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) :::
+        cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) :::
         List(pushInt8(7), Operation(Opcodes.SCALL)) :::
         pushInt(offset - 1) :: codeToOps(Opcodes.SWAPN, Opcodes.POP)
 

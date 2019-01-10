@@ -20,6 +20,7 @@ No options available
 |[`compile asm`](pravda-compile-asm.md)|Assemble Pravda VM bytecode from text representation. Input file is a Pravda assembly language text file. Output is binary Pravda program. By default read from stdin and print to stdout.|
 |[`compile disasm`](pravda-compile-disasm.md)|Disassemble Pravda VM bytecode to text presentation. Input file is a Pravda executable binary. Output is a text file with Pravda assembly code. By default read from stdin and print to stdout.|
 |[`compile dotnet`](pravda-compile-dotnet.md)|Compile .exe produced by .NET compiler to Pravda VM bytecode. Input file is a .NET PE (portable executable). Output is binary Pravdaprogram. By default read from stdin and print to stdout|
+|[`compile evm`](pravda-compile-evm.md)|[THIS COMPILATION MODE IS EXPERIMENTAL]Compile .bin produced by solc compiler to Pravda VM bytecode. Input files are .bin contract and .abi. Output is binary Pravda program. By default read from stdin and print to stdout|
 |[`broadcast run`](pravda-broadcast-run.md)|Send a transaction with Pravda Program address to the blockchain to run it|
 |[`broadcast transfer`](pravda-broadcast-transfer.md)|Transfer native coins to a given wallet.|
 |[`broadcast deploy`](pravda-broadcast-deploy.md)|Deploy Pravda program to the blockchain.|
