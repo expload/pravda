@@ -35,7 +35,7 @@ object Pravda extends App {
   private lazy val NETWORKD_ADDRESS_CACHE_TTL = 60
   private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 20
 
-  implicit val system: ActorSystem = ActorSystem()
+  implicit val system: ActorSystem = createActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
@@ -97,4 +97,20 @@ object Pravda extends App {
   )
 
   sys.exit(exitCode)
+
+  private def createActorSystem() = {
+    import com.typesafe.config.ConfigFactory
+
+    val customConf = ConfigFactory.parseString("""
+      akka {
+        # We turn off log messages during startup/shutdown actor system since
+        # a logging system was not started yet and it cannot catch log events.
+        stdout-loglevel = "OFF"
+
+        loglevel = ERROR
+      }
+    """)
+
+    ActorSystem("PravdaCliAS", ConfigFactory.load(customConf))
+  }
 }
