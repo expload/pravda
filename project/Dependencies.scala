@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  lazy val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.5"
+  lazy val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.7"
   lazy val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.19"
   lazy val akkaStream = "com.typesafe.akka" %% "akka-stream" % "2.5.19"
   lazy val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.14.0"
