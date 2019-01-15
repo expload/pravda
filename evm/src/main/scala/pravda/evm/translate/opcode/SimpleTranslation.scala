@@ -52,7 +52,9 @@ object SimpleTranslation {
     case Div => bigintOp(Operation(Opcodes.DIV)) //FIXME 0 if stack[1] == 0 othervise s[0] / s[1]
     case Mod => bigintOp(Operation(Opcodes.MOD)) //FIXME 0 if stack[1] == 0 othervise s[0] % s[1]
     case Sub => bigintOps(sub) //FIXME result & (2^256 - 1)
-//    case AddMod =>
+    case Exp => bigintOps(pushInt8(3) :: Operation(Opcodes.SCALL) :: Nil)
+
+    //    case AddMod =>
 //      dupn(3) ::: codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.SWAP) ::: dupn(3) :::
 //        codeToOps(Opcodes.SWAP, Opcodes.MOD, Opcodes.ADD, Opcodes.MOD)
 //    case MulMod =>
@@ -156,6 +158,7 @@ object SimpleTranslation {
       )
 
     case Caller => codeToOps(Opcodes.FROM)
+
   }
 
   def evmOpToOps(op: EVM.Op): Converted =

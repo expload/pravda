@@ -128,14 +128,7 @@ object Translator {
     } yield res
   }
 
-  private def createArray(size: Int): List[Operation] =
-    List(
-      pushInt(size),
-      pushType(Data.Type.Int8),
-      Operation(Opcodes.NEW_ARRAY)
-    )
-
-  private def convertResult(abi: List[AbiObject]): List[Operation] = {
+  def convertResult(abi: List[AbiObject]): List[Operation] = {
     val (funcs, _, _) = AbiObject.unwrap(abi)
 
     def castResult(arg: AbiParser.Argument): List[Operation] = AbiParser.nameToType(arg.`type`) match {

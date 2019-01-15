@@ -349,7 +349,7 @@ object TranslateTests extends TestSuite {
         val Right(asm) = Translator.translateActualContract(ops, abi)
 
         PravdaAssembler.render(asm) ==>
-          """@__start_evm_program:
+        """@__start_evm_program:
           |push int32(1024)
           |push int8(1)
           |new_array

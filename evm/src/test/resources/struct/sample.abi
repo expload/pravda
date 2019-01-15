@@ -1,0 +1,1 @@
+[{"constant":false,"inputs":[{"name":"adr","type":"uint256"}],"name":"balanceOfThatf","outputs":[{"name":"balance","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"}]
