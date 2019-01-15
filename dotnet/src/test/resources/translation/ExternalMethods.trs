@@ -220,14 +220,6 @@ translation: |-
   push int32(0)
   struct_mut "B"
   ret
-  @default_fields_ExternalNamespace.ExternalMethods:
-  dup
-  push null
-  struct_mut "A"
-  dup
-  push null
-  struct_mut "B"
-  ret
   @func_ExternalNamespace.ExternalMethods.Add:
   meta source_mark {
   "sl":int32(20),"sc":int32(13),"el":int32(20),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(26)
@@ -317,8 +309,6 @@ translation: |-
   scall
   jump @ExternalNamespace.ExternalProgramMethods.GetInstance_lvc
   @ExternalNamespace.ExternalProgramMethods.GetInstance_lvc:
-  ret
-  @vtable_ExternalNamespace.ExternalMethods:
   ret
   @vtable_ExternalNamespace.ExternalMethods:
   ret
