@@ -1,0 +1,26 @@
+vm:
+  stack:
+    [int32.0, int32.1, int32.2, int32.3, int32.4, utf8.GetCombinationValue]
+  storage:
+    utf8.cardCombinations: bytes.1F2F4F3757673B5B6B733D5D6D75793E5E6E767A7C
+    utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+  - target: Poker.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Poker.cs
+---
+stack:
+  - int32.1000000
+storage:
+  utf8.cardCombinations: bytes.1f2f4f3757673b5b6b733d5d6d75793e5e6e767a7c
+  utf8.init: "null"
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"

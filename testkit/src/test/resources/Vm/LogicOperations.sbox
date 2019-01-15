@@ -1,0 +1,46 @@
+vm:
+  stack:
+    [utf8.TestLogicOperations]
+  storage:
+    utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: LogicOperations.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/LogicOperations.cs
+    optimize: true
+---
+effects:
+  - eventType: StorageRead
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: utf8.init
+    value: 'null'
+  - eventType: StorageWrite
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: bytes.4c6f6701000000
+    value: utf8.1
+  - eventType: StorageWrite
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: bytes.4c6f6702000000
+    value: utf8.0
+  - eventType: StorageWrite
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: bytes.4c6f6703000000
+    value: utf8.0
+  - eventType: StorageWrite
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: bytes.4c6f6704000000
+    value: utf8.7
+  - eventType: StorageWrite
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: bytes.4c6f6705000000
+    value: utf8.1
+  - eventType: StorageWrite
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: bytes.4c6f6706000000
+    value: utf8.6

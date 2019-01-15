@@ -35,17 +35,20 @@ import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTrans
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.{Bson, transcode}
+import pravda.node.data.serialization.bjson._
+import tethys._
+import pravda.node.data.serialization._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
 import pravda.node.servers.Abci.TransactionResult
+import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Random, Success, Try}
 
 /**
   * @param abci Direct access to transaction processing. Required by dry-run
@@ -53,6 +56,8 @@ import scala.util.{Failure, Random, Success}
 class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
+
+  type R = Either[RpcError, TransactionResult]
 
   val hexUnmarshaller: Unmarshaller[String, ByteString] =
     Unmarshaller.strict(hex => bytes.hex2byteString(hex))
@@ -135,6 +140,33 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
           }
         }
       } ~
+        path("execute") {
+          parameters('from.as(hexUnmarshaller)) { from =>
+            extractStrictEntity(1.second) { body =>
+              val bde = new node.servers.Abci.BlockDependentEnvironment(db)
+              val program = bodyToTransactionData(body)
+              val wattLimit = Long.MaxValue
+              val transactionId = TransactionId.Empty
+              val vm = new VmImpl()
+              val env = bde.transactionEnvironment(Address @@ from, transactionId)
+
+              val result = for {
+                execResult <- Try(vm.spawn(program, env, wattLimit))
+              } yield TransactionResult(transactionId, execResult, env.collectEffects)
+
+              result match {
+                case Success(x) =>
+                  complete(Right(x): R)
+                case Failure(e: ThrowableVmError) =>
+                  complete(Left(RpcError(-1, e.error.toString, "")): R)
+                case Failure(e: Abci.TransactionValidationException) =>
+                  complete(Left(RpcError(-1, e.getMessage, "")): R)
+                case Failure(e) =>
+                  failWith(e)
+              }
+            }
+          }
+        } ~
         post {
           withoutRequestTimeout {
             path("broadcast") {
@@ -188,26 +220,36 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
         } ~
         get {
           path("events") {
-            import pravda.node.data.serialization.bson._
             parameters(
               (
-                'address.as(hexUnmarshaller),
+                'program.as(hexUnmarshaller),
                 'name,
+                'transactionId.as(hexUnmarshaller).?,
                 'offset.as(intUnmarshaller).?,
                 'count.as(intUnmarshaller).?
-              )) { (address, name, offsetO, countO) =>
-              val offset = offsetO.getOrElse(0)
-              val count = countO.map(c => math.min(c, ApiRoute.MaxEventCount)).getOrElse(ApiRoute.MaxEventCount)
-              val f = db
+              )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
+              val offset = maybeOffset.getOrElse(0)
+              val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
+              val eventuallyResult = db
                 .startsWith(
                   bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
                   bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
                   count.toLong
                 )
-                .map(_.map(r => transcode(Bson @@ r.bytes).to[MarshalledData]))
+                .map { records =>
+                  records.map(value =>
+                    transcode(BJson @@ value.bytes)
+                      .to[(TransactionId, MarshalledData)])
+                }
 
-              onSuccess(f) { res =>
-                complete(res.zipWithIndex.map { case (d, i) => ApiRoute.EventItem(i + offset, d) })
+              onSuccess(eventuallyResult) { result =>
+                val items = {
+                  val xs = result.zipWithIndex.map {
+                    case ((tid, d), n) => ApiRoute.EventItem(n + offset, tid, d)
+                  }
+                  maybeTransaction.fold(xs)(tid => xs.filter(_.transactionId == tid))
+                }
+                complete(items)
               }
             }
           }
@@ -219,5 +261,5 @@ object ApiRoute {
 
   final val MaxEventCount = 1000
 
-  final case class EventItem(offset: Int, data: MarshalledData)
+  final case class EventItem(offset: Int, transactionId: TransactionId, data: MarshalledData)
 }

@@ -97,6 +97,40 @@ object StdlibAsm {
         Operation(Opcodes.POP),
         Operation(Opcodes.RET)
       )
+    ),
+    stdlibFunc(
+      "concat_all_string",
+      List(
+        Operation(Opcodes.DUP),
+        Operation(Opcodes.LENGTH),
+        Operation.Push(Data.Primitive.Utf8("")),
+        pushInt(0),
+        Operation.Label("concat_all_string_loop"),
+        pushInt(4),
+        Operation(Opcodes.DUPN),
+        pushInt(2),
+        Operation(Opcodes.DUPN),
+        Operation(Opcodes.ARRAY_GET),
+        pushInt(3),
+        Operation(Opcodes.DUPN),
+        Operation(Opcodes.CONCAT),
+        pushInt(3),
+        Operation(Opcodes.SWAPN),
+        Operation(Opcodes.POP),
+        pushInt(1),
+        Operation(Opcodes.ADD),
+        Operation(Opcodes.DUP),
+        pushInt(4),
+        Operation(Opcodes.DUPN),
+        Operation(Opcodes.GT),
+        Operation.JumpI(Some("concat_all_string_loop")),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.SWAP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.SWAP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.RET)
+      )
     )
   )
 }

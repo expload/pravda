@@ -1,0 +1,106 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: If.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/If.cs
+    optimize: true
+---
+methods: |-
+  List(
+    Method(
+      List(
+        LdcI4S(10),
+        StLoc0,
+        LdLoc0,
+        LdcI41,
+        BgeS(2),
+        LdcI44,
+        StLoc0,
+        LdLoc0,
+        LdcI45,
+        BleS(6),
+        LdLoc0,
+        LdcI46,
+        BleS(2),
+        LdcI47,
+        StLoc0,
+        LdLoc0,
+        LdcI40,
+        BleS(4),
+        LdcI44,
+        StLoc0,
+        BrS(2),
+        LdcI45,
+        StLoc0,
+        LdLoc0,
+        LdcI42,
+        BleS(8),
+        LdLoc0,
+        LdcI44,
+        BgeS(4),
+        LdcI46,
+        StLoc0,
+        BrS(2),
+        LdcI48,
+        StLoc0,
+        LdLoc0,
+        LdcI47,
+        BgtS(5),
+        LdLoc0,
+        LdcI4S(10),
+        BleS(4),
+        LdcI41,
+        StLoc0,
+        BrS(2),
+        LdcI40,
+        StLoc0,
+        LdLoc0,
+        LdcI41,
+        BleS(4),
+        LdLoc0,
+        LdcI43,
+        BltS(5),
+        LdLoc0,
+        LdcI4S(20),
+        BleS(3),
+        LdcI42,
+        StLoc0,
+        Ret,
+        LdcI43,
+        StLoc0,
+        Ret
+      ),
+      2,
+      Some(16L)
+    ),
+    Method(List(Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (16L, LocalVarSig(List(LocalVar(I4, false)))),
+    (29L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

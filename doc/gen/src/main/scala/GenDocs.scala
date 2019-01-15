@@ -84,8 +84,8 @@ object GenDocs extends App {
 
   def genCliDocs(check: Boolean = false): ValidatedNel[String, Unit] = {
 
-    val outDir = new File("doc/ref/cli")
-    val mainPageName = "main.md"
+    val outDir = new File("doc/CLI")
+    val mainPageName = "index.md"
 
     val mainPage = (
       new File(outDir, mainPageName),
@@ -132,7 +132,7 @@ object GenDocs extends App {
     }
 
     writeToFile(
-      new File("doc/ref/vm/opcodes.md"),
+      new File("doc/virtual-machine/opcodes.md"),
       s"""$DoNotEditWarn
          |# Pravda VM opcodes
          |$view""".stripMargin,
@@ -168,9 +168,7 @@ object GenDocs extends App {
         case Data.Type.Int8    => "int8"
         case Data.Type.Int16   => "int16"
         case Data.Type.Int32   => "int32"
-        case Data.Type.Uint8   => "uint8"
-        case Data.Type.Uint16  => "uint16"
-        case Data.Type.Uint32  => "uint32"
+        case Data.Type.Int64   => "int64"
       }
 
       def typesToName(types: Seq[Data.Type]) = {
@@ -196,7 +194,7 @@ object GenDocs extends App {
       .map {
         case (name, content) =>
           writeToFile(
-            new File(s"doc/ref/vm/stdlib/$name.md"),
+            new File(s"doc/standard-library/$name.md"),
             s"$DoNotEditWarn\n$content",
             check
           )
@@ -204,20 +202,21 @@ object GenDocs extends App {
       .toList
       .sequence_
 
-    val stdlibRes = {
-      val stdlibTable = table("Name", "Description") {
-        StandardLibrary.All.toList.map { f =>
-          List(s"[${f.name}](stdlib/${nameToFileName(f.name)}.md)", f.description)
-        }
-      }
-      writeToFile(
-        new File(s"doc/ref/vm/stdlib.md"),
-        s"$DoNotEditWarn\n$stdlibTable",
-        check
-      )
-    }
+//    val stdlibRes = {
+//      val stdlibTable = table("Name", "Description") {
+//        StandardLibrary.All.toList.map { f =>
+//          List(s"[${f.name}](${nameToFileName(f.name)}.md)", f.description)
+//        }
+//      }
+//      writeToFile(
+//        new File(s"doc/standard-library/index.md"),
+//        s"$DoNotEditWarn\n$stdlibTable",
+//        check
+//      )
+//    }
 
-    (docsRes, stdlibRes).mapN { case _ => () }
+    docsRes
+    //(docsRes, stdlibRes).mapN { case _ => () }
   }
 
   val check = args.contains("--check")

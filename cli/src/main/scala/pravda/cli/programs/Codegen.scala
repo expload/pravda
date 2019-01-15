@@ -22,7 +22,7 @@ import cats.data.EitherT
 import cats.implicits._
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CodegenMode.Dotnet
-import pravda.cli.languages.{CodeGeneratorsLanguage, IoLanguage}
+import pravda.node.client.{CodeGeneratorsLanguage, IoLanguage}
 
 import scala.language.higherKinds
 
@@ -37,14 +37,12 @@ class Codegen[F[_]: Monad](io: IoLanguage[F], codegen: CodeGeneratorsLanguage[F]
         )
         result <- EitherT[F, String, List[(String, String)]] {
           config.codegenMode match {
-            case Dotnet => codegen.dotnet(input, config.excludeBigInteger).map(Right(_))
+            case Dotnet => codegen.dotnet(input).map(Right(_))
           }
         }
       } yield {
         result
       }
-
-    val dir = config.outDir.getOrElse("codegen")
 
     errorOrResult.value.flatMap {
       case Left(error) => io.writeStringToStderrAndExit(s"$error\n")
@@ -53,8 +51,8 @@ class Codegen[F[_]: Monad](io: IoLanguage[F], codegen: CodeGeneratorsLanguage[F]
           .map {
             case (filename, content) =>
               for {
-                _ <- io.mkdirs(dir)
-                path <- io.concatPath(dir, filename)
+                _ <- io.mkdirs("Assets")
+                path <- io.concatPath("Assets", filename)
                 _ <- io.writeStringToStdout(s"Writing to $path\n")
                 _ <- io.writeToFile(path, content)
               } yield ()

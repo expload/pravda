@@ -83,7 +83,6 @@ object EVM {
   final case class Dup(n: Int)        extends Op
   final case class Swap(n: Int)       extends Op
   final case class Log(n: Int)        extends Op
-  final case class JumpDest(n: Int)   extends Op
   case object Create                  extends Op
   case object Call                    extends Op
   case object CallCode                extends Op
@@ -93,6 +92,25 @@ object EVM {
   case object Revert                  extends Op
   case object Invalid                 extends Op
   case object SelfDestruct            extends Op
+
+  trait AddressedJumpOp extends Op {
+    def addr: Int
+  }
+  final case class JumpDest(addr: Int)     extends Op
+  case class SelfAddressedJump(addr: Int)  extends AddressedJumpOp
+  case class SelfAddressedJumpI(addr: Int) extends AddressedJumpOp
+  case class Jump(addr: Int, dest: Int)    extends AddressedJumpOp
+  case class JumpI(addr: Int, dest: Int)   extends AddressedJumpOp
+
+  case class MLoad(stackOffset: Int)   extends Op
+  case class MStore(stackOffset: Int)  extends Op
+  case class MStore8(stackOffset: Int) extends Op
+
+  case class CallDataLoad(stackOffset: Int) extends Op
+  case class CallDataSize(stackOffset: Int) extends Op
+
+  case class Sha3(stackOffset: Int)   extends Op
+  case class Return(stackOffset: Int) extends Op
 
   val singleOps: Map[Int, Op] = Map(
     0x00 -> Stop,
@@ -174,5 +192,16 @@ object EVM {
     (0x90 to 0x9f, i => Swap(i - 0x90 + 1)),
     (0xa0 to 0xa4, i => Log(i - 0xa0))
   )
+
+  sealed trait AbiType
+
+  sealed trait Fixed   extends AbiType
+  sealed trait Dynamic extends AbiType
+
+  final case class UInt(bytes: Int) extends Fixed
+  final case class SInt(bytes: Int) extends Fixed
+
+  final case object Bool        extends Fixed
+  final case object Unsupported extends AbiType
 
 }

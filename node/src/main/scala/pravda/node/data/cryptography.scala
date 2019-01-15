@@ -24,8 +24,9 @@ import javax.crypto.{BadPaddingException, Cipher, SecretKeyFactory}
 import com.google.protobuf.ByteString
 import pravda.common.contrib.ed25519
 import pravda.node.data.blockchain.Transaction
+import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.bjson._
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
 import pravda.common.bytes._
 import pravda.common.domain.Address
 import supertagged.TaggedType
@@ -61,42 +62,17 @@ object cryptography {
     }
   }
 
-//  object SecurePasswordHash {
-//
-//    val hasher: String => String =
-//      forPassword _ andThen (_.mkString)
-//
-//    def forPassword(password: String): SecurePasswordHash = {
-//      val algorithm = "PBKDF2WithHmacSHA256"
-//      val iterations = 20000
-//      val random = new SecureRandom()
-//      val salt = new Array[Byte](8)
-//
-//      random.nextBytes(salt)
-//
-//      val spec = new PBEKeySpec(password.toCharArray, salt, iterations)
-//      val f = SecretKeyFactory.getInstance(algorithm)
-//
-//      SecurePasswordHash(
-//        passwordAlgorithm = algorithm,
-//        passwordIterations = iterations,
-//        passwordSalt = ByteString.copyFrom(salt),
-//        passwordHash = ByteString.copyFrom(f.generateSecret(spec).getEncoded)
-//      )
-//    }
-//  }
-
   def signTransaction(privateKey: PrivateKey, tx: UnsignedTransaction): SignedTransaction =
     signTransaction(privateKey.toByteArray, tx)
 
   def addWattPayerSignature(privateKey: PrivateKey, tx: SignedTransaction): SignedTransaction = {
-    val message = transcode(tx.forSignature).to[Bson]
+    val message = transcode(tx.forSignature).to[BJson]
     val signature = ed25519.sign(privateKey.toByteArray, message)
     tx.copy(wattPayerSignature = Some(ByteString.copyFrom(signature)))
   }
 
   private def signTransaction(privateKey: Array[Byte], tx: UnsignedTransaction): SignedTransaction = {
-    val message = transcode(tx.forSignature).to[Bson]
+    val message = transcode(tx.forSignature).to[BJson]
     val signature = ed25519.sign(privateKey, message)
 
     SignedTransaction(
@@ -127,7 +103,7 @@ object cryptography {
     )
 
     val pubKey = tx.from.toByteArray
-    val message = transcode(tx.forSignature).to[Bson]
+    val message = transcode(tx.forSignature).to[BJson]
     val signature = tx.signature.toByteArray
     if (ed25519.verify(pubKey, message, signature)) {
       (tx.wattPayer, tx.wattPayerSignature) match {

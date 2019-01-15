@@ -21,7 +21,7 @@ import cats._
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.cli.languages.{IoLanguage, RandomLanguage}
+import pravda.node.client.{IoLanguage, RandomLanguage}
 import pravda.common.{bytes, crypto}
 
 import scala.language.higherKinds

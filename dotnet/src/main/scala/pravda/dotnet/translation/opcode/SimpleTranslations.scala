@@ -30,21 +30,24 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
 
     val translateF: PartialFunction[CIL.Op, List[Operation]] = {
-      case LdcI40     => List(pushInt(0))
-      case LdcI41     => List(pushInt(1))
-      case LdcI42     => List(pushInt(2))
-      case LdcI43     => List(pushInt(3))
-      case LdcI44     => List(pushInt(4))
-      case LdcI45     => List(pushInt(5))
-      case LdcI46     => List(pushInt(6))
-      case LdcI47     => List(pushInt(7))
-      case LdcI48     => List(pushInt(8))
-      case LdcI4M1    => List(pushInt(-1))
+      case LdcI40  => List(pushInt(0))
+      case LdcI41  => List(pushInt(1))
+      case LdcI42  => List(pushInt(2))
+      case LdcI43  => List(pushInt(3))
+      case LdcI44  => List(pushInt(4))
+      case LdcI45  => List(pushInt(5))
+      case LdcI46  => List(pushInt(6))
+      case LdcI47  => List(pushInt(7))
+      case LdcI48  => List(pushInt(8))
+      case LdcI4M1 => List(pushInt(-1))
+
       case LdcI4(num) => List(pushInt(num))
       case LdcI4S(v)  => List(pushInt(v.toInt))
+      case LdcI8(v)   => List(pushBigInt(v))
       case LdcR4(f)   => List(pushFloat(f.toDouble))
       case LdcR8(d)   => List(pushFloat(d))
       case LdStr(s)   => List(Operation.Push(Data.Primitive.Utf8(s)))
+      case LdNull     => List(Operation.Push(Data.Primitive.Null))
 
       case ConvI1 => cast(Data.Type.Int8)
       case ConvU1 => cast(Data.Type.Int8)
@@ -52,14 +55,21 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case ConvU2 => cast(Data.Type.Int16)
       case ConvI4 => cast(Data.Type.Int32)
       case ConvU4 => cast(Data.Type.Int32)
-      case ConvI8 => cast(Data.Type.BigInt)
+      case ConvI8 => cast(Data.Type.Int64)
       case ConvU8 => cast(Data.Type.BigInt)
+
+      case ConvR4 => cast(Data.Type.Number)
+      case ConvR8 => cast(Data.Type.Number)
 
       case Add => List(Operation(Opcodes.ADD))
       case Mul => List(Operation(Opcodes.MUL))
       case Div => List(Operation(Opcodes.SWAP), Operation(Opcodes.DIV))
       case Rem => List(Operation(Opcodes.SWAP), Operation(Opcodes.MOD))
       case Sub => List(pushInt(-1), Operation(Opcodes.MUL), Operation(Opcodes.ADD))
+
+      case Or  => List(Operation(Opcodes.OR))
+      case And => List(Operation(Opcodes.AND))
+      case Xor => List(Operation(Opcodes.XOR))
 
       case Clt   => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
       case CltUn => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
@@ -69,8 +79,9 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case Not =>
         cast(Data.Type.Boolean) ++ (Operation(Opcodes.NOT) :: cast(Data.Type.Int32))
 
-      case Dup => List(Operation.Orphan(Opcodes.DUP))
+      case Dup => List(Operation(Opcodes.DUP))
 
+      case Pop => List(Operation(Opcodes.POP))
       case Nop => List()
       case Ret => List(Operation.Jump(Some(s"${ctx.name}_lvc")))
     }

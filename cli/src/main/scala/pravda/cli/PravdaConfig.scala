@@ -32,6 +32,7 @@ object PravdaConfig {
     case object Asm    extends CompileMode
     case object Disasm extends CompileMode
     case object DotNet extends CompileMode
+    case object Evm    extends CompileMode
   }
 
   case object Nope extends PravdaConfig
@@ -56,6 +57,11 @@ object PravdaConfig {
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
                              wattPrice: NativeCoin = DefaultValues.Broadcast.WATT_PRICE,
                              endpoint: String = DefaultValues.Broadcast.ENDPOINT)
+      extends PravdaConfig
+
+  final case class Execute(input: Option[String] = None,
+                           wallet: Option[String] = None,
+                           endpoint: String = DefaultValues.Broadcast.ENDPOINT)
       extends PravdaConfig
 
   object Broadcast {
@@ -111,9 +117,5 @@ object PravdaConfig {
     case object Dotnet extends CodegenMode
   }
 
-  final case class Codegen(codegenMode: CodegenMode,
-                           input: Option[String] = None,
-                           outDir: Option[String] = None,
-                           excludeBigInteger: Boolean = false)
-      extends PravdaConfig
+  final case class Codegen(codegenMode: CodegenMode, input: Option[String] = None) extends PravdaConfig
 }

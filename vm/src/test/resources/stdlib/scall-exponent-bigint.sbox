@@ -1,8 +1,9 @@
-watts-limit: 1000
+vm:
+  watts-limit: 1000
 code: |-
   push bigint(54)
   push bigint(543)
-  push 0x03
+  push 3
   scall
 ---
 watts-spent: 124

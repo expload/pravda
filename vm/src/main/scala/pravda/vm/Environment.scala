@@ -27,6 +27,9 @@ trait Environment {
     */
   def executor: Address
 
+  def chainHeight: Long
+  def lastBlockHash: ByteString
+
   // Programs
   def sealProgram(address: Address): Unit
   def updateProgram(address: Address, code: ByteString): Unit

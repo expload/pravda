@@ -1,0 +1,133 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Arithmetics.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Arithmetics.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "Arithmetics"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestBasicOperations"
+  eq
+  jumpi @method_TestBasicOperations
+  push "Wrong method name"
+  throw
+  @method_TestBasicOperations:
+  meta method {
+  "name":"TestBasicOperations","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  add
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  mul
+  push int32(5)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  swap
+  div
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(13),"sc":int32(9),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(23)
+  }
+  push "p_X"
+  sget
+  push int32(2)
+  swap
+  mod
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(46)
+  }
+  push int32(4)
+  dupn
+  add
+  push int32(42)
+  add
+  push int32(3)
+  dupn
+  mul
+  push int32(2)
+  dupn
+  add
+  push int32(1337)
+  swap
+  div
+  jump @TestBasicOperations_lvc
+  @TestBasicOperations_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  push int32(0)
+  push "p_X"
+  sput
+  meta source_mark {
+  "sl":int32(6),"sc":int32(5),"el":int32(6),"src":"$PRAVDA_TMP_DIR/Arithmetics.cs","ec":int32(24)
+  }
+  push int32(10)
+  push "p_X"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

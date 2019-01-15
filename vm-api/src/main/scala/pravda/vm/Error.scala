@@ -21,6 +21,8 @@ sealed abstract class Error(val code: Int)
 
 object Error {
 
+  case object NoInfoAboutAppState extends Error(50)
+
   case object StackOverflow     extends Error(100)
   case object StackUnderflow    extends Error(101)
   case object WrongStackIndex   extends Error(102)

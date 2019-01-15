@@ -29,7 +29,7 @@ import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTra
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.bjson._
 import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
@@ -65,7 +65,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
 
     val initValidators = request.validators.toVector
-      .map(x => tendermint.unpackAddress(x.pubKey))
+      .map(x => tendermint.unpackAddress(x.getPubKey.data))
 
     for {
       _ <- FileStore
@@ -80,16 +80,17 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
+    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.getValidator.address))
+    val absent = request.getLastCommitInfo.votes.collect {
+      case VoteInfo(validator, signedLastBlock) if !signedLastBlock =>
+        validator.map(v => tendermint.unpackAddress(v.address))
+    }.flatten
 
-    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.pubKey))
-    val absent = request.absentValidators
     FileStore
       .readApplicationStateInfoAsync()
       .map { maybeInfo =>
         val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
-        validators = info.validators.zipWithIndex.collect {
-          case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
-        }
+        validators = info.validators.filter(address => !malicious.contains(address) && !absent.contains(address))
       }
       .map(_ => ResponseBeginBlock())
   }
@@ -127,7 +128,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       val remaining = tx.wattLimit - total
       ep.accrue(wattPayer, NativeCoin(tx.wattPrice * remaining))
       ep.appendFee(NativeCoin(tx.wattPrice * total))
-      TransactionResult(execResult, env.collectEffects)
+      TransactionResult(id, execResult, env.collectEffects)
     }
   }
 
@@ -144,7 +145,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       result: (Int, String) => R): Future[R] = {
 
     val tid = TransactionId.forEncodedTransaction(encodedTransaction)
-    val `try` = Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+    val `try` = Try(transcode(BJson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
@@ -201,6 +202,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 object Abci {
 
   final case class TransactionResult(
+      transactionId: TransactionId,
       executionResult: ExecutionResult,
       effects: Seq[Effect]
   )
@@ -227,7 +229,6 @@ object Abci {
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[Effect])]
-    private val events = mutable.Buffer.empty[Effect.Event]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
@@ -259,7 +260,6 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
-        events ++= transactionEffects.collect { case ev: Effect.Event => ev }
       }
 
       import Effect._
@@ -350,6 +350,18 @@ object Abci {
         }
 
       def collectEffects: Seq[Effect] = transactionEffects
+
+      def chainHeight: Long = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.blockHeight)
+      }
+
+      def lastBlockHash: ByteString = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.appHash)
+      }
     }
 
     def appendFee(coins: NativeCoin): Unit = {
@@ -360,7 +372,6 @@ object Abci {
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
-      events.clear()
       cache.clear()
       fee = NativeCoin.zero
     }
@@ -386,7 +397,6 @@ object Abci {
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
-
       // Share fee
       val share = NativeCoin @@ (fee / validators.length)
       val remainder = NativeCoin @@ (fee % validators.length)
@@ -400,20 +410,26 @@ object Abci {
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
-      events
+      effectsMap
+        .flatMap {
+          case (tx, buffer) =>
+            buffer collect {
+              case event: Effect.Event =>
+                tx -> event
+            }
+        }
         .groupBy {
-          case Effect.Event(address, name, data) => (address, name)
+          case (_, Effect.Event(address, name, _)) => (address, name)
         }
         .foreach {
           case ((address, name), evs) =>
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
-              case (Effect.Event(_, _, data), i) =>
-                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data)
+              case ((tx, Effect.Event(_, _, data)), i) =>
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), (tx, data))
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
         }
-
       db.syncBatch(operations: _*)
       clear()
     }

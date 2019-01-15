@@ -18,9 +18,11 @@
 package pravda.node.data.serialization
 
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.{bytes => byteUtils}
 import pravda.node.data.PravdaConfig.{CryptoKey, GenesisValidator}
 import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
+import pravda.node.tendermint
 import pureconfig.ConfigReader
 
 /**
@@ -46,10 +48,11 @@ object config {
         .filter(_.nonEmpty)
         .map { s =>
           val Array(name, power, key) = s.split(":")
+          val keyBase64 = byteUtils.hexToBase64(key)
           GenesisValidator(
             name = name,
-            power = power.toInt,
-            publicKey = CryptoKey("ed25519", key)
+            power = power,
+            publicKey = CryptoKey(tendermint.PubKeyEd25519, keyBase64)
           )
         }
     }

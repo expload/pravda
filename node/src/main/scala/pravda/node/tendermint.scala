@@ -32,6 +32,9 @@ import pravda.common.{bytes => byteUtils}
 
 object tendermint {
 
+  val PubKeyEd25519 = "tendermint/PubKeyEd25519"
+  val PrivKeyEd25519 = "tendermint/PrivKeyEd25519"
+
   private final val GoWireAddressHeader =
     ByteString.copyFrom(Array[Byte](0x01, 0x01, 0x20))
 
@@ -134,8 +137,8 @@ object tendermint {
         privValidatorFile.delete()
       config.validator foreach { validator =>
         writeFile(privValidatorFile) {
-          val pubKey = byteUtils.byteString2hex(validator.address)
-          val privKey = byteUtils.byteString2hex(validator.privateKey)
+          val pubKey = byteUtils.byteStringToBase64(validator.address)
+          val privKey = byteUtils.byteStringToBase64(validator.privateKey)
           val address = {
             val withType = packAddress(validator.address)
             val hash = ripemd160.getHash(withType.toByteArray)
@@ -145,16 +148,16 @@ object tendermint {
             |{
             |  "address": "$address",
             |  "pub_key": {
-            |    "type": "ed25519",
-            |    "data": "$pubKey"
+            |    "type": "$PubKeyEd25519",
+            |    "value": "$pubKey"
             |  },
-            |  "last_height": 0,
-            |  "last_round": 0,
+            |  "last_height": "0",
+            |  "last_round": "0",
             |  "last_step": 0,
             |  "last_signature": null,
             |  "priv_key": {
-            |    "type": "ed25519",
-            |    "data": "$privKey"
+            |    "type": "$PrivKeyEd25519",
+            |    "value": "$privKey"
             |  }
             |}
           """.stripMargin

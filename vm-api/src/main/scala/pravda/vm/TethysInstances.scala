@@ -56,9 +56,7 @@ trait TethysInstances {
           case "int8"   => Data.Primitive.Int8(v.toByte)
           case "int16"  => Data.Primitive.Int16(v.toShort)
           case "int32"  => Data.Primitive.Int32(v.toInt)
-          case "uint8"  => Data.Primitive.Uint8(v.toInt)
-          case "uint16" => Data.Primitive.Uint16(v.toInt)
-          case "uint32" => Data.Primitive.Uint32(v.toLong)
+          case "int64"  => Data.Primitive.Int64(v.toLong)
           case "bigint" => Data.Primitive.BigInt(BigInt(v))
           case "number" => Data.Primitive.Number(v.toDouble)
           case "ref"    => Data.Primitive.Ref(v.toInt)
@@ -89,9 +87,7 @@ trait TethysInstances {
             case "int8"   => Data.Array.Int8Array(readArray(_.string().toByte))
             case "int16"  => Data.Array.Int16Array(readArray(_.string().toShort))
             case "int32"  => Data.Array.Int32Array(readArray(_.string().toInt))
-            case "uint8"  => Data.Array.Uint8Array(readArray(_.string().toInt))
-            case "uint16" => Data.Array.Uint16Array(readArray(_.string().toInt))
-            case "uint32" => Data.Array.Uint32Array(readArray(_.string().toLong))
+            case "int64"  => Data.Array.Int64Array(readArray(_.string().toLong))
             case "bigint" => Data.Array.BigIntArray(readArray(x => BigInt(x.string())))
             case "number" => Data.Array.NumberArray(readArray(_.string().toDouble))
             case "ref"    => Data.Array.RefArray(readArray(_.string().toInt))
@@ -124,9 +120,7 @@ trait TethysInstances {
     case Data.Primitive.Int8(x)   => f(s"int8.$x")
     case Data.Primitive.Int16(x)  => f(s"int16.$x")
     case Data.Primitive.Int32(x)  => f(s"int32.$x")
-    case Data.Primitive.Uint8(x)  => f(s"uint8.$x")
-    case Data.Primitive.Uint16(x) => f(s"uint16.$x")
-    case Data.Primitive.Uint32(x) => f(s"uint32.$x")
+    case Data.Primitive.Int64(x)  => f(s"int64.$x")
     case Data.Primitive.Number(x) => f(s"number.$x")
     case Data.Primitive.BigInt(x) => f(s"bigint.$x")
     case Data.Primitive.Ref(x)    => f(s"ref.$x")
@@ -154,9 +148,7 @@ trait TethysInstances {
       case Data.Array.Int8Array(xs)   => writeArray(xs, "int8")(x => w.writeString(x.toString))
       case Data.Array.Int16Array(xs)  => writeArray(xs, "int16")(x => w.writeString(x.toString))
       case Data.Array.Int32Array(xs)  => writeArray(xs, "int32")(x => w.writeString(x.toString))
-      case Data.Array.Uint8Array(xs)  => writeArray(xs, "uint8")(x => w.writeString(x.toString))
-      case Data.Array.Uint16Array(xs) => writeArray(xs, "uint16")(x => w.writeString(x.toString))
-      case Data.Array.Uint32Array(xs) => writeArray(xs, "uint32")(x => w.writeString(x.toString))
+      case Data.Array.Int64Array(xs)  => writeArray(xs, "int64")(x => w.writeString(x.toString))
       case Data.Array.NumberArray(xs) => writeArray(xs, "number")(x => w.writeString(x.toString))
       case Data.Array.BigIntArray(xs) => writeArray(xs, "bigint")(x => w.writeString(x.toString))
       case Data.Array.RefArray(xs)    => writeArray(xs, "ref")(x => w.writeString(x.toString))
@@ -216,11 +208,11 @@ trait TethysInstances {
   implicit val primitiveBytesWriter: JsonWriter[Data.Primitive.Bytes] =
     JsonWriter.stringWriter.contramap(s => s"bytes.${bytes.byteString2hex(s.data)}")
 
-  implicit val primitiveBigIntReader: JsonReader[Data.Primitive.BigInt] =
-    JsonReader.stringReader.map(s => Data.Primitive.BigInt(BigInt(s.stripPrefix("bigint."))))
+  implicit val primitiveInt64Reader: JsonReader[Data.Primitive.Int64] =
+    JsonReader.stringReader.map(s => Data.Primitive.Int64(s.stripPrefix("int64.").toLong))
 
-  implicit val primitiveBigIntWriter: JsonWriter[Data.Primitive.BigInt] =
-    JsonWriter.stringWriter.contramap(b => s"bigint.$b")
+  implicit val primitiveInt64Writer: JsonWriter[Data.Primitive.Int64] =
+    JsonWriter.stringWriter.contramap(b => s"int64.$b")
 
   implicit val primitiveRefSupport: MapKeySupport[Data.Primitive.Ref] = new MapKeySupport[Data.Primitive.Ref] {
     def show(s: Data.Primitive.Ref): String = s"ref:${s.data}"

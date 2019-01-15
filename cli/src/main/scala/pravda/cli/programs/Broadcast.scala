@@ -22,7 +22,7 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.cli.languages.{CompilersLanguage, IoLanguage, NodeLanguage}
+import pravda.node.client.{CompilersLanguage, IoLanguage, NodeLanguage}
 import pravda.common.bytes
 import pravda.common.contrib.ed25519
 import pravda.common.domain.Address

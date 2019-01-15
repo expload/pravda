@@ -112,6 +112,91 @@ object YamlMethods {
     }
   }
 
+  /**
+    * Render diff of two JValues as yaml.
+    * Changed parts are coloured yellow, added parts -- green, deleted parts -- red.
+    * The style is fixed, and produced yaml can be wrong, it should be used only in demonstrating purposes.
+    *
+    * @param node Obtained JValue.
+    * @param expected Expected JValue.
+    * @return Yaml with colours.
+    */
+  def renderDiff(node: JValue, expected: JValue): String = {
+
+    def print(j: JValue) = yaml.dump(jvalue2java(j)).trim
+    def withColour(s: String, colour: String) = s"$colour$s${Console.RESET}"
+    def printWithColour(j: JValue, colour: String) = withColour(print(j), colour)
+
+    def withNewLine(s: String) = if (s.nonEmpty) "\n" + s else s
+
+    def diff(j1: JValue, j2: JValue): String = (j1, j2) match {
+      case (x, y) if x == y                     => print(x)
+      case (JObject(xs), JObject(ys))           => diffFields(xs, ys)
+      case (JArray(xs), JArray(ys))             => diffVals(xs, ys)
+      case (x: JInt, y: JInt) if x != y         => printWithColour(y, Console.YELLOW)
+      case (x: JDouble, y: JDouble) if x != y   => printWithColour(y, Console.YELLOW)
+      case (x: JDecimal, y: JDecimal) if x != y => printWithColour(y, Console.YELLOW)
+      case (x: JString, y: JString) if x != y   => printWithColour(y, Console.YELLOW)
+      case (x: JBool, y: JBool) if x != y       => printWithColour(y, Console.YELLOW)
+      case (JNothing, x)                        => printWithColour(x, Console.GREEN)
+      case (x, JNothing)                        => printWithColour(x, Console.RED)
+      case (x, y)                               => printWithColour(y, Console.YELLOW)
+    }
+
+    def diffFields(xs: List[JField], ys: List[JField]): String = {
+      def formatElem(name: String, elem: String) = {
+        val lines = elem.lines.toList
+        if (lines.length <= 1) {
+          s"$name: $elem"
+        } else {
+          s"""$name:
+             |  ${lines.mkString("\n  ")}
+           """.stripMargin
+        }
+      }
+
+      xs match {
+        case (xname, xvalue) :: xtail if ys.exists(_._1 == xname) =>
+          val (_, yvalue) = ys.find(_._1 == xname).get
+          formatElem(xname, diff(xvalue, yvalue)) + withNewLine(diffFields(xtail, ys.filterNot(_ == xname -> yvalue)))
+        case (xname, xvalue) :: xtail =>
+          withColour(formatElem(xname, print(xvalue)), Console.RED) + withNewLine(diffFields(xtail, ys))
+        case Nil =>
+          ys match {
+            case (yname, yvalue) :: ytail =>
+              withColour(formatElem(yname, print(yvalue)), Console.GREEN) + withNewLine(diffFields(Nil, ytail))
+            case Nil => ""
+          }
+      }
+    }
+
+    def diffVals(xs: List[JValue], ys: List[JValue]): String = {
+      def formatElem(elem: String) = {
+        val lines = elem.lines.toList
+        lines match {
+          case Nil => s"-"
+          case head :: tail =>
+            val h = s"- $head"
+            val t = if (tail.nonEmpty) {
+              s"\n${tail.map(s => s"  $s").mkString("\n")}"
+            } else {
+              ""
+            }
+            h + t
+        }
+      }
+
+      (xs, ys) match {
+        case (x :: xtail, y :: ytail) => formatElem(diff(x, y)) + withNewLine(diffVals(xtail, ytail))
+        case (Nil, y :: ytail)        => withColour(formatElem(print(y)), Console.GREEN) + withNewLine(diffVals(Nil, ytail))
+        case (x :: xtail, Nil)        => withColour(formatElem(print(x)), Console.RED) + withNewLine(diffVals(xtail, Nil))
+        case (Nil, Nil)               => ""
+      }
+    }
+
+    diff(node, expected)
+  }
+
   def parseOpt(in: JsonInput, useBigDecimalForDouble: Boolean): Option[JValue] =
     Try { parseUnsafe(in, useBigDecimalForDouble) }.toOption
 

@@ -119,4 +119,39 @@ package object translation {
     def isVirtual(m: MethodDefData): Boolean =
       (m.flags & 0x40) != 0
   }
+
+  object FieldExtractors {
+
+    def isPrivate(f: FieldData): Boolean =
+      (f.flags & 0x7) == 0x1
+
+    def isStatic(flags: Short): Boolean =
+      (flags & 0x10) != 0
+  }
+
+  object NamesBuilder {
+
+    def fullMethod(name: String, sigO: Option[Signature]): String = {
+      val normalizedName = if (name == ".ctor" || name == ".cctor") name.drop(1) else name
+      val sigParams = sigO.collect { case m: MethodRefDefSig => m.params }.getOrElse(List.empty)
+      if (sigParams.nonEmpty) {
+        s"${normalizedName}_${sigParams.map(_.tpe.mkString).mkString("_")}"
+      } else {
+        normalizedName
+      }
+    }
+
+    def fullType(namespace: String, name: String): String =
+      if (namespace.nonEmpty) {
+        s"$namespace.$name"
+      } else {
+        name
+      }
+
+    def fullTypeDef(typeDefData: TypeDefData): String =
+      fullType(typeDefData.namespace, typeDefData.name)
+
+    def fullTypeMethod(typeDef: TypeDefData, methodName: String, sig: Option[Signature]): String =
+      s"${fullTypeDef(typeDef)}.${fullMethod(methodName, sig)}"
+  }
 }

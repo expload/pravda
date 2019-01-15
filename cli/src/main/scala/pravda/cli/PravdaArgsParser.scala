@@ -64,23 +64,11 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .text("Generate auxiliary code to call program's methods from Unity")
               .action(_ => PravdaConfig.Codegen(CodegenMode.Dotnet))
               .children(
-                opt[File]('d', "dir")
-                  .text("Output directory for generated sources.")
-                  .action {
-                    case (f, conf: PravdaConfig.Codegen) => conf.copy(outDir = Some(f.getAbsolutePath))
-                    case (_, otherwise)                  => otherwise
-                  },
                 opt[File]('i', "input")
                   .text("Input file with assembly.")
                   .action {
                     case (f, conf: PravdaConfig.Codegen) => conf.copy(input = Some(f.getAbsolutePath))
                     case (_, otherwise)                  => otherwise
-                  },
-                opt[Unit]("exclude-big-integer")
-                  .text("Exclude custom BigInteger class.")
-                  .action {
-                    case ((), conf: PravdaConfig.Codegen) => conf.copy(excludeBigInteger = true)
-                    case (_, otherwise)                   => otherwise
                   }
               )
           ),
@@ -161,7 +149,15 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                       config.copy(mainClass = Some(s))
                     case (_, otherwise) => otherwise
                   }
-              )
+              ),
+            cmd("evm")
+              .text(
+                "[THIS COMPILATION MODE IS EXPERIMENTAL]" +
+                  "Compile .bin produced by solc compiler to Pravda VM bytecode. " +
+                  "Input files are .bin contract and .abi. " +
+                  "Output is binary Pravda program. " +
+                  "By default read from stdin and print to stdout")
+              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm))
           ),
         cmd("broadcast")
           .text("Broadcast transactions and programs to the Pravda blockchain.")
@@ -251,6 +247,25 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   config.copy(endpoint = endpoint)
                 case (_, otherwise) => otherwise
               },
+          ),
+        cmd("execute")
+          .text("Executes program without side-effects. No watt-limit is required.")
+          .action(_ => PravdaConfig.Execute())
+          .children(
+            opt[File]('w', "wallet")
+              .text("File with user wallet. You can obtain it using 'pravda gen address' command. Format: {\"address\": <public key>, \"privateKey\": <private key>}")
+              .action {
+                case (file, config: PravdaConfig.Execute) =>
+                  config.copy(wallet = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[String]('e', "endpoint")
+              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
+              .action {
+                case (endpoint, config: PravdaConfig.Execute) =>
+                  config.copy(endpoint = endpoint)
+                case (_, otherwise) => otherwise
+              }
           ),
         cmd("node")
           .text("Control Pravda Network Node.")

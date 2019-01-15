@@ -5,7 +5,7 @@ import java.io.File
 import pravda.plaintest._
 
 object ParserSuiteData {
-  final case class Input(exe: String)
+  final case class Input(`dotnet-compilation`: DotnetCompilation)
   final case class Output(methods: String, signatures: String)
 }
 
@@ -19,8 +19,12 @@ object ParserSuite extends Plaintest[Input, Output] {
 
   def produce(input: Input): Either[String, Output] =
     for {
-      pe <- parsePeFile(input.exe)
+      files <- DotnetCompilation.run(input.`dotnet-compilation`)
+      clearedFiles = clearPathsInPdb(files)
+      last = clearedFiles.last
     } yield
-      Output(pprint.apply(pe.methods, height = Int.MaxValue).plainText,
-             pprint.apply(pe.signatures.toList.sortBy(_._1), height = Int.MaxValue).plainText)
+      Output(
+        pprint.apply(last.parsedPe.methods, height = Int.MaxValue).plainText,
+        pprint.apply(last.parsedPe.signatures.toList.sortBy(_._1), height = Int.MaxValue).plainText
+      )
 }

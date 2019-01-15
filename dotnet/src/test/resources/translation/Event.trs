@@ -1,0 +1,122 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Event.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Event.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "Event"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestEvent"
+  eq
+  jumpi @method_TestEvent
+  push "Wrong method name"
+  throw
+  @method_TestEvent:
+  meta method {
+  "name":"TestEvent","returnTpe":int8(0)
+  }
+  meta source_mark {
+  "sl":int32(8),"sc":int32(9),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(37)
+  }
+  push "my_event"
+  push int32(1234)
+  swap
+  event
+  meta source_mark {
+  "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(44)
+  }
+  push "my_event"
+  push "my_string"
+  swap
+  event
+  meta source_mark {
+  "sl":int32(10),"sc":int32(9),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(36)
+  }
+  push "my_event"
+  push number(2.0)
+  swap
+  event
+  meta source_mark {
+  "sl":int32(11),"sc":int32(9),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(66)
+  }
+  push "my_event"
+  new int8[1, 2, 3, 4]
+  call @stdlib_array_to_bytes
+  swap
+  event
+  meta source_mark {
+  "sl":int32(12),"sc":int32(5),"el":int32(12),"src":"$PRAVDA_TMP_DIR/Event.cs","ec":int32(6)
+  }
+  jump @TestEvent_lvc
+  @TestEvent_lvc:
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stdlib_array_to_bytes:
+  dup
+  length
+  push x
+  push int32(0)
+  @array_to_bytes_loop:
+  push int32(4)
+  dupn
+  push int32(2)
+  dupn
+  array_get
+  push int8(14)
+  cast
+  push int32(3)
+  dupn
+  concat
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  add
+  dup
+  push int32(4)
+  dupn
+  gt
+  jumpi @array_to_bytes_loop
+  pop
+  swap
+  pop
+  swap
+  pop
+  ret
+  @stop:
