@@ -681,28 +681,31 @@ object Translator {
         .sequence
     } yield opss
 
-    lazy val structCtorHelpers: List[MethodTranslation] = tctx.structs.flatMap { s =>
-      List(
-        MethodTranslation(
-          "vtable",
-          NamesBuilder.fullTypeDef(s),
-          forceAdd = false,
-          List(
-            OpCodeTranslation(List.empty,
-                              vtableInit(s, tctx) :+
-                                Operation(Opcodes.RET)))
-        ),
-        MethodTranslation(
-          "default_fields",
-          NamesBuilder.fullTypeDef(s),
-          forceAdd = false,
-          List(
-            OpCodeTranslation(List.empty,
-                              initStructFields(s, tctx) :+
-                                Operation(Opcodes.RET)))
+    lazy val structCtorHelpersE: Either[TranslationError, List[MethodTranslation]] = for {
+      structCtors <- structCtorsE
+    } yield
+      structCtors.map(i => tctx.methodIndex.parent(i).get).flatMap { s =>
+        List(
+          MethodTranslation(
+            "vtable",
+            NamesBuilder.fullTypeDef(s),
+            forceAdd = false,
+            List(
+              OpCodeTranslation(List.empty,
+                                vtableInit(s, tctx) :+
+                                  Operation(Opcodes.RET)))
+          ),
+          MethodTranslation(
+            "default_fields",
+            NamesBuilder.fullTypeDef(s),
+            forceAdd = false,
+            List(
+              OpCodeTranslation(List.empty,
+                                initStructFields(s, tctx) :+
+                                  Operation(Opcodes.RET)))
+          )
         )
-      )
-    }
+      }
 
     for {
       programMethodsOps <- programMethodsOpsE
@@ -712,6 +715,7 @@ object Translator {
       structFuncsOps <- structFuncsOpsE
       strucStaticFuncsOps <- structStaticFuncOpsE
       structCtorsOps <- structCtorsOpsE
+      structCtorHelpers <- structCtorHelpersE
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
       val funcsOps = programFuncOps ++ programStaticFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
