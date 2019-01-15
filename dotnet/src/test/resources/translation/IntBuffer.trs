@@ -225,6 +225,14 @@ translation: |-
   push null
   struct_mut "buffer"
   ret
+  @default_fields_IntBuffer:
+  dup
+  push int32(0)
+  struct_mut "size"
+  dup
+  push null
+  struct_mut "buffer"
+  ret
   @func_IntBuffer.Append_int32:
   push null
   push null
@@ -444,6 +452,8 @@ translation: |-
   @IntBuffer.set_Item_int32_int32_lvc:
   pop
   pop
+  ret
+  @vtable_IntBuffer:
   ret
   @vtable_IntBuffer:
   ret
