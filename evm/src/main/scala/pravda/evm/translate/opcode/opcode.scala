@@ -33,10 +33,13 @@ package object opcode {
   val sub: List[asm.Operation] = asm.Operation(Opcodes.SWAP) :: pushBigInt(BigInt(-1)) ::
     asm.Operation(Opcodes.MUL) :: asm.Operation(Opcodes.ADD) :: Nil
 
-  val callExp: List[asm.Operation] = pushInt(3) :: asm.Operation(Opcodes.SCALL) :: Nil
+  val callExp: List[asm.Operation] = pushInt8(3) :: asm.Operation(Opcodes.SCALL) :: Nil
 
   def pushBigInt(value: scala.BigInt): asm.Operation =
     push(value, Data.Primitive.BigInt)
+
+  def pushInt8(b: Byte): asm.Operation =
+    push(b, Data.Primitive.Int8)
 
   def pushInt(i: Int): asm.Operation =
     push(i, Data.Primitive.Int32)
@@ -77,6 +80,13 @@ package object opcode {
       ._2
   }
 
-  val jumpi: List[asm.Operation] = codeToOps(Opcodes.SWAP) ::: cast(Data.Type.Boolean) :::
-    Operation.JumpI(Some(nameByNumber(0))) :: codeToOps(Opcodes.POP) ::: Nil
+  def createArray(size: Int): List[Operation] =
+    List(
+      pushInt(size),
+      pushType(Data.Type.Int8),
+      Operation(Opcodes.NEW_ARRAY)
+    )
+
+  def jumpi(addr: Int): List[asm.Operation] =
+    codeToOps(Opcodes.POP) ++ cast(Data.Type.Boolean) ++ List(Operation.JumpI(Some(nameByAddress(addr))))
 }

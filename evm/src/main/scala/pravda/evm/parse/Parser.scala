@@ -30,8 +30,21 @@ object Parser {
   def apply(bytes: Bytes): Either[String, List[EVM.Op]] =
     ops.parse(bytes).get.value
 
+  def parseWithIndices(bytes: Array[Byte]): Either[String, List[Addressed[EVM.Op]]] = parseWithIndices(Bytes(bytes))
+
   def parseWithIndices(bytes: Bytes): Either[String, List[Addressed[EVM.Op]]] =
-    opsWithIndices.parse(bytes).get.value.toList.map { case (i, e) => e.map(op => (i, op)) }.sequence
+    opsWithIndices
+      .parse(bytes)
+      .get
+      .value
+      .toList
+      .map { case (i, e) => e.map(op => (i, op)) }
+      .sequence
+      .map(_.map {
+        case (ind, JumpI) => ind -> SelfAddressedJumpI(ind)
+        case (ind, Jump)  => ind -> SelfAddressedJump(ind)
+        case a            => a
+      })
 
   private def push(cnt: Int): P[Push] = AnyByte.rep(exactly = cnt).!.map(Push)
   // FIXME the bytes default to zero if they extend past the limits

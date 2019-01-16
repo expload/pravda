@@ -19,7 +19,7 @@ package pravda.evm.disasm
 
 import pravda.evm.EVM
 import pravda.evm.EVM._
-import pravda.evm.translate.Translator.Addressed
+import pravda.evm.translate.Translator.{ActualCode, Addressed, ContractCode, CreationCode}
 
 import scala.annotation.tailrec
 
@@ -68,8 +68,8 @@ object Blocks {
     }
   }
 
-  def splitToCreativeAndRuntime(ops: List[Addressed[EVM.Op]],
-                                length: Long): Option[(List[Addressed[EVM.Op]], List[Addressed[EVM.Op]])] = {
+  def splitToCreativeAndRuntime(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
+    val length = ops.last._1.toLong
     val blocks = Blocks.split(ops.map(_._2))
     val offsetOpt: Option[Int] = blocks
       .map(bl => Emulator.eval(bl, new StackList(List.empty[StackItem]), List.empty[HistoryRecord]))
@@ -86,14 +86,17 @@ object Blocks {
       }
 
       val addressedRuntime = runtime.map {
+        case (ind, JumpDest(_))           => (ind - offset) -> JumpDest(ind - offset)
         case (ind, JumpDest)              => (ind - offset) -> JumpDest(ind - offset)
         case (ind, SelfAddressedJump(_))  => (ind - offset) -> SelfAddressedJump(ind - offset)
         case (ind, SelfAddressedJumpI(_)) => (ind - offset) -> SelfAddressedJumpI(ind - offset)
+        case (ind, Jump)                  => (ind - offset) -> SelfAddressedJump(ind - offset)
+        case (ind, JumpI)                 => (ind - offset) -> SelfAddressedJumpI(ind - offset)
 
         case (ind, x) => (ind - offset) -> x
       }
-      addressedCreative -> addressedRuntime
-    }
+      (CreationCode(addressedCreative), ActualCode(addressedRuntime))
+    } toRight "Can't split to creative and runtime"
   }
 
 }

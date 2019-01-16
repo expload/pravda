@@ -17,6 +17,7 @@
 
 package pravda.vm.operations
 
+import com.google.protobuf.ByteString
 import pravda.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuSimpleArithmetic
 import pravda.vm.operations.annotation.OpcodeImplementation
@@ -163,6 +164,14 @@ import scala.annotation.strictfp
           case BigInt(rhs) => BigInt(lhs & rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
+      case Bytes(lhs) =>
+        b match {
+          case Bytes(rhs) =>
+            Bytes(ByteString.copyFrom(lhs.toByteArray.zipAll(rhs.toByteArray(), 0x00.toByte, 0x00.toByte).map {
+              case (x: Byte, y: Byte) => (x & y).toByte
+            }))
+          case _ => throw ThrowableVmError(WrongType)
+        }
       case Bool(lhs) =>
         b match {
           case Bool(rhs) => Bool(lhs && rhs)
@@ -219,6 +228,14 @@ import scala.annotation.strictfp
           case BigInt(rhs) => BigInt(lhs | rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
+      case Bytes(lhs) =>
+        b match {
+          case Bytes(rhs) =>
+            Bytes(ByteString.copyFrom(lhs.toByteArray.zipAll(rhs.toByteArray(), 0x00.toByte, 0x00.toByte).map {
+              case (x: Byte, y: Byte) => (x | y).toByte
+            }))
+          case _ => throw ThrowableVmError(WrongType)
+        }
       case Bool(lhs) =>
         b match {
           case Bool(rhs) => Bool(lhs || rhs)
@@ -274,6 +291,14 @@ import scala.annotation.strictfp
           case Int64(rhs)  => BigInt(lhs ^ rhs)
           case BigInt(rhs) => BigInt(lhs ^ rhs)
           case _           => throw ThrowableVmError(WrongType)
+        }
+      case Bytes(lhs) =>
+        b match {
+          case Bytes(rhs) =>
+            Bytes(ByteString.copyFrom(lhs.toByteArray.zipAll(rhs.toByteArray(), 0x00.toByte, 0x00.toByte).map {
+              case (x: Byte, y: Byte) => (x ^ y).toByte
+            }))
+          case _ => throw ThrowableVmError(WrongType)
         }
       case Bool(lhs) =>
         b match {

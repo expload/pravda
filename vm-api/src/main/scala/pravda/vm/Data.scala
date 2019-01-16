@@ -17,7 +17,7 @@
 
 package pravda.vm
 
-import java.nio.ByteBuffer
+import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
@@ -357,6 +357,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(2)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putShort(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -374,6 +375,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(4)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putInt(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -391,6 +393,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(8)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putLong(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -408,6 +411,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(4)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putInt(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -425,6 +429,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(8)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putDouble(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -444,12 +449,13 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         }
       case value @ Bytes(data) =>
         lazy val buffer = data.asReadOnlyByteBuffer()
+        buffer.order(ByteOrder.LITTLE_ENDIAN)
         `type` match {
           case Type.Int8    => Int8(buffer.get)
           case Type.Int16   => Int16(buffer.getShort)
           case Type.Int32   => Int32(buffer.getInt)
           case Type.Int64   => Int64(buffer.getLong)
-          case Type.BigInt  => BigInt(scala.BigInt(data.toByteArray))
+          case Type.BigInt  => BigInt(scala.BigInt(data.toByteArray.reverse))
           case Type.Number  => Number(buffer.getDouble)
           case Type.Ref     => Ref(buffer.getInt)
           case Type.Boolean => if (data.isEmpty) Bool.False else Bool.True
@@ -467,7 +473,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Ref     => Ref(data.toInt)
           case Type.Boolean => if (data == 0) Bool.False else Bool.True
           case Type.Utf8    => Utf8(data.toString)
-          case Type.Bytes   => Bytes(ByteString.copyFrom(data.toByteArray))
+          case Type.Bytes   => Bytes(ByteString.copyFrom(data.toByteArray.reverse))
         }
       case Bool.False =>
         `type` match {
@@ -518,8 +524,10 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class BigInt(data: scala.BigInt) extends Numeric[scala.BigInt]
     final case class Number(data: Double)       extends Numeric[Double]
     final case class Utf8(data: String)         extends Primitive with Array
-    final case class Bytes(data: ByteString)    extends Primitive with Array
-    final case class Ref(data: Int)             extends Primitive
+    final case class Bytes(data: ByteString) extends Primitive with Array {
+      override def toString: String = s"Bytes(0x${byteString2hex(data)})"
+    }
+    final case class Ref(data: Int) extends Primitive
 
     /**
       * Special primitive to present offsets in program.

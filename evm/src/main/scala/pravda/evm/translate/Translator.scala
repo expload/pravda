@@ -17,27 +17,34 @@
 
 package pravda.evm.translate
 
-import pravda.evm.EVM._
-import pravda.vm.asm
 import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
+import pravda.evm.EVM._
+import pravda.evm.abi.parse.AbiParser
 import pravda.evm.abi.parse.AbiParser.AbiObject
-import pravda.evm.translate.opcode.{FunctionSelectorTranslator, JumpDestinationPrepare, SimpleTranslation}
+import pravda.evm.disasm.{Blocks, JumpTargetRecognizer, StackSizePredictor}
+import pravda.evm.translate.opcode._
+import pravda.vm.asm.Operation
+import pravda.vm.{Data, Opcodes, asm}
 
 object Translator {
 
-  trait EvmCode
+  trait EvmCode {
+    def code: List[Addressed[EVM.Op]]
+  }
 
   case class CreationCode(code: List[Addressed[EVM.Op]]) extends EvmCode
   case class ActualCode(code: List[Addressed[EVM.Op]])   extends EvmCode
+  case class Code(code: List[Addressed[EVM.Op]])         extends EvmCode
 
   type Converted = Either[EVM.Op, List[asm.Operation]]
   type Addressed[T] = (Int, T)
   type ContractCode = (CreationCode, ActualCode)
 
   val startLabelName = "__start_evm_program"
+  val defaultMemorySize = 1024
 
   def apply(ops: List[EVM.Op], abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
     val (funcs, _, _) = AbiObject.unwrap(abi)
@@ -52,37 +59,115 @@ object Translator {
       .map(_.flatten)
   }
 
-  def split(ops: List[Addressed[EVM.Op]]): Either[String, ContractCode] = {
-    ops
-      .takeWhile {
-        case (_, CodeCopy) => false
-        case _             => true
-      }
-      .reverse
-      .tail
-      .headOption match {
-      case Some((_, Push(address))) =>
-        val offset = BigInt(1, address.toArray).intValue()
+  def filterCode(ops: List[EVM.Op]): List[EVM.Op] = {
+    import fastparse.byte.all.Bytes
 
-        val (creationCode, actualCode) = ops
-          .map { case (ind, op) => ind - offset -> op }
-          .partition(_._1 < 0)
-        Right((CreationCode(creationCode), ActualCode(actualCode)))
-      case _ => Left("Parse error")
+    ops match {
+      case Push(Bytes(-128)) ::
+            Push(Bytes(0x40)) ::
+            MStore(_) ::
+            rest =>
+        filterCode(rest)
+      case Push(Bytes(0x04)) ::
+            CallDataSize(1) ::
+            Lt ::
+            Push(_: Bytes) ::
+            JumpI(_, _)
+            :: rest =>
+        filterCode(rest)
+      case Push(Bytes(0x00)) ::
+            CallDataLoad(1) ::
+            Push(bs1: Bytes) ::
+            Swap(1) ::
+            Div ::
+            Push(bs2: Bytes) ::
+            And ::
+            rest
+          if bs1 == Bytes.fromHex("0x0100000000000000000000000000000000000000000000000000000000").get &&
+            bs2 == Bytes.fromHex("0xffffffff").get =>
+        filterCode(rest)
+      case Push(Bytes(0x00)) ::
+            CallDataLoad(1) ::
+            Push(bs1: Bytes) ::
+            Swap(1) ::
+            Div ::
+            rest if bs1 == Bytes.fromHex("0x0100000000000000000000000000000000000000000000000000000000").get =>
+        filterCode(rest)
+      case CallValue ::
+            Dup(1) ::
+            IsZero ::
+            Push(_: Bytes) ::
+            JumpI(_, _) ::
+            Push(Bytes(0x00)) ::
+            Dup(1) ::
+            Revert :: rest =>
+        filterCode(rest)
+
+      case h :: t => h :: filterCode(t)
+      case _      => List.empty
     }
   }
 
   def translateActualContract(ops: List[Addressed[EVM.Op]],
                               abi: List[AbiObject]): Either[String, List[asm.Operation]] = {
-    import JumpDestinationPrepare._
-
-    split(ops).flatMap {
-      case (creationCode, actualContract) =>
-        val filteredOps = actualContract.code.map(jumpDestToAddressed)
-        val jumpDests = filteredOps.collect { case j @ JumpDest(x) => j }.zipWithIndex
-        val prepare = prepared(jumpDests)
-        Translator(filteredOps, abi).map(opcodes => prepare ::: (asm.Operation.Label(startLabelName) :: opcodes))
-    }
+    for {
+      code1 <- Blocks.splitToCreativeAndRuntime(ops)
+      (creationCode1, actualContract1) = code1
+      code2 <- JumpTargetRecognizer(actualContract1).left.map(_.toString)
+      ops = StackSizePredictor.clear(StackSizePredictor.emulate(code2.map(_._2)))
+      filtered = filterCode(ops)
+      res <- Translator(filtered, abi).map(
+        opcodes =>
+          Operation.Label(startLabelName) ::
+            createArray(defaultMemorySize) :::
+            Operation(Opcodes.SWAP) ::
+            opcodes :::
+            StdlibAsm.stdlibFuncs.flatMap(_.code) :::
+            convertResult(abi)
+      )
+    } yield res
   }
 
+  private def createArray(size: Int): List[Operation] =
+    List(
+      pushInt(size),
+      pushType(Data.Type.Int8),
+      Operation(Opcodes.NEW_ARRAY)
+    )
+
+  private def convertResult(abi: List[AbiObject]): List[Operation] = {
+    val (funcs, _, _) = AbiObject.unwrap(abi)
+
+    def castResult(arg: AbiParser.Argument): List[Operation] = AbiParser.nameToType(arg.`type`) match {
+      case EVM.UInt(num) =>
+        num match {
+          case 8                 => cast(Data.Type.Int16)
+          case 16 | 24           => cast(Data.Type.Int32)
+          case 32 | 40 | 48 | 56 => cast(Data.Type.Int64)
+          case _                 => cast(Data.Type.BigInt)
+        }
+      case EVM.SInt(num) =>
+        num match {
+          case 8                 => cast(Data.Type.Int8)
+          case 16                => cast(Data.Type.Int16)
+          case 24 | 32           => cast(Data.Type.Int32)
+          case 40 | 48 | 56 | 64 => cast(Data.Type.Int64)
+          case _                 => cast(Data.Type.BigInt)
+        }
+      case EVM.Bool        => cast(Data.Type.Boolean)
+      case EVM.Unsupported => List.empty
+    }
+
+    List(Operation.Label("convert_result")) ++ funcs.flatMap { f =>
+      List(
+        Operation(Opcodes.DUP),
+        Operation.Push(Data.Primitive.Utf8(f.name)),
+        Operation(Opcodes.EQ),
+        Operation(Opcodes.NOT),
+        Operation.JumpI(Some(s"convert_result_not_${f.name}"))
+      ) ++ List(Operation(Opcodes.POP)) ++
+        f.outputs.headOption.map(h => castResult(h)).toList.flatten ++
+        List(Operation(Opcodes.STOP), Operation.Label(s"convert_result_not_${f.name}"))
+    }
+  }
 }

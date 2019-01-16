@@ -15,22 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.evm
 
-object StandardLibrary {
+import com.google.protobuf.ByteString
+import pravda.vm.Data
 
-  val All = Seq(
-    standard.Ripemd160,
-    standard.ValidateEd25519Signature,
-    standard.ExponentialFunction,
-    standard.HexToBytes,
-    standard.BytesToHex,
-    standard.SliceByteArray,
-    standard.WriteSliceByteArray,
-    standard.ExpandBytesEvm,
-    standard.Sha3
-  )
+package object utils {
 
-  val Index: Map[Long, (Memory, WattCounter) => Unit] =
-    All.map(x => (x.id, x.apply _)).toMap
+  def evmWord(arr: Array[Byte]): Data.Primitive.Bytes =
+    Data.Primitive.Bytes(ByteString.copyFrom(arr).concat(ByteString.copyFrom(Array.fill[Byte](32 - arr.length)(0))))
 }

@@ -77,10 +77,11 @@ object AbiParser {
   case class AbiConstructor(inputs: Seq[Argument], payable: Boolean, stateMutability: String) extends AbiObject
   case class Argument(name: String, `type`: String, indexed: Option[Boolean])
 
-  def nameToType(tpe: String): EVM.AbiType = tpe match {
+  def nameToType(`type`: String): EVM.AbiType = `type` match {
     case "bool"                    => Bool
     case t if t.startsWith("uint") => UInt(t.substring(4).toInt)
     case t if t.startsWith("int")  => SInt(t.substring(3).toInt)
+    case "address"                 => UInt(160)
     case _                         => Unsupported
   }
 

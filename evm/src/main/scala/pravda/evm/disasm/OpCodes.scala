@@ -124,7 +124,6 @@ object OpCodes {
     case Swap(n) => n + 1
 
     case _ => 1
-
   }
 
 }
