@@ -48,4 +48,7 @@ package object opcode {
 
   def dupn(n: Int): List[asm.Operation] =
     List(pushInt(n), asm.Operation(Opcodes.DUPN))
+
+  def swapn(n: Int): List[asm.Operation] =
+    List(pushInt(n), asm.Operation(Opcodes.SWAPN))
 }

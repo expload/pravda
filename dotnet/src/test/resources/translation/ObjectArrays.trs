@@ -191,6 +191,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -219,6 +221,18 @@ translation: |-
   struct_mut "SomeStr"
   ret
   @func_SomeObj.ctor_int32_string:
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  push int32(1)
+  swapn
+  push int8(11)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(9),"sc":int32(5),"el":int32(9),"src":"$PRAVDA_TMP_DIR/ObjectArrays.cs","ec":int32(36)
   }

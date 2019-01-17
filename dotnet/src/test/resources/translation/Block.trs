@@ -49,6 +49,8 @@ translation: |-
   @TestHeightMethod_lvc:
   swap
   pop
+  push int8(5)
+  cast
   jump @stop
   @method_TestLastBlockHash:
   meta method {
@@ -75,6 +77,8 @@ translation: |-
   @TestLastBlockTime_lvc:
   swap
   pop
+  push int8(5)
+  cast
   jump @stop
   @method_ctor:
   meta method {
