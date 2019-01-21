@@ -119,7 +119,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
               }
             } yield sealCode
           case Mode.Transfer(Some(address), Some(amount)) if bytes.isHex(address) =>
-            EitherT(compilers.asm(s"push x$address push bigint($amount) transfer"))
+            EitherT(compilers.asm(s"push x$address push int64($amount) transfer"))
           case Mode.Transfer(Some(_), _) =>
             EitherT[F, String, ByteString](Monad[F].pure(Left("Invalid payee address")))
           case Mode.Transfer(None, _) =>
