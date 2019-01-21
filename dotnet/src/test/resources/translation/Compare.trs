@@ -1455,6 +1455,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(9)
+  cast
   jump @stop
   @method_ctor:
   meta method {

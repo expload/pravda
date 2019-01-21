@@ -91,6 +91,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -130,8 +132,16 @@ translation: |-
   struct_get "field3"
   jump @SomeClass.GetField3_lvc
   @SomeClass.GetField3_lvc:
+  push int8(3)
+  cast
   ret
   @func_SomeClass.SetField3_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(12),"sc":int32(9),"el":int32(12),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(30)
   }
@@ -163,8 +173,16 @@ translation: |-
   struct_get "<field2>k__BackingField"
   jump @SomeClass.get_field2_lvc
   @SomeClass.get_field2_lvc:
+  push int8(3)
+  cast
   ret
   @func_SomeClass.set_field2_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(7),"sc":int32(30),"el":int32(7),"src":"$PRAVDA_TMP_DIR/ObjectGetSet.cs","ec":int32(34)
   }

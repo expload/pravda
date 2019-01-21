@@ -78,6 +78,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -118,8 +120,16 @@ translation: |-
   add
   jump @A.AnswerA_lvc
   @A.AnswerA_lvc:
+  push int8(3)
+  cast
   ret
   @func_A.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(8),"sc":int32(4),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(22)
   }
@@ -152,8 +162,16 @@ translation: |-
   add
   jump @B.AnswerB_lvc
   @B.AnswerB_lvc:
+  push int8(3)
+  cast
   ret
   @func_B.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(23),"sc":int32(5),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(23)
   }

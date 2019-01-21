@@ -45,6 +45,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -65,6 +67,12 @@ translation: |-
   pop
   jump @stop
   @func_StaticClassUtils.StringUtils.ByteToHex_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(48),"sc":int32(13),"el":int32(48),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(54)
   }
@@ -86,6 +94,8 @@ translation: |-
   @StaticClassUtils.StringUtils.ByteToHex_int32_lvc:
   swap
   pop
+  push int8(11)
+  cast
   ret
   @func_StaticClassUtils.StringUtils.BytesToHex_Expload.Pravda.Bytes:
   push null
@@ -161,8 +171,16 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   ret
   @func_StaticClassUtils.StringUtils.HexPart_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/StaticClass.cs","ec":int32(24)
   }
@@ -546,5 +564,7 @@ translation: |-
   @StaticClassUtils.StringUtils.HexPart_int32_lvc:
   swap
   pop
+  push int8(11)
+  cast
   ret
   @stop:
