@@ -27,7 +27,7 @@ import supertagged.TaggedType
 object common {
 
   /**
-    * Ripemd160 hash of BSON representation of signed transaction
+    * Sha3 hash of BSON representation of signed transaction
     */
   object TransactionId extends TaggedType[ByteString] {
 

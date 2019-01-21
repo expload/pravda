@@ -122,6 +122,7 @@ lazy val vm = (project in file("vm"))
     description := "Pravda Virtual Machine",
     sources in doc := Seq.empty,
     publishArtifact in packageDoc := false,
+    libraryDependencies += "org.bouncycastle" % "bcprov-jdk15on" % "1.60"
   )
   .settings(
     sources in doc := Seq.empty,
@@ -295,6 +296,8 @@ lazy val `node-client` = (project in file("node-client"))
   .dependsOn(node)
   .dependsOn(codegen)
   .dependsOn(dotnet)
+  .dependsOn(evm)
+
 
 // A service for build, sign and broadcast transactions
 // within authorized environment

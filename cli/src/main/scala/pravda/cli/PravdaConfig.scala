@@ -32,6 +32,7 @@ object PravdaConfig {
     case object Asm    extends CompileMode
     case object Disasm extends CompileMode
     case object DotNet extends CompileMode
+    case object Evm    extends CompileMode
   }
 
   case object Nope extends PravdaConfig

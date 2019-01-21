@@ -11,13 +11,55 @@ object ABIParserTests extends TestSuite {
   val tests = Tests {
 
     "ABI parse" - {
-      val abi = readSolidityABI("SimpleStorageABIj.json")
+      val abi = readSolidityABI("SimpleStorage/SimpleStorage.abi")
       val parsedAbi = AbiParser.parseAbi(abi)
 
       parsedAbi ==> Right(
         List(
           AbiFunction(true, "get", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
           AbiFunction(false, "set", Vector(Argument("x", "uint256", None)), Vector(), false, "nonpayable", None)
+        )
+      )
+    }
+
+    'SimpleToken - {
+      val abi = readSolidityABI("SimpleToken/SimpleToken.abi")
+      val parsedAbi = AbiParser.parseAbi(abi)
+
+      parsedAbi ==> Right(
+        List(
+          AbiFunction(
+            false,
+            "emitTokens",
+            Vector(Argument("owner", "address", None), Argument("token", "uint256", None)),
+            Vector(Argument("success", "bool", None)),
+            false,
+            "nonpayable",
+            None
+          ),
+          AbiFunction(
+            false,
+            "transfer",
+            Vector(Argument("to", "address", None), Argument("token", "uint256", None)),
+            Vector(Argument("success", "bool", None)),
+            false,
+            "nonpayable",
+            None
+          ),
+          AbiFunction(true,
+                      "balanceOf",
+                      Vector(Argument("tokenOwner", "address", None)),
+                      Vector(Argument("balance", "uint256", None)),
+                      false,
+                      "view",
+                      None),
+          AbiFunction(true,
+                      "balances",
+                      Vector(Argument("", "address", None)),
+                      Vector(Argument("", "uint256", None)),
+                      false,
+                      "view",
+                      None)
         )
       )
     }
@@ -118,7 +160,7 @@ object ABIParserTests extends TestSuite {
     }
 
     "Overloading abi parse" - {
-      val abi = readSolidityABI("ABIExampleWithOverloading.json")
+      val abi = readSolidityABI("complex/ABIExampleWithOverloading.json")
       val parsedAbi = AbiParser.parseAbi(abi)
 
       parsedAbi ==> Right(
@@ -133,8 +175,6 @@ object ABIParserTests extends TestSuite {
           AbiFunction(true, "get", Vector(), Vector(Argument("", "uint256", None)), false, "view", None),
           AbiFunction(false, "set", Vector(Argument("x", "uint256", None)), Vector(), false, "nonpayable", None)
         ))
-
     }
-
   }
 }

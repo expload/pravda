@@ -149,7 +149,15 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                       config.copy(mainClass = Some(s))
                     case (_, otherwise) => otherwise
                   }
-              )
+              ),
+            cmd("evm")
+              .text(
+                "[THIS COMPILATION MODE IS EXPERIMENTAL]" +
+                  "Compile .bin produced by solc compiler to Pravda VM bytecode. " +
+                  "Input files are .bin contract and .abi. " +
+                  "Output is binary Pravda program. " +
+                  "By default read from stdin and print to stdout")
+              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm))
           ),
         cmd("broadcast")
           .text("Broadcast transactions and programs to the Pravda blockchain.")

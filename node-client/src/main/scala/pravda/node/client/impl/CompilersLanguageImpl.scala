@@ -56,4 +56,19 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
       ops <- DotnetTranslator.translateAsm(files, mainClass).left.map(_.mkString)
     } yield PravdaAssembler.assemble(ops, saveLabels = true)
   }
+
+  def evm(sourceBytes: ByteString, abiBytes: ByteString): Future[Either[String, ByteString]] = Future {
+    import pravda.evm.abi.parse.AbiParser._
+    import pravda.evm.parse.Parser._
+    import pravda.evm.translate.Translator._
+
+    val source = sourceBytes.toStringUtf8.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte).dropRight(43)
+    val abiS = abiBytes.toStringUtf8
+
+    for {
+      abi <- parseAbi(abiS)
+      ops <- parseWithIndices(source)
+      asmOps <- translateActualContract(ops, abi)
+    } yield PravdaAssembler.assemble(asmOps, saveLabels = true)
+  }
 }
