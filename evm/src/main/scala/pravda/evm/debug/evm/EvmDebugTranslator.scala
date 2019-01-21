@@ -50,7 +50,8 @@ object EvmDebugTranslator {
       code1 <- Blocks.splitToCreativeAndRuntime(ops)
       (creationCode1, actualContract1) = code1
       code2 <- JumpTargetRecognizer(actualContract1).left.map(_.toString)
-      ops = StackSizePredictor.clear(StackSizePredictor.emulate(code2.map(_._2)))
+      ops1 = StackSizePredictor.emulate(code2.map(_._2))
+      ops = StackSizePredictor.clear(ops1)
       filtered = filterCode(ops)
       res <- EvmDebugTranslator(filtered, abi).map(
         opcodes =>

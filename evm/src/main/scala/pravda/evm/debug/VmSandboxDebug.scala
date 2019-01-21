@@ -17,130 +17,24 @@
 
 package pravda.evm.debug
 
+import cats.Applicative
+import cats.kernel.Monoid
 import com.google.protobuf.ByteString
-import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.Address
 import pravda.vm
 import pravda.vm._
-import pravda.vm.Data.Primitive
 import pravda.vm.impl.{MemoryImpl, WattCounterImpl}
+import pravda.vm.sandbox.VmSandbox.{EnvironmentSandbox, Preconditions, StorageSandbox}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.language.higherKinds
 
 object VmSandboxDebug {
 
-  class EnvironmentSandbox(effects: mutable.Buffer[vm.Effect],
-                           initStorages: Map[Address, Map[Primitive, Data]],
-                           initBalances: Seq[(Address, Primitive.Int64)],
-                           initPrograms: Seq[(Address, Primitive.Bytes)],
-                           pExecutor: Address,
-                           appStateInfo: AppStateInfo)
-      extends Environment {
-
-    private val balances = mutable.Map(initBalances: _*)
-    private val programs = mutable.Map(initPrograms: _*)
-    private val sealedPrograms = mutable.Map[Address, Boolean]()
-
-    def executor: Address = pExecutor
-
-    def sealProgram(address: Address): Unit = {
-      sealedPrograms(address) = true
-      effects += vm.Effect.ProgramSeal(address)
-    }
-
-    def updateProgram(address: Address, code: ByteString): Unit = {
-      programs(address) = Data.Primitive.Bytes(code)
-      effects += vm.Effect.ProgramUpdate(address, Data.Primitive.Bytes(code))
-    }
-
-    def createProgram(address: Address, code: ByteString): Unit = {
-      programs(address) = Data.Primitive.Bytes(code)
-      effects += vm.Effect.ProgramCreate(address, Data.Primitive.Bytes(code))
-    }
-
-    def getProgram(address: Address): Option[ProgramContext] = {
-      programs.get(address).map { p =>
-        ProgramContext(
-          new StorageSandbox(address, effects, initStorages.getOrElse(address, Map.empty).toSeq),
-          p.data,
-          `sealed` = sealedPrograms.getOrElse(address, false)
-        )
-      }
-    }
-
-    def balance(address: Address): NativeCoin = {
-      val balance = NativeCoin @@ balances.get(address).fold(0L)(_.data)
-      effects += vm.Effect.ShowBalance(address, balance)
-      balance
-    }
-
-    def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
-      val fromBalance = balances.get(from).fold(0L)(_.data)
-      val toBalance = balances.get(to).fold(0L)(_.data)
-      balances(from) = Data.Primitive.Int64(fromBalance - amount)
-      balances(to) = Data.Primitive.Int64(toBalance + amount)
-      effects += vm.Effect.Transfer(from, to, amount)
-    }
-
-    def event(address: Address, name: String, data: MarshalledData): Unit =
-      effects += vm.Effect.Event(address, name, data)
-
-    def chainHeight = appStateInfo.height
-    def lastBlockHash = appStateInfo.`app-hash`
-  }
-
-  class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])
-      extends Storage {
-
-    val storageItems: mutable.Map[Data.Primitive, Data] = mutable.Map(initStorage: _*)
-
-    def get(key: Data.Primitive): Option[Data] = {
-      val value = storageItems.get(key)
-      effects += vm.Effect.StorageRead(address, key, value)
-      value
-    }
-
-    def put(key: Data.Primitive, value: Data): Option[Data] = {
-      val prev = storageItems.put(key, value)
-      effects += vm.Effect.StorageWrite(address, key, prev, value)
-      prev
-    }
-
-    def delete(key: Data.Primitive): Option[Data] = {
-      val prev = storageItems.remove(key)
-      effects += vm.Effect.StorageRemove(address, key, prev)
-      prev
-    }
-  }
-
-  /**
-    * Preconditions for VM sandbox
-    *
-    * @param balances Balances of accounts
-    * @param stack Initial stack of VM
-    * @param heap Initial heap of VM
-    * @param storage Initial storage, the program is run on the account with zero address (0x00 32 times)
-    * @param `program-storage` Initial storages for given account addresses
-    * @param programs Bytecodes of programs with given addresses
-    * @param executor Address of executor of the program, default executor address is 0x010203...1E1F20
-    * @param code Bytecode of the program
-    * @param `app-state-info` Various Blockchain info
-    */
-  final case class Preconditions(
-      `watts-limit`: Long = 1000000L,
-      balances: Map[Address, Primitive.Int64] = Map.empty,
-      stack: Seq[Primitive] = Nil,
-      heap: Map[Primitive.Ref, Data] = Map.empty,
-      storage: Map[Primitive, Data] = Map.empty,
-      `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
-      programs: Map[Address, Primitive.Bytes] = Map.empty,
-      executor: Option[Address] = None,
-      `app-state-info`: AppStateInfo = AppStateInfo(
-        `app-hash` = bytes.hex2byteString("0000000000000000000000000000000000000000000000000000000000000000"),
-        height = 1L))
-
-  def run[L](input: VmSandboxDebug.Preconditions, code: ByteString)(implicit debugger: Debugger[L]): L = {
+  def run[F[_], S](input: Preconditions, code: ByteString)(implicit debugger: Debugger[S],
+                                                           monoid: Monoid[F[S]],
+                                                           appl: Applicative[F]): F[S] = {
     val sandboxVm = new VmImplDebug()
     val heap = {
       if (input.heap.nonEmpty) {
@@ -160,7 +54,7 @@ object VmSandboxDebug {
     }
 
     val effects = mutable.Buffer[vm.Effect]()
-    val environment: Environment = new VmSandboxDebug.EnvironmentSandbox(
+    val environment: Environment = new EnvironmentSandbox(
       effects,
       input.`program-storage`,
       input.balances.toSeq,
@@ -168,7 +62,7 @@ object VmSandboxDebug {
       pExecutor,
       input.`app-state-info`
     )
-    val storage = new VmSandboxDebug.StorageSandbox(Address.Void, effects, input.storage.toSeq)
+    val storage = new StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     memory.enterProgram(Address.Void)
     val res = sandboxVm.debugBytes(

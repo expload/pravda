@@ -1,4 +1,4 @@
-package pravda.vm
+package pravda.vm.sandbox
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes
@@ -6,6 +6,7 @@ import pravda.common.domain.{Address, NativeCoin}
 import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
+import pravda.vm._
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable

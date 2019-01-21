@@ -19,6 +19,8 @@ package pravda.evm.debug
 
 import java.nio.ByteBuffer
 
+import cats.Applicative
+import cats.kernel.Monoid
 import pravda.common.domain
 import pravda.vm.Error.PcallDenied
 import pravda.vm.Opcodes._
@@ -27,18 +29,23 @@ import pravda.vm._
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.operations._
 
-import scala.annotation.{switch, tailrec}
-import scala.util.Try
+import scala.language.higherKinds
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
+import cats.syntax.monoid._
+import pravda.evm.debug.DebugVm.{InterruptedExecution, MetaExecution, UnitExecution}
+import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
-class VmImplDebug[L](implicit val debugger: Debugger[L]) extends DebugVm[L] {
+class VmImplDebug extends DebugVm {
 
-  def debugBytes(program: ByteBuffer,
-                 env: Environment,
-                 mem: MemoryImpl,
-                 counter: WattCounter,
-                 maybeStorage: Option[Storage],
-                 maybePA: Option[domain.Address],
-                 pcallAllowed: Boolean): L = {
+  def debugBytes[F[_], S](
+      program: ByteBuffer,
+      env: Environment,
+      mem: MemoryImpl,
+      counter: WattCounter,
+      maybeStorage: Option[StorageSandbox],
+      maybePA: Option[domain.Address],
+      pcallAllowed: Boolean)(implicit monoid: Monoid[F[S]], appl: Applicative[F], debugger: Debugger[S]): F[S] = {
 
     val logicalOperations = new LogicalOperations(mem, counter)
     val arithmeticOperations = new ArithmeticOperations(mem, counter)
@@ -51,98 +58,102 @@ class VmImplDebug[L](implicit val debugger: Debugger[L]) extends DebugVm[L] {
       new SystemOperations(program, mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
     val dataOperations = new DataOperations(mem, counter)
 
-    // val Some(storage) = maybeStorage
-    var continue = true
+    val Some(storage) = maybeStorage
 
-    @tailrec def proc(acc: L): L = {
-      if (continue && program.hasRemaining) {
+    @tailrec def proc(acc: F[S]): F[S] = {
+      if (program.hasRemaining) {
         counter.cpuUsage(CpuBasic)
         val op = program.get() & 0xff
 
-        val (state, contunue) = debugger.debugOp(acc, program, op, mem) { () =>
-          Try {
-            mem.setCounter(program.position())
-            (op: @switch) match {
-              // Control operations
-              case CALL  => controlOperations.call()
-              case RET   => controlOperations.ret()
-              case JUMP  => controlOperations.jump()
-              case JUMPI => controlOperations.jumpi()
-              // Native coin operations
-              case TRANSFER  => nativeCoinOperations.transfer()
-              case PTRANSFER => nativeCoinOperations.ptransfer()
-              case BALANCE   => nativeCoinOperations.balance()
-              // Stack operations
-              case POP   => stackOperations.pop()
-              case PUSHX => stackOperations.push()
-              case DUP   => stackOperations.dup()
-              case DUPN  => stackOperations.dupN()
-              case SWAP  => stackOperations.swap()
-              case SWAPN => stackOperations.swapN()
-              // Heap operations
-              case NEW               => heapOperations.`new`()
-              case ARRAY_GET         => heapOperations.arrayGet()
-              case STRUCT_GET        => heapOperations.structGet()
-              case STRUCT_GET_STATIC => heapOperations.structGetStatic()
-              case ARRAY_MUT         => heapOperations.arrayMut()
-              case STRUCT_MUT        => heapOperations.structMut()
-              case STRUCT_MUT_STATIC => heapOperations.structMutStatic()
-              case PRIMITIVE_PUT     => heapOperations.primitivePut()
-              case PRIMITIVE_GET     => heapOperations.primitiveGet()
-              case NEW_ARRAY         => heapOperations.newArray()
-              case LENGTH            => heapOperations.length()
-              // Storage operations
-              case SPUT   => storageOperations.put()
-              case SGET   => storageOperations.get()
-              case SDROP  => storageOperations.drop()
-              case SEXIST => storageOperations.exists()
-              // Arithmetic operations
-              case ADD => arithmeticOperations.add()
-              case MUL => arithmeticOperations.mul()
-              case DIV => arithmeticOperations.div()
-              case MOD => arithmeticOperations.mod()
-              // Logical operations
-              case NOT => logicalOperations.not()
-              case AND => logicalOperations.and()
-              case OR  => logicalOperations.or()
-              case XOR => logicalOperations.xor()
-              case EQ  => logicalOperations.eq()
-              case LT  => logicalOperations.lt()
-              case GT  => logicalOperations.gt()
-              // Data operations
-              case CAST   => dataOperations.cast()
-              case CONCAT => dataOperations.concat()
-              case SLICE  => dataOperations.slice()
-              // System operations
-              case STOP    => continue = false
-              case FROM    => systemOperations.from()
-              case LCALL   => systemOperations.lcall()
-              case SCALL   => systemOperations.scall()
-              case PCREATE => systemOperations.pcreate()
-              case SEAL    => systemOperations.seal()
-              case PUPDATE => systemOperations.pupdate()
-              case PADDR   => systemOperations.paddr()
-              case PCALL =>
-                if (pcallAllowed) {
-                  systemOperations.pcall()
-                } else {
-                  throw ThrowableVmError(PcallDenied)
-                }
-              case THROW   => systemOperations.`throw`()
-              case EVENT   => systemOperations.event()
-              case CALLERS => systemOperations.callers()
-              case HEIGHT  => systemOperations.chainHeight()
-              case HASH    => systemOperations.lastBlockHash()
-              case CODE    => systemOperations.code()
-              case META =>
-                Meta.readFromByteBuffer(program)
-              case _ =>
-            }
+        import DebugVm.ExecutionResult
+        val executionResult = Try[ExecutionResult] {
+          mem.setCounter(program.position())
+          op match {
+            // Control operations
+            case CALL  => UnitExecution(() => controlOperations.call())
+            case RET   => UnitExecution(() => controlOperations.ret())
+            case JUMP  => UnitExecution(() => controlOperations.jump())
+            case JUMPI => UnitExecution(() => controlOperations.jumpi())
+            // Native coin operations
+            case TRANSFER  => UnitExecution(() => nativeCoinOperations.transfer())
+            case PTRANSFER => UnitExecution(() => nativeCoinOperations.ptransfer())
+            case BALANCE   => UnitExecution(() => nativeCoinOperations.balance())
+            // Stack operations
+            case POP   => UnitExecution(() => stackOperations.pop())
+            case PUSHX => UnitExecution(() => stackOperations.push())
+            case DUP   => UnitExecution(() => stackOperations.dup())
+            case DUPN  => UnitExecution(() => stackOperations.dupN())
+            case SWAP  => UnitExecution(() => stackOperations.swap())
+            case SWAPN => UnitExecution(() => stackOperations.swapN())
+            // Heap operations
+            case NEW               => UnitExecution(() => heapOperations.`new`())
+            case ARRAY_GET         => UnitExecution(() => heapOperations.arrayGet())
+            case STRUCT_GET        => UnitExecution(() => heapOperations.structGet())
+            case STRUCT_GET_STATIC => UnitExecution(() => heapOperations.structGetStatic())
+            case ARRAY_MUT         => UnitExecution(() => heapOperations.arrayMut())
+            case STRUCT_MUT        => UnitExecution(() => heapOperations.structMut())
+            case STRUCT_MUT_STATIC => UnitExecution(() => heapOperations.structMutStatic())
+            case PRIMITIVE_PUT     => UnitExecution(() => heapOperations.primitivePut())
+            case PRIMITIVE_GET     => UnitExecution(() => heapOperations.primitiveGet())
+            case NEW_ARRAY         => UnitExecution(() => heapOperations.newArray())
+            case LENGTH            => UnitExecution(() => heapOperations.length())
+            // Storage operations
+            case SPUT   => UnitExecution(() => storageOperations.put())
+            case SGET   => UnitExecution(() => storageOperations.get())
+            case SDROP  => UnitExecution(() => storageOperations.drop())
+            case SEXIST => UnitExecution(() => storageOperations.exists())
+            // Arithmetic operations
+            case ADD => UnitExecution(() => arithmeticOperations.add())
+            case MUL => UnitExecution(() => arithmeticOperations.mul())
+            case DIV => UnitExecution(() => arithmeticOperations.div())
+            case MOD => UnitExecution(() => arithmeticOperations.mod())
+            // Logical operations
+            case NOT => UnitExecution(() => logicalOperations.not())
+            case AND => UnitExecution(() => logicalOperations.and())
+            case OR  => UnitExecution(() => logicalOperations.or())
+            case XOR => UnitExecution(() => logicalOperations.xor())
+            case EQ  => UnitExecution(() => logicalOperations.eq())
+            case LT  => UnitExecution(() => logicalOperations.lt())
+            case GT  => UnitExecution(() => logicalOperations.gt())
+            // Data operations
+            case CAST   => UnitExecution(() => dataOperations.cast())
+            case CONCAT => UnitExecution(() => dataOperations.concat())
+            case SLICE  => UnitExecution(() => dataOperations.slice())
+            // System operations
+            case STOP    => InterruptedExecution
+            case FROM    => UnitExecution(() => systemOperations.from())
+            case LCALL   => UnitExecution(() => systemOperations.lcall())
+            case SCALL   => UnitExecution(() => systemOperations.scall())
+            case PCREATE => UnitExecution(() => systemOperations.pcreate())
+            case SEAL    => UnitExecution(() => systemOperations.seal())
+            case PUPDATE => UnitExecution(() => systemOperations.pupdate())
+            case PADDR   => UnitExecution(() => systemOperations.paddr())
+            case PCALL =>
+              if (pcallAllowed) {
+                UnitExecution(() => systemOperations.pcall())
+              } else {
+                throw ThrowableVmError(PcallDenied)
+              }
+            case THROW   => UnitExecution(() => systemOperations.`throw`())
+            case EVENT   => UnitExecution(() => systemOperations.event())
+            case CALLERS => UnitExecution(() => systemOperations.callers())
+            case HEIGHT  => UnitExecution(() => systemOperations.chainHeight())
+            case HASH    => UnitExecution(() => systemOperations.lastBlockHash())
+            case CODE    => UnitExecution(() => systemOperations.code())
+            case META =>
+              MetaExecution(Meta.readFromByteBuffer(program))
+            case _ => UnitExecution(() => ())
           }
         }
-        if (contunue) proc(state) else state
+        val state = debugger.debugOp(program, op, mem, storage)(executionResult)
+
+        executionResult match {
+          case Success(InterruptedExecution) | Failure(_) =>
+            acc |+| appl.pure(state)
+          case _ => proc(acc |+| appl.pure(state))
+        }
       } else acc
     }
-    proc(debugger.initial)
+    proc(monoid.empty)
   }
 }

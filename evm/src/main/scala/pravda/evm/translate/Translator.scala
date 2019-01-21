@@ -21,7 +21,6 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.evm.EVM
-import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.disasm.{Blocks, JumpTargetRecognizer, StackSizePredictor}
@@ -61,6 +60,7 @@ object Translator {
 
   def filterCode(ops: List[EVM.Op]): List[EVM.Op] = {
     import fastparse.byte.all.Bytes
+    import pravda.evm.EVM._
 
     ops match {
       case Push(Bytes(-128)) ::
@@ -97,11 +97,11 @@ object Translator {
             Dup(1) ::
             IsZero ::
             Push(_: Bytes) ::
-            JumpI(_, _) ::
+            JumpI(addr, dest) ::
             Push(Bytes(0x00)) ::
             Dup(1) ::
             Revert :: rest =>
-        filterCode(rest)
+        filterCode(Push(Bytes(0x7)) :: Push(Bytes(0x7)) :: Jump(addr, dest) :: rest)
 
       case h :: t => h :: filterCode(t)
       case _      => List.empty
