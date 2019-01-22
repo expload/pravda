@@ -38,7 +38,6 @@ object DebuggerDemo extends TestSuite {
       val Right(output) = EvmSandboxDebug.debugAddressedCode(preconditions, ops, abi)
 
       println(output)
-      true ==> true
 
     }
 

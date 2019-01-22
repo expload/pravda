@@ -61,7 +61,6 @@ class VmImplDebug extends DebugVm {
     val Some(storage) = maybeStorage
 
     @tailrec def proc(acc: F[S]): F[S] = {
-      if (program.hasRemaining) {
         counter.cpuUsage(CpuBasic)
         val op = program.get() & 0xff
 
@@ -146,13 +145,12 @@ class VmImplDebug extends DebugVm {
           }
         }
         val state = debugger.debugOp(program, op, mem, storage)(executionResult)
-
+        val res = acc |+| appl.pure(state)
         executionResult match {
           case Success(InterruptedExecution) | Failure(_) =>
-            acc |+| appl.pure(state)
-          case _ => proc(acc |+| appl.pure(state))
+            res
+          case _ => if (program.hasRemaining) proc(res) else res  
         }
-      } else acc
     }
     proc(monoid.empty)
   }
