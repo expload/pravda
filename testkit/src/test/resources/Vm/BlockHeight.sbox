@@ -6,6 +6,7 @@ vm:
   app-state-info:
     app-hash: 62099c6a16853f70fcf2e5a24da6e46faaf0b2541658bec668527b0436d32ece
     height: 4
+    timestamp: 0
 dotnet-compilation:
   steps:
   - target: Pravda.dll

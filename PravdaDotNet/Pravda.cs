@@ -47,6 +47,9 @@ namespace Expload.Pravda {
 
         public static long Height() { return 0L; }
         public static Bytes LastBlockHash() { return null; }
+        // Get the timestamp of the last comitted block
+        // Timestamp is a number of milliseconds since 1 Jan 1970 00:00 UTC+0
+        public static long LastBlockTime() { return 0L; }
     }
 
     public class Actions {

@@ -55,11 +55,19 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_Emit:
   meta method {
   "name":"Emit",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
   }
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
   meta source_mark {
   "sl":int32(26),"sc":int32(9),"el":int32(26),"src":"$PRAVDA_TMP_DIR/SmartProgram.cs","ec":int32(24)
   }
@@ -117,6 +125,12 @@ translation: |-
   meta method {
   "name":"Transfer",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
   }
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
   meta source_mark {
   "sl":int32(16),"sc":int32(9),"el":int32(16),"src":"$PRAVDA_TMP_DIR/SmartProgram.cs","ec":int32(24)
   }

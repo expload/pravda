@@ -84,7 +84,7 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
                         for {
                           address <- access.valueOf(addressField)
                           coins <- access.valueOf(xcoinsField)
-                          codeOrError <- compilers.asm(s"push x$address push bigint($coins) transfer")
+                          codeOrError <- compilers.asm(s"push x$address push int64($coins) transfer")
                           resOrError <- codeOrError match {
                             case Left(err) => Future.successful(Left(s"Error during request construction: $err"))
                             case Right(code) =>

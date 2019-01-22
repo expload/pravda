@@ -89,6 +89,7 @@ object Opcodes {
   final val CALLERS = 0xab
   final val HEIGHT = 0xac
   final val HASH = 0xad
+  final val TIME = 0xae
 
   // Native coins
   final val TRANSFER = 0xc0

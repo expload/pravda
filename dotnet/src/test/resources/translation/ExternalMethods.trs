@@ -110,6 +110,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_TestStaticMethods:
   meta method {
@@ -193,6 +195,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -220,14 +224,6 @@ translation: |-
   push int32(0)
   struct_mut "B"
   ret
-  @default_fields_ExternalNamespace.ExternalMethods:
-  dup
-  push null
-  struct_mut "A"
-  dup
-  push null
-  struct_mut "B"
-  ret
   @func_ExternalNamespace.ExternalMethods.Add:
   meta source_mark {
   "sl":int32(20),"sc":int32(13),"el":int32(20),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(26)
@@ -241,8 +237,16 @@ translation: |-
   add
   jump @ExternalNamespace.ExternalMethods.Add_lvc
   @ExternalNamespace.ExternalMethods.Add_lvc:
+  push int8(3)
+  cast
   ret
   @func_ExternalNamespace.ExternalMethods.Add_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(24),"sc":int32(13),"el":int32(24),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(30)
   }
@@ -260,8 +264,22 @@ translation: |-
   @ExternalNamespace.ExternalMethods.Add_int32_lvc:
   swap
   pop
+  push int8(3)
+  cast
   ret
   @func_ExternalNamespace.ExternalMethods.Add_int32_int32:
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(11),"sc":int32(13),"el":int32(11),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(26)
   }
@@ -276,8 +294,22 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   ret
   @func_ExternalNamespace.ExternalMethods.ctor_int32_int32:
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/ExternalMethods.cs","ec":int32(45)
   }
@@ -317,8 +349,6 @@ translation: |-
   scall
   jump @ExternalNamespace.ExternalProgramMethods.GetInstance_lvc
   @ExternalNamespace.ExternalProgramMethods.GetInstance_lvc:
-  ret
-  @vtable_ExternalNamespace.ExternalMethods:
   ret
   @vtable_ExternalNamespace.ExternalMethods:
   ret
