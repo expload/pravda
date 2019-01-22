@@ -182,6 +182,7 @@ class VmImpl extends Vm {
         case CALLERS => systemOperations.callers()
         case HEIGHT  => systemOperations.chainHeight()
         case HASH    => systemOperations.lastBlockHash()
+        case TIME    => systemOperations.lastBlockTime()
         case CODE    => systemOperations.code()
         case META    => Meta.readFromByteBuffer(program)
         case _       =>

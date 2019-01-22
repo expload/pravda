@@ -311,6 +311,16 @@ final class SystemOperations(program: ByteBuffer,
     wattCounter.cpuUsage(CpuStorageUse)
     memory.push(Data.Primitive.Bytes(data))
   }
+
+  @OpcodeImplementation(
+    opcode = TIME,
+    description = "Gets timestamp of the last block and pushes it to the stack."
+  )
+  def lastBlockTime(): Unit = {
+    val data = env.lastBlockTime
+    wattCounter.cpuUsage(CpuStorageUse)
+    memory.push(Data.Primitive.Int64(data))
+  }
 }
 
 object SystemOperations {

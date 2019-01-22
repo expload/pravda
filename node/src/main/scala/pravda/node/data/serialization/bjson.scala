@@ -34,5 +34,8 @@ trait BJsonTranscoder {
     t => BJson @@ t.asJson.getBytes(StandardCharsets.UTF_8)
 
   implicit def bjsonDecoder[T: JsonReader]: BJsonDecoder[T] =
-    t => new String(t, StandardCharsets.UTF_8).jsonAs[T].fold(throw _, identity)
+    t => {
+      val str = new String(t, StandardCharsets.UTF_8)
+      str.jsonAs[T].fold(e => throw new RuntimeException(s"Error while parsing json: $str", e), identity)
+    }
 }

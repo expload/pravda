@@ -4,11 +4,11 @@ While Pravda is under heavy development we can feel ourselves free to add new op
 
 Do not forget to [generate docs](gen-doc.md)!
 ## Opcodes
-1. Add opcode to `pravda.vm.Opcodes` in `vm-api` module. Select a section carefully. Use hex number next to last opcode in the section.
-2. Add implementation of the opcode to the module from `pravda.vm.operations` package that corresponds to the selected section. Do not forget to add documentation for the method.
-3. Add appropriate pattern-match branch to `pravda.vm.impl.VmImpl`.
-4. Add mnemonic declaration to `pravda.vm.asm.Operation` orphans. If opcode is complex (takes arguments, for example) take a look to `pravda.vm.asm.PravdaAssembler`.
-5. Write few test cases in `/vm/src/test/resources`
+1. Add opcode to [pravda.vm.Opcodes](https://github.com/expload/pravda/blob/master/vm-api/src/main/scala/pravda/vm/Opcodes.scala) in `vm-api` module. Select a section carefully. Use hex number next to last opcode in the section.
+2. Add implementation of the opcode to the module from [pravda.vm.operations](https://github.com/expload/pravda/tree/master/vm/src/main/scala/pravda/vm/operations) package that corresponds to the selected section. Do not forget to add documentation for the method.
+3. Add appropriate pattern-match branch to [pravda.vm.impl.VmImpl](https://github.com/expload/pravda/blob/master/vm/src/main/scala/pravda/vm/impl/VmImpl.scala).
+4. Add mnemonic declaration to [pravda.vm.asm.Operation](https://github.com/expload/pravda/blob/master/vm-asm/src/main/scala/pravda/vm/asm/Operation.scala) orphans. If opcode is complex (takes arguments, for example) take a look to [pravda.vm.asm.PravdaAssembler](https://github.com/expload/pravda/blob/master/vm-asm/src/main/scala/pravda/vm/asm/PravdaAssembler.scala).
+5. Write few test cases in [/vm/src/test/resources](https://github.com/expload/pravda/tree/master/vm/src/test/resources)
 
 ## Standard Library
 1. Add implementation to `pravda.vm.std` in `vm` module. For id use hex number next to last added standard library function.

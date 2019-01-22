@@ -73,6 +73,7 @@ object VmSandbox {
 
     def chainHeight = appStateInfo.height
     def lastBlockHash = appStateInfo.`app-hash`
+    def lastBlockTime = appStateInfo.timestamp
   }
 
   class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])
@@ -123,7 +124,10 @@ object VmSandbox {
       executor: Option[Address] = None,
       `app-state-info`: AppStateInfo = AppStateInfo(
         `app-hash` = bytes.hex2byteString("0000000000000000000000000000000000000000000000000000000000000000"),
-        height = 1L))
+        height = 1L,
+        timestamp = 0L
+      )
+  )
 
   /**
     * @param stack Expected stack of VM after program execution

@@ -32,8 +32,10 @@ import scala.sys.process.stderr
   * Pravda CLI entry point.
   */
 object Pravda extends App {
+  private lazy val NETWORKD_ADDRESS_CACHE_TTL = 60
+  private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 20
 
-  implicit val system: ActorSystem = ActorSystem()
+  implicit val system: ActorSystem = createActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
@@ -51,6 +53,15 @@ object Pravda extends App {
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
   lazy val codegen = new Codegen(io, codeGenerators)
   lazy val execute = new Execute(io, nodeLanguage)
+
+  java.security.Security.setProperty(
+    "networkaddress.cache.ttl",
+    NETWORKD_ADDRESS_CACHE_TTL.toString
+  )
+  java.security.Security.setProperty(
+    "networkaddress.cache.negative.ttl",
+    NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL.toString
+  )
 
   // FIXME programs should be composed by another one
   val eventuallyExitCode = PravdaArgsParser.parse(args.toList, PravdaConfig.Nope) match {
@@ -86,4 +97,20 @@ object Pravda extends App {
   )
 
   sys.exit(exitCode)
+
+  private def createActorSystem() = {
+    import com.typesafe.config.ConfigFactory
+
+    val customConf = ConfigFactory.parseString("""
+      akka {
+        # We turn off log messages during startup/shutdown actor system since
+        # a logging system was not started yet and it cannot catch log events.
+        stdout-loglevel = "OFF"
+
+        loglevel = ERROR
+      }
+    """)
+
+    ActorSystem("PravdaCliAS", ConfigFactory.load(customConf))
+  }
 }

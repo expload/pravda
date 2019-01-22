@@ -115,6 +115,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -155,8 +157,16 @@ translation: |-
   add
   jump @A.Answer_lvc
   @A.Answer_lvc:
+  push int8(3)
+  cast
   ret
   @func_A.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(22),"sc":int32(25),"el":int32(22),"src":"$PRAVDA_TMP_DIR/Inheritance.cs","ec":int32(35)
   }
@@ -192,8 +202,16 @@ translation: |-
   add
   jump @B.Answer_lvc
   @B.Answer_lvc:
+  push int8(3)
+  cast
   ret
   @func_B.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(37),"sc":int32(25),"el":int32(37),"src":"$PRAVDA_TMP_DIR/Inheritance.cs","ec":int32(35)
   }
@@ -225,6 +243,8 @@ translation: |-
   push int32(0)
   jump @Parent.Answer_lvc
   @Parent.Answer_lvc:
+  push int8(3)
+  cast
   ret
   @func_Parent.AnswerPlus1:
   meta source_mark {
@@ -242,8 +262,16 @@ translation: |-
   add
   jump @Parent.AnswerPlus1_lvc
   @Parent.AnswerPlus1_lvc:
+  push int8(3)
+  cast
   ret
   @func_Parent.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(5),"sc":int32(5),"el":int32(5),"src":"$PRAVDA_TMP_DIR/Inheritance.cs","ec":int32(27)
   }

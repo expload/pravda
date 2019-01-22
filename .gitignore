@@ -6,4 +6,9 @@ target/
 .project
 .settings/
 *.iml
+TAGS
 development.conf
+PravdaDotNet/bin/
+PravdaDotNet/obj/
+PravdaProgramTemplate/Content/bin
+PravdaProgramTemplate/Content/obj

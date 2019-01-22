@@ -49,6 +49,18 @@ translation: |-
   meta method {
   "name":"BreedPets",int32(1):int8(11),int32(0):int8(11),"returnTpe":int8(11)
   }
+  push int32(3)
+  swapn
+  push int8(11)
+  cast
+  push int32(3)
+  swapn
+  push int32(2)
+  swapn
+  push int8(11)
+  cast
+  push int32(2)
+  swapn
   push null
   meta source_mark {
   "sl":int32(59),"sc":int32(9),"el":int32(61),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(84)
@@ -195,11 +207,19 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   jump @stop
   @method_NewPet:
   meta method {
   "name":"NewPet",int32(0):int8(3),"returnTpe":int8(11)
   }
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
   push null
   meta source_mark {
   "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
@@ -299,6 +319,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   jump @stop
   @method_NewZoo:
   meta method {
@@ -343,11 +365,25 @@ translation: |-
   @NewZoo_lvc:
   swap
   pop
+  push int8(3)
+  cast
   jump @stop
   @method_TransferPet:
   meta method {
   "name":"TransferPet",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0),int32(2):int8(11)
   }
+  push int32(3)
+  swapn
+  push int8(3)
+  cast
+  push int32(3)
+  swapn
+  push int32(2)
+  swapn
+  push int8(11)
+  cast
+  push int32(2)
+  swapn
   meta source_mark {
   "sl":int32(51),"sc":int32(9),"el":int32(51),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(123)
   }
@@ -439,6 +475,12 @@ translation: |-
   meta method {
   "name":"TransferZoo",int32(1):int8(3),int32(0):int8(14),"returnTpe":int8(0)
   }
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
   meta source_mark {
   "sl":int32(32),"sc":int32(9),"el":int32(32),"src":"$PRAVDA_TMP_DIR/ZooProgram.cs","ec":int32(72)
   }
@@ -537,6 +579,12 @@ translation: |-
   pop
   jump @stop
   @func_GenerateSignature:
+  push int32(1)
+  swapn
+  push int8(11)
+  cast
+  push int32(1)
+  swapn
   push null
   push null
   meta source_mark {
