@@ -17,8 +17,6 @@
 
 package pravda.evm.debug
 
-import cats.Applicative
-import cats.kernel.Monoid
 import com.google.protobuf.ByteString
 import pravda.common.domain.Address
 import pravda.vm
@@ -28,13 +26,10 @@ import pravda.vm.sandbox.VmSandbox.{EnvironmentSandbox, Preconditions, StorageSa
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.language.higherKinds
 
 object VmSandboxDebug {
 
-  def run[F[_], S](input: Preconditions, code: ByteString)(implicit debugger: Debugger[S],
-                                                           monoid: Monoid[F[S]],
-                                                           appl: Applicative[F]): F[S] = {
+  def run[S](input: Preconditions, code: ByteString)(implicit debugger: Debugger[S]): List[S] = {
     val sandboxVm = new VmImplDebug()
     val heap = {
       if (input.heap.nonEmpty) {

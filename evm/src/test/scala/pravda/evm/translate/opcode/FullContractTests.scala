@@ -23,8 +23,8 @@ object FullContractTests extends TestSuite {
   val tests = Tests {
     'SimpleStorageGet - {
       val preconditions = Preconditions(`watts-limit` = 10000L,
-                                                  stack = Seq(Data.Primitive.Utf8("get")),
-                                                  storage = Map(evmWord(Array(0)) -> evmWord(Array(1))))
+                                        stack = Seq(Data.Primitive.Utf8("get")),
+                                        storage = Map(evmWord(Array(0)) -> evmWord(Array(1))))
 
       val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))

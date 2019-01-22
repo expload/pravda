@@ -10,8 +10,6 @@ import utest._
 
 object RunTests extends TestSuite {
 
-
-
   val tests = Tests {
 
     val preconditions = Preconditions(`watts-limit` = 10000L)

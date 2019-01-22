@@ -19,16 +19,12 @@ package pravda.evm.debug
 
 import java.nio.ByteBuffer
 
-import cats.Applicative
-import cats.kernel.Monoid
 import com.google.protobuf.ByteString
 import pravda.common.domain
 import pravda.common.domain.Address
 import pravda.vm._
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
-
-import scala.language.higherKinds
 
 //'extends Vm' is required for using 'this' in SystemOperation constructor
 trait DebugVm extends Vm {
@@ -42,14 +38,13 @@ trait DebugVm extends Vm {
                    pcallAllowed: Boolean): Unit =
     throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
 
-  def debugBytes[F[_], S](
-      program: ByteBuffer,
-      env: Environment,
-      mem: MemoryImpl,
-      counter: WattCounter,
-      maybeStorage: Option[StorageSandbox],
-      maybePA: Option[domain.Address],
-      pcallAllowed: Boolean)(implicit monoid: Monoid[F[S]], appl: Applicative[F], debugger: Debugger[S]): F[S]
+  def debugBytes[S](program: ByteBuffer,
+                    env: Environment,
+                    mem: MemoryImpl,
+                    counter: WattCounter,
+                    maybeStorage: Option[StorageSandbox],
+                    maybePA: Option[domain.Address],
+                    pcallAllowed: Boolean)(implicit debugger: Debugger[S]): List[S]
 }
 
 object DebugVm {

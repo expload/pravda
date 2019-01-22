@@ -34,7 +34,7 @@ object TranslateTests extends TestSuite {
       }
     }
 
-  /*  'Contracts - {
+    /*  'Contracts - {
 
       'SimpleStorage - {
         val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
