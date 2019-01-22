@@ -54,11 +54,19 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   jump @stop
   @method_Ripemd160:
   meta method {
   "name":"Ripemd160",int32(0):int8(11),"returnTpe":int8(14)
   }
+  push int32(2)
+  swapn
+  push int8(11)
+  cast
+  push int32(2)
+  swapn
   meta source_mark {
   "sl":int32(9),"sc":int32(9),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(40)
   }
@@ -77,6 +85,12 @@ translation: |-
   meta method {
   "name":"ValidateEd25519Signature",int32(1):int8(11),int32(0):int8(14),"returnTpe":int8(9),int32(2):int8(14)
   }
+  push int32(3)
+  swapn
+  push int8(11)
+  cast
+  push int32(3)
+  swapn
   meta source_mark {
   "sl":int32(14),"sc":int32(9),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Stdlib.cs","ec":int32(71)
   }
@@ -98,6 +112,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(9)
+  cast
   jump @stop
   @method_ctor:
   meta method {

@@ -21,6 +21,7 @@ import pravda.node.servers.Abci.TransactionResult
 import pravda.vm.Data
 
 import scala.concurrent.Future
+import com.google.protobuf.timestamp
 
 package object utils {
 
@@ -70,4 +71,8 @@ package object utils {
     }
   }
 
+  def protoTimestampToLong(time: timestamp.Timestamp): Long = {
+    import java.time.Instant
+    Instant.ofEpochSecond(time.seconds, time.nanos.toLong).toEpochMilli()
+  }
 }

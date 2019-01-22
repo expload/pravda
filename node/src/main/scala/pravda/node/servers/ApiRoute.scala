@@ -21,9 +21,11 @@ package servers
 
 import java.util.Base64
 
+import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
+import akka.http.scaladsl.server.{PathMatcher1, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import com.google.protobuf.ByteString
 import pravda.common.bytes
@@ -35,17 +37,15 @@ import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTrans
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.bjson._
-import tethys._
-import pravda.node.data.serialization._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
-import pravda.node.servers.Abci.TransactionResult
+import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
+import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Random, Success, Try}
@@ -56,6 +56,7 @@ import scala.util.{Failure, Random, Success, Try}
 class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
+  import pravda.node.persistence.implicits._
 
   type R = Either[RpcError, TransactionResult]
 
@@ -68,7 +69,14 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
   val intUnmarshaller: Unmarshaller[String, Int] =
     Unmarshaller.strict(s => s.toInt)
 
+  val longUnmarshaller: Unmarshaller[String, Long] =
+    Unmarshaller.strict(s => s.toLong)
+
   val balances: Entry[Address, NativeCoin] = balanceEntry(db)
+  val eventsByAddress = eventsByAddressEntry(db)
+  val events = eventsEntry(db)
+  val transferEffectsByAddress = transferEffectsEntry(db)
+  val transactionsByAddress = transactionsEntry(db)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -225,22 +233,13 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                 'program.as(hexUnmarshaller),
                 'name,
                 'transactionId.as(hexUnmarshaller).?,
-                'offset.as(intUnmarshaller).?,
-                'count.as(intUnmarshaller).?
+                'offset.as(longUnmarshaller).?,
+                'count.as(longUnmarshaller).?
               )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
-              val offset = maybeOffset.getOrElse(0)
+              val offset = maybeOffset.getOrElse(0L)
               val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
-              val eventuallyResult = db
-                .startsWith(
-                  bytes.stringToBytes(s"events:${eventKey(Address @@ address, name)}"),
-                  bytes.stringToBytes(s"events:${eventKeyOffset(Address @@ address, name, offset.toLong)}"),
-                  count.toLong
-                )
-                .map { records =>
-                  records.map(value =>
-                    transcode(BJson @@ value.bytes)
-                      .to[(TransactionId, MarshalledData)])
-                }
+              val eventuallyResult =
+                events.startsWith[(TransactionId, MarshalledData)](eventKey(Address @@ address, name), offset, count)
 
               onSuccess(eventuallyResult) { result =>
                 val items = {
@@ -253,13 +252,95 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
               }
             }
           }
+        } ~
+        pathPrefix("account") {
+          pathPrefix(AddressPathMatcher) { address =>
+            path("transfers") {
+              /*
+               * Returns transfer effects from each transaction which affects to the
+               * XCoins balance of the given address. In particular, will be returned
+               * transfers FROM the given address and TO the given address.
+               */
+              get {
+                parameters(
+                  ('offset.as(longUnmarshaller).?, 'count.as(longUnmarshaller).?)
+                ) { (maybeOffset, maybeCount) =>
+                  val offset = maybeOffset.getOrElse(0L)
+                  val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
+
+                  val eventuallyResult =
+                    transferEffectsByAddress.startsWith[TransactionEffects.Transfers](
+                      bytes.byteString2hex(address),
+                      offset,
+                      count
+                    )
+
+                  onSuccess(eventuallyResult)(complete(_))
+                }
+              }
+            } ~
+              path("events") {
+                /*
+                 * Returns all events from each transaction those were signed by the
+                 * given address.
+                 */
+                get {
+                  parameters(
+                    ('offset.as(longUnmarshaller).?, 'count.as(longUnmarshaller).?)
+                  ) { (maybeOffset, maybeCount) =>
+                    val offset = maybeOffset.getOrElse(0L)
+                    val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
+
+                    val eventuallyResult = eventsByAddress.startsWith[TransactionEffects.ProgramEvents](
+                      bytes.byteString2hex(address),
+                      offset,
+                      count
+                    )
+
+                    onSuccess(eventuallyResult)(complete(_))
+                  }
+                }
+              } ~
+              path("transactions") {
+                /*
+                 * Returns all transactions were signed by the given address.
+                 */
+                get {
+                  parameters(
+                    ('offset.as(longUnmarshaller).?, 'count.as(longUnmarshaller).?)
+                  ) { (maybeOffset, maybeCount) =>
+                    val offset = maybeOffset.getOrElse(0L)
+                    val count = maybeCount.fold(ApiRoute.MaxRecordsCount)(math.min(_, ApiRoute.MaxRecordsCount))
+
+                    val eventuallyResult = transactionsByAddress.startsWith[TransactionEffects.AllEffects](
+                      bytes.byteString2hex(address),
+                      offset,
+                      count
+                    )
+
+                    onSuccess(eventuallyResult)(complete(_))
+                  }
+
+                }
+              }
+          }
         }
     }
 }
 
 object ApiRoute {
 
-  final val MaxEventCount = 1000
+  final val MaxEventCount = 1000L
+  final val MaxRecordsCount = 1000L
 
-  final case class EventItem(offset: Int, transactionId: TransactionId, data: MarshalledData)
+  object AddressPathMatcher extends PathMatcher1[Address] {
+
+    def apply(path: Path) = path match {
+      case Path.Segment(segment, tail) ⇒
+        Address.tryFromHex(segment).fold(_ => Unmatched, addr => Matched(tail, Tuple1(addr)))
+      case _ ⇒ Unmatched
+    }
+  }
+
+  final case class EventItem(offset: Long, transactionId: TransactionId, data: MarshalledData)
 }

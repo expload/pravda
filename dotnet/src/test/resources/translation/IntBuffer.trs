@@ -198,6 +198,8 @@ translation: |-
   pop
   swap
   pop
+  push int8(11)
+  cast
   jump @stop
   @method_ctor:
   meta method {
@@ -225,7 +227,21 @@ translation: |-
   push null
   struct_mut "buffer"
   ret
+  @default_fields_IntBuffer:
+  dup
+  push int32(0)
+  struct_mut "size"
+  dup
+  push null
+  struct_mut "buffer"
+  ret
   @func_IntBuffer.Append_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   push null
   push null
   meta source_mark {
@@ -386,6 +402,12 @@ translation: |-
   @IntBuffer.ctor_lvc:
   ret
   @func_IntBuffer.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(14),"sc":int32(5),"el":int32(14),"src":"$PRAVDA_TMP_DIR/IntBuffer.cs","ec":int32(35)
   }
@@ -410,6 +432,12 @@ translation: |-
   pop
   ret
   @func_IntBuffer.get_Item_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(34),"sc":int32(36),"el":int32(34),"src":"$PRAVDA_TMP_DIR/IntBuffer.cs","ec":int32(53)
   }
@@ -423,8 +451,22 @@ translation: |-
   @IntBuffer.get_Item_int32_lvc:
   swap
   pop
+  push int8(3)
+  cast
   ret
   @func_IntBuffer.set_Item_int32_int32:
+  push int32(2)
+  swapn
+  push int8(3)
+  cast
+  push int32(2)
+  swapn
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
   meta source_mark {
   "sl":int32(34),"sc":int32(62),"el":int32(34),"src":"$PRAVDA_TMP_DIR/IntBuffer.cs","ec":int32(80)
   }
@@ -444,6 +486,8 @@ translation: |-
   @IntBuffer.set_Item_int32_int32_lvc:
   pop
   pop
+  ret
+  @vtable_IntBuffer:
   ret
   @vtable_IntBuffer:
   ret

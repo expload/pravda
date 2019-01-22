@@ -45,7 +45,11 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                                 coinDistribution: Seq[CoinDistributionMember],
                                 seeds: Seq[(String, Int)]) =
     s"""pravda {
-       |  http {
+       |  network-address-cache {
+       |    ttl = 60
+       |    negative-ttl = 20
+       |  }
+       http {
        |    host = "127.0.0.1"
        |    port = 8080
        |  }

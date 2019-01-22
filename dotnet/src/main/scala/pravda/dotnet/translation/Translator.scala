@@ -25,7 +25,7 @@ import cats.syntax.traverse._
 import com.google.protobuf.ByteString
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.{CIL, Signatures}
 import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.data._
@@ -40,6 +40,60 @@ import scala.collection.mutable.ListBuffer
 object Translator {
 
   final val CILMark = Meta.Custom("CIL")
+
+  private def castRetTpe(stpe: SigType): Option[Data.Type] = {
+    stpe match {
+      case SigType.Boolean => Some(Data.Type.Boolean)
+      case SigType.Char    => Some(Data.Type.Int8)
+      case SigType.I1      => Some(Data.Type.Int8)
+      case SigType.U1      => Some(Data.Type.Int16)
+      case SigType.I2      => Some(Data.Type.Int16)
+      case SigType.U2      => Some(Data.Type.Int32)
+      case SigType.I4      => Some(Data.Type.Int32)
+      case SigType.U4      => Some(Data.Type.Int64)
+      case SigType.I8      => Some(Data.Type.Int64)
+      case SigType.U8      => Some(Data.Type.Int64)
+      case SigType.R4      => Some(Data.Type.Number)
+      case SigType.R8      => Some(Data.Type.Number)
+      case SigType.String  => Some(Data.Type.Utf8)
+      case SigType.I       => Some(Data.Type.Int32)
+      case SigType.U       => Some(Data.Type.Int64)
+      case _               => None
+    }
+  }
+
+  private def castArgs(argsTypes: Seq[Signatures.Tpe], withMethodNameOrObject: Boolean): List[Operation] = {
+    def castArgTpe(stpe: SigType): Option[Data.Type] = {
+      stpe match {
+        case SigType.Boolean => Some(Data.Type.Int32)
+        case SigType.Char    => Some(Data.Type.Int8)
+        case SigType.I1      => Some(Data.Type.Int8)
+        case SigType.U1      => Some(Data.Type.Int16)
+        case SigType.I2      => Some(Data.Type.Int16)
+        case SigType.U2      => Some(Data.Type.Int32)
+        case SigType.I4      => Some(Data.Type.Int32)
+        case SigType.U4      => Some(Data.Type.Int64)
+        case SigType.I8      => Some(Data.Type.Int64)
+        case SigType.U8      => Some(Data.Type.Int64)
+        case SigType.R4      => Some(Data.Type.Number)
+        case SigType.R8      => Some(Data.Type.Number)
+        case SigType.String  => Some(Data.Type.Utf8)
+        case SigType.I       => Some(Data.Type.Int32)
+        case SigType.U       => Some(Data.Type.Int64)
+        case _               => None
+      }
+    }
+
+    argsTypes.toList.zipWithIndex.flatMap {
+      case (tpe, i) =>
+        castArgTpe(tpe.tpe) match {
+          case Some(dtpe) =>
+            val offset = argsTypes.length - i + (if (withMethodNameOrObject) 1 else 0)
+            opcode.swapn(offset) ::: opcode.cast(dtpe) ::: opcode.swapn(offset)
+          case None => List()
+        }
+    }
+  }
 
   def dotnetToVmTpe(sigType: SigType): Option[Meta.TypeSignature] = sigType match {
     case SigType.Void          => Some(Meta.TypeSignature.Null)
@@ -228,6 +282,17 @@ object Translator {
     val ctx =
       MethodTranslationCtx(tctx, argsCount, localsCount, name, kind, void, func, static, struct, debugInfo)
 
+    val castArgsOpsO = for {
+      sig <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
+      params <- MethodExtractors.methodParams(sig)
+    } yield castArgs(params, !func && !static)
+
+    val castRetOpsO = for {
+      sig <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
+      tpe <- MethodExtractors.methodType(sig)
+      castTpe <- castRetTpe(tpe)
+    } yield opcode.cast(castTpe)
+
     val opTranslationsE = {
       def doTranslation(cil: List[CIL.Op],
                         offsets: Map[String, Int]): Either[TranslationError, List[OpCodeTranslation]] = {
@@ -312,10 +377,12 @@ object Translator {
         forceAdd,
         List(
           OpCodeTranslation(List.empty, metaMethodMark.toList),
+          OpCodeTranslation(List.empty, castArgsOpsO.getOrElse(List.empty)),
           OpCodeTranslation(List.empty, List.fill(localsCount)(Operation.Push(Data.Primitive.Null)))
         )
           ++ opTranslations ++
           List(OpCodeTranslation(List.empty, Operation.Label(s"${name}_lvc") :: clear)) ++
+          (if (!void) List(OpCodeTranslation(List.empty, castRetOpsO.toList.flatten)) else List.empty) ++
           List(
             OpCodeTranslation(List.empty,
                               if (func) List(Operation(Opcodes.RET))
@@ -681,28 +748,31 @@ object Translator {
         .sequence
     } yield opss
 
-    lazy val structCtorHelpers: List[MethodTranslation] = tctx.structs.flatMap { s =>
-      List(
-        MethodTranslation(
-          "vtable",
-          NamesBuilder.fullTypeDef(s),
-          forceAdd = false,
-          List(
-            OpCodeTranslation(List.empty,
-                              vtableInit(s, tctx) :+
-                                Operation(Opcodes.RET)))
-        ),
-        MethodTranslation(
-          "default_fields",
-          NamesBuilder.fullTypeDef(s),
-          forceAdd = false,
-          List(
-            OpCodeTranslation(List.empty,
-                              initStructFields(s, tctx) :+
-                                Operation(Opcodes.RET)))
+    lazy val structCtorHelpersE: Either[TranslationError, List[MethodTranslation]] = for {
+      structCtors <- structCtorsE
+    } yield
+      structCtors.map(i => tctx.methodIndex.parent(i).get).flatMap { s =>
+        List(
+          MethodTranslation(
+            "vtable",
+            NamesBuilder.fullTypeDef(s),
+            forceAdd = false,
+            List(
+              OpCodeTranslation(List.empty,
+                                vtableInit(s, tctx) :+
+                                  Operation(Opcodes.RET)))
+          ),
+          MethodTranslation(
+            "default_fields",
+            NamesBuilder.fullTypeDef(s),
+            forceAdd = false,
+            List(
+              OpCodeTranslation(List.empty,
+                                initStructFields(s, tctx) :+
+                                  Operation(Opcodes.RET)))
+          )
         )
-      )
-    }
+      }
 
     for {
       programMethodsOps <- programMethodsOpsE
@@ -712,6 +782,7 @@ object Translator {
       structFuncsOps <- structFuncsOpsE
       strucStaticFuncsOps <- structStaticFuncOpsE
       structCtorsOps <- structCtorsOpsE
+      structCtorHelpers <- structCtorHelpersE
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
       val funcsOps = programFuncOps ++ programStaticFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
