@@ -10,6 +10,7 @@ import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.asm.PravdaAssembler
 import pravda.vm.json._
+import pravda.vm.sandbox.VmSandbox
 
 object VmSuiteData {
   final case class Preconditions(vm: VmSandbox.Preconditions, code: String)

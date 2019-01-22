@@ -13,6 +13,7 @@ import pravda.vm.Data.Primitive
 import pravda.vm._
 import pravda.vm.asm.PravdaAssembler
 import pravda.vm.json._
+import pravda.vm.sandbox.VmSandbox
 
 object DotnetSuiteData {
   final case class Preconditions(vm: VmSandbox.Preconditions, `dotnet-compilation`: DotnetCompilation)
