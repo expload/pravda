@@ -19,13 +19,14 @@ package pravda.evm.debug
 
 import java.nio.ByteBuffer
 
-import cats.Show
+import pravda.evm.debug.DebugVm.ExecutionResult
 import pravda.vm.impl.MemoryImpl
+import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
 import scala.util.Try
 
-trait Debugger[L] {
-  def debugOp(state: L, program: ByteBuffer, op: Int, mem: MemoryImpl)(exec: () => Try[Unit]): (L, Boolean)
-  def initial: L
-  def log(state: L)(implicit show: Show[L]): String = show.show(state)
+trait Debugger[State] {
+
+  def debugOp(program: ByteBuffer, op: Int, mem: MemoryImpl, storage: StorageSandbox)(
+      execResult: Try[ExecutionResult]): State
 }

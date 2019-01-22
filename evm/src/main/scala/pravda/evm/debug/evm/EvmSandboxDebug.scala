@@ -17,31 +17,39 @@
 
 package pravda.evm.debug.evm
 
+import cats.{Applicative, Show}
+import cats.kernel.Monoid
 import pravda.evm.EVM
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.debug.{Debugger, VmSandboxDebug}
 import pravda.evm.translate.Translator.Addressed
 import pravda.vm.asm.PravdaAssembler
+import pravda.vm.sandbox.VmSandbox.Preconditions
+
+import scala.language.higherKinds
 
 object EvmSandboxDebug {
 
-  def debugCode[L](input: VmSandboxDebug.Preconditions, code: Seq[EVM.Op], abi: Seq[AbiObject])(
-      implicit deb: Debugger[L]): Either[String, L] = {
+  def debugCode[F[_]: Applicative, S: Debugger](input: Preconditions, code: Seq[EVM.Op], abi: Seq[AbiObject])(
+      implicit monoid: Monoid[F[S]],
+      show: Show[F[S]]): Either[String, String] = {
     val asmOps = EvmDebugTranslator(code.toList, abi.toList)
     val asmProgramE = asmOps.map(ops => PravdaAssembler.assemble(ops, saveLabels = true))
 
     for {
       asmProgram <- asmProgramE
-    } yield VmSandboxDebug.run(input, asmProgram)
+    } yield show.show(VmSandboxDebug.run(input, asmProgram))
   }
 
-  def debugAddressedCode[L](input: VmSandboxDebug.Preconditions, code: Seq[Addressed[EVM.Op]], abi: Seq[AbiObject])(
-      implicit deb: Debugger[L]): Either[String, L] = {
+  def debugAddressedCode[F[_]: Applicative, S: Debugger](
+      input: Preconditions,
+      code: Seq[Addressed[EVM.Op]],
+      abi: Seq[AbiObject])(implicit monoid: Monoid[F[S]], show: Show[F[S]]): Either[String, String] = {
     val asmOps = EvmDebugTranslator.debugTranslateActualContract(code.toList, abi.toList)
     val asmProgramE = asmOps.map(ops => PravdaAssembler.assemble(ops, saveLabels = true))
 
     for {
       asmProgram <- asmProgramE
-    } yield VmSandboxDebug.run(input, asmProgram)
+    } yield show.show(VmSandboxDebug.run(input, asmProgram))
   }
 }

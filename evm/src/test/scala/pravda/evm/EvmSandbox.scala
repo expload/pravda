@@ -3,8 +3,8 @@ package pravda.evm
 import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.translate.Translator
 import pravda.evm.translate.Translator.Addressed
-import pravda.vm._
 import pravda.vm.asm.PravdaAssembler
+import pravda.vm.sandbox.VmSandbox
 
 object EvmSandbox {
 

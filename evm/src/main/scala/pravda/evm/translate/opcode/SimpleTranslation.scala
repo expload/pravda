@@ -104,25 +104,26 @@ object SimpleTranslation {
     case MLoad(offset) =>
       pushBigInt(scala.BigInt(32)) :: codeToOps(Opcodes.SWAP) :::
         cast(Data.Type.BigInt) :::
-        pushInt(offset + 1) :: codeToOps(Opcodes.DUPN) :::
+        pushInt(offset + 2) :: codeToOps(Opcodes.DUPN) :::
         List(Operation.Push(Data.Primitive.Int8(6)), Operation(Opcodes.SCALL))
     case MStore(offset) =>
       codeToOps(Opcodes.SWAP) ::: List(pushInt8(8)) ::: codeToOps(Opcodes.SCALL, Opcodes.SWAP) :::
-        cast(Data.Type.BigInt) ::: pushInt(offset) :: codeToOps(Opcodes.DUPN) :::
+        cast(Data.Type.BigInt) ::: pushInt(offset + 1) :: codeToOps(Opcodes.DUPN) :::
         List(pushInt8(7), Operation(Opcodes.SCALL)) :::
-        pushInt(offset - 1) :: codeToOps(Opcodes.SWAPN, Opcodes.POP)
+        pushInt(offset) :: codeToOps(Opcodes.SWAPN, Opcodes.POP)
 
     case MStore8(offset) => List(Operation.Meta(Meta.Custom(s"MStore8_$offset")))
 
-    case Not    => pushBigInt(pow2_256) :: sub ::: Nil
+    case Not    => pushBigInt(pow2_256) :: bigintOps(sub)
     case Revert => List(Operation.Push(Data.Primitive.Utf8("Revert")), Operation(Opcodes.THROW))
-    case Return =>
+
+    case Return(offset) =>
       cast(Data.Type.BigInt) :::
         List(Operation(Opcodes.SWAP)) :::
         cast(Data.Type.BigInt) :::
         List(Operation(Opcodes.SWAP)) :::
         List(
-        pushInt(3),
+        pushInt(offset + 1),
         Operation(Opcodes.DUPN),
         pushInt8(6),
         Operation(Opcodes.SCALL),
@@ -131,15 +132,16 @@ object SimpleTranslation {
         Operation(Opcodes.SWAP),
         Operation(Opcodes.POP),
         Operation(Opcodes.SWAP),
+        Operation(Opcodes.POP),
+        Operation(Opcodes.SWAP),
         Operation.Jump(Some("convert_result"))
       )
-
     case CallValue => List(pushBytes(Array(0x01)))
     case CallDataSize(offset) =>
-      pushInt(offset + 1) :: codeToOps(Opcodes.DUPN, Opcodes.LENGTH)
+      pushInt(offset + 2) :: codeToOps(Opcodes.DUPN, Opcodes.LENGTH)
     case CallDataLoad(offset) =>
       cast(Data.Type.BigInt) :::
-        pushInt(offset + 1) ::
+        pushInt(offset + 2) ::
         codeToOps(Opcodes.DUPN, Opcodes.SWAP, Opcodes.DUP) :::
         pushInt(32) ::
         codeToOps(Opcodes.ADD, Opcodes.SWAP, Opcodes.SLICE)
@@ -149,7 +151,7 @@ object SimpleTranslation {
         codeToOps(Opcodes.SWAP) :::
         cast(Data.Type.BigInt) :::
         codeToOps(Opcodes.SWAP) :::
-        pushInt(offset) ::
+        pushInt(offset + 1) ::
         codeToOps(Opcodes.DUPN) ::: List(
         pushInt8(6),
         Operation(Opcodes.SCALL),

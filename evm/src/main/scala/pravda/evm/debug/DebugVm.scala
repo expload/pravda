@@ -19,28 +19,49 @@ package pravda.evm.debug
 
 import java.nio.ByteBuffer
 
+import cats.Applicative
+import cats.kernel.Monoid
 import com.google.protobuf.ByteString
 import pravda.common.domain
 import pravda.common.domain.Address
 import pravda.vm._
 import pravda.vm.impl.MemoryImpl
+import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
-trait DebugVm[L] extends Vm {
+import scala.language.higherKinds
 
-  override def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult = ???
+//'extends Vm' is required for using 'this' in SystemOperation constructor
+trait DebugVm extends Vm {
+  override def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult =
+    throw new Exception("It's debug vm")
 
   override def run(programAddress: Address,
                    environment: Environment,
                    memory: Memory,
                    wattCounter: WattCounter,
-                   pcallAllowed: Boolean): Unit = ???
+                   pcallAllowed: Boolean): Unit =
+    throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
 
-  def debugBytes(program: ByteBuffer,
-                 env: Environment,
-                 mem: MemoryImpl,
-                 counter: WattCounter,
-                 maybeStorage: Option[Storage],
-                 maybePA: Option[domain.Address],
-                 pcallAllowed: Boolean): L
+  def debugBytes[F[_], S](
+      program: ByteBuffer,
+      env: Environment,
+      mem: MemoryImpl,
+      counter: WattCounter,
+      maybeStorage: Option[StorageSandbox],
+      maybePA: Option[domain.Address],
+      pcallAllowed: Boolean)(implicit monoid: Monoid[F[S]], appl: Applicative[F], debugger: Debugger[S]): F[S]
+}
+
+object DebugVm {
+
+  sealed trait ExecutionResult
+
+  final case class UnitExecution(f: () => Unit) extends ExecutionResult {
+    f()
+  }
+
+  case object InterruptedExecution extends ExecutionResult
+
+  final case class MetaExecution(meta: Meta) extends ExecutionResult
 
 }
