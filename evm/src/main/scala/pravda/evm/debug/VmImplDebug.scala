@@ -28,7 +28,7 @@ import pravda.vm.impl.MemoryImpl
 import pravda.vm.operations._
 
 import scala.annotation.tailrec
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import pravda.evm.debug.DebugVm.{InterruptedExecution, MetaExecution, UnitExecution}
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
@@ -138,11 +138,11 @@ class VmImplDebug extends DebugVm {
             MetaExecution(Meta.readFromByteBuffer(program))
           case _ => UnitExecution(() => ())
         }
-      }
+      }.toEither
       val state = debugger.debugOp(program, op, mem, storage)(executionResult)
       val res = state :: acc
       executionResult match {
-        case Success(InterruptedExecution) | Failure(_) =>
+        case Right(InterruptedExecution) | Left(_) =>
           res
         case _ => if (program.hasRemaining) proc(res) else res
       }

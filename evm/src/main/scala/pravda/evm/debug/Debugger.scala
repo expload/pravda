@@ -23,10 +23,8 @@ import pravda.evm.debug.DebugVm.ExecutionResult
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
-import scala.util.Try
-
 trait Debugger[State] {
 
   def debugOp(program: ByteBuffer, op: Int, mem: MemoryImpl, storage: StorageSandbox)(
-      execResult: Try[ExecutionResult]): State
+      execResult: Either[Throwable, ExecutionResult]): State
 }

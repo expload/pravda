@@ -19,7 +19,7 @@ package pravda.evm.debug.evm
 
 import java.nio.ByteBuffer
 
-import cats.{Foldable, Show}
+import cats.Show
 import pravda.evm.debug.DebugVm.{ExecutionResult, InterruptedExecution, MetaExecution, UnitExecution}
 import pravda.evm.debug.Debugger
 import pravda.vm.Meta._
@@ -27,8 +27,6 @@ import pravda.vm.impl.MemoryImpl
 import pravda.vm._
 import pravda.vm.asm.Operation.mnemonicByOpcode
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
-
-import scala.util.{Failure, Success, Try}
 
 sealed trait DebugLog
 
@@ -41,21 +39,21 @@ final case class StorageSnapshot(items: Map[Data.Primitive, Data])
 
 object EvmDebugger extends Debugger[DebugLog] {
   override def debugOp(program: ByteBuffer, op: Int, mem: MemoryImpl, storage: StorageSandbox)(
-      exec: Try[ExecutionResult]): DebugLog = {
+      exec: Either[Throwable, ExecutionResult]): DebugLog = {
     val memorySnap = MemorySnapshot(mem.stack.toList, mem.heap.toList)
     val storageSnap = StorageSnapshot(storage.storageItems.toMap)
     exec match {
-      case Success(UnitExecution(_)) =>
+      case Right(UnitExecution(_)) =>
         PravdaOpLog(mnemonicByOpcode(op), memorySnap, storageSnap)
-      case Success(ex @ MetaExecution(Custom(s))) if s.startsWith(EvmDebugTranslator.debugMarker) =>
+      case Right(ex @ MetaExecution(Custom(s))) if s.startsWith(EvmDebugTranslator.debugMarker) =>
         EvmOpLog(s.stripPrefix(EvmDebugTranslator.debugMarker))
-      case Success(ex @ MetaExecution(l)) =>
+      case Right(ex @ MetaExecution(l)) =>
         PravdaOpLog(l.toString, memorySnap, storageSnap)
-      case Success(InterruptedExecution) =>
+      case Right(InterruptedExecution) =>
         PravdaOpLog(mnemonicByOpcode(op), memorySnap, storageSnap)
-      case Failure(e: Data.DataException) =>
+      case Left(e: Data.DataException) =>
         ErrorLog(s"${mnemonicByOpcode(op)} - ${e.toString}", memorySnap, storageSnap)
-      case Failure(ThrowableVmError(e)) =>
+      case Left(ThrowableVmError(e)) =>
         ErrorLog(s"${mnemonicByOpcode(op)} - ${e.toString}", memorySnap, storageSnap)
     }
   }
@@ -91,14 +89,11 @@ object EvmDebugger extends Debugger[DebugLog] {
        else Nil) mkString "\n"
   }
 
-  import scala.language.higherKinds
-
-  def showDebugLogContainer[F[_]: Foldable](implicit showDebugLog: Show[DebugLog]): cats.Show[F[DebugLog]] =
-    t =>
-      implicitly[Foldable[F]]
-        .foldLeft(t, "") {
-          case (acc, log) =>
-            acc + s"${showDebugLog.show(log)}\n"
-      }
+  def showDebugLogContainer(implicit showDebugLog: Show[DebugLog]): cats.Show[List[DebugLog]] =
+    l =>
+      l.foldLeft("") {
+        case (acc, log) =>
+          acc + s"${showDebugLog.show(log)}\n"
+    }
 
 }

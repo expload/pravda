@@ -10,8 +10,6 @@ object DebuggerDemo extends TestSuite {
 
   val tests = Tests {
 
-    import cats.instances.list._
-
     implicit val debugger = EvmDebugger
     implicit val showLog = EvmDebugger.DebugLogShow(showStack = true, showHeap = false, showStorage = true)
     implicit val showLogs = EvmDebugger.showDebugLogContainer
