@@ -61,7 +61,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     'table ('class /= "table is-striped is-hoverable is-fullwidth",
             'thead ('tr (table.head.keys.map(k => 'td (k)))),
             'tbody (
-              table.map { el => 'tr (el.values.map(k => 'td (k)))
+              table.map { el =>
+                'tr (el.values.map(k => 'td (k)))
               }
             ))
   }
