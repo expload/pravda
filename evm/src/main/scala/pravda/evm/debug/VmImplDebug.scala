@@ -39,19 +39,16 @@ import scala.collection.mutable.ListBuffer
 
 class VmImplDebug extends DebugVm {
 
+  override def vm: Vm = new Vm {
 
+    def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): pravda.vm.ExecutionResult =
+      throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
 
-  override def vm: Vm = new Vm{
-
-               def spawn(initialProgram: ByteString,
-                     environment: Environment,
-                     wattLimit: Long): pravda.vm.ExecutionResult = throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
-
-               def run(programAddress: Address,
-                     environment: Environment,
-                     memory: Memory,
-                     wattCounter: WattCounter,
-                     pcallAllowed: Boolean): Unit = throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
+    def run(programAddress: Address,
+            environment: Environment,
+            memory: Memory,
+            wattCounter: WattCounter,
+            pcallAllowed: Boolean): Unit = throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
   }
 
   def debugBytes[S](program: ByteBuffer,
@@ -72,8 +69,6 @@ class VmImplDebug extends DebugVm {
     val systemOperations =
       new SystemOperations(program, mem, Some(storage), counter, env, maybePA, StandardLibrary.Index, vm)
     val dataOperations = new DataOperations(mem, counter)
-
-
     @tailrec def proc(acc: ListBuffer[S]): ListBuffer[S] = {
       counter.cpuUsage(CpuBasic)
       val op = program.get() & 0xff

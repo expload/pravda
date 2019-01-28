@@ -169,8 +169,7 @@ object VmSandbox {
       ExpectationsWithoutWatts(e.stack, e.heap, e.effects, e.error)
   }
 
-
-  def heap(input: VmSandbox.Preconditions):ArrayBuffer[Data] = {
+  def heap(input: VmSandbox.Preconditions): ArrayBuffer[Data] = {
     if (input.heap.nonEmpty) {
       val length = input.heap.map(_._1.data).max + 1
       val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
@@ -181,14 +180,15 @@ object VmSandbox {
     }
   }
 
-  def environment(input: VmSandbox.Preconditions, effects: mutable.Buffer[vm.Effect],pExecutor: Address): Environment = new VmSandbox.EnvironmentSandbox(
-    effects,
-    input.`program-storage`,
-    input.balances.toSeq,
-    input.programs.toSeq,
-    pExecutor,
-    input.`app-state-info`
-  )
+  def environment(input: VmSandbox.Preconditions, effects: mutable.Buffer[vm.Effect], pExecutor: Address): Environment =
+    new VmSandbox.EnvironmentSandbox(
+      effects,
+      input.`program-storage`,
+      input.balances.toSeq,
+      input.programs.toSeq,
+      pExecutor,
+      input.`app-state-info`
+    )
 
   def run(input: VmSandbox.Preconditions, code: ByteString): VmSandbox.Expectations = {
     val sandboxVm = new VmImpl()
@@ -201,7 +201,7 @@ object VmSandbox {
     }
 
     val effects = mutable.Buffer[vm.Effect]()
-    val environmentS: Environment = environment(input,effects,pExecutor)
+    val environmentS: Environment = environment(input, effects, pExecutor)
     val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     val error = Try {

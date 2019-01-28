@@ -41,7 +41,7 @@ object VmSandboxDebug {
     }
 
     val effects = mutable.Buffer[vm.Effect]()
-    val environmentS: Environment = environment(input,effects,pExecutor)
+    val environmentS: Environment = environment(input, effects, pExecutor)
     val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     memory.enterProgram(Address.Void)

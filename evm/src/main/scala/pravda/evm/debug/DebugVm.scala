@@ -19,9 +19,7 @@ package pravda.evm.debug
 
 import java.nio.ByteBuffer
 
-import com.google.protobuf.ByteString
 import pravda.common.domain
-import pravda.common.domain.Address
 import pravda.vm._
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
