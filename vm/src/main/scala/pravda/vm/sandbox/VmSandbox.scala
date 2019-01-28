@@ -169,19 +169,31 @@ object VmSandbox {
       ExpectationsWithoutWatts(e.stack, e.heap, e.effects, e.error)
   }
 
+
+  def heap(input: VmSandbox.Preconditions):ArrayBuffer[Data] = {
+    if (input.heap.nonEmpty) {
+      val length = input.heap.map(_._1.data).max + 1
+      val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
+      input.heap.foreach { case (ref, value) => buffer(ref.data) = value }
+      buffer
+    } else {
+      ArrayBuffer[Data]()
+    }
+  }
+
+  def environment(input: VmSandbox.Preconditions, effects: mutable.Buffer[vm.Effect],pExecutor: Address): Environment = new VmSandbox.EnvironmentSandbox(
+    effects,
+    input.`program-storage`,
+    input.balances.toSeq,
+    input.programs.toSeq,
+    pExecutor,
+    input.`app-state-info`
+  )
+
   def run(input: VmSandbox.Preconditions, code: ByteString): VmSandbox.Expectations = {
     val sandboxVm = new VmImpl()
-    val heap = {
-      if (input.heap.nonEmpty) {
-        val length = input.heap.map(_._1.data).max + 1
-        val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
-        input.heap.foreach { case (ref, value) => buffer(ref.data) = value }
-        buffer
-      } else {
-        ArrayBuffer[Data]()
-      }
-    }
-    val memory = MemoryImpl(ArrayBuffer(input.stack: _*), heap)
+    val heapSandbox = heap(input)
+    val memory = MemoryImpl(ArrayBuffer(input.stack: _*), heapSandbox)
     val wattCounter = new WattCounterImpl(input.`watts-limit`)
 
     val pExecutor = input.executor.getOrElse {
@@ -189,21 +201,14 @@ object VmSandbox {
     }
 
     val effects = mutable.Buffer[vm.Effect]()
-    val environment: Environment = new VmSandbox.EnvironmentSandbox(
-      effects,
-      input.`program-storage`,
-      input.balances.toSeq,
-      input.programs.toSeq,
-      pExecutor,
-      input.`app-state-info`
-    )
+    val environmentS: Environment = environment(input,effects,pExecutor)
     val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     val error = Try {
       memory.enterProgram(Address.Void)
       sandboxVm.runBytes(
         code.asReadOnlyByteBuffer(),
-        environment,
+        environmentS,
         memory,
         wattCounter,
         Some(storage),

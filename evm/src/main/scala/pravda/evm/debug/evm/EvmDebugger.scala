@@ -60,7 +60,7 @@ object EvmDebugger extends Debugger[DebugLog] {
 
   private def t(count: Int)(s: String) = "\t" * count + s
 
-  def DebugLogShow(showStack: Boolean, showHeap: Boolean, showStorage: Boolean): cats.Show[DebugLog] = {
+  def debugLogShow(showStack: Boolean, showHeap: Boolean, showStorage: Boolean): cats.Show[DebugLog] = {
     case EvmOpLog(s) =>
       s
     case PravdaOpLog(op, memSnap, storSnap) =>

@@ -19,7 +19,9 @@ package pravda.evm.debug
 
 import java.nio.ByteBuffer
 
+import com.google.protobuf.ByteString
 import pravda.common.domain
+import pravda.common.domain.Address
 import pravda.vm.Error.PcallDenied
 import pravda.vm.Opcodes._
 import pravda.vm.WattCounter.CpuBasic
@@ -31,35 +33,51 @@ import scala.annotation.tailrec
 import scala.util.Try
 import pravda.evm.debug.DebugVm.{InterruptedExecution, MetaExecution, UnitExecution}
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
+import DebugVm.ExecutionResult
+
+import scala.collection.mutable.ListBuffer
 
 class VmImplDebug extends DebugVm {
+
+
+
+  override def vm: Vm = new Vm{
+
+               def spawn(initialProgram: ByteString,
+                     environment: Environment,
+                     wattLimit: Long): pravda.vm.ExecutionResult = throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
+
+               def run(programAddress: Address,
+                     environment: Environment,
+                     memory: Memory,
+                     wattCounter: WattCounter,
+                     pcallAllowed: Boolean): Unit = throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
+  }
 
   def debugBytes[S](program: ByteBuffer,
                     env: Environment,
                     mem: MemoryImpl,
                     counter: WattCounter,
-                    maybeStorage: Option[StorageSandbox],
+                    storage: StorageSandbox,
                     maybePA: Option[domain.Address],
                     pcallAllowed: Boolean)(implicit debugger: Debugger[S]): List[S] = {
 
     val logicalOperations = new LogicalOperations(mem, counter)
     val arithmeticOperations = new ArithmeticOperations(mem, counter)
-    val storageOperations = new StorageOperations(mem, maybeStorage, counter)
+    val storageOperations = new StorageOperations(mem, Some(storage), counter)
     val heapOperations = new HeapOperations(mem, program, counter)
     val stackOperations = new StackOperations(mem, program, counter)
     val controlOperations = new ControlOperations(program, mem, counter)
     val nativeCoinOperations = new NativeCoinOperations(mem, env, counter, maybePA)
     val systemOperations =
-      new SystemOperations(program, mem, maybeStorage, counter, env, maybePA, StandardLibrary.Index, this)
+      new SystemOperations(program, mem, Some(storage), counter, env, maybePA, StandardLibrary.Index, vm)
     val dataOperations = new DataOperations(mem, counter)
 
-    val Some(storage) = maybeStorage
 
-    @tailrec def proc(acc: List[S]): List[S] = {
+    @tailrec def proc(acc: ListBuffer[S]): ListBuffer[S] = {
       counter.cpuUsage(CpuBasic)
       val op = program.get() & 0xff
 
-      import DebugVm.ExecutionResult
       val executionResult = Try[ExecutionResult] {
         mem.setCounter(program.position())
         op match {
@@ -140,13 +158,13 @@ class VmImplDebug extends DebugVm {
         }
       }.toEither
       val state = debugger.debugOp(program, op, mem, storage)(executionResult)
-      val res = state :: acc
+      acc.append(state)
       executionResult match {
         case Right(InterruptedExecution) | Left(_) =>
-          res
-        case _ => if (program.hasRemaining) proc(res) else res
+          acc
+        case _ => if (program.hasRemaining) proc(acc) else acc
       }
     }
-    proc(Nil).reverse
+    proc(ListBuffer.empty).toList
   }
 }

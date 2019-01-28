@@ -27,22 +27,15 @@ import pravda.vm.impl.MemoryImpl
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
 //'extends Vm' is required for using 'this' in SystemOperation constructor
-trait DebugVm extends Vm {
-  override def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): ExecutionResult =
-    throw new Exception("It's debug vm")
+trait DebugVm {
 
-  override def run(programAddress: Address,
-                   environment: Environment,
-                   memory: Memory,
-                   wattCounter: WattCounter,
-                   pcallAllowed: Boolean): Unit =
-    throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
+  def vm: Vm
 
   def debugBytes[S](program: ByteBuffer,
                     env: Environment,
                     mem: MemoryImpl,
                     counter: WattCounter,
-                    maybeStorage: Option[StorageSandbox],
+                    storage: StorageSandbox,
                     maybePA: Option[domain.Address],
                     pcallAllowed: Boolean)(implicit debugger: Debugger[S]): List[S]
 }

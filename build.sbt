@@ -152,7 +152,7 @@ lazy val `vm-asm` = (project in file("vm-asm"))
 
 lazy val evm = (project in file("evm")).
   dependsOn(`vm-asm`).
-  dependsOn(vm  % "compile->compile;test->test").
+  dependsOn(vm % "compile->compile;test->test").
   settings(normalizedName := "pravda-evm").
   settings( commonSettings: _* ).
   settings(

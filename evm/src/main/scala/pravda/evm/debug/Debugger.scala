@@ -23,8 +23,8 @@ import pravda.evm.debug.DebugVm.ExecutionResult
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
-trait Debugger[State] {
+trait Debugger[S] {
 
   def debugOp(program: ByteBuffer, op: Int, mem: MemoryImpl, storage: StorageSandbox)(
-      execResult: Either[Throwable, ExecutionResult]): State
+      execResult: Either[Throwable, ExecutionResult]): S
 }
