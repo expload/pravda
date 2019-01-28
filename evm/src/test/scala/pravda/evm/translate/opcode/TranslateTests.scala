@@ -36,8 +36,6 @@ object TranslateTests extends TestSuite {
         val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
         val Right(asm) = Translator.translateActualContract(ops, abi)
 
-        println()
-
         PravdaAssembler.render(asm) ==>
           """@__start_evm_program:
             |push int32(1024)

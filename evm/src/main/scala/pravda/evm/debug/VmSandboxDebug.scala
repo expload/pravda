@@ -22,7 +22,6 @@ import pravda.common.domain.Address
 import pravda.vm
 import pravda.vm._
 import pravda.vm.impl.{MemoryImpl, WattCounterImpl}
-import pravda.vm.sandbox.VmSandbox
 import pravda.vm.sandbox.VmSandbox._
 
 import scala.collection.mutable
@@ -42,7 +41,7 @@ object VmSandboxDebug {
 
     val effects = mutable.Buffer[vm.Effect]()
     val environmentS: Environment = environment(input, effects, pExecutor)
-    val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
+    val storage = new StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     memory.enterProgram(Address.Void)
     val res = sandboxVm.debugBytes(

@@ -24,7 +24,6 @@ import pravda.vm._
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
-//'extends Vm' is required for using 'this' in SystemOperation constructor
 trait DebugVm {
 
   def vm: Vm
