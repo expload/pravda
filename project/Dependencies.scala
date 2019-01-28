@@ -24,7 +24,7 @@ object Dependencies {
   lazy val contextual = "com.propensive" %% "contextual" % "1.1.0"
   lazy val curve25519Java = "org.whispersystems" % "curve25519-java" % "0.4.1"
   lazy val levelDb = "org.iq80.leveldb" % "leveldb" % "0.10"
-  lazy val korolevServerAkkaHttp = "com.github.fomkin" %% "korolev-server-akkahttp" % "0.7.0"
+  lazy val korolevServerAkkaHttp = "com.github.fomkin" %% "korolev-server-akkahttp" % "0.10.0"
   lazy val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.9.1"
   lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
   lazy val akkaStreamUnixDomainSocket = "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17"
