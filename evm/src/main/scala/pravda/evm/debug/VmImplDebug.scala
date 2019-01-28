@@ -42,7 +42,7 @@ class VmImplDebug extends DebugVm {
   val vm: Vm = new Vm {
 
     def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): pravda.vm.ExecutionResult =
-      throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
+      throw new Exception("It's debug vm.")
 
     def run(programAddress: Address,
             environment: Environment,
