@@ -39,7 +39,7 @@ import scala.collection.mutable.ListBuffer
 
 class VmImplDebug extends DebugVm {
 
-  override def vm: Vm = new Vm {
+  val vm: Vm = new Vm {
 
     def spawn(initialProgram: ByteString, environment: Environment, wattLimit: Long): pravda.vm.ExecutionResult =
       throw new Exception("It's debug vm. You can't use pcall, lcall opcodes")
