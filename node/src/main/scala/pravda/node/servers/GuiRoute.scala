@@ -24,9 +24,10 @@ import cats.data.OptionT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import korolev.Context
+import korolev.server.emptyRouter
 import korolev.akkahttp._
 import korolev.execution._
-import korolev.server.{KorolevServiceConfig, ServerRouter}
+import korolev.server.KorolevServiceConfig
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
 import pravda.common.domain.{Address, NativeCoin}
@@ -192,9 +193,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private val service = akkaHttpService(
     KorolevServiceConfig[Future, GuiState, Any](
-      serverRouter = ServerRouter
-        .empty[Future, GuiState]
-        .withRootPath("/ui/"),
+      router = emptyRouter,
+      rootPath = "/ui/",
       stateStorage = StateStorage.default(SendTransactionScreen(false, None)),
       head = Seq(
         'link ('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),

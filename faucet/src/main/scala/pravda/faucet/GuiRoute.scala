@@ -23,7 +23,7 @@ import akka.stream.ActorMaterializer
 import korolev.Context
 import korolev.akkahttp._
 import korolev.execution._
-import korolev.server.{KorolevServiceConfig, ServerRouter}
+import korolev.server.{KorolevServiceConfig, emptyRouter}
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
 import pravda.common.bytes
@@ -46,9 +46,8 @@ class GuiRoute(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
   private val service = akkaHttpService(
     KorolevServiceConfig[Future, GuiState, Any](
-      serverRouter = ServerRouter
-        .empty[Future, GuiState]
-        .withRootPath("/ui/"),
+      router = emptyRouter,
+      rootPath = "/ui/",
       stateStorage = StateStorage.default(AccrueCoins(None)),
       head = Seq(
         'link ('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),
