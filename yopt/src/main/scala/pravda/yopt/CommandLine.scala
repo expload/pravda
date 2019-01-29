@@ -17,67 +17,68 @@
 
 package pravda.yopt
 
+import monocle.Lens
 import pravda.yopt.printers.{ConsolePrinter, MarkdownPrinter, UsagePrinter}
 
 object CommandLine {
 
-  final case class Head[C](
+  final case class Head[S](
       name: String,
       text: String = "",
       mdText: Option[String] = None,
-      verbs: List[Verb[C]] = List.empty[Verb[C]]
+      verbs: List[Verb[S, _]] = List.empty[Verb[S, _]]
   ) {
-    def children(xs: Verb[C]*): Head[C] = copy(verbs = verbs ++ xs)
+    def children(xs: Verb[S, _]*): Head[S] = copy(verbs = verbs ++ xs)
 
-    def text(msg: String): Head[C] = copy(text = msg)
+    def text(msg: String): Head[S] = copy(text = msg)
 
-    def mdText(msg: String): Head[C] = copy(mdText = Some(msg))
+    def mdText(msg: String): Head[S] = copy(mdText = Some(msg))
   }
 
-  sealed trait Verb[C]
+  sealed trait Verb[S, A]
 
-  final case class Cmd[C](
+  final case class Cmd[S, A](
       name: String,
       text: String = "",
-      actionF: C => C = (c: C) => c,
-      verbs: List[Verb[C]] = List.empty[Verb[C]]
-  ) extends Verb[C] {
+      lens: Lens[S, A],
+      verbs: List[Verb[A, _]] = List.empty[Verb[A, _]]
+  ) extends Verb[S, A] {
 
-    def children(xs: Verb[C]*): Cmd[C] = {
+    def children(xs: Verb[A, _]*): Cmd[S, A] = {
       copy(verbs = verbs ++ xs)
     }
 
-    def text(msg: String): Cmd[C] = copy(text = msg)
-    def action(f: C => C): Cmd[C] = copy(actionF = f)
+    def text(msg: String): Cmd[S, A] = copy(text = msg)
+    def lens(l: Lens[S, A]): Cmd[S, A] = copy(lens = l)
   }
 
-  final case class Opt[C, A: CmdDecoder](
+  final case class Opt[S, A: CmdDecoder](
       short: Option[Char],
       name: String,
       text: String = "",
-      actionF: (A, C) => C = (_: A, c: C) => c,
+      lens: Lens[S, A],
       validateF: A => Either[String, Unit] = (_: Any) => Right(()),
-  ) extends Verb[C] {
+  ) extends Verb[S, A] {
 
     def paramInfo: Option[String] = implicitly[CmdDecoder[A]].optInfo
 
-    def decodeLine(line: Line, cfg: C): Either[String, (Line, C)] = {
+    def decodeLine(line: Line, cfg: S): Either[String, (Line, S)] = {
       val decoder = implicitly[CmdDecoder[A]]
-      decoder.decode(line) map {
-        case (v, newLine) =>
-          val newCfg = actionF(v, cfg)
-          (newLine, newCfg)
-      }
+      for {
+        res <- decoder.decode(line)
+        (v, newLine) = res
+        _ <- validateF(v)
+      } yield (newLine, lens.set(v)(cfg))
     }
 
-    def text(msg: String): Opt[C, A] = copy(text = msg)
-    def action(f: (A, C) => C): Opt[C, A] = copy(actionF = f)
-    def validate(f: A => Either[String, Unit]): Opt[C, A] = copy(validateF = f)
+    def text(msg: String): Opt[S, A] = copy(text = msg)
+    def lens(l: Lens[S, A]): Opt[S, A] = copy(lens = l)
+    def validate(f: A => Either[String, Unit]): Opt[S, A] = copy(validateF = f)
   }
 
-  final case class CmdPath[C](head: Head[C], cmds: Vector[Cmd[C]]) {
+  final case class CmdPath[C](head: Head[C], cmds: Vector[Cmd[C, _]]) {
 
-    lazy val verbs: List[Verb[C]] =
+    lazy val verbs: List[Verb[_, _]] =
       if (cmds.isEmpty) {
         head.verbs
       } else {
@@ -101,7 +102,7 @@ object CommandLine {
     lazy val opts: List[Opt[C, _]] = // FIXME can be constructed faster in advance and apply
       head.verbs.collect { case o: Opt[C, _] => o } ++ cmds.flatMap(_.verbs.collect { case o: Opt[C, _] => o })
 
-    def advance(cmd: Cmd[C]): CmdPath[C] = copy(cmds = cmds :+ cmd)
+    def advance(cmd: Cmd[C, _]): CmdPath[C] = copy(cmds = cmds :+ cmd)
 
     override def toString: String = (head.name +: cmds.map(_.name)).mkString("-")
     def toUsageString: String = UsagePrinter.printPath(this)
@@ -111,14 +112,14 @@ object CommandLine {
   }
 
   object CmdPath {
-    def apply[C](head: Head[C], cmds: Vector[Cmd[C]]): CmdPath[C] = new CmdPath(head, cmds)
+    def apply[C](head: Head[C], cmds: Vector[Cmd[C, _]]): CmdPath[C] = new CmdPath(head, cmds)
     def apply[C](head: Head[C]): CmdPath[C] = new CmdPath(head, Vector.empty)
 
     /*
       Returns only "leaf" paths, e.g. such paths that don't have any children
      */
     def walk[C](path: CmdPath[C]): List[CmdPath[C]] = {
-      path.verbs.collect { case x: Cmd[C] => x }.flatMap { cmd =>
+      path.verbs.collect { case x: Cmd[C, _] => x }.flatMap { cmd =>
         val newPath = path.advance(cmd)
         val list = walk(newPath)
         if (list.isEmpty) {
@@ -142,7 +143,7 @@ trait CommandLineBuilder[C] {
   import CommandLine._
 
   def head(name: String): Head[C] = Head[C](name)
-  def cmd(name: String): Cmd[C] = Cmd[C](name)
+  def cmd(name: String): Cmd[C, _] = Cmd[C, _](name)
   def opt[A: CmdDecoder](name: String): Opt[C, A] = Opt[C, A](Option.empty[Char], name)
   def opt[A: CmdDecoder](short: Char, name: String): Opt[C, A] = Opt[C, A](Some(short), name)
 }

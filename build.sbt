@@ -265,7 +265,11 @@ lazy val yopt = (project in file("yopt"))
   .settings(commonSettings: _*)
   .settings(
     skip in publish := true,
-    normalizedName := "yopt"
+    normalizedName := "yopt",
+    libraryDependencies ++= Seq(
+      "com.github.julien-truffaut" %%  "monocle-core"  % "1.5.0",
+      "com.github.julien-truffaut" %%  "monocle-macro" % "1.5.0",
+    )
   )
 
 lazy val codegen = (project in file("codegen"))
