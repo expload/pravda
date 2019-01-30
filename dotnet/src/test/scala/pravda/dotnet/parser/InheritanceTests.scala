@@ -13,7 +13,7 @@ object InheritanceTests extends TestSuite {
     'Inheritance - {
       val Right(files) =
         steps(
-          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda/Pravda.cs"),
           "Inheritance.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/Inheritance.cs")
         ).run
 

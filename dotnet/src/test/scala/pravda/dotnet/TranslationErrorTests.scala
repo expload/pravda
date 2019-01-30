@@ -10,7 +10,7 @@ object TranslationErrorTests extends TestSuite {
     'Error - {
       val Right(files) =
         steps(
-          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda/Pravda.cs"),
           "Error.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/Error.cs")
         ).run
 
@@ -25,7 +25,7 @@ object TranslationErrorTests extends TestSuite {
     'PublicMapping - {
       val Right(files) =
         steps(
-          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda/Pravda.cs"),
           "PublicMapping.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/PublicMapping.cs")
         ).run
 

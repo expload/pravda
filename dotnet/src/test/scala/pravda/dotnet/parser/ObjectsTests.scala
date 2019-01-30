@@ -13,7 +13,7 @@ object ObjectsTests extends TestSuite {
     'Object - {
       val Right(files) =
         steps(
-          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda/Pravda.cs"),
           "Objects.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/Object.cs")
         ).run
 

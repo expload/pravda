@@ -14,7 +14,7 @@ dotnet-compilation:
   steps:
   - target: Pravda.dll
     sources:
-    - PravdaDotNet/Pravda.cs
+    - PravdaDotNet/Pravda/Pravda.cs
   - target: ZooProgram.exe
     sources:
     - Pravda.dll
