@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Globalization;
 
 // WARNING
 // Purpose of this dll is only to marks specific methods for translator.
@@ -19,6 +20,18 @@ namespace Expload.Pravda
             public static Bytes LastBlockHash = Bytes.VOID_ADDRESS;
             public static long LastBlockTime = 0L;
             public static Bytes[] Callers = new Bytes[0];
+
+            public static void ClearValues()
+            {
+                Events = new List<Tuple<string, object>>();
+                Balances = new Dictionary<Bytes, long>();
+                Sender = Bytes.VOID_ADDRESS;
+                ProgramAddress = Bytes.VOID_ADDRESS;
+                Height = 0L;
+                LastBlockHash = Bytes.VOID_ADDRESS;
+                LastBlockTime = 0L;
+                Callers = new Bytes[0];
+            }
         }
     }
 
@@ -282,7 +295,7 @@ namespace Expload.Pravda
             for (int index = 0; index < data.Length; index++)
             {
                 string byteValue = hex.Substring(index * 2, 2);
-                data[index] = sbyte.Parse(byteValue);
+                data[index] = sbyte.Parse(byteValue, NumberStyles.HexNumber);
             }
 
             return new Bytes(data);
