@@ -28,11 +28,13 @@ object PravdaConfig {
   sealed trait CompileMode
 
   object CompileMode {
-    case object Nope   extends CompileMode
-    case object Asm    extends CompileMode
-    case object Disasm extends CompileMode
-    case object DotNet extends CompileMode
-    case object Evm    extends CompileMode
+    case object Nope     extends CompileMode
+    case object Asm      extends CompileMode
+    case object Disasm   extends CompileMode
+    case object DotNet   extends CompileMode
+    case object Evm      extends CompileMode
+    case object EvmTrace extends CompileMode
+
   }
 
   case object Nope extends PravdaConfig

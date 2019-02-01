@@ -119,6 +119,24 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
                 compiled.getOrElse(err)
               } else err
 
+            case EvmTrace =>
+              val err: F[Either[String, ByteString]] = Monad[F].pure(Left(
+                "Required 2 file .abi and .bin with identical names and .yaml file(Use https://solidity.readthedocs.io/en/latest/installing-solidity.html)"))
+
+              if (inputs.size == 3) {
+                val compiled = for {
+                  bin <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".bin") => r }
+                  abi <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".abi") => r }
+                  binName = bin._1.stripSuffix(".bin")
+                  abiName = abi._1.stripSuffix(".abi")
+                  if binName == abiName
+                  yaml <- inputs.collectFirst { case r @ (f, _) if f.endsWith(".yaml") => r }
+
+                } yield compilers.evmTrace(bin._2, abi._2, yaml._2)
+                compiled.getOrElse(err)
+
+              } else err
+
             case Nope => Monad[F].pure(Left("Compilation mode should be selected."))
           }
         }

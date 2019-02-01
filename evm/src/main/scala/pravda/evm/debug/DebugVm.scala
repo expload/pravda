@@ -27,6 +27,7 @@ import pravda.vm.sandbox.VmSandbox.StorageSandbox
 trait DebugVm {
 
   def vm: Vm
+
   def debugBytes[S](program: ByteBuffer,
                     env: Environment,
                     mem: MemoryImpl,

@@ -35,7 +35,9 @@ object CompileSuite extends TestSuite {
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
 
-        override def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = ???
+        override def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("Nope")
+        override def evmTrace(source: ByteString, abi: ByteString, yaml: ByteString): Id[Either[String, ByteString]] =
+          Left("Nope")
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Asm))
@@ -56,6 +58,8 @@ object CompileSuite extends TestSuite {
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
 
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
+        override def evmTrace(source: ByteString, abi: ByteString, yaml: ByteString): Id[Either[String, ByteString]] =
+          Left("Nope")
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Disasm))
@@ -78,6 +82,8 @@ object CompileSuite extends TestSuite {
         }
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
+        override def evmTrace(source: ByteString, abi: ByteString, yaml: ByteString): Id[Either[String, ByteString]] =
+          Left("Nope")
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(DotNet))
