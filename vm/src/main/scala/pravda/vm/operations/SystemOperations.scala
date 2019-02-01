@@ -321,6 +321,18 @@ final class SystemOperations(program: ByteBuffer,
     wattCounter.cpuUsage(CpuStorageUse)
     memory.push(Data.Primitive.Int64(data))
   }
+
+  @OpcodeImplementation(
+    opcode = PEXIST,
+    description = "Takes address (pubKey). Returns true if program with given address exists, otherwise false"
+  )
+  def pexist(): Unit = {
+    val programAddress = address(memory.pop())
+
+    wattCounter.cpuUsage(CpuStorageUse)
+
+    memory.push(Data.Primitive.Bool(env.getProgram(programAddress).isDefined))
+  }
 }
 
 object SystemOperations {
