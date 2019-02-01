@@ -8,7 +8,7 @@ You can get the generated events by name and the address of the program where th
 
 ### Request
 
-`GET api/events`
+`GET api/public/events`
 
 #### Parameters
 
@@ -41,16 +41,16 @@ The list of data from events with given name at the given address:
 
 ### Examples
 ```
-curl <api url>/api/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent
+curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent
 ```
 will return all events for give address and name
 
 ```
-curl <api url>/api/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10
+curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10
 ```
 will return all events starting from offset 10
 
 ```
-curl <api url>/api/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10&count=20
+curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10&count=20
 ```
 will return only first 20 events from offset 10
