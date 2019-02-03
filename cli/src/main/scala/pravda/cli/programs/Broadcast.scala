@@ -133,13 +133,18 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
                   Monad[F].pure(Left("Program wallet file should be defined")))(readFromFile))
               programWallet = transcode(Json @@ programWalletJson.toStringUtf8).to[Wallet]
               input <- useOption(config.input)(io.readFromStdin(), readFromFile)
+              disassembledInput <- EitherT.right(compilers.disasmToOps(input))
+              (a, b) = disassembledInput.partition {
+                case (_, m: Operation.Meta) => true
+                case _ => false
+              }
               signature = ed25519.sign(programWallet.privateKey.toByteArray, input.toByteArray)
               addressHex = bytes.byteString2hex(programWallet.address)
               programHex = bytes.byteString2hex(input)
               signatureHex = bytes.bytes2hex(signature)
               // If program code produced by .NET translator
               // we should call constructor.
-              disassembledInput <- EitherT.right(compilers.disasmToOps(input))
+
               suffix = {
                 val hasCILMark = disassembledInput.headOption.map(_._2).contains(Operation.Meta(Translator.CILMark))
                 if (hasCILMark) s"""push "ctor" push x$addressHex push 1 pcall"""

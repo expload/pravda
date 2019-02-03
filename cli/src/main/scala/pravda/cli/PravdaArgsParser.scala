@@ -174,7 +174,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (hex,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(to = Some(hex)))
                     case (_, otherwise) => otherwise
                   },
@@ -182,7 +182,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (amount,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(amount = Some(amount)))
                     case (_, otherwise) => otherwise
                   }
@@ -227,26 +227,33 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             opt[Long]('l', "limit")
-              .text(s"Watt limit (${DefaultValues.Broadcast.WATT_LIMIT} by default).") // FIXME what to do with default values?
+              .text(s"Watt limit (${DefaultValues.Broadcast.WATT_LIMIT} by default).")
               .action {
                 case (limit, config: PravdaConfig.Broadcast) =>
                   config.copy(wattLimit = limit)
                 case (_, otherwise) => otherwise
               },
             opt[Long]('P', "price")
-              .text(s"Watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).") // FIXME what to do with default values?
+              .text(s"Watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).")
               .action {
                 case (price, config: PravdaConfig.Broadcast) =>
                   config.copy(wattPrice = NativeCoin @@ price)
                 case (_, otherwise) => otherwise
               },
             opt[String]('e', "endpoint")
-              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).") // FIXME what to do with default values?
+              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
               .action {
                 case (endpoint, config: PravdaConfig.Broadcast) =>
                   config.copy(endpoint = endpoint)
                 case (_, otherwise) => otherwise
               },
+            opt[String]("ipfs-node")
+              .text(s"IPFS node address (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .action {
+              case (ipfsNode, config: PravdaConfig.Broadcast) =>
+                config.copy(ipfsNode = ipfsNode)
+              case (_, otherwise) => otherwise
+            },
           ),
         cmd("execute")
           .text("Executes program without side-effects. No watt-limit is required.")

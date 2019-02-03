@@ -43,6 +43,7 @@ object PravdaConfig {
       val WATT_LIMIT = 300L
       val WATT_PRICE = NativeCoin.amount(1)
       val ENDPOINT = "http://localhost:8080/api/public"
+      val IPFS_NODE = "???"
     }
   }
 
@@ -56,7 +57,8 @@ object PravdaConfig {
                              dryRun: Boolean = false,
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
                              wattPrice: NativeCoin = DefaultValues.Broadcast.WATT_PRICE,
-                             endpoint: String = DefaultValues.Broadcast.ENDPOINT)
+                             endpoint: String = DefaultValues.Broadcast.ENDPOINT,
+                             ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   final case class Execute(input: Option[String] = None,

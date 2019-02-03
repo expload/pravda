@@ -23,10 +23,14 @@ import com.google.protobuf.ByteString
 import fastparse.parsers.Combinators.Rule
 import pravda.ParsingCommons
 import pravda.ParsingCommons.ParsingError
+import pravda.vm.Meta.IpfsFile
 import pravda.vm.{Data, Opcodes, Meta => Metadata}
 
 import scala.annotation.switch
 import scala.collection.mutable
+import scala.concurrent.Future
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Low-level utility to work with Pravda VM bytecode.
@@ -55,19 +59,36 @@ object PravdaAssembler {
     * @param saveLabels Add META opcodes with infomation about labels.
     *                   It can be used by disassembler.
     */
-  def assemble(operations: Seq[Operation], saveLabels: Boolean): ByteString = {
+  def assemble(operations: Seq[Operation], saveLabels: Boolean): ByteString =
+    assembleExtractMeta(operations, saveLabels, extractMeta = false)._1
+
+  def assembleExtractMeta(operations: Seq[Operation],
+                          saveLabels: Boolean,
+                          extractMeta: Boolean): (ByteString, Map[Int, Seq[Metadata]]) = {
     val labels = mutable.Map.empty[String, Int] // label -> offset
     val gotos = mutable.Map.empty[Int, String] // offset -> label
+    val metas = mutable.Map.empty[Int, mutable.Buffer[Metadata]]
     val bytecode = ByteBuffer.allocate(1024 * 1024)
 
     def putOp(opcode: Int): Unit =
       bytecode.put(opcode.toByte)
 
+    def putMeta(data: Metadata): Unit = {
+      if (extractMeta) {
+        metas.get(bytecode.position()) match {
+          case Some(buff) => buff += data
+          case None       => metas += bytecode.position() -> mutable.Buffer(data)
+        }
+      } else {
+        putOp(Opcodes.META)
+        data.writeToByteBuffer(bytecode)
+      }
+    }
+
     // put placeholder for the label reference
     def pushLabel(name: String): Unit = {
       if (saveLabels) {
-        putOp(Opcodes.META)
-        Metadata.LabelUse(name).writeToByteBuffer(bytecode)
+        putMeta(Metadata.LabelUse(name))
       }
       putOp(Opcodes.PUSHX)
       // Save goto offset to set in a future
@@ -102,13 +123,11 @@ object PravdaAssembler {
       // Control
       case Label(name) =>
         if (saveLabels) {
-          putOp(Opcodes.META)
-          Metadata.LabelDef(name).writeToByteBuffer(bytecode)
+          putMeta(Metadata.LabelDef(name))
         }
         labels.put(name, bytecode.position)
       case Meta(data) =>
-        putOp(Opcodes.META)
-        data.writeToByteBuffer(bytecode)
+        putMeta(data)
       case Jump(Some(name))  => goto(name, Opcodes.JUMP)
       case JumpI(Some(name)) => goto(name, Opcodes.JUMPI)
       case Call(Some(name))  => goto(name, Opcodes.CALL)
@@ -133,32 +152,75 @@ object PravdaAssembler {
     }
 
     bytecode.rewind()
-    ByteString.copyFrom(bytecode)
+    (ByteString.copyFrom(bytecode), metas.toMap)
+  }
+
+  def disassembleIncludeMeta(bytecode: ByteString): Future[Seq[(Int, Operation)]] = {
+    val buffer = bytecode.asReadOnlyByteBuffer()
+    var lastPosition = 0
+    var consumedInclude = false
+
+    val metasF = mutable.Buffer[Future[Map[Int, Seq[Metadata]]]]()
+    while (buffer.hasRemaining && !consumedInclude) {
+      val opcode = buffer.get & 0xff
+      (opcode: @switch) match {
+        case Opcodes.META =>
+          Metadata.readFromByteBuffer(buffer) match {
+            case IpfsFile(hash) =>
+              lastPosition = buffer.position()
+              metasF += Future.successful(Map.empty[Int, Seq[Metadata]])
+            case _ =>
+              consumedInclude = true
+          }
+        case _ =>
+          consumedInclude = true
+      }
+    }
+
+    for {
+      metas <- Future.sequence(metasF)
+      mergedMeta = {
+        val values = metas.foldLeft(mutable.Buffer[(Int, Seq[Metadata])]()) {
+          case (acc, m) => acc ++= m.toSeq
+        }
+
+        values.groupBy(_._1).mapValues(_.flatMap(_._2))
+      }
+    } yield {
+      val newBytecode = bytecode.substring(lastPosition)
+      disassemble(newBytecode, mergedMeta)
+    }
   }
 
   /**
     * Disassembles bytecode to sequence of operations.
     * Use render() to build text from sequence of operations.
     */
-  def disassemble(bytecode: ByteString): Seq[(Int, Operation)] = {
+  def disassemble(bytecode: ByteString, externalMeta: Map[Int, Seq[Metadata]] = Map.empty): Seq[(Int, Operation)] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
     val operations = mutable.Buffer.empty[(Int, Operation)]
     var label = Option.empty[String]
+
+    def processMeta(offset: Int, meta: Metadata): Unit = meta match {
+      case Metadata.LabelDef(name) =>
+        operations += (offset -> Operation.Label(name))
+      case Metadata.LabelUse(name) =>
+        label = Some(name)
+      case metadata =>
+        operations += (offset -> Operation.Meta(metadata))
+    }
 
     while (buffer.hasRemaining) {
       val offset = buffer.position()
       val opcode = buffer.get & 0xff
 
+      val offsetMetas = externalMeta.getOrElse(offset, Seq.empty)
+
+      offsetMetas.foreach(m => processMeta(offset, m))
+
       (opcode: @switch) match {
         case Opcodes.META =>
-          Metadata.readFromByteBuffer(buffer) match {
-            case Metadata.LabelDef(name) =>
-              operations += (offset -> Operation.Label(name))
-            case Metadata.LabelUse(name) =>
-              label = Some(name)
-            case metadata =>
-              operations += (offset -> Operation.Meta(metadata))
-          }
+          processMeta(offset, Metadata.readFromByteBuffer(buffer))
         case Opcodes.STRUCT_GET_STATIC =>
           val offset = buffer.position()
           Data.readFromByteBuffer(buffer) match {
