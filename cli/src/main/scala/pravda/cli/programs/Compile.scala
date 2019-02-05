@@ -23,11 +23,11 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.node.client.{CompilersLanguage, IoLanguage}
+import pravda.node.client.{CompilersLanguage, IoLanguage, IpfsLanguage}
 
 import scala.language.higherKinds
 
-class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
+class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F], ipfsLanguage: IpfsLanguage[F]) {
 
   import CompileMode._
 
@@ -65,7 +65,7 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F]) {
               }
             case Disasm =>
               inputs match {
-                case List((path, f)) => compilers.disasm(f).map(s => Right(ByteString.copyFromUtf8(s)))
+                case List((path, f)) => compilers.disasmIncludeMeta(f).map(s => Right(ByteString.copyFromUtf8(s)))
                 case _               => Monad[F].pure(Left("Disassembly takes only one file."))
               }
 

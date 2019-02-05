@@ -22,7 +22,7 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.node.client.{CompilersLanguage, IoLanguage, NodeLanguage}
+import pravda.node.client._
 import pravda.common.bytes
 import pravda.common.contrib.ed25519
 import pravda.common.domain.Address
@@ -31,13 +31,16 @@ import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
-import pravda.vm.Data
-import pravda.vm.asm.Operation
+import pravda.vm.{Data, Meta}
+import pravda.vm.asm.{Operation, PravdaAssembler}
 import pravda.vm.operations.SystemOperations
 
 import scala.language.higherKinds
 
-final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], compilers: CompilersLanguage[F]) {
+final class Broadcast[F[_]: Monad](io: IoLanguage[F],
+                                   api: NodeLanguage[F],
+                                   compilers: CompilersLanguage[F],
+                                   ipfs: IpfsLanguage[F]) {
 
   import Broadcast._
 
@@ -133,20 +136,19 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F], api: NodeLanguage[F], comp
                   Monad[F].pure(Left("Program wallet file should be defined")))(readFromFile))
               programWallet = transcode(Json @@ programWalletJson.toStringUtf8).to[Wallet]
               input <- useOption(config.input)(io.readFromStdin(), readFromFile)
-              disassembledInput <- EitherT.right(compilers.disasmToOps(input))
-              (a, b) = disassembledInput.partition {
-                case (_, m: Operation.Meta) => true
-                case _ => false
-              }
-              signature = ed25519.sign(programWallet.privateKey.toByteArray, input.toByteArray)
+              (withoutMeta, metas) <- EitherT.right(compilers.extractMeta(input))
+              hash <- EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
+              prefix <- EitherT(compilers.asm(s"""meta ipfs_file "$hash" """))
+              newInput = prefix.concat(withoutMeta)
+              signature = ed25519.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
               addressHex = bytes.byteString2hex(programWallet.address)
-              programHex = bytes.byteString2hex(input)
+              programHex = bytes.byteString2hex(newInput)
               signatureHex = bytes.bytes2hex(signature)
               // If program code produced by .NET translator
               // we should call constructor.
 
               suffix = {
-                val hasCILMark = disassembledInput.headOption.map(_._2).contains(Operation.Meta(Translator.CILMark))
+                val hasCILMark = metas.getOrElse(0, Seq.empty).contains(Translator.CILMark)
                 if (hasCILMark) s"""push "ctor" push x$addressHex push 1 pcall"""
                 else ""
               }

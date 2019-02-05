@@ -43,7 +43,7 @@ object PravdaConfig {
       val WATT_LIMIT = 300L
       val WATT_PRICE = NativeCoin.amount(1)
       val ENDPOINT = "http://localhost:8080/api/public"
-      val IPFS_NODE = "???"
+      val IPFS_NODE = "/ip4/127.0.0.1/tcp/5001"
     }
   }
 

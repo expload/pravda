@@ -155,7 +155,7 @@ object PravdaAssembler {
     (ByteString.copyFrom(bytecode), metas.toMap)
   }
 
-  def disassembleIncludeMeta(bytecode: ByteString): Future[Seq[(Int, Operation)]] = {
+  def disassembleIncludeMeta(bytecode: ByteString, metaLoader: MetaLoader): Future[Seq[(Int, Operation)]] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
     var lastPosition = 0
     var consumedInclude = false
@@ -166,9 +166,9 @@ object PravdaAssembler {
       (opcode: @switch) match {
         case Opcodes.META =>
           Metadata.readFromByteBuffer(buffer) match {
-            case IpfsFile(hash) =>
+            case m @ IpfsFile(hash) =>
               lastPosition = buffer.position()
-              metasF += Future.successful(Map.empty[Int, Seq[Metadata]])
+              metasF += metaLoader.load(m)
             case _ =>
               consumedInclude = true
           }

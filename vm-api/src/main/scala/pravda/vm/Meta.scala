@@ -300,6 +300,13 @@ object Meta {
     }
   }
 
+  def externalWriteToByteString(metas: Map[Int, Seq[Meta]]): ByteString = {
+    val buffer = ByteBuffer.allocate(1024 * 1024)
+    externalWriteToByteBuffer(buffer, metas)
+    buffer.flip()
+    ByteString.copyFrom(buffer)
+  }
+
   object parser {
 
     val meta: P[Meta] = P(

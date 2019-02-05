@@ -20,9 +20,10 @@ package pravda.node.client.impl
 import com.google.protobuf.ByteString
 import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.{Translator => DotnetTranslator}
-import pravda.vm.asm.{Operation, PravdaAssembler}
+import pravda.vm.asm.{MetaLoader, Operation, PravdaAssembler}
 import cats.implicits._
 import pravda.node.client.CompilersLanguage
+import pravda.vm.Meta
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,6 +43,14 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
 
   def disasmToOps(source: ByteString): Future[Seq[(Int, Operation)]] = Future {
     PravdaAssembler.disassemble(source)
+  }
+
+  def disasmIncludeMeta(source: ByteString, metaLoader: MetaLoader): Future[Seq[(Int, Operation)]] =
+    PravdaAssembler.disassembleIncludeMeta(source, metaLoader)
+
+  def extractMeta(source: ByteString): Future[(ByteString, Map[Int, Seq[Meta]])] = Future {
+    val ops = PravdaAssembler.disassemble(source)
+    PravdaAssembler.assembleExtractMeta(ops.map(_._2), saveLabels = true, extractMeta = true)
   }
 
   def dotnet(sources: Seq[(ByteString, Option[ByteString])],
