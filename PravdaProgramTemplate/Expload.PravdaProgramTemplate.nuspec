@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Expload.PravdaProgramTemplate</id>
+    <version>1.0.0</version>
+    <description>A template for Pravda Program</description>
+    <authors>Alexander Voronkov</authors>
+    <packageTypes>
+      <packageType name="Template" />
+    </packageTypes>
+  </metadata>
+</package>

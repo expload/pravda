@@ -1,0 +1,355 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: If.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/If.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "If"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestIfs"
+  eq
+  jumpi @method_TestIfs
+  push "Wrong method name"
+  throw
+  @method_TestIfs:
+  meta method {
+  "name":"TestIfs","returnTpe":int8(0)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(19)
+  }
+  push int32(10)
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  push int32(1)
+  dupn
+  push int32(1)
+  swap
+  lt
+  push int8(3)
+  cast
+  meta source_mark {
+  "sl":int32(11),"sc":int32(12),"el":int32(11),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br9
+  push int32(4)
+  meta source_mark {
+  "sl":int32(14),"sc":int32(8),"el":int32(14),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  push int32(2)
+  swapn
+  pop
+  @TestIfs_br9:
+  push int32(1)
+  dupn
+  push int32(5)
+  meta source_mark {
+  "sl":int32(15),"sc":int32(11),"el":int32(15),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(21)
+  }
+  swap
+  gt
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br19
+  push int32(1)
+  dupn
+  push int32(6)
+  meta source_mark {
+  "sl":int32(16),"sc":int32(15),"el":int32(16),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(21)
+  }
+  swap
+  gt
+  push int8(3)
+  cast
+  meta source_mark {
+  "sl":int32(20),"sc":int32(8),"el":int32(20),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br19
+  push int32(7)
+  push int32(2)
+  swapn
+  pop
+  @TestIfs_br19:
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(21),"sc":int32(11),"el":int32(21),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
+  }
+  push int32(0)
+  meta source_mark {
+  "sl":int32(22),"sc":int32(8),"el":int32(22),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
+  }
+  swap
+  gt
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br27
+  meta source_mark {
+  "sl":int32(23),"sc":int32(11),"el":int32(23),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
+  }
+  push int32(4)
+  push int32(2)
+  swapn
+  pop
+  jump @TestIfs_br29
+  @TestIfs_br27:
+  meta source_mark {
+  "sl":int32(26),"sc":int32(8),"el":int32(26),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(27)
+  }
+  push int32(5)
+  push int32(2)
+  swapn
+  pop
+  @TestIfs_br29:
+  push int32(1)
+  dupn
+  push int32(2)
+  swap
+  gt
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br41
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(27),"sc":int32(11),"el":int32(27),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
+  }
+  push int32(4)
+  meta source_mark {
+  "sl":int32(28),"sc":int32(8),"el":int32(28),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
+  }
+  swap
+  lt
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br41
+  meta source_mark {
+  "sl":int32(29),"sc":int32(11),"el":int32(29),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(17)
+  }
+  push int32(6)
+  push int32(2)
+  swapn
+  pop
+  jump @TestIfs_br43
+  @TestIfs_br41:
+  meta source_mark {
+  "sl":int32(32),"sc":int32(8),"el":int32(32),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(28)
+  }
+  push int32(8)
+  push int32(2)
+  swapn
+  pop
+  @TestIfs_br43:
+  push int32(1)
+  dupn
+  push int32(7)
+  swap
+  gt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br52
+  push int32(1)
+  dupn
+  push int32(10)
+  meta source_mark {
+  "sl":int32(33),"sc":int32(12),"el":int32(33),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  swap
+  gt
+  push int8(3)
+  cast
+  meta source_mark {
+  "sl":int32(34),"sc":int32(8),"el":int32(34),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
+  }
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br56
+  @TestIfs_br52:
+  push int32(1)
+  meta source_mark {
+  "sl":int32(35),"sc":int32(12),"el":int32(35),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  push int32(2)
+  swapn
+  pop
+  jump @TestIfs_br58
+  @TestIfs_br56:
+  push int32(0)
+  meta source_mark {
+  "sl":int32(38),"sc":int32(8),"el":int32(38),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(39)
+  }
+  push int32(2)
+  swapn
+  pop
+  @TestIfs_br58:
+  push int32(1)
+  dupn
+  push int32(1)
+  swap
+  gt
+  push int8(3)
+  cast
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br66
+  push int32(1)
+  dupn
+  push int32(3)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br71
+  @TestIfs_br66:
+  push int32(1)
+  dupn
+  push int32(20)
+  meta source_mark {
+  "sl":int32(39),"sc":int32(12),"el":int32(39),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  swap
+  gt
+  push int8(3)
+  cast
+  meta source_mark {
+  "sl":int32(40),"sc":int32(8),"el":int32(40),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(9)
+  }
+  push int8(9)
+  cast
+  not
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestIfs_br74
+  @TestIfs_br71:
+  meta source_mark {
+  "sl":int32(41),"sc":int32(12),"el":int32(41),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(18)
+  }
+  push int32(2)
+  push int32(2)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(43),"sc":int32(4),"el":int32(43),"src":"$PRAVDA_TMP_DIR/If.cs","ec":int32(5)
+  }
+  jump @TestIfs_lvc
+  @TestIfs_br74:
+  push int32(3)
+  push int32(2)
+  swapn
+  pop
+  jump @TestIfs_lvc
+  @TestIfs_lvc:
+  pop
+  pop
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

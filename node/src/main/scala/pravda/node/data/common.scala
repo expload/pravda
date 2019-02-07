@@ -27,7 +27,7 @@ import supertagged.TaggedType
 object common {
 
   /**
-    * Ripemd160 hash of BSON representation of signed transaction
+    * Sha3 hash of BSON representation of signed transaction
     */
   object TransactionId extends TaggedType[ByteString] {
 
@@ -47,7 +47,14 @@ object common {
 
   type TransactionId = TransactionId.Type
 
-  final case class ApplicationStateInfo(blockHeight: Long, appHash: ByteString, validators: Vector[Address])
+  final case class ApplicationStateInfo(blockHeight: Long,
+                                        appHash: ByteString,
+                                        validators: Vector[Address],
+                                        blockTimestamp: Long)
+
+  object ApplicationStateInfo {
+    lazy val Empty = ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address], 0L)
+  }
 
   final case class CoinDistributionMember(address: Address, amount: NativeCoin)
 

@@ -1,0 +1,32 @@
+vm:
+  watts-limit: 1000
+code: |-
+  new { "hello": 42, "world": 7 }
+  push "key"
+  sput
+  push "key"
+  sget
+---
+watts-spent: 345
+stack:
+ - ref.1
+heap:
+  ref.0:
+    utf8.world: int8.7
+    utf8.hello: int8.42
+  ref.1:
+    utf8.world: int8.7
+    utf8.hello: int8.42
+effects:
+  - eventType: StorageWrite
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.key
+    value:
+      utf8.hello: int8.42
+      utf8.world: int8.7
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.key
+    value:
+      utf8.hello: int8.42
+      utf8.world: int8.7

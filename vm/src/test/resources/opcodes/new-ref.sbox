@@ -1,0 +1,9 @@
+vm:
+  watts-limit: 1000
+code: |-
+  new #42
+---
+watts-spent: 1
+error:
+  code: 104
+  message: WrongType

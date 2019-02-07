@@ -1,0 +1,56 @@
+vm:
+  stack:
+    [utf8.TestObjectArrays]
+  storage:
+    utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: ObjectArrays.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ObjectArrays.cs
+    optimize: true
+---
+stack:
+  - utf8.strstr2str3str4str5
+heap:
+  ref.5:
+    utf8.SomeInt: int32.4
+    utf8.SomeStr: utf8.str4
+  ref.0:
+    - ref
+    - "1"
+    - "2"
+    - "3"
+  ref.4:
+    - ref
+    - "5"
+    - "6"
+  ref.1:
+    utf8.SomeInt: int32.1
+    utf8.SomeStr: utf8.str
+  ref.7:
+    - utf8
+    - str
+    - str2
+    - str3
+    - str4
+    - str5
+  ref.2:
+    utf8.SomeInt: int32.2
+    utf8.SomeStr: utf8.str2
+  ref.6:
+    utf8.SomeInt: int32.5
+    utf8.SomeStr: utf8.str5
+  ref.3:
+    utf8.SomeInt: int32.3
+    utf8.SomeStr: utf8.str3
+effects:
+  - eventType: StorageRead
+    program: "0000000000000000000000000000000000000000000000000000000000000000"
+    key: utf8.init
+    value: "null"

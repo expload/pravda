@@ -3,7 +3,7 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.cli.languages._
+import pravda.node.client._
 import pravda.vm.impl.MemoryImpl
 import pravda.vm.{Data, ExecutionResult, FinalState}
 import utest._
@@ -23,7 +23,7 @@ object RunBytecodeSuite extends TestSuite {
       |  "spentWatts" : 0,
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
-      |  "stack" : [ "int8(42)" ],
+      |  "stack" : [ "int8.42" ],
       |  "heap" : [ ]
       |}
       |""".stripMargin)
@@ -34,7 +34,7 @@ object RunBytecodeSuite extends TestSuite {
       |  "spentWatts" : 0,
       |  "refundWatts" : 0,
       |  "totalWatts" : 0,
-      |  "stack" : [ "int16(740)" ],
+      |  "stack" : [ "int16.740" ],
       |  "heap" : [ ]
       |}
       |""".stripMargin)

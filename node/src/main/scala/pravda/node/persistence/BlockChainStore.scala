@@ -18,9 +18,14 @@
 package pravda.node.persistence
 
 import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.data.serialization.json._
 import pravda.node.db.DB
 import pravda.node.persistence.implicits._
 
 object BlockChainStore {
   def balanceEntry(db: DB): Entry[Address, NativeCoin] = Entry[Address, NativeCoin](db, "balance")
+  def transferEffectsEntry(db: DB): DbPath = new PureDbPath(db, "transferEffectsByAddress")
+  def eventsByAddressEntry(db: DB): DbPath = new PureDbPath(db, "eventsByAddress")
+  def eventsEntry(db: DB): DbPath = new PureDbPath(db, "events")
+  def transactionsEntry(db: DB): DbPath = new PureDbPath(db, "transactionsByAddress")
 }

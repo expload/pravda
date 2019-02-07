@@ -2,7 +2,7 @@ package pravda.cli.programs
 
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.cli.languages._
+import pravda.node.client._
 import utest._
 
 object GenAddressSuite extends TestSuite {

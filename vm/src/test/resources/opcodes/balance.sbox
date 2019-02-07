@@ -1,13 +1,15 @@
----preconditions
-balances:
-  x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d = bigint(42)
-watts-limit: 1000
----expectations
+vm:
+  watts-limit: 1000
+  balances:
+    25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d: int64.42
+code: |-
+  push x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
+  balance
+---
 watts-spent: 122
 stack:
-  bigint(42)
+  - int64.42
 effects:
-  balance x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d 42
----code
-push x25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
-balance
+  - eventType: ShowBalance
+    address: 25a0e8fe9e30d91c4f5a5ef3dbb405ac65176901ae453771b27c3c83c714587d
+    amount: 42

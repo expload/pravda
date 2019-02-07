@@ -27,14 +27,17 @@ trait Environment {
     */
   def executor: Address
 
+  def chainHeight: Long
+  def lastBlockHash: ByteString
+  def lastBlockTime: Long
+
   // Programs
   def sealProgram(address: Address): Unit
   def updateProgram(address: Address, code: ByteString): Unit
-  def createProgram(owner: Address, code: ByteString): Address
+  def createProgram(address: Address, code: ByteString): Unit
   def getProgram(address: Address): Option[ProgramContext]
-  def getProgramOwner(address: Address): Option[Address]
 
-  def event(address: Address, name: String, data: Data): Unit
+  def event(address: Address, name: String, data: MarshalledData): Unit
 
   // Balance
   def balance(address: Address): NativeCoin

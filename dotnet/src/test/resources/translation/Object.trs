@@ -1,0 +1,200 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Object.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Object.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "Object"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestObjects"
+  eq
+  jumpi @method_TestObjects
+  push "Wrong method name"
+  throw
+  @method_TestObjects:
+  meta method {
+  "name":"TestObjects","returnTpe":int8(3)
+  }
+  push null
+  meta source_mark {
+  "sl":int32(39),"sc":int32(9),"el":int32(39),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(28)
+  }
+  push int32(100)
+  new {}
+  call @vtable_A
+  call @default_fields_A
+  push int32(2)
+  swapn
+  call @func_A.ctor_int32
+  meta source_mark {
+  "sl":int32(40),"sc":int32(9),"el":int32(40),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(28)
+  }
+  push int32(200)
+  new {}
+  call @vtable_B
+  call @default_fields_B
+  push int32(2)
+  swapn
+  call @func_B.ctor_int32
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(41),"sc":int32(9),"el":int32(41),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(43)
+  }
+  call @func_A.AnswerA
+  swap
+  pop
+  push int32(2)
+  dupn
+  call @func_B.AnswerB
+  swap
+  pop
+  add
+  meta source_mark {
+  "sl":int32(42),"sc":int32(9),"el":int32(42),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(18)
+  }
+  jump @TestObjects_lvc
+  @TestObjects_lvc:
+  swap
+  pop
+  swap
+  pop
+  push int8(3)
+  cast
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @default_fields_A:
+  dup
+  push int32(0)
+  struct_mut "AVal"
+  ret
+  @default_fields_B:
+  dup
+  push int32(0)
+  struct_mut "BVal"
+  ret
+  @func_A.AnswerA:
+  meta source_mark {
+  "sl":int32(15),"sc":int32(8),"el":int32(15),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(25)
+  }
+  push int32(1)
+  dupn
+  struct_get "AVal"
+  push int32(42)
+  add
+  jump @A.AnswerA_lvc
+  @A.AnswerA_lvc:
+  push int8(3)
+  cast
+  ret
+  @func_A.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
+  meta source_mark {
+  "sl":int32(8),"sc":int32(4),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(22)
+  }
+  push int32(2)
+  dupn
+  pop
+  meta source_mark {
+  "sl":int32(10),"sc":int32(8),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(25)
+  }
+  push int32(2)
+  dupn
+  push int32(2)
+  dupn
+  struct_mut "AVal"
+  meta source_mark {
+  "sl":int32(11),"sc":int32(4),"el":int32(11),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(5)
+  }
+  jump @A.ctor_int32_lvc
+  @A.ctor_int32_lvc:
+  pop
+  ret
+  @func_B.AnswerB:
+  meta source_mark {
+  "sl":int32(30),"sc":int32(9),"el":int32(30),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(26)
+  }
+  push int32(1)
+  dupn
+  struct_get "BVal"
+  push int32(43)
+  add
+  jump @B.AnswerB_lvc
+  @B.AnswerB_lvc:
+  push int8(3)
+  cast
+  ret
+  @func_B.ctor_int32:
+  push int32(1)
+  swapn
+  push int8(3)
+  cast
+  push int32(1)
+  swapn
+  meta source_mark {
+  "sl":int32(23),"sc":int32(5),"el":int32(23),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(23)
+  }
+  push int32(2)
+  dupn
+  pop
+  meta source_mark {
+  "sl":int32(25),"sc":int32(9),"el":int32(25),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(26)
+  }
+  push int32(2)
+  dupn
+  push int32(2)
+  dupn
+  struct_mut "BVal"
+  meta source_mark {
+  "sl":int32(26),"sc":int32(5),"el":int32(26),"src":"$PRAVDA_TMP_DIR/Object.cs","ec":int32(6)
+  }
+  jump @B.ctor_int32_lvc
+  @B.ctor_int32_lvc:
+  pop
+  ret
+  @vtable_A:
+  ret
+  @vtable_B:
+  ret
+  @stop:

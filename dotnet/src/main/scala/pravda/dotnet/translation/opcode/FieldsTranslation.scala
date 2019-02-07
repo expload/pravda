@@ -23,87 +23,126 @@ import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.Signatures._
-import pravda.dotnet.translation.TypeDetectors
+import pravda.dotnet.translation.{FieldExtractors, NamesBuilder, TypeDetectors}
 import pravda.dotnet.translation.data._
 import pravda.vm.{Data, Opcodes, asm}
 
 case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
 
-  def isStatic(flags: Short): Boolean = (flags & 0x10) != 0
-
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
 
-    def loadField(name: String, sigIdx: Long, static: Boolean): List[asm.Operation] = {
-      lazy val defaultLoadForProgram = List(
-        pushString(s"p_$name"),
-        asm.Operation(Opcodes.SGET)
-      )
+    def refToDef(m: MemberRefData): Option[(TypeDefData, FieldData)] = m match {
+      case MemberRefData(TypeRefData(_, name, namespace), fieldName, signatureIdx) =>
+        val key = s"${NamesBuilder.fullType(namespace, name)}.$fieldName"
+        ctx.tctx.fieldIndex.byName(key)
+      case _ => None
+    }
 
-      ctx.struct match {
-        case Some(structName) =>
-          if (static) {
+    def loadField(p: TypeDefData, fd: FieldData, sigIdx: Long): Either[InnerTranslationError, List[asm.Operation]] = {
+      lazy val defaultLoad = Right(
+        List(
+          pushString(s"p_${fd.name}"),
+          asm.Operation(Opcodes.SGET)
+        ))
+
+      if (p == ctx.tctx.mainProgramClass) {
+        ctx.tctx.signatures.get(sigIdx) match {
+          case Some(FieldSig(tpe)) =>
+            tpe match {
+              case SigType.Generic(TypeDetectors.Mapping(), _) =>
+                Right(List(pushBytes(fd.name.getBytes(StandardCharsets.UTF_8))))
+              case _ =>
+                defaultLoad
+            }
+          case _ => defaultLoad
+        }
+      } else if (ctx.tctx.programClasses.contains(p)) {
+        Left(InternalError("Reading fields from other [Program] classes is forbidden"))
+      } else {
+        if (FieldExtractors.isStatic(fd.flags)) {
+          Right(
             List(
-              pushString(s"s_${structName}_$name"),
+              pushString(s"s_${NamesBuilder.fullTypeDef(p)}_${fd.name}"),
               asm.Operation(Opcodes.SGET)
-            )
-          } else {
-            List(asm.Operation.StructGet(Some(Data.Primitive.Utf8(name))))
-          }
-        case None =>
-          ctx.tctx.signatures.get(sigIdx) match {
-            case Some(FieldSig(tpe)) =>
-              tpe match {
-                case SigType.Generic(TypeDetectors.Mapping(), _) =>
-                  List(pushBytes(name.getBytes(StandardCharsets.UTF_8)))
-                case _ => defaultLoadForProgram
-              }
-            case _ => defaultLoadForProgram
-          }
+            ))
+        } else {
+          Right(List(asm.Operation.StructGet(Some(Data.Primitive.Utf8(fd.name)))))
+        }
       }
     }
 
-    def storeField(name: String, sigIdx: Long, static: Boolean): List[asm.Operation] = {
-      lazy val defaultStore = List(
-        pushString(s"p_$name"),
-        asm.Operation(Opcodes.SPUT)
-      )
+    def storeField(p: TypeDefData, fd: FieldData, sigIdx: Long): Either[InnerTranslationError, List[asm.Operation]] = {
+      lazy val defaultStore = Right(
+        List(
+          pushString(s"p_${fd.name}"),
+          asm.Operation(Opcodes.SPUT)
+        ))
 
-      ctx.struct match {
-        case Some(structName) =>
-          if (static) {
-            List(
-              pushString(s"s_${structName}_$name"),
-              asm.Operation(Opcodes.SPUT)
-            )
-          } else {
-            List(asm.Operation.StructMut(Some(Data.Primitive.Utf8(name))))
-          }
-        case None =>
-          ctx.tctx.signatures.get(sigIdx) match {
-            case Some(FieldSig(tpe)) =>
-              tpe match {
-                case SigType.Generic(TypeDetectors.Mapping(), _) =>
+      if (p == ctx.tctx.mainProgramClass) {
+        ctx.tctx.signatures.get(sigIdx) match {
+          case Some(FieldSig(tpe)) =>
+            tpe match {
+              case SigType.Generic(TypeDetectors.Mapping(), _) =>
+                Right(
                   List(
                     asm.Operation(Opcodes.POP),
                     asm.Operation(Opcodes.POP),
                     pushString("Mapping modification is forbidden"),
                     asm.Operation(Opcodes.THROW)
-                  )
-                case _ => defaultStore
-              }
-            case _ => defaultStore
-          }
+                  ))
+              case _ => defaultStore
+            }
+          case _ => defaultStore
+        }
+      } else if (ctx.tctx.programClasses.contains(p)) {
+        Left(InternalError("Writing fields from other [Program] classes is forbidden"))
+      } else {
+        if (FieldExtractors.isStatic(fd.flags)) {
+          Right(
+            List(
+              pushString(s"s_${NamesBuilder.fullTypeDef(p)}_${fd.name}"),
+              asm.Operation(Opcodes.SPUT)
+            ))
+        } else {
+          Right(List(asm.Operation.StructMut(Some(Data.Primitive.Utf8(fd.name)))))
+        }
       }
     }
 
     op match {
-      case LdSFld(FieldData(flags, name, sig)) => Right(loadField(name, sig, isStatic(flags)))
-      case LdFld(FieldData(flags, name, sig))  => Right(loadField(name, sig, isStatic(flags)))
-      case StSFld(FieldData(flags, name, sig)) => Right(storeField(name, sig, isStatic(flags)))
-      case StFld(FieldData(flags, name, sig))  => Right(storeField(name, sig, isStatic(flags)))
-      case _                                   => Left(UnknownOpcode)
+      case LdSFld(fd: FieldData) =>
+        ctx.tctx.fieldIndex
+          .parent(fd.id)
+          .map(p => loadField(p, fd, fd.signatureIdx))
+          .getOrElse(Left(UnknownOpcode))
+      case LdFld(fd: FieldData) =>
+        ctx.tctx.fieldIndex
+          .parent(fd.id)
+          .map(p => loadField(p, fd, fd.signatureIdx))
+          .getOrElse(Left(UnknownOpcode))
+      case StSFld(fd: FieldData) =>
+        ctx.tctx.fieldIndex
+          .parent(fd.id)
+          .map(p => storeField(p, fd, fd.signatureIdx))
+          .getOrElse(Left(UnknownOpcode))
+      case StFld(fd: FieldData) =>
+        ctx.tctx.fieldIndex
+          .parent(fd.id)
+          .map(p => storeField(p, fd, fd.signatureIdx))
+          .getOrElse(Left(UnknownOpcode))
+
+      case LdSFld(m: MemberRefData) =>
+        refToDef(m).map { case (p, fd) => loadField(p, fd, m.signatureIdx) }.getOrElse(Left(UnknownOpcode))
+      case LdFld(m: MemberRefData) =>
+        refToDef(m).map { case (p, fd) => loadField(p, fd, m.signatureIdx) }.getOrElse(Left(UnknownOpcode))
+      case StSFld(m: MemberRefData) =>
+        refToDef(m).map { case (p, fd) => storeField(p, fd, m.signatureIdx) }.getOrElse(Left(UnknownOpcode))
+      case StFld(m: MemberRefData) =>
+        refToDef(m).map { case (p, fd) => storeField(p, fd, m.signatureIdx) }.getOrElse(Left(UnknownOpcode))
+
+      case _ => Left(UnknownOpcode)
     }
   }
 }

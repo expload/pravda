@@ -41,6 +41,9 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
         s"Pravda ${pravda.cli.BuildInfo.version.takeWhile(_ != '-')} Command Line Interface\n\n" +
           "To get info about options for particular command you can use flag --help or -h after command." +
           " For example, to get help about \"gen address\" command, type \"pravda gen address -h\"")
+      .mdText(s"Pravda Command Line Interface\n\n" +
+        "To get info about options for particular command you can use flag --help or -h after command." +
+        " For example, to get help about \"gen address\" command, type \"pravda gen address -h\"")
       .children(
         cmd("gen")
           .text("Generate auxiliary data for Pravda.")
@@ -61,23 +64,11 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .text("Generate auxiliary code to call program's methods from Unity")
               .action(_ => PravdaConfig.Codegen(CodegenMode.Dotnet))
               .children(
-                opt[File]('d', "dir")
-                  .text("Output directory for generated sources.")
-                  .action {
-                    case (f, conf: PravdaConfig.Codegen) => conf.copy(outDir = Some(f.getAbsolutePath))
-                    case (_, otherwise)                  => otherwise
-                  },
                 opt[File]('i', "input")
                   .text("Input file with assembly.")
                   .action {
                     case (f, conf: PravdaConfig.Codegen) => conf.copy(input = Some(f.getAbsolutePath))
                     case (_, otherwise)                  => otherwise
-                  },
-                opt[Unit]("exclude-big-integer")
-                  .text("Exclude custom BigInteger class.")
-                  .action {
-                    case ((), conf: PravdaConfig.Codegen) => conf.copy(excludeBigInteger = true)
-                    case (_, otherwise)                   => otherwise
                   }
               )
           ),
@@ -158,7 +149,15 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                       config.copy(mainClass = Some(s))
                     case (_, otherwise) => otherwise
                   }
-              )
+              ),
+            cmd("evm")
+              .text(
+                "[THIS COMPILATION MODE IS EXPERIMENTAL]" +
+                  "Compile .bin produced by solc compiler to Pravda VM bytecode. " +
+                  "Input files are .bin contract and .abi. " +
+                  "Output is binary Pravda program. " +
+                  "By default read from stdin and print to stdout")
+              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm))
           ),
         cmd("broadcast")
           .text("Broadcast transactions and programs to the Pravda blockchain.")
@@ -175,7 +174,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (hex,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(to = Some(hex)))
                     case (_, otherwise) => otherwise
                   },
@@ -183,7 +182,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (amount,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(amount = Some(amount)))
                     case (_, otherwise) => otherwise
                   }
@@ -194,30 +193,12 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .children(broadcastInput),
             cmd("seal")
               .text("Seal existing Pravda program in the blockchain.")
-              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
-              .children(
-                broadcastInput,
-                opt[String]('a', "address")
-                  .text("Address of the program to seal")
-                  .action {
-                    case (hex, config: PravdaConfig.Broadcast) =>
-                      config.copy(mode = PravdaConfig.Broadcast.Mode.Seal(Some(hex)))
-                    case (_, otherwise) => otherwise
-                  }
-              ),
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Seal))
+              .children(broadcastInput),
             cmd("update")
               .text("Update existing Pravda program in the blockchain.")
-              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update(None)))
-              .children(
-                broadcastInput,
-                opt[String]('a', "address")
-                  .text("Address of the program to update")
-                  .action {
-                    case (hex, config: PravdaConfig.Broadcast) =>
-                      config.copy(mode = PravdaConfig.Broadcast.Mode.Update(Some(hex)))
-                    case (_, otherwise) => otherwise
-                  }
-              ),
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update))
+              .children(broadcastInput),
             opt[Unit]("dry-run")
               .text("Broadcast action without applying effects.")
               .action {
@@ -229,6 +210,13 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(wallet = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[File]('p', "program-wallet")
+              .text("Wallet of program account")
+              .action {
+                case (file, config: PravdaConfig.Broadcast) =>
+                  config.copy(programWallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[File]("watt-payer-wallet")
@@ -245,7 +233,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   config.copy(wattLimit = limit)
                 case (_, otherwise) => otherwise
               },
-            opt[Long]('p', "price")
+            opt[Long]('P', "price")
               .text(s"Watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).") // FIXME what to do with default values?
               .action {
                 case (price, config: PravdaConfig.Broadcast) =>
@@ -259,6 +247,25 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   config.copy(endpoint = endpoint)
                 case (_, otherwise) => otherwise
               },
+          ),
+        cmd("execute")
+          .text("Executes program without side-effects. No watt-limit is required.")
+          .action(_ => PravdaConfig.Execute())
+          .children(
+            opt[File]('w', "wallet")
+              .text("File with user wallet. You can obtain it using 'pravda gen address' command. Format: {\"address\": <public key>, \"privateKey\": <private key>}")
+              .action {
+                case (file, config: PravdaConfig.Execute) =>
+                  config.copy(wallet = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[String]('e', "endpoint")
+              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
+              .action {
+                case (endpoint, config: PravdaConfig.Execute) =>
+                  config.copy(endpoint = endpoint)
+                case (_, otherwise) => otherwise
+              }
           ),
         cmd("node")
           .text("Control Pravda Network Node.")

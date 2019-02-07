@@ -39,9 +39,21 @@ object launcher extends App {
     sys.props.put("config.file", path)
   }
 
+  private lazy val NETWORKD_ADDRESS_CACHE_TTL = 60
+  private lazy val NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL = 20
+
   private implicit val system: ActorSystem = ActorSystem("pravda-system")
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+
+  java.security.Security.setProperty(
+    "networkaddress.cache.ttl",
+    pravdaConfig.networkAddressCache.map(_.ttl).getOrElse(NETWORKD_ADDRESS_CACHE_TTL).toString
+  )
+  java.security.Security.setProperty(
+    "networkaddress.cache.negative.ttl",
+    pravdaConfig.networkAddressCache.map(_.negativeTtl).getOrElse(NETWORKD_ADDRESS_CACHE_NEGATIVE_TTL).toString
+  )
 
   val abciClient = new AbciClient(pravdaConfig.tendermint.rpcPort)
 
@@ -51,7 +63,7 @@ object launcher extends App {
   )
   val abci = new Abci(applicationStateDb, abciClient, pravdaConfig.coinDistribution)
 
-  val server = Server(
+  val abciServer = Server(
     cfg = Server.Config(
       connectionMethod = if (pravdaConfig.tendermint.useUnixDomainSocket) {
         val path = new File(pravdaConfig.dataDirectory, "abci.sock").getAbsolutePath
@@ -63,25 +75,27 @@ object launcher extends App {
     api = abci
   )
 
-  val httpServer = {
-    val apiRoute = new ApiRoute(abciClient, applicationStateDb, abci)
-    val guiRoute = new GuiRoute(abciClient, applicationStateDb)
-    HttpServer.start(pravdaConfig.http, apiRoute.route, guiRoute.route)
-  }
+  val apiRoute = new ApiRoute(abciClient, applicationStateDb, abci)
+  val guiRoute = new GuiRoute(abciClient, applicationStateDb)
 
-  val tendermintNode = Await.result(tendermint.run(pravdaConfig), 10.seconds)
-
-  server.start()
+  val res = for {
+    h <- HttpServer.start(pravdaConfig.http, apiRoute.route, guiRoute.route)
+    a <- abciServer.start()
+    t <- tendermint.run(pravdaConfig)
+  } yield (h, a, t)
 
   println("Tendermint node started")
 
   sys.addShutdownHook {
+    val (httpServer, abciServer, tendermintNode) = Await.result(res, 10.seconds)
+
     print("Shutting down tendermint node...")
     tendermintNode.destroy()
     println(s"${Console.GREEN} done${Console.RESET}")
 
     print("Shutting down API server...")
-    Await.result(httpServer.flatMap(_.unbind()), 10.second)
+    Await.result(httpServer.unbind(), 10.seconds)
+    Await.result(abciServer.unbind(), 10.seconds)
     system.terminate()
     println(s"${Console.GREEN} done${Console.RESET}")
 

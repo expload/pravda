@@ -4,7 +4,8 @@ import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.cli.languages.{CompilersLanguage, IoLanguageStub}
+import pravda.node.client.{CompilersLanguage, IoLanguageStub}
+import pravda.vm.asm.Operation
 import utest._
 
 object CompileSuite extends TestSuite {
@@ -32,6 +33,9 @@ object CompileSuite extends TestSuite {
           UnexpectedStringOutput
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
+        def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
+
+        override def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = ???
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Asm))
@@ -49,6 +53,9 @@ object CompileSuite extends TestSuite {
           else UnexpectedStringOutput
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
+        def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
+
+        def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(Disasm))
@@ -69,10 +76,13 @@ object CompileSuite extends TestSuite {
           if (sources.headOption.map(_._1).contains(BinarySource)) Right(ExpectedBinaryOutput)
           else Right(UnexpectedBinaryOutput)
         }
+        def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
+        def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
       }
       val compile = new Compile[Id](io, compilers)
       compile(PravdaConfig.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
+
   }
 }

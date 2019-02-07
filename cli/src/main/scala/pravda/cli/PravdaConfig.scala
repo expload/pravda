@@ -32,6 +32,7 @@ object PravdaConfig {
     case object Asm    extends CompileMode
     case object Disasm extends CompileMode
     case object DotNet extends CompileMode
+    case object Evm    extends CompileMode
   }
 
   case object Nope extends PravdaConfig
@@ -49,12 +50,18 @@ object PravdaConfig {
 
   final case class Broadcast(mode: Broadcast.Mode = Broadcast.Mode.Nope,
                              wallet: Option[String] = None,
+                             programWallet: Option[String] = None,
                              wattPayerWallet: Option[String] = None,
                              input: Option[String] = None,
                              dryRun: Boolean = false,
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
                              wattPrice: NativeCoin = DefaultValues.Broadcast.WATT_PRICE,
                              endpoint: String = DefaultValues.Broadcast.ENDPOINT)
+      extends PravdaConfig
+
+  final case class Execute(input: Option[String] = None,
+                           wallet: Option[String] = None,
+                           endpoint: String = DefaultValues.Broadcast.ENDPOINT)
       extends PravdaConfig
 
   object Broadcast {
@@ -65,8 +72,8 @@ object PravdaConfig {
       case object Nope                                                    extends Mode
       case object Deploy                                                  extends Mode
       case object Run                                                     extends Mode
-      final case class Update(program: Option[String])                    extends Mode
-      final case class Seal(program: Option[String])                      extends Mode
+      case object Update                                                  extends Mode
+      case object Seal                                                    extends Mode
       final case class Transfer(to: Option[String], amount: Option[Long]) extends Mode
     }
   }
@@ -110,9 +117,5 @@ object PravdaConfig {
     case object Dotnet extends CodegenMode
   }
 
-  final case class Codegen(codegenMode: CodegenMode,
-                           input: Option[String] = None,
-                           outDir: Option[String] = None,
-                           excludeBigInteger: Boolean = false)
-      extends PravdaConfig
+  final case class Codegen(codegenMode: CodegenMode, input: Option[String] = None) extends PravdaConfig
 }

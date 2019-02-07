@@ -29,7 +29,7 @@ import scala.collection.concurrent.TrieMap
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
 object DB {
 
@@ -58,14 +58,33 @@ class DB(
     db.close()
   }
 
-  private def tryCloseable[A <: AutoCloseable, B](resource: A)(block: A => B): B = {
-    Try(block(resource)) match {
-      case Success(result) =>
+  // Resource management by @dkomanov
+  // https://medium.com/@dkomanov/scala-try-with-resources-735baad0fd7d
+  // TODO should be totally rewritten with akka streams.
+  def tryClosable[T <: AutoCloseable, V](r: => T)(f: T => V): V = {
+    def closeAndAddSuppressed(e: Throwable, resource: AutoCloseable): Unit = {
+      if (e != null) {
+        try {
+          resource.close()
+        } catch {
+          case NonFatal(suppressed) =>
+            e.addSuppressed(suppressed)
+        }
+      } else {
         resource.close()
-        result
-      case Failure(e) =>
-        resource.close()
+      }
+    }
+    val resource: T = r
+    require(resource != null, "resource is null")
+    var exception: Throwable = null
+    try {
+      f(resource)
+    } catch {
+      case NonFatal(e) =>
+        exception = e
         throw e
+    } finally {
+      closeAndAddSuppressed(exception, resource)
     }
   }
 
@@ -132,7 +151,7 @@ class DB(
     val keys = operations.map(_.key).map(bArr).toSet
     exec(keys)(
       batchDiff(operations: _*), {
-        tryCloseable(db.createWriteBatch()) { batch =>
+        tryClosable(db.createWriteBatch()) { batch =>
           operations.foreach {
             case Operation.Delete(key) =>
               batch.delete(key)
@@ -261,12 +280,46 @@ class DB(
 
   def startsWithAs[V] = new StartsConstructor[V]
 
+  def startsWith(prefix: Array[Byte], offset: Array[Byte]): Stream[(Array[Byte], Array[Byte])] = {
+    var it: DBIterator = null
+    try {
+      it = db.iterator()
+      it.seek(prefix)
+      def next(): Stream[(Array[Byte], Array[Byte])] = {
+        try {
+          if (!it.hasNext) Stream.empty
+          else {
+            val record = it.peekNext()
+            val key = record.getKey
+            if (key.startsWith(prefix)) {
+              val value = record.getValue
+              Stream((key, value)) ++ next
+            } else {
+              it.close()
+              Stream.empty
+            }
+          }
+        } catch {
+          case e: Throwable =>
+            if (it != null)
+              it.close()
+            throw e
+        }
+      }
+      next()
+    } catch {
+      case e: Throwable =>
+        if (it != null)
+          it.close()
+        throw e
+    }
+  }
+
   def startsWith[K](prefix: K, offset: K, count: Long)(implicit keyWriter: KeyWriter[K]): Future[List[Result]] =
     Future {
       val prefixBytes = keyWriter.toBytes(prefix)
       val offsetBytes = keyWriter.toBytes(offset)
-      tryCloseable(db.iterator()) { it =>
-        val it = db.iterator()
+      tryClosable(db.iterator()) { it =>
         it.seek(offsetBytes)
         val res = ListBuffer.empty[Result]
         while (res.length.toLong < count && it.hasNext && it.peekNext.getKey.startsWith(prefixBytes)) {
@@ -318,7 +371,7 @@ class DB(
 
   private def syncCalcHash: Array[Byte] = {
 
-    tryCloseable(db.iterator()) { it =>
+    tryClosable(db.iterator()) { it =>
       it.seekToFirst()
       var hashSum = zeroHash
 

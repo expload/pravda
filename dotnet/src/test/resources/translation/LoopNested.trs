@@ -1,0 +1,204 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: LoopNested.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/LoopNested.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "LoosNested"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestNestedLoop"
+  eq
+  jumpi @method_TestNestedLoop
+  push "Wrong method name"
+  throw
+  @method_TestNestedLoop:
+  meta method {
+  "name":"TestNestedLoop","returnTpe":int8(3)
+  }
+  push null
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(8),"sc":int32(9),"el":int32(8),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(19)
+  }
+  push int32(0)
+  push int32(4)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(9),"sc":int32(14),"el":int32(9),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(23)
+  }
+  push int32(0)
+  push int32(3)
+  swapn
+  pop
+  jump @TestNestedLoop_br40
+  @TestNestedLoop_br6:
+  push int32(0)
+  push int32(2)
+  swapn
+  pop
+  jump @TestNestedLoop_br31
+  @TestNestedLoop_br10:
+  meta source_mark {
+  "sl":int32(10),"sc":int32(18),"el":int32(10),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(27)
+  }
+  push int32(3)
+  dupn
+  push int32(2)
+  swap
+  mod
+  push int32(0)
+  eq
+  not
+  jumpi @TestNestedLoop_br27
+  push int32(3)
+  dupn
+  meta source_mark {
+  "sl":int32(11),"sc":int32(14),"el":int32(11),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(29)
+  }
+  push int32(3)
+  dupn
+  push int32(3)
+  dupn
+  add
+  meta source_mark {
+  "sl":int32(12),"sc":int32(21),"el":int32(12),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(47)
+  }
+  push int32(1000000007)
+  swap
+  mod
+  add
+  push int32(4)
+  swapn
+  pop
+  @TestNestedLoop_br27:
+  push int32(1)
+  dupn
+  push int32(1)
+  add
+  push int32(2)
+  swapn
+  pop
+  @TestNestedLoop_br31:
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(10),"sc":int32(37),"el":int32(10),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(40)
+  }
+  push int32(20)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestNestedLoop_br10
+  push int32(2)
+  dupn
+  meta source_mark {
+  "sl":int32(10),"sc":int32(29),"el":int32(10),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(35)
+  }
+  push int32(1)
+  add
+  push int32(3)
+  swapn
+  pop
+  @TestNestedLoop_br40:
+  push int32(2)
+  dupn
+  meta source_mark {
+  "sl":int32(9),"sc":int32(33),"el":int32(9),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(36)
+  }
+  push int32(10)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestNestedLoop_br6
+  jump @TestNestedLoop_br51
+  @TestNestedLoop_br47:
+  push int32(3)
+  dupn
+  meta source_mark {
+  "sl":int32(9),"sc":int32(25),"el":int32(9),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(31)
+  }
+  push int32(2)
+  mul
+  push int32(4)
+  swapn
+  pop
+  @TestNestedLoop_br51:
+  push int32(3)
+  dupn
+  meta source_mark {
+  "sl":int32(18),"sc":int32(13),"el":int32(18),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(20)
+  }
+  push int32(10000)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestNestedLoop_br47
+  meta source_mark {
+  "sl":int32(17),"sc":int32(9),"el":int32(17),"src":"$PRAVDA_TMP_DIR/LoopNested.cs","ec":int32(26)
+  }
+  push int32(3)
+  dupn
+  jump @TestNestedLoop_lvc
+  @TestNestedLoop_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  push int8(3)
+  cast
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

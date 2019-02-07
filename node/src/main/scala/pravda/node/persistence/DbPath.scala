@@ -17,12 +17,15 @@
 
 package pravda.node.persistence
 
-import pravda.node.data.serialization.bson.{BsonDecoder, BsonEncoder}
-import pravda.node.data.serialization.{Bson, transcode}
+import pravda.common.{bytes => byteUtils}
+import pravda.node.data.serialization.bjson._
+import pravda.node.data.serialization.{BJson, transcode}
+import pravda.node.db.serialyzer.KeyWriter
 import pravda.node.db.{DB, Operation}
+import tethys.{JsonReader, JsonWriter}
 
 import scala.collection.mutable
-import pravda.common.{bytes => byteUtils}
+import scala.concurrent.{ExecutionContext, Future}
 
 trait DbPath {
 
@@ -30,19 +33,27 @@ trait DbPath {
 
   def :+(suffix: String): DbPath
 
-  def getAs[V: BsonDecoder](suffix: String): Option[V] =
-    getRawBytes(suffix).map(arr => transcode(Bson @@ arr).to[V])
+  def getAs[V: JsonReader](suffix: String): Option[V] =
+    getRawBytes(suffix).map(arr => transcode[BJson](BJson @@ arr).to[V])
 
   def getRawBytes(suffix: String): Option[Array[Byte]]
 
-  def put[V: BsonEncoder](suffix: String, value: V): Option[Array[Byte]] = {
-    val bsonValue: Array[Byte] = transcode(value).to[Bson]
-    putRawBytes(suffix, bsonValue)
+  def put[V: JsonWriter](suffix: String, value: V): Option[Array[Byte]] = {
+    val jsonBytes: Array[Byte] = transcode(value).to[BJson]
+    putRawBytes(suffix, jsonBytes)
   }
 
   def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]]
 
   def remove(suffix: String): Option[Array[Byte]]
+
+  def startsWith[V: JsonReader: JsonWriter](suffix: String, offset: Long, count: Long)(
+      implicit keyWriter: KeyWriter[String],
+      ec: ExecutionContext): Future[List[V]]
+
+  def startsWith[V: JsonReader: JsonWriter](suffix: String, offset: Long)(implicit keyWriter: KeyWriter[String],
+                                                                          ec: ExecutionContext): Future[List[V]] =
+    startsWith(suffix, offset, Long.MaxValue)
 
   protected def returningPrevious(suffix: String)(f: => Unit): Option[Array[Byte]] = {
     val prev = getRawBytes(suffix)
@@ -75,6 +86,12 @@ class CachedDbPath(dbPath: DbPath,
     dbCache.put(key, None)
   }
 
+  def startsWith[V: JsonReader: JsonWriter](suffix: String, offset: Long, count: Long)(
+      implicit keyWriter: KeyWriter[String],
+      ec: ExecutionContext) = {
+    // Delegate to pure db
+    dbPath.startsWith(suffix, offset, count)
+  }
 }
 
 class PureDbPath(db: DB, path: String) extends DbPath {
@@ -98,4 +115,17 @@ class PureDbPath(db: DB, path: String) extends DbPath {
     db.syncDeleteBytes(byteUtils.stringToBytes(key))
   }
 
+  def startsWith[V: JsonReader: JsonWriter](suffix: String, offset: Long, count: Long)(
+      implicit keyWriter: KeyWriter[String],
+      ec: ExecutionContext): Future[List[V]] = {
+    val key = mkKey(suffix)
+    val offsetKey = key + ":" + f"$offset%016x"
+
+    db.startsWith(key, offsetKey, count).map { records =>
+      records.map(
+        value =>
+          transcode(BJson @@ value.bytes)
+            .to[V])
+    }
+  }
 }

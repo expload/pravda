@@ -56,4 +56,14 @@ object FileStore {
     }
   }
 
+  def modifyApplicationStateInfo(f: ApplicationStateInfo => ApplicationStateInfo): Option[ApplicationStateInfo] = {
+    readApplicationStateInfo.map { appStateInfo =>
+      val updated = f(appStateInfo)
+      updateApplicationStateInfo(updated)
+      updated
+    }
+  }
+
+  def modifyApplicationStateInfoAsync(f: ApplicationStateInfo => ApplicationStateInfo) =
+    Future(modifyApplicationStateInfo(f))
 }

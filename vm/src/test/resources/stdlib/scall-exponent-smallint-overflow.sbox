@@ -1,36 +1,21 @@
----preconditions
-watts-limit: 1000
----expectations
-watts-spent: 310
+vm:
+  watts-limit: 1000
+code: |-
+  push int32(10)
+  push int8(2)
+  push 3
+  scall
+  push int32(1000000)
+  push int16(2)
+  push 3
+  scall
+  push int32(1000000000)
+  push int32(2)
+  push 3
+  scall
+---
+watts-spent: 172
 stack:
-  uint8(32), int32(1024), int32(2147483647), true, int16(-1)
----code
-push bigint(1000000000005)
-push 0x2
-push 0x03
-scall
-
-push bigint(10)
-push int8(0x2)
-push 0x03
-scall
-
-push bigint(100000000000)
-push int8(0x2)
-push 0x03
-scall
-
-push bigint(1000000000000000000000000000000000000000)
-push int32(0x2)
-push 0x03
-scall
-push bigint(1000000000000000000000000000000000000)
-push int32(0x2)
-push 0x03
-scall
-eq
-
-push bigint(1000000)
-push int16(2)
-push 0x03
-scall
+  - int8.0
+  - int16.0
+  - int32.0

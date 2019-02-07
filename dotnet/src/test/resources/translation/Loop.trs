@@ -1,0 +1,147 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Loop.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Loop.cs
+    optimize: true
+---
+translation: |-
+  meta custom "CIL"
+  meta program_name "Loop"
+  dup
+  push "ctor"
+  eq
+  jumpi @method_ctor
+  push "init"
+  sexist
+  jumpi @methods
+  push "Program was not initialized"
+  throw
+  @methods:
+  dup
+  push "TestLoop"
+  eq
+  jumpi @method_TestLoop
+  push "Wrong method name"
+  throw
+  @method_TestLoop:
+  meta method {
+  "name":"TestLoop","returnTpe":int8(3)
+  }
+  push null
+  push null
+  meta source_mark {
+  "sl":int32(8),"sc":int32(8),"el":int32(8),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(18)
+  }
+  push int32(0)
+  push int32(3)
+  swapn
+  pop
+  meta source_mark {
+  "sl":int32(9),"sc":int32(13),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(22)
+  }
+  push int32(0)
+  push int32(2)
+  swapn
+  pop
+  jump @TestLoop_br14
+  @TestLoop_br6:
+  push int32(2)
+  dupn
+  push int32(2)
+  meta source_mark {
+  "sl":int32(10),"sc":int32(12),"el":int32(10),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(19)
+  }
+  add
+  push int32(3)
+  swapn
+  pop
+  push int32(1)
+  dupn
+  push int32(1)
+  meta source_mark {
+  "sl":int32(9),"sc":int32(32),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(35)
+  }
+  add
+  push int32(2)
+  swapn
+  pop
+  @TestLoop_br14:
+  push int32(1)
+  dupn
+  meta source_mark {
+  "sl":int32(9),"sc":int32(24),"el":int32(9),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(30)
+  }
+  push int32(10)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestLoop_br6
+  jump @TestLoop_br25
+  @TestLoop_br21:
+  push int32(2)
+  dupn
+  push int32(2)
+  mul
+  push int32(3)
+  swapn
+  pop
+  @TestLoop_br25:
+  meta source_mark {
+  "sl":int32(14),"sc":int32(11),"el":int32(14),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(18)
+  }
+  push int32(2)
+  dupn
+  meta source_mark {
+  "sl":int32(13),"sc":int32(8),"el":int32(13),"src":"$PRAVDA_TMP_DIR/Loop.cs","ec":int32(25)
+  }
+  push int32(10000)
+  swap
+  lt
+  push int8(3)
+  cast
+  push int32(0)
+  eq
+  not
+  jumpi @TestLoop_br21
+  push int32(2)
+  dupn
+  jump @TestLoop_lvc
+  @TestLoop_lvc:
+  swap
+  pop
+  swap
+  pop
+  swap
+  pop
+  push int8(3)
+  cast
+  jump @stop
+  @method_ctor:
+  meta method {
+  "name":"ctor","returnTpe":int8(0)
+  }
+  push "init"
+  sexist
+  not
+  jumpi @ctor_ok
+  push "Program has been already initialized"
+  throw
+  @ctor_ok:
+  push null
+  push "init"
+  sput
+  jump @ctor_lvc
+  @ctor_lvc:
+  pop
+  jump @stop
+  @stop:

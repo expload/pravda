@@ -24,9 +24,10 @@ import cats.data.OptionT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import korolev.Context
+import korolev.server.emptyRouter
 import korolev.akkahttp._
 import korolev.execution._
-import korolev.server.{KorolevServiceConfig, ServerRouter}
+import korolev.server.KorolevServiceConfig
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
 import pravda.common.domain.{Address, NativeCoin}
@@ -38,12 +39,13 @@ import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.bjson._
 import pravda.node.db.DB
 import pravda.node.persistence.FileStore
 import pravda.node.utils
 import pravda.vm
-import pravda.vm.Data
+import pravda.vm.{Data, MarshalledData}
 import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
@@ -82,6 +84,23 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private def mono(s: Data): Node =
     'span ('class /= "hash", s.mkString(pretty = true))
+
+  private def mono(s: MarshalledData): Node =
+    'span (
+      'class /= "hash",
+      s match {
+        case MarshalledData.Complex(data, pseudoHeap) =>
+          s"""Heap
+           |----------
+           |${pseudoHeap.foreach { case (k, v) => s"${k.mkString(pretty = true)}: ${v.mkString(pretty = true)}" }}
+           |Data
+           |----------
+           |${data.mkString(pretty = true)}
+         """.stripMargin
+        case MarshalledData.Simple(data) =>
+          data.mkString(pretty = true)
+      }
+    )
 
   private def effectToTableElement(effect: vm.Effect): Map[String, Node] = {
 
@@ -174,9 +193,8 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
 
   private val service = akkaHttpService(
     KorolevServiceConfig[Future, GuiState, Any](
-      serverRouter = ServerRouter
-        .empty[Future, GuiState]
-        .withRootPath("/ui/"),
+      router = emptyRouter,
+      rootPath = "/ui/",
       stateStorage = StateStorage.default(SendTransactionScreen(false, None)),
       head = Seq(
         'link ('href /= "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css", 'rel /= "stylesheet"),
@@ -411,7 +429,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
     for {
       blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
-        transcode(Bson @@ r.bytes).to[Map[TransactionId, Seq[vm.Effect]]])
+        transcode(BJson @@ r.bytes).to[Map[TransactionId, Seq[vm.Effect]]])
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {

@@ -18,16 +18,19 @@
 package pravda.dotnet.translation
 
 import cats.instances.list._
+import cats.instances.vector._
 import cats.instances.either._
+import cats.instances.option._
 import cats.syntax.traverse._
+import com.google.protobuf.ByteString
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
-import pravda.dotnet.parser.CIL
+import pravda.dotnet.parser.{CIL, Signatures}
 import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
-import pravda.dotnet.translation.opcode.{CallsTranslation, FieldsTranslation, OpcodeTranslator, StdlibAsm}
+import pravda.dotnet.translation.opcode.{CallsTranslation, OpcodeTranslator, StdlibAsm}
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Meta, Opcodes}
 
@@ -36,17 +39,75 @@ import scala.collection.mutable.ListBuffer
 
 object Translator {
 
-  def dotnetToVmTpe(sigType: SigType): Meta.TypeSignature = sigType match {
-    case SigType.Void          => Meta.TypeSignature.Null
-    case SigType.Boolean       => Meta.TypeSignature.Boolean
-    case SigType.I1            => Meta.TypeSignature.Int8
-    case SigType.I2            => Meta.TypeSignature.Int16
-    case SigType.I4            => Meta.TypeSignature.Int32
-    case SigType.U1            => Meta.TypeSignature.Uint8
-    case SigType.U2            => Meta.TypeSignature.Uint16
-    case SigType.U4            => Meta.TypeSignature.Uint32
-    case TypeDetectors.Bytes() => Meta.TypeSignature.Bytes
-    case SigType.String        => Meta.TypeSignature.Utf8
+  final val CILMark = Meta.Custom("CIL")
+
+  private def castRetTpe(stpe: SigType): Option[Data.Type] = {
+    stpe match {
+      case SigType.Boolean => Some(Data.Type.Boolean)
+      case SigType.Char    => Some(Data.Type.Int8)
+      case SigType.I1      => Some(Data.Type.Int8)
+      case SigType.U1      => Some(Data.Type.Int16)
+      case SigType.I2      => Some(Data.Type.Int16)
+      case SigType.U2      => Some(Data.Type.Int32)
+      case SigType.I4      => Some(Data.Type.Int32)
+      case SigType.U4      => Some(Data.Type.Int64)
+      case SigType.I8      => Some(Data.Type.Int64)
+      case SigType.U8      => Some(Data.Type.Int64)
+      case SigType.R4      => Some(Data.Type.Number)
+      case SigType.R8      => Some(Data.Type.Number)
+      case SigType.String  => Some(Data.Type.Utf8)
+      case SigType.I       => Some(Data.Type.Int32)
+      case SigType.U       => Some(Data.Type.Int64)
+      case _               => None
+    }
+  }
+
+  private def castArgs(argsTypes: Seq[Signatures.Tpe], withMethodNameOrObject: Boolean): List[Operation] = {
+    def castArgTpe(stpe: SigType): Option[Data.Type] = {
+      stpe match {
+        case SigType.Boolean => Some(Data.Type.Int32)
+        case SigType.Char    => Some(Data.Type.Int8)
+        case SigType.I1      => Some(Data.Type.Int8)
+        case SigType.U1      => Some(Data.Type.Int16)
+        case SigType.I2      => Some(Data.Type.Int16)
+        case SigType.U2      => Some(Data.Type.Int32)
+        case SigType.I4      => Some(Data.Type.Int32)
+        case SigType.U4      => Some(Data.Type.Int64)
+        case SigType.I8      => Some(Data.Type.Int64)
+        case SigType.U8      => Some(Data.Type.Int64)
+        case SigType.R4      => Some(Data.Type.Number)
+        case SigType.R8      => Some(Data.Type.Number)
+        case SigType.String  => Some(Data.Type.Utf8)
+        case SigType.I       => Some(Data.Type.Int32)
+        case SigType.U       => Some(Data.Type.Int64)
+        case _               => None
+      }
+    }
+
+    argsTypes.toList.zipWithIndex.flatMap {
+      case (tpe, i) =>
+        castArgTpe(tpe.tpe) match {
+          case Some(dtpe) =>
+            val offset = argsTypes.length - i + (if (withMethodNameOrObject) 1 else 0)
+            opcode.swapn(offset) ::: opcode.cast(dtpe) ::: opcode.swapn(offset)
+          case None => List()
+        }
+    }
+  }
+
+  def dotnetToVmTpe(sigType: SigType): Option[Meta.TypeSignature] = sigType match {
+    case SigType.Void          => Some(Meta.TypeSignature.Null)
+    case SigType.Boolean       => Some(Meta.TypeSignature.Boolean)
+    case SigType.I1            => Some(Meta.TypeSignature.Int8)
+    case SigType.I2            => Some(Meta.TypeSignature.Int16)
+    case SigType.I4            => Some(Meta.TypeSignature.Int32)
+    case SigType.I8            => Some(Meta.TypeSignature.Int64)
+    case SigType.U1            => Some(Meta.TypeSignature.Int16)
+    case SigType.U2            => Some(Meta.TypeSignature.Int32)
+    case SigType.U4            => Some(Meta.TypeSignature.Int64)
+    case TypeDetectors.Bytes() => Some(Meta.TypeSignature.Bytes)
+    case SigType.String        => Some(Meta.TypeSignature.Utf8)
+    case _                     => None
     // TODO add more types
   }
 
@@ -56,14 +117,14 @@ object Translator {
       val methodNames = typeDefData.methods.flatMap {
         case m @ MethodDefData(_, _, flags, name, sigIdx, _) =>
           if (MethodExtractors.isVirtual(m)) {
-            Some(CallsTranslation.fullMethodName(name, tctx.signatures.get(sigIdx)))
+            Some(NamesBuilder.fullMethod(name, tctx.signatures.get(sigIdx)))
           } else {
             None
           }
       }
 
       val notUsedMethods = methodNames.filter(name => !usedMethods.contains(name))
-      val notUsedMethodsWithType = notUsedMethods.map((_, CallsTranslation.fullTypeDefName(typeDefData)))
+      val notUsedMethodsWithType = notUsedMethods.map((_, NamesBuilder.fullTypeDef(typeDefData)))
 
       typeDefData.parent match {
         case typeDef: TypeDefData =>
@@ -76,10 +137,55 @@ object Translator {
       case (name, tpe) =>
         List(
           Operation(Opcodes.DUP),
-          Operation.PushRef(s"func_$tpe.$name"),
+          Operation.PushOffset(s"func_$tpe.$name"),
           Operation.StructMut(Some(Data.Primitive.Utf8(name)))
         )
     }.toList
+  }
+
+  private def defaultFieldValue(f: FieldData, tctx: TranslationCtx): Data.Primitive =
+    (for {
+      sig <- tctx.signatures.get(f.signatureIdx)
+    } yield {
+      sig match {
+        case FieldSig(tpe) =>
+          tpe match {
+            case SigType.Boolean       => Data.Primitive.Bool.False
+            case SigType.I1            => Data.Primitive.Int8(0)
+            case SigType.I2            => Data.Primitive.Int16(0)
+            case SigType.I4            => Data.Primitive.Int32(0)
+            case SigType.I8            => Data.Primitive.Int64(0L)
+            case SigType.U1            => Data.Primitive.Int16(0)
+            case SigType.U2            => Data.Primitive.Int32(0)
+            case SigType.U4            => Data.Primitive.Int64(0L)
+            case SigType.R4            => Data.Primitive.Number(0.0)
+            case SigType.R8            => Data.Primitive.Number(0.0)
+            case TypeDetectors.Bytes() => Data.Primitive.Bytes(ByteString.EMPTY)
+            case SigType.String        => Data.Primitive.Utf8("")
+            case _                     => Data.Primitive.Null
+          }
+        case _ => Data.Primitive.Null
+      }
+    }).getOrElse(Data.Primitive.Null)
+
+  private def initStructFields(typeDefData: TypeDefData, tctx: TranslationCtx): List[Operation] =
+    typeDefData.fields.toList.flatMap(
+      f =>
+        List(Operation(Opcodes.DUP),
+             Operation.Push(defaultFieldValue(f, tctx)),
+             Operation.StructMut(Some(Data.Primitive.Utf8(f.name)))))
+
+  private def initProgramFields(typeDefData: TypeDefData, tctx: TranslationCtx): List[Operation] = {
+    typeDefData.fields.toList
+      .filterNot(f =>
+        tctx.signatures.get(f.signatureIdx).exists {
+          case FieldSig(SigType.Generic(TypeDetectors.Mapping(), _)) => true
+          case _                                                     => false
+      })
+      .flatMap(f =>
+        List(Operation.Push(defaultFieldValue(f, tctx)),
+             Operation.Push(Data.Primitive.Utf8(s"p_${f.name}")),
+             Operation(Opcodes.SPUT)))
   }
 
   private def eliminateDeadFuncs(methods: List[MethodTranslation],
@@ -110,6 +216,55 @@ object Translator {
     funcs.filter(f => all.contains(f.label))
   }
 
+  private def inspectProgramTypeDef(typeDef: TypeDefData, tctx: TranslationCtx): Either[TranslationError, Unit] = {
+    lazy val staticFields = {
+      val staticFieldO = typeDef.fields.find(f => FieldExtractors.isStatic(f.flags))
+      staticFieldO match {
+        case Some(f) =>
+          Left(
+            TranslationError(InternalError(s"[Program] must not contain static fields: " +
+                               s"${NamesBuilder.fullTypeDef(typeDef)} contains static ${f.name}"),
+                             None))
+        case None =>
+          Right(())
+      }
+    }
+
+    lazy val privateFields = typeDef.fields.map { f =>
+      if (!FieldExtractors.isPrivate(f)) {
+        Left(TranslationError(
+          InternalError(
+            s"All [Program] fields must be private: ${f.name} in ${NamesBuilder.fullTypeDef(typeDef)} is not private"),
+          None))
+      } else {
+        Right(())
+      }
+    }.sequence
+
+    for {
+      _ <- staticFields
+      _ <- privateFields
+    } yield ()
+  }
+
+  private def inspectStructTypeDef(typeDef: TypeDefData, tctx: TranslationCtx): Either[TranslationError, Unit] = {
+    typeDef.fields
+      .map { f =>
+        val isMapping = for {
+          parentSig <- tctx.signatures.get(f.signatureIdx)
+        } yield CallsTranslation.detectMapping(parentSig)
+
+        if (isMapping.getOrElse(false)) {
+          Left(TranslationError(InternalError(s"User defined classes must not contain Mappings: ${NamesBuilder
+            .fullTypeDef(typeDef)} contains ${f.name}"), None))
+        } else {
+          Right(())
+        }
+      }
+      .sequence
+      .map(_ => ())
+  }
+
   private def translateMethod(cil: List[CIL.Op],
                               name: String,
                               kind: String,
@@ -126,6 +281,17 @@ object Translator {
 
     val ctx =
       MethodTranslationCtx(tctx, argsCount, localsCount, name, kind, void, func, static, struct, debugInfo)
+
+    val castArgsOpsO = for {
+      sig <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
+      params <- MethodExtractors.methodParams(sig)
+    } yield castArgs(params, !func && !static)
+
+    val castRetOpsO = for {
+      sig <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
+      tpe <- MethodExtractors.methodType(sig)
+      castTpe <- castRetTpe(tpe)
+    } yield opcode.cast(castTpe)
 
     val opTranslationsE = {
       def doTranslation(cil: List[CIL.Op],
@@ -188,12 +354,14 @@ object Translator {
         methodSign <- tctx.signatures.get(tctx.methodRow(id).signatureIdx)
         methodTpe <- MethodExtractors.methodType(methodSign)
         argTpes <- MethodExtractors.methodParams(methodSign)
+        dotnetMethodTpe <- dotnetToVmTpe(methodTpe)
+        dotnetArgTpes <- argTpes.map(tpe => dotnetToVmTpe(tpe.tpe)).sequence
       } yield
         Operation.Meta(
           Meta.MethodSignature(
             name,
-            dotnetToVmTpe(methodTpe),
-            argTpes.map(tpe => dotnetToVmTpe(tpe.tpe))
+            dotnetMethodTpe,
+            dotnetArgTpes
           )
         )
     } else {
@@ -209,10 +377,12 @@ object Translator {
         forceAdd,
         List(
           OpCodeTranslation(List.empty, metaMethodMark.toList),
+          OpCodeTranslation(List.empty, castArgsOpsO.getOrElse(List.empty)),
           OpCodeTranslation(List.empty, List.fill(localsCount)(Operation.Push(Data.Primitive.Null)))
         )
           ++ opTranslations ++
           List(OpCodeTranslation(List.empty, Operation.Label(s"${name}_lvc") :: clear)) ++
+          (if (!void) List(OpCodeTranslation(List.empty, castRetOpsO.toList.flatten)) else List.empty) ++
           List(
             OpCodeTranslation(List.empty,
                               if (func) List(Operation(Opcodes.RET))
@@ -220,16 +390,17 @@ object Translator {
       )
   }
 
-  def translateVerbose(files: List[ParsedDotnetFile],
+  def translateVerbose(rawFiles: List[ParsedDotnetFile],
                        mainClass: Option[String]): Either[TranslationError, Translation] = {
-    val filesToProgramClasses = files.flatMap(f =>
+    val files =
+      rawFiles.filterNot(f => f.parsedPdb.exists(_.tablesData.documentTable.exists(_.path.endsWith("Pravda.cs"))))
+
+    val programClasses = files.flatMap(f =>
       f.parsedPe.cilData.tables.customAttributeTable.collect {
         case CustomAttributeData(td: TypeDefData,
                                  MemberRefData(TypeRefData(_, "Program", "Expload.Pravda"), ".ctor", _)) =>
-          f -> td
+          td
     })
-
-    val programClasses = filesToProgramClasses.map(_._2)
 
     val mainProgramClassE = mainClass match {
       case None =>
@@ -240,40 +411,61 @@ object Translator {
         }
       case Some(name) =>
         programClasses
-          .find(cls => CallsTranslation.fullTypeDefName(cls) == name)
+          .find(cls => NamesBuilder.fullTypeDef(cls) == name)
           .toRight(TranslationError(InternalError(s"Unable to find $name class with [Program] attribute"), None))
     }
 
+    val structs = files.flatMap(f => f.parsedPe.cilData.tables.typeDefTable).filterNot(programClasses.contains)
+
+    val methodIndexes = TypeDefInvertedFileIndex[MethodDefData](
+      files,
+      (td: TypeDefData) => td.methods,
+      (f: ParsedDotnetFile, m: MethodDefData) =>
+        NamesBuilder.fullMethod(m.name, f.parsedPe.signatures.get(m.signatureIdx))
+    )
+
+    val fieldIndexes = TypeDefInvertedFileIndex[FieldData](files,
+                                                           (td: TypeDefData) => td.fields,
+                                                           (_: ParsedDotnetFile, f: FieldData) => f.name)
+
     mainProgramClassE.flatMap { mainCls =>
       val translations = for {
-        (f, cls) <- filesToProgramClasses
+        ((f, methodIndex), fieldIndex) <- files.zip(methodIndexes).zip(fieldIndexes)
       } yield {
-        if (cls.fields.exists(f => FieldsTranslation.isStatic(f.flags))) {
-          Left(TranslationError(InternalError("Static fields in [Program] class are forbidden"), None))
-        } else {
-          val tables = f.parsedPe.cilData.tables
-          val methodsToTypes: Map[Int, TypeDefData] = tables.methodDefTable.zipWithIndex.flatMap {
-            case (m, i) => tables.typeDefTable.find(_.methods.exists(_ == m)).map(i -> _)
-          }.toMap
 
-          val translationCtx = TranslationCtx(f.parsedPe.signatures,
-                                              f.parsedPe.cilData,
-                                              mainCls,
-                                              programClasses,
-                                              methodsToTypes,
-                                              f.parsedPdb.map(_.tablesData))
-          translateAllMethods(f.parsedPe.methods, translationCtx)
-        }
+        val translationCtx = TranslationCtx(
+          f.parsedPe.signatures,
+          f.parsedPe.cilData,
+          mainCls,
+          programClasses,
+          structs,
+          methodIndex,
+          fieldIndex,
+          f.parsedPdb.map(_.tablesData)
+        )
+
+        val typeDefs = f.parsedPe.cilData.tables.typeDefTable
+
+        for {
+          _ <- typeDefs.filter(programClasses.contains).map(td => inspectProgramTypeDef(td, translationCtx)).sequence
+          _ <- typeDefs.filterNot(programClasses.contains).map(td => inspectStructTypeDef(td, translationCtx)).sequence
+          res <- translateAllMethods(f.parsedPe.methods, translationCtx)
+        } yield res
       }
 
-      (translations.sequence: Either[TranslationError, List[Translation]]).map(_.reduce[Translation] {
-        case (Translation(methods1, funcs1), Translation(methods2, funcs2)) =>
-          Translation(methods1 ++ methods2, funcs1 ++ funcs2)
-      })
+      val all =
+        (translations.sequence: Either[TranslationError, List[FileTranslation]]).map(_.reduce[FileTranslation] {
+          case (FileTranslation(methods1, funcs1), FileTranslation(methods2, funcs2)) =>
+            FileTranslation(methods1 ++ methods2, funcs1 ++ funcs2)
+        })
+
+      val clearedAll = all.map(a => a.copy(funcs = eliminateDeadFuncs(a.methods, a.funcs ++ StdlibAsm.stdlibFuncs)))
+
+      clearedAll.map(Translation(_, NamesBuilder.fullTypeDef(mainCls).replace(".", "")))
     }
   }
 
-  def translateAllMethods(methods: List[Method], tctx: TranslationCtx): Either[TranslationError, Translation] = {
+  def translateAllMethods(methods: List[Method], tctx: TranslationCtx): Either[TranslationError, FileTranslation] = {
 
     def withMethodTable(isFunc: MethodDefData => Boolean): Int => Boolean =
       i => isFunc(tctx.methodRow(i))
@@ -300,9 +492,9 @@ object Translator {
 
     val programMethodsFuncsE = for {
       methodsFuncs <- filterValidateMethods(
-        i => tctx.isMainProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i),
-        i => !isStatic(i) && (isPrivate(i) || isPublic(i)),
-        InternalError("Only public or private non-static methods are allowed")
+        i => tctx.isMainProgramMethod(i) && !isCtor(i) && !isCctor(i) && !isMain(i) && !isStatic(i),
+        i => isPrivate(i) || isPublic(i),
+        InternalError("Only public or private methods are allowed")
       )
       _ <- {
         val names = methodsFuncs.map(i => tctx.methodRow(i).name)
@@ -333,9 +525,9 @@ object Translator {
       }
     } yield ctor
 
-    val structEntitiesE = for {
-      methods <- filterMethods(i => !tctx.isProgramMethod(i) && !isMain(i))
-    } yield methods
+    val programStaticFuncsE = filterMethods(i => tctx.isProgramMethod(i) && !tctx.isMainProgramMethod(i) && isStatic(i))
+
+    val structEntitiesE = filterMethods(i => !tctx.isProgramMethod(i) && !isMain(i))
 
     val structFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && !isStatic(i)))
     val structStaticFuncsE = structEntitiesE.map(_.filter(i => !isCtor(i) && !isCctor(i) && isStatic(i)))
@@ -348,25 +540,17 @@ object Translator {
         case Some(i) =>
           val method = methods(i)
           val prefix = List(
-            Operation(Opcodes.FROM),
-            Operation(Opcodes.PADDR),
-            Operation(Opcodes.OWNER),
-            Operation(Opcodes.EQ),
-            Operation.JumpI(Some("ctor_ok_1")),
-            Operation.Push(Data.Primitive.Utf8("Only owner can call the constructor")),
-            Operation(Opcodes.THROW),
-            Operation.Label("ctor_ok_1"),
             Operation.Push(Data.Primitive.Utf8("init")),
             Operation(Opcodes.SEXIST),
             Operation(Opcodes.NOT),
-            Operation.JumpI(Some("ctor_ok_2")),
+            Operation.JumpI(Some("ctor_ok")),
             Operation.Push(Data.Primitive.Utf8("Program has been already initialized")),
             Operation(Opcodes.THROW),
-            Operation.Label("ctor_ok_2"),
+            Operation.Label("ctor_ok"),
             Operation.Push(Data.Primitive.Null),
             Operation.Push(Data.Primitive.Utf8("init")),
-            Operation(Opcodes.SPUT),
-          )
+            Operation(Opcodes.SPUT)
+          ) ++ initProgramFields(tctx.mainProgramClass, tctx)
 
           translateMethod(
             BranchTransformer.transformBranches(method.opcodes, "ctor"),
@@ -442,15 +626,45 @@ object Translator {
         .sequence
     } yield opss
 
+    lazy val programStaticFuncsOpsE: Either[TranslationError, List[MethodTranslation]] = for {
+      programStaticFuncs <- programStaticFuncsE
+      opss <- programStaticFuncs
+        .map(i => {
+          val method = methods(i)
+          val methodRow = tctx.methodRow(i)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
+          val name = s"$structName.$methodName"
+
+          translateMethod(
+            BranchTransformer.transformBranches(method.opcodes, name),
+            name,
+            "func",
+            i,
+            methodRow.params.length,
+            MethodExtractors.localVariables(method, tctx.signatures).fold(0)(_.length),
+            void = MethodExtractors.isVoid(methodRow, tctx.signatures),
+            func = true,
+            static = true,
+            struct = None,
+            forceAdd = false,
+            tctx.pdbTables.map(_.methodDebugInformationTable(i)),
+            tctx
+          )
+        })
+        .sequence
+    } yield opss
+
     lazy val structFuncsOpsE: Either[TranslationError, List[MethodTranslation]] = for {
       structFuncs <- structFuncsE
       opss <- structFuncs
         .map(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
-          val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodsToTypes(i)
-          val structName = CallsTranslation.fullTypeDefName(tpe)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
           val name = s"$structName.$methodName"
 
           translateMethod(
@@ -478,9 +692,9 @@ object Translator {
         .map(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
-          val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodsToTypes(i)
-          val structName = CallsTranslation.fullTypeDefName(tpe)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
           val name = s"$structName.$methodName"
 
           translateMethod(
@@ -508,22 +722,12 @@ object Translator {
         .flatMap(i => {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
-          val methodName = CallsTranslation.fullMethodName(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodsToTypes(i)
-          val structName = CallsTranslation.fullTypeDefName(tpe)
+          val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
+          val tpe = tctx.methodIndex.parent(i).get
+          val structName = NamesBuilder.fullTypeDef(tpe)
           val name = s"$structName.$methodName"
 
           List(
-            Right(
-              MethodTranslation(
-                "vtable",
-                structName,
-                forceAdd = false,
-                List(
-                  OpCodeTranslation(List.empty,
-                                    vtableInit(tpe, tctx) :+
-                                      Operation(Opcodes.RET)))
-              )),
             translateMethod(
               BranchTransformer.transformBranches(method.opcodes, name),
               name,
@@ -544,23 +748,51 @@ object Translator {
         .sequence
     } yield opss
 
+    lazy val structCtorHelpersE: Either[TranslationError, List[MethodTranslation]] = for {
+      structCtors <- structCtorsE
+    } yield
+      structCtors.map(i => tctx.methodIndex.parent(i).get).flatMap { s =>
+        List(
+          MethodTranslation(
+            "vtable",
+            NamesBuilder.fullTypeDef(s),
+            forceAdd = false,
+            List(
+              OpCodeTranslation(List.empty,
+                                vtableInit(s, tctx) :+
+                                  Operation(Opcodes.RET)))
+          ),
+          MethodTranslation(
+            "default_fields",
+            NamesBuilder.fullTypeDef(s),
+            forceAdd = false,
+            List(
+              OpCodeTranslation(List.empty,
+                                initStructFields(s, tctx) :+
+                                  Operation(Opcodes.RET)))
+          )
+        )
+      }
+
     for {
       programMethodsOps <- programMethodsOpsE
       ctorOps <- ctorOpsE
       programFuncOps <- programFuncsOpsE
+      programStaticFuncOps <- programStaticFuncsOpsE
       structFuncsOps <- structFuncsOpsE
       strucStaticFuncsOps <- structStaticFuncOpsE
       structCtorsOps <- structCtorsOpsE
+      structCtorHelpers <- structCtorHelpersE
     } yield {
       val methodsOps = ctorOps ++ programMethodsOps
-      val funcsOps = programFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps
-      Translation(methodsOps, eliminateDeadFuncs(methodsOps, funcsOps ++ StdlibAsm.stdlibFuncs))
+      val funcsOps = programFuncOps ++ programStaticFuncOps ++ structFuncsOps ++ strucStaticFuncsOps ++ structCtorsOps ++ structCtorHelpers
+      FileTranslation(methodsOps, funcsOps)
     }
   }
 
   def translationToAsm(t: Translation): List[Operation] = {
 
-    val jumpToMethods = t.methods
+    val jumpToMethods = t.file.methods
       .filter(_.name != "ctor")
       .sortBy(_.name)
       .flatMap(
@@ -584,7 +816,7 @@ object Translator {
       Operation(Opcodes.THROW)
     )
 
-    val prefix = ctorCheck ++
+    val prefix = Operation.Meta(CILMark) :: Operation.Meta(Meta.ProgramName(t.programName)) :: ctorCheck ++
       List(Operation.Label("methods")) ++ jumpToMethods ++ List(
       Operation.Push(Data.Primitive.Utf8("Wrong method name")),
       Operation(Opcodes.THROW)
@@ -596,8 +828,8 @@ object Translator {
     }
 
     prefix ++
-      t.methods.sortBy(_.name).flatMap(m => Operation.Label(m.label) :: m.opcodes.flatMap(opcodeToAsm)) ++
-      t.funcs.sortBy(_.label).flatMap(f => Operation.Label(f.label) :: f.opcodes.flatMap(opcodeToAsm)) ++
+      t.file.methods.sortBy(_.name).flatMap(m => Operation.Label(m.label) :: m.opcodes.flatMap(opcodeToAsm)) ++
+      t.file.funcs.sortBy(_.label).flatMap(f => Operation.Label(f.label) :: f.opcodes.flatMap(opcodeToAsm)) ++
       List(Operation.Label("stop"))
   }
 

@@ -75,7 +75,7 @@ object TablesData {
                                  params: Vector[ParamData])
       extends MethodRefDefData
   final case class MemberRefData(tableRowData: TableRowData, name: String, signatureIdx: Long) extends MethodRefDefData
-  final case class FieldData(flags: Short, name: String, signatureIdx: Long)                   extends TableRowData
+  final case class FieldData(id: Int, flags: Short, name: String, signatureIdx: Long)          extends TableRowData
   final case class FieldRVAData(field: FieldData, rva: Long)                                   extends TableRowData
   final case class ParamData(flags: Short, seq: Int, name: String)                             extends TableRowData
   final case class TypeDefData(id: Int,
@@ -127,11 +127,11 @@ object TablesData {
         } yield ParamData(flags, seq, name)
     }.sequence
 
-    val fieldListV = peData.tables.fieldTable.map {
-      case FieldRow(flags, nameIdx, signatureIdx) =>
+    val fieldListV = peData.tables.fieldTable.zipWithIndex.map {
+      case (FieldRow(flags, nameIdx, signatureIdx), i) =>
         for {
           name <- Heaps.string(peData.stringHeap, nameIdx)
-        } yield FieldData(flags, name, signatureIdx)
+        } yield FieldData(i, flags, name, signatureIdx)
     }.sequence
 
     val fieldRVAListV = peData.tables.fieldRVATable.map {

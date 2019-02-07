@@ -1,10 +1,10 @@
----preconditions
-watts-limit: 1000
----expectations
-watts-spent: 233
+vm:
+  watts-limit: 1000
+code: |-
+  push "hello world"
+  push 0x02
+  scall
+---
+watts-spent: 223
 stack:
-  x98C615784CCB5FE5936FBC0CBE9DFDB408D92F0F
----code
-push "hello world"
-push 0x02
-scall
+  - bytes.98C615784CCB5FE5936FBC0CBE9DFDB408D92F0F

@@ -1,0 +1,30 @@
+vm:
+  stack:
+    [utf8.TestObjectInit]
+  storage:
+    utf8.init: "null"
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: ObjectInit.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/ObjectInit.cs
+    optimize: true
+---
+heap:
+  ref.0:
+    utf8.bs: bytes.
+    utf8.d: number.0.0
+    utf8.str: utf8.
+    utf8.s: int16.0
+    utf8.i: int32.0
+    utf8.b: int16.0
+effects:
+  - eventType: StorageRead
+    program: '0000000000000000000000000000000000000000000000000000000000000000'
+    key: utf8.init
+    value: 'null'

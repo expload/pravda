@@ -37,6 +37,9 @@ package object opcode {
   def pushBytes(d: Array[Byte]): asm.Operation =
     push(d, (d: Array[Byte]) => Data.Primitive.Bytes(ByteString.copyFrom(d)))
 
+  def pushBigInt(l: Long): asm.Operation =
+    push(l, (l: Long) => Data.Primitive.BigInt(BigInt(l)))
+
   def pushType(tpe: Data.Type): asm.Operation =
     push(tpe, Data.Primitive.Int8)
 
@@ -45,4 +48,7 @@ package object opcode {
 
   def dupn(n: Int): List[asm.Operation] =
     List(pushInt(n), asm.Operation(Opcodes.DUPN))
+
+  def swapn(n: Int): List[asm.Operation] =
+    List(pushInt(n), asm.Operation(Opcodes.SWAPN))
 }

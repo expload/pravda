@@ -24,7 +24,7 @@ import pravda.vm.Data.Array._
 import pravda.vm.Data.Primitive.{Bool, _}
 import pravda.vm.Data.{Primitive, Struct, Type}
 import pravda.vm.Opcodes._
-import pravda.vm.Error.WrongType
+import pravda.vm.Error.{InvalidArgument, WrongType}
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
@@ -45,7 +45,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val data = memory.pop()
     val i = memory.heapPut(data)
     wattCounter.memoryUsage(data.volume.toLong)
-    memory.push(Data.Primitive.Ref(i))
+    memory.push(i)
   }
 
   @OpcodeImplementation(
@@ -55,7 +55,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   )
   def primitiveGet(): Unit = {
     val i = ref(memory.pop())
-    memory.heapGet(i.data) match {
+    memory.heapGet(i) match {
       case primitive: Data.Primitive => memory.push(primitive)
       case _                         => throw ThrowableVmError(Error.WrongType)
     }
@@ -64,15 +64,30 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   @OpcodeImplementation(
     opcode = NEW,
     description = "Puts the data following the opcode to the heap. " +
-      "Pushes reference to the stack."
+      "Pushes reference to the stack. Refs in structs and ref arrays are prohibited."
   )
   def `new`(): Unit = {
-    val data = Data.readFromByteBuffer(program)
+    val data = Data.readFromByteBuffer(program) match {
+      case _: Data.Primitive.Ref =>
+        throw ThrowableVmError(Error.WrongType)
+      case _: Data.Array.RefArray =>
+        throw ThrowableVmError(Error.WrongType)
+      case data: Data.Struct =>
+        // check for refs
+        data.data.foreach {
+          case (_: Primitive.Ref, _) =>
+            throw ThrowableVmError(Error.WrongType)
+          case (_, _: Primitive.Ref) =>
+            throw ThrowableVmError(Error.WrongType)
+          case _ => // do nothing
+        }
+        data
+      case x => x
+    }
     val i = memory.heapPut(data)
-    val reference = Data.Primitive.Ref(i)
     wattCounter.memoryUsage(data.volume.toLong)
-    wattCounter.memoryUsage(reference.volume.toLong)
-    memory.push(reference)
+    wattCounter.memoryUsage(i.volume.toLong)
+    memory.push(i)
   }
 
   @OpcodeImplementation(
@@ -89,9 +104,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case Type.Int8    => Data.Array.Int8Array(ArrayBuffer.fill(num.toInt)(0))
       case Type.Int16   => Data.Array.Int16Array(ArrayBuffer.fill(num.toInt)(0))
       case Type.Int32   => Data.Array.Int32Array(ArrayBuffer.fill(num.toInt)(0))
-      case Type.Uint8   => Data.Array.Uint8Array(ArrayBuffer.fill(num.toInt)(0))
-      case Type.Uint16  => Data.Array.Uint16Array(ArrayBuffer.fill(num.toInt)(0))
-      case Type.Uint32  => Data.Array.Uint32Array(ArrayBuffer.fill(num.toInt)(0L))
+      case Type.Int64   => Data.Array.Int64Array(ArrayBuffer.fill(num.toInt)(0L))
       case Type.BigInt  => Data.Array.BigIntArray(ArrayBuffer.fill(num.toInt)(scala.BigInt(0)))
       case Type.Number  => Data.Array.NumberArray(ArrayBuffer.fill(num.toInt)(0.0))
       case Type.Ref     => Data.Array.RefArray(ArrayBuffer.fill(num.toInt)(0))
@@ -101,7 +114,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case _            => throw ThrowableVmError(WrongType)
     }
 
-    memory.push(Data.Primitive.Ref(memory.heapPut(arr)))
+    memory.push(memory.heapPut(arr))
   }
 
   @OpcodeImplementation(
@@ -111,32 +124,38 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   )
   def arrayGet(): Unit = {
     val index = integer(memory.pop()).toInt
+
+    def readArray[T](read: Int => T, len: Int): T =
+      if (index < 0 || index >= len) {
+        throw ThrowableVmError(InvalidArgument)
+      } else {
+        read(index)
+      }
+
     memory.pop() match {
-      case Ref(reference) =>
+      case reference: Ref =>
         val datum = memory.heapGet(reference) match {
-          case Bytes(data)       => Uint8(data.byteAt(index) & 0xFF)
-          case Utf8(data)        => Uint8(data.charAt(index).toByte & 0xFF)
-          case Int8Array(data)   => Int8(data(index))
-          case Int16Array(data)  => Int16(data(index))
-          case Int32Array(data)  => Int32(data(index))
-          case Uint8Array(data)  => Uint8(data(index))
-          case Uint16Array(data) => Uint16(data(index))
-          case Uint32Array(data) => Uint32(data(index))
-          case BigIntArray(data) => BigInt(data(index))
-          case RefArray(data)    => Ref(data(index))
-          case BoolArray(data)   => data(index)
-          case Utf8Array(data)   => Utf8(data(index))
-          case BytesArray(data)  => Bytes(data(index))
+          case Bytes(data)       => Int8(readArray(data.byteAt, data.size()))
+          case Utf8(data)        => Int8(readArray(data.charAt, data.length).toByte)
+          case Int8Array(data)   => Int8(readArray(data.apply, data.length))
+          case Int16Array(data)  => Int16(readArray(data.apply, data.length))
+          case Int32Array(data)  => Int32(readArray(data.apply, data.length))
+          case Int64Array(data)  => Int64(readArray(data.apply, data.length))
+          case BigIntArray(data) => BigInt(readArray(data.apply, data.length))
+          case RefArray(data)    => Ref(readArray(data.apply, data.length))
+          case BoolArray(data)   => readArray(data.apply, data.length)
+          case Utf8Array(data)   => Utf8(readArray(data.apply, data.length))
+          case BytesArray(data)  => Bytes(readArray(data.apply, data.length))
           case _                 => throw ThrowableVmError(WrongType)
         }
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
       case Utf8(data) =>
-        val datum = Uint8(data.charAt(index).toByte & 0xFF)
+        val datum = Int8(readArray(data.charAt, data.length).toByte)
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
       case Bytes(data) =>
-        val datum = Uint8(data.byteAt(index) & 0xFF)
+        val datum = Int8(readArray(data.byteAt, data.size()))
         wattCounter.memoryUsage(datum.volume.toLong)
         memory.push(datum)
       case _ => throw ThrowableVmError(WrongType)
@@ -152,19 +171,25 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val index = integer(memory.pop()).toInt
     val primitive = memory.pop()
     val reference = ref(memory.pop())
-    val array = memory.heapGet(reference.data)
+    val array = memory.heapGet(reference)
+
+    def writeArray[T](value: T, write: (Int, T) => Unit, len: Int): Unit =
+      if (index < 0 || index >= len) {
+        throw ThrowableVmError(InvalidArgument)
+      } else {
+        write(index, value)
+      }
+
     (primitive, array) match {
-      case (Int8(value), Int8Array(data))     => data(index) = value
-      case (Int16(value), Int16Array(data))   => data(index) = value
-      case (Int32(value), Int32Array(data))   => data(index) = value
-      case (Uint8(value), Uint8Array(data))   => data(index) = value
-      case (Uint16(value), Uint16Array(data)) => data(index) = value
-      case (Uint32(value), Uint32Array(data)) => data(index) = value
-      case (BigInt(value), BigIntArray(data)) => data(index) = value
-      case (Ref(value), RefArray(data))       => data(index) = value
-      case (value: Bool, BoolArray(data))     => data(index) = value
-      case (Utf8(value), Utf8Array(data))     => data(index) = value
-      case (Bytes(value), BytesArray(data))   => data(index) = value
+      case (Int8(value), Int8Array(data))     => writeArray(value, data.update, data.length)
+      case (Int16(value), Int16Array(data))   => writeArray(value, data.update, data.length)
+      case (Int32(value), Int32Array(data))   => writeArray(value, data.update, data.length)
+      case (Int64(value), Int64Array(data))   => writeArray(value, data.update, data.length)
+      case (BigInt(value), BigIntArray(data)) => writeArray(value, data.update, data.length)
+      case (Ref(value), RefArray(data))       => writeArray(value, data.update, data.length)
+      case (value: Bool, BoolArray(data))     => writeArray(value, data.update, data.length)
+      case (Utf8(value), Utf8Array(data))     => writeArray(value, data.update, data.length)
+      case (Bytes(value), BytesArray(data))   => writeArray(value, data.update, data.length)
       case _                                  => throw ThrowableVmError(WrongType)
     }
   }
@@ -177,14 +202,12 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   )
   def length(): Unit = {
     val len = memory.pop() match {
-      case Ref(reference) =>
+      case reference: Ref =>
         memory.heapGet(reference) match {
           case Int8Array(data)   => data.length
           case Int16Array(data)  => data.length
           case Int32Array(data)  => data.length
-          case Uint8Array(data)  => data.length
-          case Uint16Array(data) => data.length
-          case Uint32Array(data) => data.length
+          case Int64Array(data)  => data.length
           case BigIntArray(data) => data.length
           case RefArray(data)    => data.length
           case BoolArray(data)   => data.length
@@ -197,7 +220,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
       case _           => throw ThrowableVmError(WrongType)
     }
 
-    memory.push(Data.Primitive.Uint32(len.toLong))
+    memory.push(Data.Primitive.Int32(len))
   }
 
   @OpcodeImplementation(
@@ -208,7 +231,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def structGet(): Unit = {
     val key = memory.pop()
     val reference = ref(memory.pop())
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     val datum = struct match {
       case Struct(data) =>
         data(key)
@@ -226,7 +249,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def structGetStatic(): Unit = {
     val reference = ref(memory.pop())
     val key = Data.readFromByteBuffer(program)
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     val datum = (struct, key) match {
       case (Struct(data), k: Primitive) =>
         data(k)
@@ -245,7 +268,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
     val key = memory.pop()
     val value = memory.pop()
     val reference = ref(memory.pop())
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     struct match {
       case Struct(data) =>
         data(key) = value
@@ -262,7 +285,7 @@ final class HeapOperations(memory: Memory, program: ByteBuffer, wattCounter: Wat
   def structMutStatic(): Unit = {
     val value = memory.pop()
     val reference = ref(memory.pop())
-    val struct = memory.heapGet(reference.data)
+    val struct = memory.heapGet(reference)
     val key = Data.readFromByteBuffer(program)
     (struct, key) match {
       case (Struct(data), k: Primitive) =>

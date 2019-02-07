@@ -17,7 +17,7 @@
 
 package pravda.vm
 
-import java.nio.ByteBuffer
+import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
@@ -49,20 +49,17 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Int8(_)        => "Int8"
       case Int16(_)       => "Int16"
       case Int32(_)       => "Int32"
-      case Uint8(_)       => "Uint8"
-      case Uint16(_)      => "Uint16"
-      case Uint32(_)      => "Uint32"
+      case Int64(_)       => "Int64"
       case BigInt(_)      => "BigInt"
       case Number(_)      => "Number"
       case Utf8(_)        => "Utf8"
       case Bytes(_)       => "Bytes"
       case Ref(_)         => "Ref"
+      case Offset(_)      => "Offset"
       case Int8Array(_)   => "Int8Array"
       case Int16Array(_)  => "Int16Array"
       case Int32Array(_)  => "Int32Array"
-      case Uint8Array(_)  => "Uint8Array"
-      case Uint16Array(_) => "Uint16Array"
-      case Uint32Array(_) => "Uint32Array"
+      case Int64Array(_)  => "Int64Array"
       case BigIntArray(_) => "BigIntArray"
       case NumberArray(_) => "NumberArray"
       case RefArray(_)    => "RefArray"
@@ -111,12 +108,11 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Int8(data)   => s"int8($data)"
       case Int16(data)  => s"int16($data)"
       case Int32(data)  => s"int32($data)"
-      case Uint8(data)  => s"uint8($data)"
-      case Uint16(data) => s"uint16($data)"
-      case Uint32(data) => s"uint32($data)"
+      case Int64(data)  => s"int64($data)"
       case Number(data) => s"number($data)"
       case BigInt(data) => s"bigint($data)"
       case Ref(data)    => s"#${ref(data)}"
+      case Offset(data) => s"$$${ref(data)}"
       case Bytes(data)  => s"x${bytes(data)}"
       case Bool.True    => "true"
       case Bool.False   => "false"
@@ -124,9 +120,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Int8Array(data)              => s"int8[${array(data)}]"
       case Int16Array(data)             => s"int16[${array(data)}]"
       case Int32Array(data)             => s"int32[${array(data)}]"
-      case Uint8Array(data)             => s"uint8[${array(data)}]"
-      case Uint16Array(data)            => s"uint16[${array(data)}]"
-      case Uint32Array(data)            => s"uint32[${array(data)}]"
+      case Int64Array(data)             => s"int64[${array(data)}]"
       case NumberArray(data)            => s"number[${array(data)}]"
       case BigIntArray(data)            => s"bigint[${array(data)}]"
       case RefArray(data)               => s"#[${arraym(data, ref)}]"
@@ -225,6 +219,11 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       buffer.putInt(x)
     }
 
+    def putOffset(x: Int): Unit = {
+      buffer.put(Type.Offset)
+      buffer.putShort(x.toShort)
+    }
+
     def putPrimitive(typeTag: Type)(f: ByteBuffer => Unit): Unit = {
       buffer.put(typeTag)
       putTaglessPrimitive(f)
@@ -282,19 +281,16 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       case Int8(data)        => putPrimitive(Type.Int8)(_.put(data))
       case Int16(data)       => putPrimitive(Type.Int16)(_.putShort(data))
       case Int32(data)       => putPrimitive(Type.Int32)(_.putInt(data))
-      case Uint8(data)       => putPrimitive(Type.Uint8)(_.putInt(data))
-      case Uint16(data)      => putPrimitive(Type.Uint16)(_.putInt(data))
-      case Uint32(data)      => putPrimitive(Type.Uint32)(_.putLong(data))
+      case Int64(data)       => putPrimitive(Type.Int64)(_.putLong(data))
       case BigInt(data)      => putTaggedBigInt(buffer, data)
       case Ref(data)         => putRef(data)
+      case Offset(data)      => putOffset(data)
       case Bool.True         => putBoolean(buffer, 1.toByte)
       case Bool.False        => putBoolean(buffer, 0.toByte)
       case Int8Array(data)   => putPrimitiveArray(Type.Int8, data)(_.put(_))
       case Int16Array(data)  => putPrimitiveArray(Type.Int16, data)(_.putShort(_))
       case Int32Array(data)  => putPrimitiveArray(Type.Int32, data)(_.putInt(_))
-      case Uint8Array(data)  => putPrimitiveArray(Type.Uint8, data)(_.putInt(_))
-      case Uint16Array(data) => putPrimitiveArray(Type.Uint16, data)(_.putInt(_))
-      case Uint32Array(data) => putPrimitiveArray(Type.Uint32, data)(_.putLong(_))
+      case Int64Array(data)  => putPrimitiveArray(Type.Int64, data)(_.putLong(_))
       case BigIntArray(data) => putArray(Type.BigInt, data)(putBigInt)
       case RefArray(data)    => putArray(Type.Ref, data)(_.putInt(_))
       case Number(data)      => putPrimitive(Type.Number)(_.putDouble(data))
@@ -337,9 +333,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => value
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8(data & 0xFF)
-          case Type.Uint16  => Uint16(data & 0xFF)
-          case Type.Uint32  => Uint32(data & 0xFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => BigInt(scala.BigInt(data.toInt))
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => Ref(data.toInt)
@@ -355,9 +349,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => value
           case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8(data & 0xFF)
-          case Type.Uint16  => Uint16(data & 0xFFFF)
-          case Type.Uint32  => Uint32(data & 0xFFFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => BigInt(scala.BigInt(data.toInt))
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => Ref(data.toInt)
@@ -365,6 +357,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(2)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putShort(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -374,9 +367,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => value
-          case Type.Uint8   => Uint8(data & 0xFFFFFFFF)
-          case Type.Uint16  => Uint16(data & 0xFFFFFFFF)
-          case Type.Uint32  => Uint32(data.toLong & 0xFFFFFFFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => BigInt(scala.BigInt(data))
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => Ref(data)
@@ -384,63 +375,26 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(4)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putInt(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
         }
-      case value @ Uint8(data) =>
+      case value @ Int64(data) =>
         `type` match {
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => value
-          case Type.Uint16  => Uint16(data)
-          case Type.Uint32  => Uint32(data.toLong)
+          case Type.Int64   => value
           case Type.BigInt  => BigInt(scala.BigInt(data))
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => Ref(data.toInt)
           case Type.Boolean => if (data == 0) Bool.False else Bool.True
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
-            val array = new scala.Array[Byte](1)
-            array(0) = data.toByte
-            Bytes(ByteString.copyFrom(array))
-        }
-      case value @ Uint16(data) =>
-        `type` match {
-          case Type.Int8    => Int8(data.toByte)
-          case Type.Int16   => Int16(data.toShort)
-          case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8(data & 0xFF)
-          case Type.Uint16  => value
-          case Type.Uint32  => Uint32(data.toLong)
-          case Type.BigInt  => BigInt(scala.BigInt(data))
-          case Type.Number  => Number(data.toDouble)
-          case Type.Ref     => Ref(data.toInt)
-          case Type.Boolean => if (data == 0) Bool.False else Bool.True
-          case Type.Utf8    => Utf8(data.toString)
-          case Type.Bytes =>
-            val buffer = ByteBuffer.allocate(2)
-            buffer.putShort(data.toShort)
-            buffer.rewind()
-            Bytes(ByteString.copyFrom(buffer))
-        }
-      case value @ Uint32(data) =>
-        `type` match {
-          case Type.Int8    => Int8(data.toByte)
-          case Type.Int16   => Int16(data.toShort)
-          case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8((data & 0xFF).toInt)
-          case Type.Uint16  => Uint16((data & 0xFFFF).toInt)
-          case Type.Uint32  => value
-          case Type.BigInt  => BigInt(scala.BigInt(data))
-          case Type.Number  => Number(data.toDouble)
-          case Type.Ref     => Ref(data.toInt)
-          case Type.Boolean => if (data == 0) Bool.False else Bool.True
-          case Type.Utf8    => Utf8(data.toString)
-          case Type.Bytes =>
-            val buffer = ByteBuffer.allocate(4)
-            buffer.putInt(data.toInt)
+            val buffer = ByteBuffer.allocate(8)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
+            buffer.putLong(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
         }
@@ -449,9 +403,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => Int32(data)
-          case Type.Uint8   => Uint8(data & 0xFF)
-          case Type.Uint16  => Uint16(data & 0xFFFF)
-          case Type.Uint32  => Uint32(data.toLong & 0xFFFFFFFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => BigInt(scala.BigInt(data))
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => value
@@ -459,6 +411,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(4)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putInt(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -468,9 +421,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8(data.toInt & 0xFF)
-          case Type.Uint16  => Uint16(data.toInt & 0xFFFF)
-          case Type.Uint32  => Uint32(data.toLong & 0xFFFFFFFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => BigInt(scala.BigInt(data.toLong))
           case Type.Number  => value
           case Type.Ref     => Ref(data.toInt)
@@ -478,6 +429,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Utf8    => Utf8(data.toString)
           case Type.Bytes =>
             val buffer = ByteBuffer.allocate(8)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.putDouble(data)
             buffer.rewind()
             Bytes(ByteString.copyFrom(buffer))
@@ -487,9 +439,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8(data.toInt & 0xFF)
-          case Type.Uint16  => Uint16(data.toInt & 0xFFFF)
-          case Type.Uint32  => Uint32(data.toLong & 0xFFFFFFFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => BigInt(scala.BigInt(data.toLong))
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => Ref(data.toInt)
@@ -499,14 +449,13 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
         }
       case value @ Bytes(data) =>
         lazy val buffer = data.asReadOnlyByteBuffer()
+        buffer.order(ByteOrder.LITTLE_ENDIAN)
         `type` match {
           case Type.Int8    => Int8(buffer.get)
           case Type.Int16   => Int16(buffer.getShort)
           case Type.Int32   => Int32(buffer.getInt)
-          case Type.Uint8   => Uint8(buffer.get & 0xFF)
-          case Type.Uint16  => Uint16(buffer.getShort & 0xFFFF)
-          case Type.Uint32  => Uint32(buffer.getInt.toLong & 0xFFFFFFFFl)
-          case Type.BigInt  => BigInt(scala.BigInt(data.toByteArray))
+          case Type.Int64   => Int64(buffer.getLong)
+          case Type.BigInt  => BigInt(scala.BigInt(data.toByteArray.reverse))
           case Type.Number  => Number(buffer.getDouble)
           case Type.Ref     => Ref(buffer.getInt)
           case Type.Boolean => if (data.isEmpty) Bool.False else Bool.True
@@ -518,24 +467,20 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(data.toByte)
           case Type.Int16   => Int16(data.toShort)
           case Type.Int32   => Int32(data.toInt)
-          case Type.Uint8   => Uint8(data.toInt & 0xFF)
-          case Type.Uint16  => Uint16(data.toInt & 0xFFFF)
-          case Type.Uint32  => Uint32(data.toLong & 0xFFFFFFFFl)
+          case Type.Int64   => Int64(data.toLong)
           case Type.BigInt  => value
           case Type.Number  => Number(data.toDouble)
           case Type.Ref     => Ref(data.toInt)
           case Type.Boolean => if (data == 0) Bool.False else Bool.True
           case Type.Utf8    => Utf8(data.toString)
-          case Type.Bytes   => Bytes(ByteString.copyFrom(data.toByteArray))
+          case Type.Bytes   => Bytes(ByteString.copyFrom(data.toByteArray.reverse))
         }
       case Bool.False =>
         `type` match {
           case Type.Int8    => Int8(0.toByte)
           case Type.Int16   => Int16(0.toShort)
           case Type.Int32   => Int32(0)
-          case Type.Uint8   => Uint8(0)
-          case Type.Uint16  => Uint16(0)
-          case Type.Uint32  => Uint32(0L)
+          case Type.Int64   => Int64(0L)
           case Type.BigInt  => BigInt(scala.BigInt(0))
           case Type.Number  => Number(0d)
           case Type.Boolean => Bool.False
@@ -550,9 +495,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Int8(1.toByte)
           case Type.Int16   => Int16(1.toShort)
           case Type.Int32   => Int32(1)
-          case Type.Uint8   => Uint8(1)
-          case Type.Uint16  => Uint16(1)
-          case Type.Uint32  => Uint32(1L)
+          case Type.Int64   => Int64(1L)
           case Type.BigInt  => BigInt(scala.BigInt(1))
           case Type.Number  => Number(1d)
           case Type.Boolean => Bool.True
@@ -577,20 +520,33 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class Int8(data: Byte)           extends Numeric[Byte]
     final case class Int16(data: Short)         extends Numeric[Short]
     final case class Int32(data: Int)           extends Numeric[Int]
-    final case class Uint8(data: Int)           extends Numeric[Int]
-    final case class Uint16(data: Int)          extends Numeric[Int]
-    final case class Uint32(data: Long)         extends Numeric[Long]
+    final case class Int64(data: Long)          extends Numeric[Long]
     final case class BigInt(data: scala.BigInt) extends Numeric[scala.BigInt]
     final case class Number(data: Double)       extends Numeric[Double]
     final case class Utf8(data: String)         extends Primitive with Array
-    final case class Bytes(data: ByteString)    extends Primitive with Array
-    final case class Ref(data: Int)             extends Primitive
+    final case class Bytes(data: ByteString) extends Primitive with Array {
+      override def toString: String = s"Bytes(0x${byteString2hex(data)})"
+    }
+    final case class Ref(data: Int) extends Primitive
 
-    case object Null  extends Primitive
-    sealed trait Bool extends Primitive
+    /**
+      * Special primitive to present offsets in program.
+      * It has constant size presintation in bytecode.
+      * You can't cast it to other types.
+      */
+    final case class Offset(data: Int) extends Primitive
 
-    object Ref {
-      final val Void = Ref(-1)
+    case object Null extends Primitive
+    sealed trait Bool extends Primitive {
+
+      def toBoolean: Boolean = this match {
+        case True  => true
+        case False => false
+      }
+    }
+
+    object Offset {
+      final val Void = Offset(-1)
     }
 
     object Bool {
@@ -613,9 +569,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final case class Int8Array(data: mutable.Buffer[Byte])           extends Array
     final case class Int16Array(data: mutable.Buffer[Short])         extends Array
     final case class Int32Array(data: mutable.Buffer[Int])           extends Array
-    final case class Uint8Array(data: mutable.Buffer[Int])           extends Array
-    final case class Uint16Array(data: mutable.Buffer[Int])          extends Array
-    final case class Uint32Array(data: mutable.Buffer[Long])         extends Array
+    final case class Int64Array(data: mutable.Buffer[Long])          extends Array
     final case class BigIntArray(data: mutable.Buffer[scala.BigInt]) extends Array
     final case class NumberArray(data: mutable.Buffer[Double])       extends Array
     final case class RefArray(data: mutable.Buffer[Int])             extends Array
@@ -625,6 +579,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
   }
 
   object Struct {
+
     def empty: Struct = Struct(mutable.Map.empty)
   }
 
@@ -698,7 +653,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
   object parser {
 
-    val (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct) = {
+    val (primitive, all, utf8, ref, offset, bytes, bigint, uint, int, array, struct) = {
       import fastparse.all._
 
       val wChars = Seq(' ', '\t', '\n', '\r')
@@ -725,30 +680,28 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val int8 = P(IgnoreCase("int8(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int8(x.toByte))
       val int16 = P(IgnoreCase("int16(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int16(x.toShort))
       val int32 = P(IgnoreCase("int32(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int32(x.toInt))
-      val uint8 = P(IgnoreCase("uint8(") ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint8(x.toInt))
-      val uint16 = P(IgnoreCase("uint16(") ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint16(x.toInt))
-      val uint32 = P(IgnoreCase("uint32(") ~/ ws ~ uint ~ ws ~ ")").map(x => Primitive.Uint32(x.toLong))
+      val int64 = P(IgnoreCase("int64(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.Int64(x.toLong))
       val bigint = P(IgnoreCase("bigint(") ~/ ws ~ int ~ ws ~ ")").map(x => Primitive.BigInt(x))
       val number = P(IgnoreCase("number(") ~/ ws ~ float ~ ws ~ ")").map(x => Primitive.Number(x))
 
       val inferredNumeric = P {
         float.map(Primitive.Number) | int.map {
-          case v if v >= 0 && v <= 0xFF                                    => Primitive.Uint8(v.toInt)
-          case v if v >= 0 && v <= 0xFFFF                                  => Primitive.Uint16(v.toInt)
-          case v if v >= 0 && v <= 0xFFFFFFFFL                             => Primitive.Uint32(v.toLong)
           case v if v >= Byte.MinValue.toInt && v <= Byte.MaxValue.toInt   => Primitive.Int8(v.toByte)
           case v if v >= Short.MinValue.toInt && v <= Short.MaxValue.toInt => Primitive.Int16(v.toShort)
           case v if v >= Int.MinValue && v <= Int.MaxValue                 => Primitive.Int32(v.toInt)
-          case v                                                           => Primitive.BigInt(v.toLong)
+          case v if v >= Long.MinValue && v <= Long.MaxValue               => Primitive.Int64(v.toLong)
+          case v                                                           => Primitive.BigInt(v)
         }
       }
 
-      val numeric = P(number | int8 | int16 | int32 | uint8 | uint16 | uint32 | bigint | inferredNumeric)
+      val numeric = P(number | int8 | int16 | int32 | int64 | bigint | inferredNumeric)
 
       val bool = P(
         IgnoreCase("true").map(_ => Primitive.Bool.True) | IgnoreCase("false").map(_ => Primitive.Bool.False))
 
       val ref = P("#" ~ uint).map(_.toInt).map(Primitive.Ref.apply)
+
+      val offset = P("$" ~ uint).map(_.toInt).map(Primitive.Offset.apply)
 
       val `null` = P(IgnoreCase("null")).map(_ => Primitive.Null)
 
@@ -775,7 +728,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
       val bytes = P(IgnoreCase("x") ~ (hexString | (PassWith(ByteString.EMPTY) ~ &(space)))).map(Primitive.Bytes)
 
-      val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | numeric | `null`)
+      val primitive: Parser[Primitive] = P(utf8 | bytes | bool | ref | offset | numeric | `null`)
 
       def arrayParser[P1, P2, T, A](prefix: String, p1: Parser[P1], p2: Parser[P2])(array: mutable.Buffer[T] => A,
                                                                                     f1: P1 => T,
@@ -787,9 +740,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val int8Array = arrayParser("int8", int, int8)(Array.Int8Array, _.toByte, _.data)
       val int16Array = arrayParser("int16", int, int16)(Array.Int16Array, _.toShort, _.data)
       val int32Array = arrayParser("int32", int, int32)(Array.Int32Array, _.toInt, _.data)
-      val uint8Array = arrayParser("uint8", uint, uint8)(Array.Uint8Array, _.toInt, _.data)
-      val uint16Array = arrayParser("uint16", uint, uint16)(Array.Uint16Array, _.toInt, _.data)
-      val uint32Array = arrayParser("uint32", uint, uint32)(Array.Uint32Array, _.toLong, _.data)
+      val int64Array = arrayParser("int64", int, int64)(Array.Int64Array, _.toLong, _.data)
       val numberArray = arrayParser("number", float, number)(Array.NumberArray, identity, _.data)
       val bigintArray = arrayParser("bigint", int, bigint)(Array.BigIntArray, identity, _.data)
       val boolArray = arrayParser("bool", bool, bool)(Array.BoolArray, identity, identity)
@@ -798,8 +749,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val bytesArray = arrayParser("x", hexString, bytes)(Array.BytesArray, identity, _.data)
 
       val array = P(
-        int8Array | int16Array | int32Array
-          | uint8Array | uint16Array | uint32Array
+        int8Array | int16Array | int32Array | int64Array
           | bigintArray | numberArray | refArray
           | boolArray | utf8Array | bytesArray
       )
@@ -810,7 +760,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       val all = P(struct | array | primitive)
 
       // exports
-      (primitive, all, utf8, ref, bytes, bigint, uint, int, array, struct)
+      (primitive, all, utf8, ref, offset, bytes, bigint, uint, int, array, struct)
     }
   }
 
@@ -905,25 +855,23 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
       else Primitive.Bool.False
     def getInt16 = primitiveBuffer(2).getShort
     def getInt32 = primitiveBuffer(4).getInt
-    def getUint8 = primitiveBuffer(4).getInt & 0xFF
-    def getUint16 = primitiveBuffer(4).getInt & 0xFFFF
-    def getUint32: Long = primitiveBuffer(8).getLong & 0xFFFFFFFFl
+    def getInt64 = primitiveBuffer(8).getLong
     def getBigInt = scala.BigInt(getBytes(getLength))
     def getDouble = primitiveBuffer(8).getDouble
     def getRef = buffer.getInt()
+    def getOffset = buffer.getShort() & 0xFFFF
 
     buffer.get match {
       case Type.Null    => Primitive.Null
       case Type.Int8    => Primitive.Int8(getInt8) // int8
       case Type.Int16   => Primitive.Int16(getInt16) // int16
       case Type.Int32   => Primitive.Int32(getInt32) // int32
-      case Type.Uint8   => Primitive.Uint8(getUint8) // uint8
-      case Type.Uint16  => Primitive.Uint16(getUint16) // uint16
-      case Type.Uint32  => Primitive.Uint32(getUint32) // uint32
-      case Type.BigInt  => Primitive.BigInt(getBigInt) // uint64
-      case Type.Number  => Primitive.Number(getDouble) // decimal // TODO
+      case Type.Int64   => Primitive.Int64(getInt64) // int64
+      case Type.BigInt  => Primitive.BigInt(getBigInt) // bigint
+      case Type.Number  => Primitive.Number(getDouble) // decimal
       case Type.Boolean => getBool
       case Type.Ref     => Primitive.Ref(getRef)
+      case Type.Offset  => Primitive.Offset(getOffset)
       case Type.Utf8    => Primitive.Utf8(getString) // utf8
       case Type.Bytes   => Primitive.Bytes(getByteString) // bytes
       case Type.Array =>
@@ -935,10 +883,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.Int8    => Array.Int8Array(mutable.Buffer.fill(l)(getInt8))
           case Type.Int16   => Array.Int16Array(mutable.Buffer.fill(l)(getInt16))
           case Type.Int32   => Array.Int32Array(mutable.Buffer.fill(l)(getInt32))
+          case Type.Int64   => Array.Int64Array(mutable.Buffer.fill(l)(getInt64))
           case Type.BigInt  => Array.BigIntArray(mutable.Buffer.fill(l)(getBigInt))
-          case Type.Uint8   => Array.Uint8Array(mutable.Buffer.fill(l)(getUint8))
-          case Type.Uint16  => Array.Uint16Array(mutable.Buffer.fill(l)(getUint16))
-          case Type.Uint32  => Array.Uint32Array(mutable.Buffer.fill(l)(getUint32))
           case Type.Number  => Array.NumberArray(mutable.Buffer.fill(l)(getDouble))
           case Type.Boolean => Array.BoolArray(mutable.Buffer.fill(l)(getBool))
           case Type.Ref     => Array.RefArray(mutable.Buffer.fill(l)(getRef))
@@ -972,9 +918,8 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final val Int16 = Type @@ 0x02.toByte
     final val Int32 = Type @@ 0x03.toByte
     final val BigInt = Type @@ 0x04.toByte
-    final val Uint8 = Type @@ 0x05.toByte
-    final val Uint16 = Type @@ 0x06.toByte
-    final val Uint32 = Type @@ 0x07.toByte
+    final val Int64 = Type @@ 0x05.toByte
+    // free 0x06, 0x07
     final val Number = Type @@ 0x08.toByte
     final val Boolean = Type @@ 0x09.toByte
     final val Ref = Type @@ 0x0A.toByte
@@ -982,6 +927,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     final val Array = Type @@ 0x0C.toByte
     final val Struct = Type @@ 0x0D.toByte
     final val Bytes = Type @@ 0x0E.toByte
+    final val Offset = Type @@ 0x0F.toByte
   }
 
   type Type = Type.Type

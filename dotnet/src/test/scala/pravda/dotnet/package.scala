@@ -1,25 +1,25 @@
 package pravda
-
-import java.nio.file.{Files, Paths}
-
 import pravda.dotnet.parser.FileParser
-import pravda.dotnet.parser.FileParser.{ParsedDotnetFile, ParsedPdb, ParsedPe}
 
 package object dotnet {
 
-  private def readResourceBytes(filename: String) =
-    Files.readAllBytes(Paths.get(s"dotnet-tests/resources/$filename"))
+  def clearPathsInPdb(files: List[FileParser.ParsedDotnetFile]): List[FileParser.ParsedDotnetFile] = {
+    def clear(s: String): String = "$PRAVDA_TMP_DIR/" + s"${s.split("/").last}"
 
-  def parsePeFile(file: String): Either[String, ParsedPe] = {
-    val fileBytes = readResourceBytes(file)
-    FileParser.parsePe(fileBytes)
+    // Drop the first Pravda.cs file
+    files.drop(1).map { df =>
+      val clearedPdb = df.parsedPdb.map { pdb =>
+        pdb.copy(
+          tablesData = pdb.tablesData.copy(
+            methodDebugInformationTable =
+              pdb.tablesData.methodDebugInformationTable.map(d => d.copy(document = d.document.map(clear))),
+            documentTable = pdb.tablesData.documentTable.map(d => d.copy(path = clear(d.path)))
+          )
+        )
+      }
+
+      df.copy(parsedPdb = clearedPdb)
+    }
   }
 
-  def parsePdbFile(file: String): Either[String, ParsedPdb] = {
-    val fileBytes = readResourceBytes(file)
-    FileParser.parsePdb(fileBytes)
-  }
-
-  def parseDotnetFile(exeFile: String, pdbFile: Option[String]): Either[String, ParsedDotnetFile] =
-    FileParser.parseDotnetFile(readResourceBytes(exeFile), pdbFile.map(readResourceBytes))
 }

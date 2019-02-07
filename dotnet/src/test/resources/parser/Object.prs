@@ -1,0 +1,107 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Object.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Object.cs
+    optimize: true
+---
+methods: |-
+  List(
+    Method(
+      List(
+        LdArg0,
+        Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
+        LdArg0,
+        LdArg1,
+        StFld(FieldData(0, 1, "AVal", 30L)),
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(List(LdArg0, LdFld(FieldData(0, 1, "AVal", 30L)), LdcI4S(42), Add, Ret), 0, None),
+    Method(
+      List(
+        LdArg0,
+        Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)),
+        LdArg0,
+        LdArg1,
+        StFld(FieldData(1, 1, "BVal", 30L)),
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(List(LdArg0, LdFld(FieldData(1, 1, "BVal", 30L)), LdcI4S(43), Add, Ret), 0, None),
+    Method(
+      List(
+        LdcI4S(100),
+        NewObj(MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "aVal")))),
+        LdcI4(200),
+        NewObj(MethodDefData(2, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal")))),
+        StLoc0,
+        CallVirt(MethodDefData(1, 0, 134, "AnswerA", 33L, Vector())),
+        LdLoc0,
+        CallVirt(MethodDefData(3, 0, 134, "AnswerB", 33L, Vector())),
+        Add,
+        Ret
+      ),
+      2,
+      Some(16L)
+    ),
+    Method(List(Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      LocalVarSig(
+        List(
+          LocalVar(
+            Cls(
+              TypeDefData(
+                2,
+                1048577,
+                "B",
+                "",
+                TypeRefData(6L, "Object", "System"),
+                Vector(FieldData(1, 1, "BVal", 30L)),
+                Vector(
+                  MethodDefData(2, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal"))),
+                  MethodDefData(3, 0, 134, "AnswerB", 33L, Vector())
+                )
+              )
+            ),
+            false
+          )
+        )
+      )
+    ),
+    (30L, FieldSig(I4)),
+    (33L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (37L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )

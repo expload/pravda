@@ -1,11 +1,11 @@
----preconditions
-watts-limit: 1000
----expectations
-watts-spent: 134
+vm:
+  watts-limit: 1000
+code: |-
+  push 2
+  push 2
+  push 3
+  scall
+---
+watts-spent: 124
 stack:
-  uint8(4)
----code
-push 0x02
-push 0x02
-push 0x03
-scall
+  - int8.4

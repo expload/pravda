@@ -23,7 +23,8 @@ import pravda.common.domain.Address
 import pravda.node.data.common.CoinDistributionMember
 import pravda.node.data.cryptography.PrivateKey
 
-final case class PravdaConfig(genesis: PravdaConfig.Genesis,
+final case class PravdaConfig(networkAddressCache: Option[PravdaConfig.NetworkAddressCache],
+                              genesis: PravdaConfig.Genesis,
                               validator: Option[PravdaConfig.Validator],
                               coinDistribution: Seq[CoinDistributionMember],
                               dataDirectory: File,
@@ -32,12 +33,15 @@ final case class PravdaConfig(genesis: PravdaConfig.Genesis,
                               tendermint: PravdaConfig.TendermintConfig)
 
 object PravdaConfig {
+  final case class NetworkAddressCache(
+      ttl: Int,
+      negativeTtl: Int
+  )
   final case class Genesis(
       time: String,
       chainId: String,
       appHash: String,
-      validators: Seq[GenesisValidator],
-      distribution: Boolean
+      validators: Seq[GenesisValidator]
   )
   final case class Validator(
       privateKey: PrivateKey,
@@ -46,12 +50,12 @@ object PravdaConfig {
 
   final case class GenesisValidator(
       publicKey: CryptoKey,
-      power: Int,
+      power: String,
       name: String
   )
   final case class CryptoKey(
       `type`: String,
-      data: String
+      value: String
   )
   final case class HttpConfig(
       host: String,

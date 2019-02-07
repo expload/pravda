@@ -41,18 +41,18 @@ trait OpcodeTranslator {
 object OpcodeTranslatorOnlyAsm {
 
   def asmOpOffset(asmOp: asm.Operation): Int = asmOp match {
-    case Nop            => 0
-    case Comment(_)     => 0
-    case Label(_)       => 0
-    case Meta(_)        => 0
-    case Push(_)        => 1
-    case New(_)         => 1
-    case Jump(name)     => if (name.isDefined) 0 else -1
-    case JumpI(name)    => if (name.isDefined) -1 else -2
-    case Call(name)     => if (name.isDefined) 0 else -1
-    case PushRef(name)  => 1
-    case StructMut(key) => if (key.isDefined) -2 else -3
-    case StructGet(key) => if (key.isDefined) 0 else -1
+    case Nop              => 0
+    case Comment(_)       => 0
+    case Label(_)         => 0
+    case Meta(_)          => 0
+    case Push(_)          => 1
+    case New(_)           => 1
+    case Jump(name)       => if (name.isDefined) 0 else -1
+    case JumpI(name)      => if (name.isDefined) -1 else -2
+    case Call(name)       => if (name.isDefined) 0 else -1
+    case PushOffset(name) => 1
+    case StructMut(key)   => if (key.isDefined) -2 else -3
+    case StructGet(key)   => if (key.isDefined) 0 else -1
     case Orphan(opcode) =>
       opcode match {
         case Opcodes.STOP => 0
@@ -76,7 +76,6 @@ object OpcodeTranslatorOnlyAsm {
         case Opcodes.NEW_ARRAY         => -1
         case Opcodes.LENGTH            => 0
         case Opcodes.BALANCE           => 0
-        case Opcodes.OWNER             => 0
 
         case Opcodes.SPUT   => -2
         case Opcodes.SGET   => 0

@@ -19,11 +19,9 @@ package pravda.node
 
 package servers
 
-import java.nio.ByteBuffer
-import java.security.MessageDigest
-
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
+import tethys._
 import pravda.common.domain._
 import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
@@ -32,11 +30,12 @@ import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTra
 import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bson._
+import pravda.node.data.serialization.bjson._
 import pravda.node.data.serialization.json._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
 import pravda.node.persistence.{FileStore, _}
+import pravda.node.utils
 import pravda.vm
 import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
@@ -54,13 +53,22 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   val consensusEnv = new BlockDependentEnvironment(applicationStateDb)
   val mempoolEnv = new BlockDependentEnvironment(applicationStateDb)
 
-  var proposedHeight = 0L
+  // It is updated each time when EndBlock called. It is a height of the proposed block,
+  // but since this value is updated after a transactions already processed, thus when a transaction
+  // is processed that value will be the height of the last block
+  var lastBlockHeight = 1L
+  // It is updated each time when BeginBlock called.
+  var proposedHeight = 1L
+  // It is updated each time when BeginBlock called. The value is taken from the header
+  // of the current proposed block (header is passed in BeginBlock callback)
+  var proposedBlockTimestamp = 0L
+
   var validators: Vector[Address] = Vector.empty[Address]
   val balances: Entry[Address, NativeCoin] = balanceEntry(applicationStateDb)
 
   def info(request: RequestInfo): Future[ResponseInfo] = {
     FileStore.readApplicationStateInfoAsync().map { maybeInfo =>
-      val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
+      val info = maybeInfo.getOrElse(ApplicationStateInfo.Empty)
       ResponseInfo(lastBlockHeight = info.blockHeight, lastBlockAppHash = info.appHash)
     }
   }
@@ -68,11 +76,11 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   def initChain(request: RequestInitChain): Future[ResponseInitChain] = {
 
     val initValidators = request.validators.toVector
-      .map(x => tendermint.unpackAddress(x.pubKey))
+      .map(x => tendermint.unpackAddress(x.getPubKey.data))
 
     for {
       _ <- FileStore
-        .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, ByteString.EMPTY, initValidators))
+        .updateApplicationStateInfoAsync(ApplicationStateInfo(lastBlockHeight, ByteString.EMPTY, initValidators, 0L))
       _ <- Future.sequence(initialDistribution.map {
         case CoinDistributionMember(address, amount) =>
           balances.put(address, amount)
@@ -81,18 +89,28 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 
   }
 
+  /*
+   *  request.header contains header of the current proposed block. The `header` field has an `Option` type,
+   *  but in the Protobuf specification this field is not an `optional`, so we can use `getHeader` method safely.
+   */
   def beginBlock(request: RequestBeginBlock): Future[ResponseBeginBlock] = {
     consensusEnv.clear()
 
-    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.pubKey))
-    val absent = request.absentValidators
+    // Timestamp of the current proposed block
+    proposedBlockTimestamp = utils.protoTimestampToLong(request.getHeader.getTime)
+    proposedHeight = request.getHeader.height
+
+    val malicious = request.byzantineValidators.map(x => tendermint.unpackAddress(x.getValidator.address))
+    val absent = request.getLastCommitInfo.votes.collect {
+      case VoteInfo(validator, signedLastBlock) if !signedLastBlock =>
+        validator.map(v => tendermint.unpackAddress(v.address))
+    }.flatten
+
     FileStore
-      .readApplicationStateInfoAsync()
+      .modifyApplicationStateInfoAsync(_.copy(blockTimestamp = proposedBlockTimestamp))
       .map { maybeInfo =>
-        val info = maybeInfo.getOrElse(ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address]))
-        validators = info.validators.zipWithIndex.collect {
-          case (address, i) if !malicious.contains(address) && !absent.contains(i) => address
-        }
+        val info = maybeInfo.getOrElse(ApplicationStateInfo.Empty)
+        validators = info.validators.filter(address => !malicious.contains(address) && !absent.contains(address))
       }
       .map(_ => ResponseBeginBlock())
   }
@@ -110,7 +128,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   def verifyTx(tx: Transaction, id: TransactionId, ep: BlockDependentEnvironment): Try[TransactionResult] = {
 
     val vm = new VmImpl()
-    val env = ep.transactionEnvironment(tx.from, id)
+    val env = ep.transactionEnvironment(tx.from, id, proposedHeight, proposedBlockTimestamp)
     val wattPayer = tx.wattPayer.fold(tx.from)(identity)
 
     for {
@@ -130,7 +148,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       val remaining = tx.wattLimit - total
       ep.accrue(wattPayer, NativeCoin(tx.wattPrice * remaining))
       ep.appendFee(NativeCoin(tx.wattPrice * total))
-      TransactionResult(execResult, env.collectEffects)
+      TransactionResult(id, execResult, env.collectEffects)
     }
   }
 
@@ -147,7 +165,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
       result: (Int, String) => R): Future[R] = {
 
     val tid = TransactionId.forEncodedTransaction(encodedTransaction)
-    val `try` = Try(transcode(Bson @@ encodedTransaction.toByteArray).to[SignedTransaction])
+    val `try` = Try(transcode(BJson @@ encodedTransaction.toByteArray).to[SignedTransaction])
       .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
@@ -170,17 +188,18 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   }
 
   def endBlock(request: RequestEndBlock): Future[ResponseEndBlock] = {
-    proposedHeight = request.height
+    // save the height of the current proposed block. It will be stored later as a last block height
+    lastBlockHeight = request.height
     // TODO: Validators update
     Future.successful(ResponseEndBlock.defaultInstance)
   }
 
   def commit(request: RequestCommit): Future[ResponseCommit] = {
-    consensusEnv.commit(proposedHeight, validators)
+    consensusEnv.commit(lastBlockHeight, validators)
     mempoolEnv.clear()
     val hash = ByteString.copyFrom(applicationStateDb.stateHash)
     FileStore
-      .updateApplicationStateInfoAsync(ApplicationStateInfo(proposedHeight, hash, validators))
+      .modifyApplicationStateInfoAsync(_.copy(blockHeight = lastBlockHeight, appHash = hash, validators = validators))
       .map(_ => ResponseCommit(hash))
   }
 
@@ -204,6 +223,7 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
 object Abci {
 
   final case class TransactionResult(
+      transactionId: TransactionId,
       executionResult: ExecutionResult,
       effects: Seq[Effect]
   )
@@ -223,28 +243,93 @@ object Abci {
   final val TxStatusUnauthorized = 1
   final val TxStatusError = 2
 
-  final case class StoredProgram(code: ByteString, owner: Address, `sealed`: Boolean)
+  final case class StoredProgram(code: ByteString, `sealed`: Boolean)
+
+  sealed trait TransactionEffects {
+    def num: Long
+    def transactionId: TransactionId
+    // A height of the block that the transaction was committed in
+    def blockHeight: Long
+    def blockTimestamp: Long
+    def identifier: String
+  }
+
+  object TransactionEffects {
+    final case class Transfers(num: Long,
+                               blockHeight: Long,
+                               blockTimestamp: Long,
+                               transactionId: TransactionId,
+                               transfers: Seq[Effect.Transfer])
+        extends TransactionEffects {
+      override val identifier = Transfers.identifier
+    }
+
+    object Transfers {
+      lazy val identifier = "Transfers"
+    }
+
+    final case class ProgramEvents(num: Long,
+                                   blockHeight: Long,
+                                   blockTimestamp: Long,
+                                   transactionId: TransactionId,
+                                   events: Seq[Effect.Event])
+        extends TransactionEffects {
+      override val identifier = ProgramEvents.identifier
+    }
+
+    object ProgramEvents {
+      lazy val identifier = "ProgramEvents"
+    }
+
+    final case class AllEffects(num: Long,
+                                blockHeight: Long,
+                                blockTimestamp: Long,
+                                transactionId: TransactionId,
+                                effects: Seq[Effect])
+        extends TransactionEffects {
+      override val identifier = AllEffects.identifier
+    }
+
+    object AllEffects {
+      lazy val identifier = "AllEffects"
+    }
+  }
+
+  final case class AdditionalDataForAddress(transfersLastTransactionNumber: Long = 1L,
+                                            eventsLastTransactionNumber: Long = 1L,
+                                            lastTransactionNumber: Long = 1L)
 
   final class BlockDependentEnvironment(db: DB) {
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[Effect])]
-    private val events = mutable.Buffer.empty[Effect.Event]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
     private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(db, "effects"), cache, operations)
     private lazy val eventsPath = new CachedDbPath(new PureDbPath(db, "events"), cache, operations)
     private lazy val blockBalancesPath = new CachedDbPath(new PureDbPath(db, "balance"), cache, operations)
+    private lazy val transactionsByAddressPath =
+      new CachedDbPath(new PureDbPath(db, "transactionsByAddress"), cache, operations)
+    private lazy val transferEffectsByAddressPath =
+      new CachedDbPath(new PureDbPath(db, "transferEffectsByAddress"), cache, operations)
+    private lazy val eventsByAddressPath = new CachedDbPath(new PureDbPath(db, "eventsByAddress"), cache, operations)
+    private lazy val additionalDataByAddressPath =
+      new CachedDbPath(new PureDbPath(db, "additionalDataByAddress"), cache, operations)
 
-    def transactionEnvironment(executor: Address, tid: TransactionId): TransactionDependentEnvironment = {
+    def transactionEnvironment(executor: Address,
+                               tid: TransactionId,
+                               proposedHeight: Long = 0,
+                               proposedBlockTimestamp: Long = 0): TransactionDependentEnvironment = {
       val effects = mutable.Buffer.empty[Effect]
       effectsMap += (tid -> effects)
-      new TransactionDependentEnvironment(executor, tid, effects)
+      new TransactionDependentEnvironment(executor, proposedHeight, proposedBlockTimestamp, tid, effects)
     }
 
     final class TransactionDependentEnvironment(val executor: Address,
+                                                proposedHeight: Long,
+                                                proposedBlockTimestamp: Long,
                                                 transactionId: TransactionId,
                                                 effects: mutable.Buffer[Effect])
         extends Environment {
@@ -262,21 +347,123 @@ object Abci {
         operations ++= transactionOperations
         cache ++= transactionCache
         effects ++= transactionEffects
-        events ++= transactionEffects.collect { case ev: Effect.Event => ev }
+
+        storeTransactionsToAddress(transactionsByAddressPath, executor, transactionId, transactionEffects)
+        storeTransferEffectsToAddress(transferEffectsByAddressPath, executor, transactionId, transactionEffects)
+        storeEventsToAddress(eventsByAddressPath, executor, transactionId, transactionEffects)
+      }
+
+      private def putByOffset[A: JsonWriter](dbPath: DbPath, address: Address, offset: Long, objToStore: A): Unit = {
+        val key = keyWithOffset(byteUtils.byteString2hex(address), offset)
+        dbPath.put(key, objToStore)
+      }
+
+      private def getAdditionalDataByAddress(addr: Address): AdditionalDataForAddress =
+        additionalDataByAddressPath
+          .getAs[AdditionalDataForAddress](byteUtils.byteString2hex(addr))
+          .fold(AdditionalDataForAddress())(identity)
+
+      private def storeTransactionsToAddress(dbPath: DbPath,
+                                             executor: Address,
+                                             transactionId: TransactionId,
+                                             transactionEffects: Seq[Effect]): Unit = {
+        val additionalData = getAdditionalDataByAddress(executor)
+        val num = additionalData.lastTransactionNumber
+        putByOffset(
+          dbPath,
+          executor,
+          num - 1,
+          TransactionEffects.AllEffects(num, proposedHeight, proposedBlockTimestamp, transactionId, transactionEffects))
+
+        additionalDataByAddressPath.put(
+          byteUtils.byteString2hex(executor),
+          additionalData.copy(lastTransactionNumber = additionalData.lastTransactionNumber + 1L))
+      }
+
+      private def storeTransferEffectsToAddress(dbPath: DbPath,
+                                                executor: Address,
+                                                transactionId: TransactionId,
+                                                transferEffects: Seq[Effect]): Unit = {
+        def storeTransferEffects(dbPath: DbPath,
+                                 address: Address,
+                                 transactionId: TransactionId,
+                                 transfers: Seq[Effect.Transfer]): Unit = {
+          val additionalData = getAdditionalDataByAddress(address)
+          val num = additionalData.transfersLastTransactionNumber
+
+          putByOffset(
+            dbPath,
+            address,
+            num - 1,
+            TransactionEffects.Transfers(num, proposedHeight, proposedBlockTimestamp, transactionId, transfers))
+
+          additionalDataByAddressPath.put(byteUtils.byteString2hex(address),
+                                          additionalData.copy(transfersLastTransactionNumber = num + 1L))
+        }
+
+        val executorTransferEffects: Seq[Effect.Transfer] = transferEffects.collect {
+          case e @ Effect.Transfer(from, _, _) if from == executor => e
+        }
+
+        val transferToAnotherAddress: Seq[(Address, Effect.Transfer)] = transferEffects.collect {
+          case e @ Effect.Transfer(_, to, _) => (to, e)
+        }
+
+        // 1) Add Transfer effects to the address, who signed the corresponding transaction (aka executor)
+        if (executorTransferEffects.nonEmpty) {
+          storeTransferEffects(dbPath, executor, transactionId, executorTransferEffects)
+        }
+
+        // 2) Add Transfer effects which affect to another address
+        if (transferToAnotherAddress.nonEmpty) {
+          transferToAnotherAddress.groupBy(_._1).foreach {
+            case (addr, transfers) =>
+              storeTransferEffects(dbPath, addr, transactionId, transfers.map(_._2))
+          }
+        }
+      }
+
+      private def storeEventsToAddress(dbPath: DbPath,
+                                       executor: Address,
+                                       transactionId: TransactionId,
+                                       effects: Seq[Effect]): Unit = {
+        def storeEvents(dbPath: DbPath,
+                        address: Address,
+                        transactionId: TransactionId,
+                        events: Seq[Effect.Event]): Unit = {
+          val additionalData = getAdditionalDataByAddress(address)
+          val num = additionalData.eventsLastTransactionNumber
+          putByOffset(
+            dbPath,
+            address,
+            num - 1,
+            TransactionEffects.ProgramEvents(num, proposedHeight, proposedBlockTimestamp, transactionId, events))
+
+          additionalDataByAddressPath.put(byteUtils.byteString2hex(address),
+                                          additionalData.copy(eventsLastTransactionNumber = num + 1L))
+        }
+
+        val events = effects collect {
+          case e: Effect.Event => e
+        }
+
+        if (events.nonEmpty) {
+          storeEvents(dbPath, executor, transactionId, events)
+        }
       }
 
       import Effect._
 
       private final class WsProgramStorage(address: Address, dbPath: DbPath) extends Storage {
 
-        def get(key: Data): Option[Data] = {
+        def get(key: Data.Primitive): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.getRawBytes(hexKey)
           transactionEffects += StorageRead(address, key, value.map(Data.fromBytes))
           value.map(Data.fromBytes)
         }
 
-        def put(key: Data, value: Data): Option[Data] = {
+        def put(key: Data.Primitive, value: Data): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val array = value.toByteString.toByteArray
           val prev = dbPath.putRawBytes(hexKey, array)
@@ -284,7 +471,7 @@ object Abci {
           prev.map(Data.fromBytes)
         }
 
-        def delete(key: Data): Option[Data] = {
+        def delete(key: Data.Primitive): Option[Data] = {
           val hexKey = byteUtils.byteString2hex(key.toByteString)
           val value = dbPath.remove(hexKey)
           transactionEffects += StorageRemove(address, key, value.map(Data.fromBytes))
@@ -292,15 +479,10 @@ object Abci {
         }
       }
 
-      def createProgram(owner: Address, code: ByteString): Address = {
-        val sha256 = MessageDigest.getInstance("SHA-256")
-        val addressBytes = sha256.digest(transactionId.concat(code).toByteArray)
-        val address = Address @@ ByteString.copyFrom(addressBytes)
-        val sp = StoredProgram(code, owner, `sealed` = false)
-
-        transactionProgramsPath.put(byteUtils.bytes2hex(addressBytes), sp)
+      def createProgram(address: Address, code: ByteString): Unit = {
+        val sp = StoredProgram(code, `sealed` = false)
+        transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramCreate(address, Data.Primitive.Bytes(code))
-        address
       }
 
       def sealProgram(address: Address): Unit = {
@@ -312,13 +494,12 @@ object Abci {
 
       def updateProgram(address: Address, code: ByteString): Unit = {
         val oldSb = getStoredProgram(address).getOrElse(throw vm.ThrowableVmError(Error.NoSuchProgram))
-        if (oldSb.`sealed`) throw vm.ThrowableVmError(Error.ProgramIsSealed)
         val sp = oldSb.copy(code = code)
         transactionProgramsPath.put(byteUtils.byteString2hex(address), sp)
         transactionEffects += ProgramUpdate(address, Data.Primitive.Bytes(code))
       }
 
-      def event(address: Address, name: String, data: Data): Unit = {
+      def event(address: Address, name: String, data: MarshalledData): Unit = {
         transactionEffects += Event(address, name, data)
       }
 
@@ -351,17 +532,32 @@ object Abci {
       // Effects below are ignored by effect collect
       // because they are inaccessible from user space
 
-      def getProgramOwner(address: Address): Option[Address] =
-        getStoredProgram(address).map(_.owner)
-
       def getProgram(address: Address): Option[ProgramContext] =
         getStoredProgram(address) map { program =>
           val newPath = transactionProgramsPath :+ byteUtils.byteString2hex(address)
           val storage = new WsProgramStorage(address, newPath)
-          ProgramContext(storage, ByteBuffer.wrap(program.code.toByteArray))
+          ProgramContext(storage, program.code, program.`sealed`)
         }
 
       def collectEffects: Seq[Effect] = transactionEffects
+
+      def chainHeight: Long = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.blockHeight)
+      }
+
+      def lastBlockHash: ByteString = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.appHash)
+      }
+
+      def lastBlockTime: Long = {
+        FileStore
+          .readApplicationStateInfo()
+          .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.blockTimestamp)
+      }
     }
 
     def appendFee(coins: NativeCoin): Unit = {
@@ -372,7 +568,6 @@ object Abci {
     def clear(): Unit = {
       operations.clear()
       effectsMap.clear()
-      events.clear()
       cache.clear()
       fee = NativeCoin.zero
     }
@@ -398,7 +593,6 @@ object Abci {
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {
-
       // Share fee
       val share = NativeCoin @@ (fee / validators.length)
       val remainder = NativeCoin @@ (fee % validators.length)
@@ -412,24 +606,31 @@ object Abci {
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
       }
 
-      events
+      effectsMap
+        .flatMap {
+          case (tx, buffer) =>
+            buffer collect {
+              case event: Effect.Event =>
+                tx -> event
+            }
+        }
         .groupBy {
-          case Effect.Event(address, name, data) => (address, name)
+          case (_, Effect.Event(address, name, _)) => (address, name)
         }
         .foreach {
           case ((address, name), evs) =>
             val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
             evs.zipWithIndex.foreach {
-              case (Effect.Event(_, _, data), i) =>
-                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), data.toByteString)
+              case ((tx, Effect.Event(_, _, data)), i) =>
+                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), (tx, data))
             }
             eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
         }
-
       db.syncBatch(operations: _*)
       clear()
     }
 
   }
 
+  def keyWithOffset(key: String, offset: Long) = f"$key:$offset%016x"
 }

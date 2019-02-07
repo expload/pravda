@@ -2,27 +2,39 @@ package pravda.vm
 
 import java.io.File
 
-import pravda.proverka._
-import fastparse.all._
+import com.google.protobuf.ByteString
+import org.json4s.DefaultFormats
+import pravda.common.json._
+import pravda.plaintest._
+import pravda.vm
+import pravda.vm.Data.Primitive
+import pravda.vm.asm.PravdaAssembler
+import pravda.vm.json._
 
-object VmSuite extends Proverka {
+object VmSuiteData {
+  final case class Preconditions(vm: VmSandbox.Preconditions, code: String)
+}
+
+import pravda.vm.VmSuiteData._
+
+object VmSuite extends Plaintest[Preconditions, VmSandbox.Expectations] {
   lazy val dir = new File("vm/src/test/resources")
   override lazy val ext = "sbox"
+  override lazy val formats =
+    DefaultFormats +
+      json4sFormat[Data] +
+      json4sFormat[Primitive] +
+      json4sFormat[Primitive.Int64] +
+      json4sFormat[Primitive.Bytes] +
+      json4sFormat[ByteString] +
+      json4sFormat[vm.Effect] +
+      json4sFormat[vm.Error] +
+      json4sKeyFormat[ByteString] +
+      json4sKeyFormat[Primitive.Ref] +
+      json4sKeyFormat[Primitive]
 
-  type State = VmSandbox.Case
-  lazy val initState: VmSandbox.Case = VmSandbox.Case()
-
-  lazy val scheme = Seq(
-    parserInput("preconditions")(VmSandbox.preconditions.map(p => s => s.copy(preconditions = Some(p)))),
-    parserInput("code")(VmSandbox.program.map(p => s => s.copy(program = Some(p)))),
-    textOutput("expectations") { c =>
-      val res = for {
-        pre <- c.preconditions
-        prog <- c.program
-      } yield VmSandbox.printExpectations(VmSandbox.sandboxRun(prog, pre))
-
-      res.toRight("preconditions or program is missing")
-    }
-  )
-
+  override def produce(input: Preconditions): Either[String, VmSandbox.Expectations] =
+    for {
+      asm <- PravdaAssembler.assemble(input.code, saveLabels = true).left.map(_.mkString)
+    } yield VmSandbox.run(input.vm, asm)
 }

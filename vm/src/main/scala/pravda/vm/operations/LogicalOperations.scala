@@ -17,6 +17,7 @@
 
 package pravda.vm.operations
 
+import com.google.protobuf.ByteString
 import pravda.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuSimpleArithmetic
 import pravda.vm.operations.annotation.OpcodeImplementation
@@ -27,6 +28,7 @@ import scala.annotation.strictfp
 
 /**
   * Pravda VM logical pravda.vm.Opcodes implementation.
+  *
   * @see pravda.vm.Opcodes
   * @param memory Access to VM memory
   * @param wattCounter CPU, memory, storage usage counter
@@ -50,9 +52,7 @@ import scala.annotation.strictfp
       case Int8(data)   => Int8((~data).toByte)
       case Int16(data)  => Int16((~data).toShort)
       case Int32(data)  => Int32((~data).toInt)
-      case Uint8(data)  => Uint8((~data) & 0xff)
-      case Uint16(data) => Uint16((~data) & 0xffff)
-      case Uint32(data) => Uint32((~data) & 0xffffffff)
+      case Int64(data)  => Int64((~data).toLong)
       case BigInt(data) => BigInt(~data)
       case _            => throw ThrowableVmError(WrongType)
     }
@@ -119,70 +119,40 @@ import scala.annotation.strictfp
   //---------------------------------------------------------------------
   private val andImpl: (Data, Data) => Data.Primitive = { (a, b) =>
     a match {
+      case Int64(lhs) =>
+        b match {
+          case Int8(rhs)   => Int64(lhs & rhs)
+          case Int16(rhs)  => Int64(lhs & rhs)
+          case Int32(rhs)  => Int64(lhs & rhs)
+          case Int64(rhs)  => Int64(lhs & rhs)
+          case BigInt(rhs) => BigInt(lhs & rhs)
+          case _           => throw ThrowableVmError(WrongType)
+        }
       case Int32(lhs) =>
         b match {
           case Int8(rhs)   => Int32(lhs & rhs)
           case Int16(rhs)  => Int32(lhs & rhs)
           case Int32(rhs)  => Int32(lhs & rhs)
-          case Uint8(rhs)  => Int32(lhs & rhs)
-          case Uint16(rhs) => Int32(lhs & rhs)
-          case Uint32(rhs) => Int32((lhs & rhs).toInt)
-          case BigInt(rhs) => Int32((lhs & rhs).toInt)
+          case Int64(rhs)  => Int64(lhs & rhs)
+          case BigInt(rhs) => BigInt(lhs & rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
       case Int16(lhs) =>
         b match {
           case Int8(rhs)   => Int16((lhs & rhs).toShort)
           case Int16(rhs)  => Int16((lhs & rhs).toShort)
-          case Int32(rhs)  => Int16((lhs & rhs).toShort)
-          case Uint8(rhs)  => Int16((lhs & rhs).toShort)
-          case Uint16(rhs) => Int16((lhs & rhs).toShort)
-          case Uint32(rhs) => Int16((lhs & rhs).toShort)
-          case BigInt(rhs) => Int16((lhs.toInt & rhs).toShort)
+          case Int32(rhs)  => Int32(lhs & rhs)
+          case Int64(rhs)  => Int64(lhs & rhs)
+          case BigInt(rhs) => BigInt(lhs.toInt & rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
       case Int8(lhs) =>
         b match {
-          case Int8(rhs)   => Int32(lhs & rhs)
-          case Int16(rhs)  => Int32(lhs & rhs)
+          case Int8(rhs)   => Int8((lhs & rhs).toByte)
+          case Int16(rhs)  => Int16((lhs & rhs).toShort)
           case Int32(rhs)  => Int32(lhs & rhs)
-          case Uint8(rhs)  => Int32(lhs & rhs)
-          case Uint16(rhs) => Int32(lhs & rhs)
-          case Uint32(rhs) => BigInt(lhs & rhs)
+          case Int64(rhs)  => Int64(lhs & rhs)
           case BigInt(rhs) => BigInt(lhs.toInt & rhs)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint8(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint8(lhs & rhs)
-          case Int16(rhs)  => Uint8(lhs & rhs)
-          case Int32(rhs)  => Uint8(lhs & rhs)
-          case Uint8(rhs)  => Uint8(lhs & rhs)
-          case Uint16(rhs) => Uint8(lhs & rhs)
-          case Uint32(rhs) => Uint8((lhs & rhs).toInt)
-          case BigInt(rhs) => Uint8((lhs & rhs).toInt)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint16(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint16(lhs & rhs)
-          case Int16(rhs)  => Uint16(lhs & rhs)
-          case Int32(rhs)  => Uint16(lhs & rhs)
-          case Uint8(rhs)  => Uint16(lhs & rhs)
-          case Uint16(rhs) => Uint16(lhs & rhs)
-          case Uint32(rhs) => Uint16((lhs & rhs).toInt)
-          case BigInt(rhs) => Uint16((lhs & rhs).toInt)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint32(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint32(lhs & rhs)
-          case Int16(rhs)  => Uint32(lhs & rhs)
-          case Int32(rhs)  => Uint32(lhs & rhs)
-          case Uint8(rhs)  => Uint32(lhs & rhs)
-          case Uint16(rhs) => Uint32(lhs & rhs)
-          case Uint32(rhs) => Uint32(lhs & rhs)
-          case BigInt(rhs) => Uint32((lhs & rhs).toLong)
           case _           => throw ThrowableVmError(WrongType)
         }
       case BigInt(lhs) =>
@@ -190,11 +160,17 @@ import scala.annotation.strictfp
           case Int8(rhs)   => BigInt(lhs & scala.BigInt(rhs.toInt))
           case Int16(rhs)  => BigInt(lhs & scala.BigInt(rhs.toInt))
           case Int32(rhs)  => BigInt(lhs & rhs)
-          case Uint8(rhs)  => BigInt(lhs & rhs)
-          case Uint16(rhs) => BigInt(lhs & rhs)
-          case Uint32(rhs) => BigInt(lhs & rhs)
+          case Int64(rhs)  => BigInt(lhs & rhs)
           case BigInt(rhs) => BigInt(lhs & rhs)
           case _           => throw ThrowableVmError(WrongType)
+        }
+      case Bytes(lhs) =>
+        b match {
+          case Bytes(rhs) =>
+            Bytes(ByteString.copyFrom(lhs.toByteArray.zipAll(rhs.toByteArray(), 0x00.toByte, 0x00.toByte).map {
+              case (x: Byte, y: Byte) => (x & y).toByte
+            }))
+          case _ => throw ThrowableVmError(WrongType)
         }
       case Bool(lhs) =>
         b match {
@@ -207,70 +183,40 @@ import scala.annotation.strictfp
 
   private val orImpl: (Data, Data) => Data.Primitive = { (a, b) =>
     a match {
+      case Int64(lhs) =>
+        b match {
+          case Int8(rhs)   => Int64(lhs | rhs)
+          case Int16(rhs)  => Int64(lhs | rhs)
+          case Int32(rhs)  => Int64(lhs | rhs)
+          case Int64(rhs)  => Int64(lhs | rhs)
+          case BigInt(rhs) => BigInt(lhs | rhs)
+          case _           => throw ThrowableVmError(WrongType)
+        }
       case Int32(lhs) =>
         b match {
           case Int8(rhs)   => Int32(lhs | rhs)
           case Int16(rhs)  => Int32(lhs | rhs)
           case Int32(rhs)  => Int32(lhs | rhs)
-          case Uint8(rhs)  => Int32(lhs | rhs)
-          case Uint16(rhs) => Int32(lhs | rhs)
-          case Uint32(rhs) => Int32((lhs | rhs).toInt)
-          case BigInt(rhs) => Int32((lhs | rhs).toInt)
+          case Int64(rhs)  => Int64(lhs | rhs)
+          case BigInt(rhs) => BigInt(lhs | rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
       case Int16(lhs) =>
         b match {
           case Int8(rhs)   => Int16((lhs | rhs).toShort)
           case Int16(rhs)  => Int16((lhs | rhs).toShort)
-          case Int32(rhs)  => Int16((lhs | rhs).toShort)
-          case Uint8(rhs)  => Int16((lhs | rhs).toShort)
-          case Uint16(rhs) => Int16((lhs | rhs).toShort)
-          case Uint32(rhs) => Int16((lhs | rhs).toShort)
-          case BigInt(rhs) => Int16((lhs.toInt | rhs).toShort)
+          case Int32(rhs)  => Int32(lhs | rhs)
+          case Int64(rhs)  => Int64(lhs | rhs)
+          case BigInt(rhs) => BigInt(lhs.toInt | rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
       case Int8(lhs) =>
         b match {
-          case Int8(rhs)   => Int32(lhs | rhs)
-          case Int16(rhs)  => Int32(lhs | rhs)
+          case Int8(rhs)   => Int8((lhs | rhs).toByte)
+          case Int16(rhs)  => Int16((lhs | rhs).toShort)
           case Int32(rhs)  => Int32(lhs | rhs)
-          case Uint8(rhs)  => Int32(lhs | rhs)
-          case Uint16(rhs) => Int32(lhs | rhs)
-          case Uint32(rhs) => BigInt(lhs | rhs)
+          case Int64(rhs)  => Int64(lhs | rhs)
           case BigInt(rhs) => BigInt(lhs.toInt | rhs)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint8(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint8(lhs | rhs)
-          case Int16(rhs)  => Uint8(lhs | rhs)
-          case Int32(rhs)  => Uint8(lhs | rhs)
-          case Uint8(rhs)  => Uint8(lhs | rhs)
-          case Uint16(rhs) => Uint8(lhs | rhs)
-          case Uint32(rhs) => Uint8((lhs | rhs).toInt)
-          case BigInt(rhs) => Uint8((lhs | rhs).toInt)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint16(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint16(lhs | rhs)
-          case Int16(rhs)  => Uint16(lhs | rhs)
-          case Int32(rhs)  => Uint16(lhs | rhs)
-          case Uint8(rhs)  => Uint16(lhs | rhs)
-          case Uint16(rhs) => Uint16(lhs | rhs)
-          case Uint32(rhs) => Uint16((lhs | rhs).toInt)
-          case BigInt(rhs) => Uint16((lhs | rhs).toInt)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint32(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint32(lhs | rhs)
-          case Int16(rhs)  => Uint32(lhs | rhs)
-          case Int32(rhs)  => Uint32(lhs | rhs)
-          case Uint8(rhs)  => Uint32(lhs | rhs)
-          case Uint16(rhs) => Uint32(lhs | rhs)
-          case Uint32(rhs) => Uint32(lhs | rhs)
-          case BigInt(rhs) => Uint32((lhs | rhs).toLong)
           case _           => throw ThrowableVmError(WrongType)
         }
       case BigInt(lhs) =>
@@ -278,11 +224,17 @@ import scala.annotation.strictfp
           case Int8(rhs)   => BigInt(lhs | scala.BigInt(rhs.toInt))
           case Int16(rhs)  => BigInt(lhs | scala.BigInt(rhs.toInt))
           case Int32(rhs)  => BigInt(lhs | rhs)
-          case Uint8(rhs)  => BigInt(lhs | rhs)
-          case Uint16(rhs) => BigInt(lhs | rhs)
-          case Uint32(rhs) => BigInt(lhs | rhs)
+          case Int64(rhs)  => BigInt(lhs | rhs)
           case BigInt(rhs) => BigInt(lhs | rhs)
           case _           => throw ThrowableVmError(WrongType)
+        }
+      case Bytes(lhs) =>
+        b match {
+          case Bytes(rhs) =>
+            Bytes(ByteString.copyFrom(lhs.toByteArray.zipAll(rhs.toByteArray(), 0x00.toByte, 0x00.toByte).map {
+              case (x: Byte, y: Byte) => (x | y).toByte
+            }))
+          case _ => throw ThrowableVmError(WrongType)
         }
       case Bool(lhs) =>
         b match {
@@ -295,70 +247,40 @@ import scala.annotation.strictfp
 
   private val xorImpl: (Data, Data) => Data.Primitive = { (a, b) =>
     a match {
+      case Int64(lhs) =>
+        b match {
+          case Int8(rhs)   => Int64(lhs ^ rhs)
+          case Int16(rhs)  => Int64(lhs ^ rhs)
+          case Int32(rhs)  => Int64(lhs ^ rhs)
+          case Int64(rhs)  => Int64(lhs ^ rhs)
+          case BigInt(rhs) => BigInt(lhs ^ rhs)
+          case _           => throw ThrowableVmError(WrongType)
+        }
       case Int32(lhs) =>
         b match {
           case Int8(rhs)   => Int32(lhs ^ rhs)
           case Int16(rhs)  => Int32(lhs ^ rhs)
           case Int32(rhs)  => Int32(lhs ^ rhs)
-          case Uint8(rhs)  => Int32(lhs ^ rhs)
-          case Uint16(rhs) => Int32(lhs ^ rhs)
-          case Uint32(rhs) => Int32((lhs ^ rhs).toInt)
-          case BigInt(rhs) => Int32((lhs ^ rhs).toInt)
+          case Int64(rhs)  => Int64(lhs ^ rhs)
+          case BigInt(rhs) => BigInt(lhs ^ rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
       case Int16(lhs) =>
         b match {
           case Int8(rhs)   => Int16((lhs ^ rhs).toShort)
           case Int16(rhs)  => Int16((lhs ^ rhs).toShort)
-          case Int32(rhs)  => Int16((lhs ^ rhs).toShort)
-          case Uint8(rhs)  => Int16((lhs ^ rhs).toShort)
-          case Uint16(rhs) => Int16((lhs ^ rhs).toShort)
-          case Uint32(rhs) => Int16((lhs ^ rhs).toShort)
-          case BigInt(rhs) => Int16((lhs.toInt ^ rhs).toShort)
+          case Int32(rhs)  => Int32(lhs ^ rhs)
+          case Int64(rhs)  => Int64(lhs ^ rhs)
+          case BigInt(rhs) => BigInt(lhs.toInt ^ rhs)
           case _           => throw ThrowableVmError(WrongType)
         }
       case Int8(lhs) =>
         b match {
-          case Int8(rhs)   => Int32(lhs ^ rhs)
-          case Int16(rhs)  => Int32(lhs ^ rhs)
+          case Int8(rhs)   => Int8((lhs ^ rhs).toByte)
+          case Int16(rhs)  => Int16((lhs ^ rhs).toShort)
           case Int32(rhs)  => Int32(lhs ^ rhs)
-          case Uint8(rhs)  => Int32(lhs ^ rhs)
-          case Uint16(rhs) => Int32(lhs ^ rhs)
-          case Uint32(rhs) => BigInt(lhs ^ rhs)
+          case Int64(rhs)  => Int64(lhs ^ rhs)
           case BigInt(rhs) => BigInt(lhs.toInt ^ rhs)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint8(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint8(lhs ^ rhs)
-          case Int16(rhs)  => Uint8(lhs ^ rhs)
-          case Int32(rhs)  => Uint8(lhs ^ rhs)
-          case Uint8(rhs)  => Uint8(lhs ^ rhs)
-          case Uint16(rhs) => Uint8(lhs ^ rhs)
-          case Uint32(rhs) => Uint8((lhs ^ rhs).toInt)
-          case BigInt(rhs) => Uint8((lhs ^ rhs).toInt)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint16(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint16(lhs ^ rhs)
-          case Int16(rhs)  => Uint16(lhs ^ rhs)
-          case Int32(rhs)  => Uint16(lhs ^ rhs)
-          case Uint8(rhs)  => Uint16(lhs ^ rhs)
-          case Uint16(rhs) => Uint16(lhs ^ rhs)
-          case Uint32(rhs) => Uint16((lhs ^ rhs).toInt)
-          case BigInt(rhs) => Uint16((lhs ^ rhs).toInt)
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint32(lhs) =>
-        b match {
-          case Int8(rhs)   => Uint32(lhs ^ rhs)
-          case Int16(rhs)  => Uint32(lhs ^ rhs)
-          case Int32(rhs)  => Uint32(lhs ^ rhs)
-          case Uint8(rhs)  => Uint32(lhs ^ rhs)
-          case Uint16(rhs) => Uint32(lhs ^ rhs)
-          case Uint32(rhs) => Uint32(lhs ^ rhs)
-          case BigInt(rhs) => Uint32((lhs ^ rhs).toLong)
           case _           => throw ThrowableVmError(WrongType)
         }
       case BigInt(lhs) =>
@@ -366,11 +288,17 @@ import scala.annotation.strictfp
           case Int8(rhs)   => BigInt(lhs ^ scala.BigInt(rhs.toInt))
           case Int16(rhs)  => BigInt(lhs ^ scala.BigInt(rhs.toInt))
           case Int32(rhs)  => BigInt(lhs ^ rhs)
-          case Uint8(rhs)  => BigInt(lhs ^ rhs)
-          case Uint16(rhs) => BigInt(lhs ^ rhs)
-          case Uint32(rhs) => BigInt(lhs ^ rhs)
+          case Int64(rhs)  => BigInt(lhs ^ rhs)
           case BigInt(rhs) => BigInt(lhs ^ rhs)
           case _           => throw ThrowableVmError(WrongType)
+        }
+      case Bytes(lhs) =>
+        b match {
+          case Bytes(rhs) =>
+            Bytes(ByteString.copyFrom(lhs.toByteArray.zipAll(rhs.toByteArray(), 0x00.toByte, 0x00.toByte).map {
+              case (x: Byte, y: Byte) => (x ^ y).toByte
+            }))
+          case _ => throw ThrowableVmError(WrongType)
         }
       case Bool(lhs) =>
         b match {
@@ -383,14 +311,22 @@ import scala.annotation.strictfp
 
   private val eqImpl: (Data, Data) => Bool = { (a, b) =>
     val result = a match {
+      case Int64(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs == rhs
+          case Int16(rhs)  => lhs == rhs
+          case Int32(rhs)  => lhs == rhs
+          case Int64(rhs)  => lhs == rhs
+          case BigInt(rhs) => lhs == rhs
+          case Number(rhs) => lhs == rhs
+          case _           => false
+        }
       case Int32(lhs) =>
         b match {
           case Int8(rhs)   => lhs == rhs
           case Int16(rhs)  => lhs == rhs
           case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
+          case Int64(rhs)  => lhs == rhs
           case BigInt(rhs) => lhs == rhs
           case Number(rhs) => lhs == rhs
           case _           => false
@@ -400,9 +336,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs == rhs
           case Int16(rhs)  => lhs == rhs
           case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
+          case Int64(rhs)  => lhs == rhs
           case BigInt(rhs) => lhs == rhs
           case Number(rhs) => lhs == rhs
           case _           => false
@@ -412,45 +346,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs == rhs
           case Int16(rhs)  => lhs == rhs
           case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
-          case BigInt(rhs) => lhs == rhs
-          case Number(rhs) => lhs == rhs
-          case _           => false
-        }
-      case Uint8(lhs) =>
-        b match {
-          case Int8(rhs)   => lhs == rhs
-          case Int16(rhs)  => lhs == rhs
-          case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
-          case BigInt(rhs) => lhs == rhs
-          case Number(rhs) => lhs == rhs
-          case _           => false
-        }
-      case Uint16(lhs) =>
-        b match {
-          case Int8(rhs)   => lhs == rhs
-          case Int16(rhs)  => lhs == rhs
-          case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
-          case BigInt(rhs) => lhs == rhs
-          case Number(rhs) => lhs == rhs
-          case _           => false
-        }
-      case Uint32(lhs) =>
-        b match {
-          case Int8(rhs)   => lhs == rhs
-          case Int16(rhs)  => lhs == rhs
-          case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
+          case Int64(rhs)  => lhs == rhs
           case BigInt(rhs) => lhs == rhs
           case Number(rhs) => lhs == rhs
           case _           => false
@@ -460,9 +356,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs == rhs
           case Int16(rhs)  => lhs == rhs
           case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
+          case Int64(rhs)  => lhs == rhs
           case BigInt(rhs) => lhs == BigDecimal(rhs)
           case Number(rhs) => lhs == rhs
           case _           => false
@@ -472,9 +366,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs == rhs
           case Int16(rhs)  => lhs == rhs
           case Int32(rhs)  => lhs == rhs
-          case Uint8(rhs)  => lhs == rhs
-          case Uint16(rhs) => lhs == rhs
-          case Uint32(rhs) => lhs == rhs
+          case Int64(rhs)  => lhs == rhs
           case BigInt(rhs) => lhs == rhs
           case Number(rhs) => BigDecimal(lhs) == rhs
           case _           => false
@@ -486,15 +378,23 @@ import scala.annotation.strictfp
 
   private val gtImpl: (Data, Data) => Bool = { (a, b) =>
     val result = a match {
+      case Int64(lhs) =>
+        b match {
+          case Int8(rhs)   => lhs > rhs
+          case Int16(rhs)  => lhs > rhs
+          case Int32(rhs)  => lhs > rhs
+          case Int64(rhs)  => lhs > rhs
+          case BigInt(rhs) => rhs < lhs
+          case Number(rhs) => lhs > rhs
+          case _           => throw ThrowableVmError(WrongType)
+        }
       case Int32(lhs) =>
         b match {
           case Int8(rhs)   => lhs > rhs
           case Int16(rhs)  => lhs > rhs
           case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
-          case BigInt(rhs) => lhs > rhs
+          case Int64(rhs)  => lhs > rhs
+          case BigInt(rhs) => rhs < lhs
           case Number(rhs) => lhs > rhs
           case _           => throw ThrowableVmError(WrongType)
         }
@@ -503,9 +403,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs > rhs
           case Int16(rhs)  => lhs > rhs
           case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
+          case Int64(rhs)  => lhs > rhs
           case BigInt(rhs) => rhs < lhs.toInt
           case Number(rhs) => lhs > rhs
           case _           => throw ThrowableVmError(WrongType)
@@ -515,46 +413,8 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs > rhs
           case Int16(rhs)  => lhs > rhs
           case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
+          case Int64(rhs)  => lhs > rhs
           case BigInt(rhs) => rhs < lhs.toInt
-          case Number(rhs) => lhs > rhs
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint8(lhs) =>
-        b match {
-          case Int8(rhs)   => lhs > rhs
-          case Int16(rhs)  => lhs > rhs
-          case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
-          case BigInt(rhs) => lhs > rhs
-          case Number(rhs) => lhs > rhs
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint16(lhs) =>
-        b match {
-          case Int8(rhs)   => lhs > rhs
-          case Int16(rhs)  => lhs > rhs
-          case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
-          case BigInt(rhs) => lhs > rhs
-          case Number(rhs) => lhs > rhs
-          case _           => throw ThrowableVmError(WrongType)
-        }
-      case Uint32(lhs) =>
-        b match {
-          case Int8(rhs)   => lhs > rhs
-          case Int16(rhs)  => lhs > rhs
-          case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
-          case BigInt(rhs) => lhs > rhs
           case Number(rhs) => lhs > rhs
           case _           => throw ThrowableVmError(WrongType)
         }
@@ -563,9 +423,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs > rhs
           case Int16(rhs)  => lhs > rhs
           case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
+          case Int64(rhs)  => lhs > rhs
           case BigInt(rhs) => lhs > BigDecimal(rhs)
           case Number(rhs) => lhs > rhs
           case _           => throw ThrowableVmError(WrongType)
@@ -575,9 +433,7 @@ import scala.annotation.strictfp
           case Int8(rhs)   => lhs > rhs.toInt
           case Int16(rhs)  => lhs > rhs.toInt
           case Int32(rhs)  => lhs > rhs
-          case Uint8(rhs)  => lhs > rhs
-          case Uint16(rhs) => lhs > rhs
-          case Uint32(rhs) => lhs > rhs
+          case Int64(rhs)  => lhs > rhs
           case BigInt(rhs) => lhs > rhs
           case Number(rhs) => BigDecimal(lhs) > rhs
           case _           => throw ThrowableVmError(WrongType)

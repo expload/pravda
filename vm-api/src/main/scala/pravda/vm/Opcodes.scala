@@ -82,10 +82,15 @@ object Opcodes {
   final val PADDR = 0xa2
   final val PCREATE = 0xa5
   final val PUPDATE = 0xa6
-  final val OWNER = 0xa7
+  final val CODE = 0xa7
   final val SEAL = 0xa8
   final val THROW = 0xa9
   final val EVENT = 0xaa
+  final val CALLERS = 0xab
+  final val HEIGHT = 0xac
+  final val HASH = 0xad
+  final val TIME = 0xae
+  final val PEXIST = 0xaf
 
   // Native coins
   final val TRANSFER = 0xc0

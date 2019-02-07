@@ -27,11 +27,8 @@ package object serialization {
   object Json extends TaggedType[String]
   type Json = Json.Type
 
-  object BooPickle extends TaggedType[Array[Byte]]
-  type BooPickle = BooPickle.Type
-
-  object Bson extends TaggedType[Array[Byte]]
-  type Bson = Bson.Type
+  object BJson extends TaggedType[Array[Byte]]
+  type BJson = BJson.Type
 
   object Composite extends TaggedType[Array[Byte]]
   type Composite = Composite.Type

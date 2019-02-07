@@ -1,12 +1,12 @@
----preconditions
-watts-limit: 1000
-stack:
-  int32(2), null
-heap:
-storage:
----expectations
+vm:
+  watts-limit: 1000
+  stack:
+    - int32.2
+    - "null"
+code: |-
+  add
+---
 watts-spent: 11
 error:
-  |WrongType
----code
-add
+  code: 104
+  message: WrongType

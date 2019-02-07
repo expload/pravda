@@ -1,277 +1,190 @@
 package pravda.vm
 
 import com.google.protobuf.ByteString
-import fastparse.all._
+import pravda.common.bytes
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.common.{bytes => byteUtils}
+import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
-import pravda.vm.VmSandbox.EnvironmentEffect._
-import pravda.vm.asm.{Operation, PravdaAssembler, SourceMap}
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.util.{Random, Try}
-import scala.language.higherKinds
+import scala.util.Try
 
 object VmSandbox {
 
-  final case class Macro(name: String, args: List[String])
+  class EnvironmentSandbox(effects: mutable.Buffer[vm.Effect],
+                           initStorages: Map[Address, Map[Primitive, Data]],
+                           initBalances: Seq[(Address, Primitive.Int64)],
+                           initPrograms: Seq[(Address, Primitive.Bytes)],
+                           pExecutor: Address,
+                           appStateInfo: AppStateInfo)
+      extends Environment {
 
-  type MacroHandler = PartialFunction[Macro, Seq[Operation]]
+    private val balances = mutable.Map(initBalances: _*)
+    private val programs = mutable.Map(initPrograms: _*)
+    private val sealedPrograms = mutable.Map[Address, Boolean]()
 
-  final case class Case(program: Option[Seq[Operation]] = None, preconditions: Option[Preconditions] = None)
+    def executor: Address = pExecutor
 
-  final case class Preconditions(balances: Map[Address, Primitive.BigInt],
-                                 watts: Long = 0,
-                                 memory: Memory = Memory(),
-                                 storage: Map[Primitive, Data] = Map.empty,
-                                 programs: Map[Address, Primitive.Bytes] = Map.empty,
-                                 executor: Option[Address])
+    def sealProgram(address: Address): Unit = {
+      sealedPrograms(address) = true
+      effects += vm.Effect.ProgramSeal(address)
+    }
 
-  final case class Memory(stack: Seq[Data.Primitive] = Nil, heap: Map[Data.Primitive.Ref, Data] = Map.empty)
+    def updateProgram(address: Address, code: ByteString): Unit = {
+      programs(address) = Data.Primitive.Bytes(code)
+      effects += vm.Effect.ProgramUpdate(address, Data.Primitive.Bytes(code))
+    }
 
-  sealed trait EnvironmentEffect
+    def createProgram(address: Address, code: ByteString): Unit = {
+      programs(address) = Data.Primitive.Bytes(code)
+      effects += vm.Effect.ProgramCreate(address, Data.Primitive.Bytes(code))
+    }
 
-  object EnvironmentEffect {
-    final case class StoragePut(key: Data, value: Data)                                   extends EnvironmentEffect
-    final case class StorageGet(key: Data, value: Option[Data])                           extends EnvironmentEffect
-    final case class StorageDelete(key: Data)                                             extends EnvironmentEffect
-    final case class ProgramCreate(owner: Address, address: Address, program: ByteString) extends EnvironmentEffect
-    final case class ProgramUpdate(address: Address, program: ByteString)                 extends EnvironmentEffect
-    final case class ProgramSeal(address: Address)                                        extends EnvironmentEffect
-    final case class BalanceGet(address: Address, coins: NativeCoin)                      extends EnvironmentEffect
-    final case class BalanceAccrue(address: Address, coins: NativeCoin)                   extends EnvironmentEffect
-    final case class BalanceWithdraw(address: Address, coins: NativeCoin)                 extends EnvironmentEffect
-    final case class BalanceTransfer(from: Address, to: Address, coins: NativeCoin)       extends EnvironmentEffect
-  }
-
-  final case class EnviromentEvent(address: Address, name: String, data: Data)
-
-  final case class Expectations(watts: Long,
-                                memory: Memory,
-                                effects: Seq[EnvironmentEffect],
-                                events: Seq[EnviromentEvent],
-                                error: Option[String])
-
-  val (preconditions, program) = {
-    import Data.parser._
-    import PravdaAssembler.{parser => assemblerParser}
-
-    val space = P(CharIn("\r\t\n ").rep())
-    val `=` = P(space ~ "=" ~ space)
-    //val ws = P(CharIn("\r\t\n ").rep(min = 1))
-    //val notws = P(CharsWhile(!"\r\t\n ".contains(_)))
-    val `,` = P(space ~ "," ~ space)
-    //val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_").rep(1).!)
-
-    val memory = {
-      val stack = P("stack:" ~/ space ~ primitive.rep(sep = `,`))
-      val heap = P("heap:" ~/ space ~ (ref ~ `=` ~ all).rep(sep = `,`))
-      P(stack.? ~ space ~ heap.?).map {
-        case (maybeStack, maybeHeap) =>
-          Memory(
-            maybeStack.getOrElse(Nil),
-            maybeHeap.getOrElse(Nil).toMap
-          )
+    def getProgram(address: Address): Option[ProgramContext] = {
+      programs.get(address).map { p =>
+        ProgramContext(
+          new StorageSandbox(address, effects, initStorages.getOrElse(address, Map.empty).toSeq),
+          p.data,
+          `sealed` = sealedPrograms.getOrElse(address, false)
+        )
       }
     }
 
-    val address = P(bytes).map(Address @@ _.data)
-
-    val preconditions = {
-      val executor = P("executor:" ~/ space ~ address)
-      val watts = P("watts-limit:" ~/ space ~ uint)
-      val balances = P("balances:" ~/ space ~ (address ~ `=` ~ bigint).rep(sep = `,`))
-      val storage = P("storage:" ~/ space ~ (primitive ~ `=` ~ all).rep(sep = `,`))
-      val programs = P("programs:" ~/ space ~ (address ~ `=` ~ bytes)).rep(sep = `,`)
-      P(space ~ executor.? ~ space ~ balances.? ~ space ~ watts ~ space ~ memory.? ~ space ~ storage.? ~ space ~ programs.?)
-        .map {
-          case (e, b, w, m, s, ps) =>
-            Preconditions(
-              balances = b.getOrElse(Nil).toMap,
-              watts = w.toLong,
-              memory = m.getOrElse(Memory()),
-              storage = s.getOrElse(Nil).toMap,
-              programs = ps.getOrElse(Nil).toMap,
-              executor = e
-            )
-        }
+    def balance(address: Address): NativeCoin = {
+      val balance = NativeCoin @@ balances.get(address).fold(0L)(_.data)
+      effects += vm.Effect.ShowBalance(address, balance)
+      balance
     }
 
-    val program = assemblerParser
+    def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
+      val fromBalance = balances.get(from).fold(0L)(_.data)
+      val toBalance = balances.get(to).fold(0L)(_.data)
+      balances(from) = Data.Primitive.Int64(fromBalance - amount)
+      balances(to) = Data.Primitive.Int64(toBalance + amount)
+      effects += vm.Effect.Transfer(from, to, amount)
+    }
 
-    (preconditions, program)
+    def event(address: Address, name: String, data: MarshalledData): Unit =
+      effects += vm.Effect.Event(address, name, data)
+
+    def chainHeight = appStateInfo.height
+    def lastBlockHash = appStateInfo.`app-hash`
+    def lastBlockTime = appStateInfo.timestamp
   }
 
-  def printExpectations(e: Expectations): String = {
-    def printData(d: Data) = d.mkString(pretty = true).replace("\n", "")
+  class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])
+      extends Storage {
 
-    def printEffect(effect: EnvironmentEffect) = effect match {
-      case StoragePut(key, value)                 => s"sput ${printData(key)} ${printData(value)}"
-      case StorageGet(key, value)                 => s"sget ${printData(key)}${value.fold("")(" " + printData(_))}"
-      case StorageDelete(key)                     => s"sdel ${printData(key)}"
-      case ProgramCreate(owner, address, program) => ???
-      case ProgramUpdate(address, program)        => ???
-      case ProgramSeal(address)                   => ???
-      case BalanceGet(address, coins)             => s"balance x${byteUtils.byteString2hex(address)} $coins"
-      case BalanceAccrue(address, coins)          => ???
-      case BalanceWithdraw(address, coins)        => ???
-      case BalanceTransfer(from, to, coins) =>
-        s"transfer x${byteUtils.byteString2hex(from)} x${byteUtils.byteString2hex(to)} $coins"
-      // TODO implement printing of all other effects
+    val storageItems: mutable.Map[Data.Primitive, Data] = mutable.Map(initStorage: _*)
+
+    def get(key: Data.Primitive): Option[Data] = {
+      val value = storageItems.get(key)
+      effects += vm.Effect.StorageRead(address, key, value)
+      value
     }
 
-    def printEvent(event: EnviromentEvent) = event match {
-      case VmSandbox.EnviromentEvent(address, name, data) =>
-        s"x${byteUtils.byteString2hex(address)} $name ${data.mkString()}"
+    def put(key: Data.Primitive, value: Data): Option[Data] = {
+      val prev = storageItems.put(key, value)
+      effects += vm.Effect.StorageWrite(address, key, prev, value)
+      prev
     }
 
-    def combine(ops: Seq[(String, Option[String])]): String =
-      ops
-        .flatMap { op =>
-          for {
-            text <- op._2
-          } yield s"""|${op._1}:
-              ${text.split('\n').map("|  " + _).mkString("\n")}""".stripMargin
-        }
-        .mkString("\n")
-
-    def nonEmptyReduce[T, A[T] <: Iterable[T], B](a: A[T])(reduce: A[T] => B): Option[B] =
-      if (a.isEmpty) {
-        None
-      } else {
-        Some(reduce(a))
-      }
-
-    s"watts-spent: ${e.watts}\n" +
-      combine(
-        Seq(
-          "stack" -> nonEmptyReduce(e.memory.stack)(_.map(printData).mkString(", ")),
-          "heap" -> nonEmptyReduce(e.memory.heap.toSeq)(_.map { case (k, v) => s"${printData(k)} = ${printData(v)}" }
-            .mkString(",\n")),
-          "effects" -> nonEmptyReduce(e.effects)(_.map(printEffect).mkString(",\n")),
-          "events" -> nonEmptyReduce(e.events)(_.map(printEvent).mkString(",\n")),
-          "error" -> nonEmptyReduce(e.error.toList)(_.head.split('\n').map("|" + _).mkString("\n"))
-        ))
+    def delete(key: Data.Primitive): Option[Data] = {
+      val prev = storageItems.remove(key)
+      effects += vm.Effect.StorageRemove(address, key, prev)
+      prev
+    }
   }
 
-  def sandboxRun(ops: Seq[Operation], pre: Preconditions): Expectations = {
-    val vm = new VmImpl()
-    val asmProgram = PravdaAssembler.assemble(ops, saveLabels = true)
+  /**
+    * Preconditions for VM sandbox
+    *
+    * @param balances Balances of accounts
+    * @param stack Initial stack of VM
+    * @param heap Initial heap of VM
+    * @param storage Initial storage, the program is run on the account with zero address (0x00 32 times)
+    * @param `program-storage` Initial storages for given account addresses
+    * @param programs Bytecodes of programs with given addresses
+    * @param executor Address of executor of the program, default executor address is 0x010203...1E1F20
+    * @param code Bytecode of the program
+    * @param `app-state-info` Various Blockchain info
+    */
+  final case class Preconditions(
+      `watts-limit`: Long = 1000000L,
+      balances: Map[Address, Primitive.Int64] = Map.empty,
+      stack: Seq[Primitive] = Nil,
+      heap: Map[Primitive.Ref, Data] = Map.empty,
+      storage: Map[Primitive, Data] = Map.empty,
+      `program-storage`: Map[Address, Map[Primitive, Data]] = Map.empty,
+      programs: Map[Address, Primitive.Bytes] = Map.empty,
+      executor: Option[Address] = None,
+      `app-state-info`: AppStateInfo = AppStateInfo(
+        `app-hash` = bytes.hex2byteString("0000000000000000000000000000000000000000000000000000000000000000"),
+        height = 1L,
+        timestamp = 0L
+      )
+  )
+
+  /**
+    * @param stack Expected stack of VM after program execution
+    * @param heap Expected heap of VM after program execution
+    * @param effects Expected effect occurred during program execution
+    * @param error Expected error occurred during program execution
+    */
+  final case class Expectations(`watts-spent`: Long,
+                                stack: Seq[Primitive] = Nil,
+                                heap: Map[Primitive.Ref, Data] = Map.empty,
+                                effects: Seq[vm.Effect] = Nil,
+                                error: Option[vm.Error] = None)
+
+  final case class ExpectationsWithoutWatts(stack: Seq[Primitive] = Nil,
+                                            heap: Map[Primitive.Ref, Data] = Map.empty,
+                                            effects: Seq[vm.Effect] = Nil,
+                                            error: Option[vm.Error] = None)
+
+  object ExpectationsWithoutWatts {
+
+    def fromExpectations(e: Expectations): ExpectationsWithoutWatts =
+      ExpectationsWithoutWatts(e.stack, e.heap, e.effects, e.error)
+  }
+
+  def run(input: VmSandbox.Preconditions, code: ByteString): VmSandbox.Expectations = {
+    val sandboxVm = new VmImpl()
     val heap = {
-      if (pre.memory.heap.nonEmpty) {
-        val length = pre.memory.heap.map(_._1.data).max + 1
+      if (input.heap.nonEmpty) {
+        val length = input.heap.map(_._1.data).max + 1
         val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
-        pre.memory.heap.foreach { case (ref, value) => buffer(ref.data) = value }
+        input.heap.foreach { case (ref, value) => buffer(ref.data) = value }
         buffer
       } else {
         ArrayBuffer[Data]()
       }
     }
-    val memory = MemoryImpl(ArrayBuffer(pre.memory.stack: _*), heap)
-    val wattCounter = new WattCounterImpl(pre.watts)
+    val memory = MemoryImpl(ArrayBuffer(input.stack: _*), heap)
+    val wattCounter = new WattCounterImpl(input.`watts-limit`)
 
-    val effects = mutable.Buffer[EnvironmentEffect]()
-    val events = mutable.Map[(Address, String), mutable.Buffer[Data]]()
-
-    val pExecutor = pre.executor.getOrElse {
+    val pExecutor = input.executor.getOrElse {
       Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
     }
 
-    val environment: Environment = new Environment {
-      val balances = mutable.Map(pre.balances.toSeq: _*)
-      val programs = mutable.Map(pre.programs.toSeq: _*)
-      val sealedPrograms = mutable.Map[Address, Boolean]()
-
-      def executor: Address = pExecutor
-
-      def sealProgram(address: Address): Unit = {
-        sealedPrograms(address) = true
-        effects += EnvironmentEffect.ProgramSeal(address)
-      }
-
-      def updateProgram(address: Address, code: ByteString): Unit = {
-        if (sealedPrograms.get(address).exists(identity)) {
-          programs(address) = Data.Primitive.Bytes(code)
-          effects += EnvironmentEffect.ProgramUpdate(address, code)
-        }
-      }
-
-      def createProgram(owner: Address, code: ByteString): Address = {
-        val randomBytes = new Array[Byte](32)
-        Random.nextBytes(randomBytes)
-        val address = Address @@ ByteString.copyFrom(randomBytes)
-        programs(address) = Data.Primitive.Bytes(code)
-        effects += EnvironmentEffect.ProgramCreate(owner, address, code)
-        address
-      }
-
-      def getProgram(address: Address): Option[ProgramContext] = {
-        programs.get(address).map { p =>
-          ProgramContext(
-            new Storage { // TODO meaningful storage
-              override def get(key: Data): Option[Data] = None
-              override def put(key: Data, value: Data): Option[Data] = None
-              override def delete(key: Data): Option[Data] = None
-            },
-            p.data.asReadOnlyByteBuffer()
-          )
-        }
-      }
-
-      def getProgramOwner(address: Address): Option[Address] =
-        Some(pExecutor) // TODO display actual owner for created programs
-
-      def balance(address: Address): NativeCoin = {
-        val balance = NativeCoin @@ balances.get(address).fold(0L)(_.data.toLong)
-        effects += EnvironmentEffect.BalanceGet(address, balance)
-        balance
-      }
-
-      def transfer(from: Address, to: Address, amount: NativeCoin): Unit = {
-        val fromBalance = balances.get(from).fold(scala.BigInt(0))(_.data)
-        val toBalance = balances.get(to).fold(scala.BigInt(0))(_.data)
-        balances(from) = Data.Primitive.BigInt(fromBalance - amount)
-        balances(to) = Data.Primitive.BigInt(toBalance + amount)
-        effects += EnvironmentEffect.BalanceTransfer(from, to, amount)
-      }
-      override def event(address: Address, name: String, data: Data): Unit = {
-        val key = (address, name)
-        if (!events.contains(key)) {
-          events(key) = mutable.Buffer.empty
-        }
-        events(key) += data
-      }
-    }
-
-    val storage: Storage = new Storage {
-      val storageItems: mutable.Map[Data, Data] = mutable.Map[Data, Data](pre.storage.toSeq: _*)
-
-      override def get(key: Data): Option[Data] = {
-        val value = storageItems.get(key)
-        effects += EnvironmentEffect.StorageGet(key, value)
-        value
-      }
-
-      override def put(key: Data, value: Data): Option[Data] = {
-        val prev = storageItems.put(key, value)
-        effects += EnvironmentEffect.StoragePut(key, value)
-        prev
-      }
-
-      override def delete(key: Data): Option[Data] = {
-        val prev = storageItems.remove(key)
-        effects += EnvironmentEffect.StorageDelete(key)
-        prev
-      }
-    }
+    val effects = mutable.Buffer[vm.Effect]()
+    val environment: Environment = new VmSandbox.EnvironmentSandbox(
+      effects,
+      input.`program-storage`,
+      input.balances.toSeq,
+      input.programs.toSeq,
+      pExecutor,
+      input.`app-state-info`
+    )
+    val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     val error = Try {
       memory.enterProgram(Address.Void)
-      vm.runBytes(
-        asmProgram.asReadOnlyByteBuffer(),
+      sandboxVm.runBytes(
+        code.asReadOnlyByteBuffer(),
         environment,
         memory,
         wattCounter,
@@ -288,7 +201,7 @@ object VmSandbox {
               DataError(e.getMessage),
               FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
               memory.callStack,
-              memory.currentOffset
+              memory.currentCounter
             ))
         case ThrowableVmError(e) =>
           Some(
@@ -296,25 +209,17 @@ object VmSandbox {
               e,
               FinalState(wattCounter.spent, wattCounter.refund, wattCounter.total, memory.stack, memory.heap),
               memory.callStack,
-              memory.currentOffset))
+              memory.currentCounter))
       },
       _ => None
     )
 
     Expectations(
       wattCounter.spent,
-      Memory(
-        memory.stack,
-        memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap
-      ),
+      memory.stack,
+      memory.heap.zipWithIndex.map { case (d, i) => Data.Primitive.Ref(i) -> d }.toMap,
       effects,
-      events.flatMap {
-        case ((address, name), datas) => datas.map(EnviromentEvent(address, name, _))
-      }.toSeq,
-      error.map { e =>
-        s"""|${e.error}
-            |${SourceMap.renderStackTrace(SourceMap.stackTrace(asmProgram, e))}""".stripMargin
-      }
+      error.map(_.error)
     )
   }
 }

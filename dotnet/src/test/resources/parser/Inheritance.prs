@@ -1,0 +1,130 @@
+dotnet-compilation:
+  steps:
+  - target: Pravda.dll
+    sources:
+    - PravdaDotNet/Pravda.cs
+    optimize: true
+  - target: Inheritance.exe
+    sources:
+    - Pravda.dll
+    - dotnet-tests/resources/Inheritance.cs
+    optimize: true
+---
+methods: |-
+  List(
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
+      0,
+      None
+    ),
+    Method(
+      List(LdArg0, CallVirt(MethodDefData(2, 0, 454, "Answer", 34L, Vector())), LdcI41, Add, Ret),
+      0,
+      None
+    ),
+    Method(List(LdcI40, Ret), 0, None),
+    Method(
+      List(
+        LdArg0,
+        LdArg1,
+        Call(MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "val")))),
+        LdArg0,
+        LdArg1,
+        StFld(FieldData(0, 1, "AVal", 31L)),
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(List(LdArg0, LdFld(FieldData(0, 1, "AVal", 31L)), LdcI4S(42), Add, Ret), 0, None),
+    Method(
+      List(
+        LdArg0,
+        LdArg1,
+        Call(MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "val")))),
+        LdArg0,
+        LdArg1,
+        StFld(FieldData(1, 1, "BVal", 31L)),
+        Ret
+      ),
+      0,
+      None
+    ),
+    Method(List(LdArg0, LdFld(FieldData(1, 1, "BVal", 31L)), LdcI4S(43), Add, Ret), 0, None),
+    Method(
+      List(
+        LdcI4S(100),
+        NewObj(MethodDefData(3, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "aVal")))),
+        LdcI4(200),
+        NewObj(MethodDefData(5, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "bVal")))),
+        StLoc0,
+        Dup,
+        CallVirt(MethodDefData(2, 0, 454, "Answer", 34L, Vector())),
+        Pop,
+        LdLoc0,
+        CallVirt(MethodDefData(2, 0, 454, "Answer", 34L, Vector())),
+        Pop,
+        CallVirt(MethodDefData(1, 0, 454, "AnswerPlus1", 34L, Vector())),
+        LdLoc0,
+        CallVirt(MethodDefData(1, 0, 454, "AnswerPlus1", 34L, Vector())),
+        StLoc1,
+        LdLoc1,
+        Add,
+        Ret
+      ),
+      2,
+      Some(16L)
+    ),
+    Method(List(Ret), 0, None),
+    Method(
+      List(LdArg0, Call(MemberRefData(TypeRefData(6L, "Object", "System"), ".ctor", 6L)), Ret),
+      0,
+      None
+    )
+  )
+signatures: |-
+  List(
+    (1L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List(Tpe(I4, false)))),
+    (6L, MethodRefDefSig(true, false, false, false, 0, Tpe(Void, false), List())),
+    (
+      10L,
+      MethodRefDefSig(
+        true,
+        false,
+        false,
+        false,
+        0,
+        Tpe(Void, false),
+        List(Tpe(ValueTpe(TypeRefData(15L, "DebuggingModes", "")), false))
+      )
+    ),
+    (
+      16L,
+      LocalVarSig(
+        List(
+          LocalVar(
+            Cls(
+              TypeDefData(
+                1,
+                1048577,
+                "Parent",
+                "",
+                TypeRefData(6L, "Object", "System"),
+                Vector(),
+                Vector(
+                  MethodDefData(0, 0, 6278, ".ctor", 1L, Vector(ParamData(0, 1, "val"))),
+                  MethodDefData(1, 0, 454, "AnswerPlus1", 34L, Vector()),
+                  MethodDefData(2, 0, 454, "Answer", 34L, Vector())
+                )
+              )
+            ),
+            false
+          ),
+          LocalVar(I4, false)
+        )
+      )
+    ),
+    (31L, FieldSig(I4)),
+    (34L, MethodRefDefSig(true, false, false, false, 0, Tpe(I4, false), List())),
+    (38L, MethodRefDefSig(false, false, false, false, 0, Tpe(Void, false), List()))
+  )
