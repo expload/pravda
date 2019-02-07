@@ -458,7 +458,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
           case Type.BigInt  => BigInt(scala.BigInt(data.toByteArray.reverse))
           case Type.Number  => Number(buffer.getDouble)
           case Type.Ref     => Ref(buffer.getInt)
-          case Type.Boolean => if (data.isEmpty) Bool.False else Bool.True
+          case Type.Boolean => if (data.isEmpty || data.toByteArray.forall(_ == 0)) Bool.False else Bool.True
           case Type.Utf8    => Utf8(new String(data.toByteArray, StandardCharsets.UTF_8))
           case Type.Bytes   => value
         }
