@@ -4,7 +4,8 @@ import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.node.client.{CompilersLanguage, IoLanguageStub}
+import pravda.node.client.{CompilersLanguage, IoLanguageStub, IpfsLanguageStub, MetadataLanguageStub}
+import pravda.vm.Meta
 import pravda.vm.asm.Operation
 import utest._
 
@@ -35,9 +36,13 @@ object CompileSuite extends TestSuite {
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
 
-        override def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = ???
+        def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = ???
+        def disasm(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[String] = ???
+        def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[Seq[(Int, Operation)]] = ???
       }
-      val compile = new Compile[Id](io, compilers)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val compile = new Compile[Id](io, compilers, ipfs, metadata)
       compile(PravdaConfig.Compile(Asm))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
@@ -56,8 +61,14 @@ object CompileSuite extends TestSuite {
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
 
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
+        def disasm(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[String] =
+          if (source == BinarySource) ExpectedStringOutput
+          else UnexpectedStringOutput
+        def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[Seq[(Int, Operation)]] = Nil
       }
-      val compile = new Compile[Id](io, compilers)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val compile = new Compile[Id](io, compilers, ipfs, metadata)
       compile(PravdaConfig.Compile(Disasm))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
@@ -78,11 +89,14 @@ object CompileSuite extends TestSuite {
         }
         def disasmToOps(source: ByteString): Id[Seq[(Int, Operation)]] = Nil
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Right(UnexpectedBinaryOutput)
+        def disasm(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[String] = ???
+        def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[Seq[(Int, Operation)]] = ???
       }
-      val compile = new Compile[Id](io, compilers)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val compile = new Compile[Id](io, compilers, ipfs, metadata)
       compile(PravdaConfig.Compile(DotNet))
       assert(io.stdout.headOption.contains(ExpectedBinaryOutput))
     }
-
   }
 }

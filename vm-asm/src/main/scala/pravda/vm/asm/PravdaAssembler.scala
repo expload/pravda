@@ -28,9 +28,6 @@ import pravda.vm.{Data, Opcodes, Meta => Metadata}
 
 import scala.annotation.switch
 import scala.collection.mutable
-import scala.concurrent.Future
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Low-level utility to work with Pravda VM bytecode.
@@ -155,41 +152,30 @@ object PravdaAssembler {
     (ByteString.copyFrom(bytecode), metas.toMap)
   }
 
-  def disassembleIncludeMeta(bytecode: ByteString, metaLoader: MetaLoader): Future[Seq[(Int, Operation)]] = {
+  def extractPrefixIncludes(bytecode: ByteString): (ByteString, Seq[Metadata.MetaInclude]) = {
     val buffer = bytecode.asReadOnlyByteBuffer()
     var lastPosition = 0
-    var consumedInclude = false
+    var consumedAllIncludes = false
 
-    val metasF = mutable.Buffer[Future[Map[Int, Seq[Metadata]]]]()
-    while (buffer.hasRemaining && !consumedInclude) {
+    val metas = mutable.Buffer[Metadata.MetaInclude]()
+    while (buffer.hasRemaining && !consumedAllIncludes) {
       val opcode = buffer.get & 0xff
       (opcode: @switch) match {
         case Opcodes.META =>
           Metadata.readFromByteBuffer(buffer) match {
             case m @ IpfsFile(hash) =>
               lastPosition = buffer.position()
-              metasF += metaLoader.load(m)
+              metas += m
             case _ =>
-              consumedInclude = true
+              consumedAllIncludes = true
           }
         case _ =>
-          consumedInclude = true
+          consumedAllIncludes = true
       }
     }
 
-    for {
-      metas <- Future.sequence(metasF)
-      mergedMeta = {
-        val values = metas.foldLeft(mutable.Buffer[(Int, Seq[Metadata])]()) {
-          case (acc, m) => acc ++= m.toSeq
-        }
-
-        values.groupBy(_._1).mapValues(_.flatMap(_._2))
-      }
-    } yield {
-      val newBytecode = bytecode.substring(lastPosition)
-      disassemble(newBytecode, mergedMeta)
-    }
+    val newBytecode = bytecode.substring(lastPosition)
+    (newBytecode, metas)
   }
 
   /**
@@ -198,6 +184,7 @@ object PravdaAssembler {
     */
   def disassemble(bytecode: ByteString, externalMeta: Map[Int, Seq[Metadata]] = Map.empty): Seq[(Int, Operation)] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
+    val initOffset = buffer.position()
     val operations = mutable.Buffer.empty[(Int, Operation)]
     var label = Option.empty[String]
 
@@ -211,7 +198,7 @@ object PravdaAssembler {
     }
 
     while (buffer.hasRemaining) {
-      val offset = buffer.position()
+      val offset = buffer.position() - initOffset
       val opcode = buffer.get & 0xff
 
       val offsetMetas = externalMeta.getOrElse(offset, Seq.empty)
@@ -332,9 +319,8 @@ object PravdaAssembler {
     */
   val parser: fastparse.all.Parser[Seq[Operation]] = {
 
+    import Data.parser.{all => dataAll, primitive => dataPrimitive}
     import fastparse.all._
-
-    import Data.parser.{primitive => dataPrimitive, all => dataAll}
     val digit = P(CharIn('0' to '9'))
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_"))
     val alphadigdot = P(alpha | digit | ".")

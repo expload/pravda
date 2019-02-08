@@ -59,7 +59,9 @@ object RunBytecodeSuite extends TestSuite {
             case _ => buildExecResult(EmptyMemory)
           }
       }
-      val program = new RunBytecode[Id](io, vm)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val program = new RunBytecode[Id](io, vm, ipfs, metadata)
       program(PravdaConfig.RunBytecode())
       assert(io.stdout.headOption.contains(ProgramFromStdInJson))
     }
@@ -82,7 +84,9 @@ object RunBytecodeSuite extends TestSuite {
             case _ => buildExecResult(EmptyMemory)
           }
       }
-      val program = new RunBytecode[Id](io, vm)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val program = new RunBytecode[Id](io, vm, ipfs, metadata)
       program(PravdaConfig.RunBytecode(input = Some(ProgramFromFileName)))
       assert(io.stdout.headOption.contains(ProgramFromFileJson))
     }
@@ -93,7 +97,9 @@ object RunBytecodeSuite extends TestSuite {
         def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
           buildExecResult(EmptyMemory)
       }
-      val program = new RunBytecode[Id](io, vm)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val program = new RunBytecode[Id](io, vm, ipfs, metadata)
       program(PravdaConfig.RunBytecode(input = Some(ProgramFromFileName)))
       assert(
         io.stderr.headOption.contains(ProgramFromFileError),

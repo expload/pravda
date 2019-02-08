@@ -317,7 +317,7 @@ object Meta {
         ("method " ~ Data.parser.struct.map(MethodSignature.fromStruct)) |
         ("source_mark " ~ Data.parser.struct.map(SourceMark.fromStruct)) |
         ("translator_mark " ~ Data.parser.utf8.map(s => TranslatorMark(s.data))) |
-        ("ipfs_file " ~ Data.parser.utf8.map(h => IpfsFile(h)))
+        ("ipfs_file " ~ Data.parser.utf8.map(h => IpfsFile(h.data)))
     )
   }
 

@@ -23,11 +23,14 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CompileMode
-import pravda.node.client.{CompilersLanguage, IoLanguage, IpfsLanguage}
+import pravda.node.client.{CompilersLanguage, IoLanguage, IpfsLanguage, MetadataLanguage}
 
 import scala.language.higherKinds
 
-class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F], ipfsLanguage: IpfsLanguage[F]) {
+class Compile[F[_]: Monad](io: IoLanguage[F],
+                           compilers: CompilersLanguage[F],
+                           ipfs: IpfsLanguage[F],
+                           metadata: MetadataLanguage[F]) {
 
   import CompileMode._
 
@@ -65,8 +68,13 @@ class Compile[F[_]: Monad](io: IoLanguage[F], compilers: CompilersLanguage[F], i
               }
             case Disasm =>
               inputs match {
-                case List((path, f)) => compilers.disasmIncludeMeta(f).map(s => Right(ByteString.copyFromUtf8(s)))
-                case _               => Monad[F].pure(Left("Disassembly takes only one file."))
+                case List((path, f)) =>
+                  for {
+                    loaded <- loadIncludes(f, config.ipfsNode)(ipfs, metadata)
+                    (bytecode, meta) = loaded
+                    asm <- compilers.disasm(bytecode, meta)
+                  } yield Right(ByteString.copyFromUtf8(asm))
+                case _ => Monad[F].pure(Left("Disassembly takes only one file."))
               }
 
             case DotNet =>

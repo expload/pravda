@@ -3,10 +3,10 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
-import pravda.node.client.{CompilersLanguage, IoLanguageStub, NodeLanguageStub}
+import pravda.node.client._
 import pravda.node.data.common.TransactionId
 import pravda.node.servers.Abci.TransactionResult
-import pravda.vm.FinalState
+import pravda.vm.{FinalState, Meta}
 import pravda.vm.asm.Operation
 import utest._
 
@@ -40,7 +40,8 @@ object BroadcastSuite extends TestSuite {
   val tests = Tests {
     "run -w w.json" - {
       val api =
-        new NodeLanguageStub(Right(TransactionResult(TransactionId @@ ByteString.EMPTY, Right(FinalState.Empty), Nil)))
+        new NodeLanguageStub[Id](
+          Right(TransactionResult(TransactionId @@ ByteString.EMPTY, Right(FinalState.Empty), Nil)))
       val io = new IoLanguageStub(files = mutable.Map("w.json" -> Wallet))
       val compilers = new CompilersLanguage[Id] {
         def asm(fileName: String, source: String): Id[Either[String, ByteString]] = Left("nope")
@@ -50,15 +51,20 @@ object BroadcastSuite extends TestSuite {
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        def disasm(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[String] = ???
+        def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[Seq[(Int, Operation)]] = ???
       }
-      val program = new Broadcast(io, api, compilers)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val program = new Broadcast(io, api, compilers, metadata, ipfs)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
       assert(io.stdout.headOption.contains(ByteString.copyFromUtf8(expectedResult)))
     }
 
     "run" - {
       val api =
-        new NodeLanguageStub(Right(TransactionResult(TransactionId @@ ByteString.EMPTY, Right(FinalState.Empty), Nil)))
+        new NodeLanguageStub[Id](
+          Right(TransactionResult(TransactionId @@ ByteString.EMPTY, Right(FinalState.Empty), Nil)))
       val io = new IoLanguageStub()
       val compilers = new CompilersLanguage[Id] {
         def asm(source: String): Id[Either[String, ByteString]] = Left("nope")
@@ -69,8 +75,12 @@ object BroadcastSuite extends TestSuite {
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
 
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        def disasm(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[String] = ???
+        def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Id[Seq[(Int, Operation)]] = ???
       }
-      val program = new Broadcast(io, api, compilers)
+      val metadata = new MetadataLanguageStub[Id]()
+      val ipfs = new IpfsLanguageStub[Id]()
+      val program = new Broadcast(io, api, compilers, metadata, ipfs)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run))
       assert(io.stderr.headOption.contains(ByteString.copyFromUtf8("Wallet file should be defined\n")))
     }

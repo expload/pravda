@@ -32,7 +32,6 @@ import tethys.derivation.semiauto.jsonReader
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 import pravda.vm.{Data, Meta}
-import pravda.vm.asm.{Operation, PravdaAssembler}
 import pravda.vm.operations.SystemOperations
 
 import scala.language.higherKinds
@@ -40,6 +39,7 @@ import scala.language.higherKinds
 final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                                    api: NodeLanguage[F],
                                    compilers: CompilersLanguage[F],
+                                   metadata: MetadataLanguage[F],
                                    ipfs: IpfsLanguage[F]) {
 
   import Broadcast._
@@ -136,10 +136,13 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                   Monad[F].pure(Left("Program wallet file should be defined")))(readFromFile))
               programWallet = transcode(Json @@ programWalletJson.toStringUtf8).to[Wallet]
               input <- useOption(config.input)(io.readFromStdin(), readFromFile)
-              (withoutMeta, metas) <- EitherT.right(compilers.extractMeta(input))
-              hash <- EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
-              prefix <- EitherT(compilers.asm(s"""meta ipfs_file "$hash" """))
-              newInput = prefix.concat(withoutMeta)
+              extracted <- EitherT.right(metadata.extractMeta(input))
+              (withoutMeta, metas) = extracted
+              hashO <- EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
+              newInput <- hashO match {
+                case Some(hash) => EitherT.right(metadata.addIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
+                case None => EitherT.right(Monad[F].pure(input))
+              }
               signature = ed25519.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
               addressHex = bytes.byteString2hex(programWallet.address)
               programHex = bytes.byteString2hex(newInput)

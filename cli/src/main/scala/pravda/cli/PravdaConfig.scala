@@ -83,12 +83,14 @@ object PravdaConfig {
   final case class Compile(compiler: CompileMode,
                            input: List[String] = List.empty,
                            output: Option[String] = None,
-                           mainClass: Option[String] = None)
+                           mainClass: Option[String] = None,
+                           ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,
                                input: Option[String] = None,
-                               executor: String = DefaultExecutor)
+                               executor: String = DefaultExecutor,
+                               ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   object Node {
@@ -119,5 +121,8 @@ object PravdaConfig {
     case object Dotnet extends CodegenMode
   }
 
-  final case class Codegen(codegenMode: CodegenMode, input: Option[String] = None) extends PravdaConfig
+  final case class Codegen(codegenMode: CodegenMode,
+                           input: Option[String] = None,
+                           ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
+      extends PravdaConfig
 }

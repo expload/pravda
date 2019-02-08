@@ -246,14 +246,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (endpoint, config: PravdaConfig.Broadcast) =>
                   config.copy(endpoint = endpoint)
                 case (_, otherwise) => otherwise
-              },
-            opt[String]("ipfs-node")
-              .text(s"IPFS node address (${DefaultValues.Broadcast.IPFS_NODE} by default).")
-              .action {
-              case (ipfsNode, config: PravdaConfig.Broadcast) =>
-                config.copy(ipfsNode = ipfsNode)
-              case (_, otherwise) => otherwise
-            },
+              }
           ),
         cmd("execute")
           .text("Executes program without side-effects. No watt-limit is required.")

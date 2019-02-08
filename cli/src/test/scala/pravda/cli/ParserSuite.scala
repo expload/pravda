@@ -26,13 +26,13 @@ object ParserSuite extends TestSuite {
     "run" - {
       "-i a.out" - assert {
         PravdaArgsParser.parse(List("run", "-i", "a.out"), PravdaConfig.Nope) match {
-          case Ok(RunBytecode(_, Some(file), _)) => file.endsWith("a.out")
+          case Ok(RunBytecode(_, Some(file), _, _)) => file.endsWith("a.out")
           case _                                 => false
         }
       }
       "--storage db" - assert {
         PravdaArgsParser.parse(List("run", "--storage", "db"), PravdaConfig.Nope) match {
-          case Ok(RunBytecode(Some(file), _, _)) => file.endsWith("db")
+          case Ok(RunBytecode(Some(file), _, _, _)) => file.endsWith("db")
           case _                                 => false
         }
       }
@@ -79,7 +79,7 @@ object ParserSuite extends TestSuite {
     "broadcast" - {
       "run -e http://example.com -w hw.json" - assert {
         PravdaArgsParser.parse(List("broadcast", "run", "-e", "http://example.com", "-w", "hw.json"), PravdaConfig.Nope) match {
-          case Ok(Broadcast(Broadcast.Mode.Run, Some(wallet), _, _, None, _, _, _, "http://example.com"))
+          case Ok(Broadcast(Broadcast.Mode.Run, Some(wallet), _, _, None, _, _, _, "http://example.com", _))
               if wallet.endsWith("hw.json") =>
             true
           case x => false
