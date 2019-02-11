@@ -17,6 +17,8 @@
 
 package pravda.faucet
 
+import pureconfig.generic.auto._
+
 final case class FaucetConfig(host: String,
                               port: Int,
                               testnetEndpoint: String,

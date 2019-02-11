@@ -19,8 +19,10 @@ package pravda.node
 
 import pravda.node.data.PravdaConfig
 
-import pravda.node.data.serialization.config._
+import pureconfig.generic.auto._
 
 object Config {
+  import pravda.node.data.serialization.config._
+
   val pravdaConfig = pureconfig.loadConfigOrThrow[PravdaConfig]("pravda")
 }
