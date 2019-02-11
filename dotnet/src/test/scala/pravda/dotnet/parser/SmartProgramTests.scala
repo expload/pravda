@@ -14,7 +14,7 @@ object SmartProgramTests extends TestSuite {
     'SmartProgram - {
       val Right(files) =
         steps(
-          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda/Pravda.cs"),
           "SmartProgram.exe" -> Seq("Pravda.dll", "dotnet-tests/resources/SmartProgram.cs")
         ).run
       val clearedFiles = clearPathsInPdb(files)

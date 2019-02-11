@@ -2,7 +2,7 @@
 
 The process consists of the following steps:
 
-1) Add stub method in [Pravda.cs](https://github.com/expload/pravda/blob/master/PravdaDotNet/Pravda.cs) without implementing any functionality
+1) Add stub method in [Pravda.cs](https://github.com/expload/pravda/blob/master/PravdaDotNet/Pravda/Pravda.cs) without implementing any functionality
 2) Describe translation of the method in [CallsTranslation](https://github.com/expload/pravda/blob/master/dotnet/src/main/scala/pravda/dotnet/translation/opcode/CallsTranslation.scala)
 3) Write test C# program that uses that method. Place appropriate tests to [parser](https://github.com/expload/pravda/tree/master/dotnet/src/test/resources/parser), [translation](https://github.com/expload/pravda/tree/master/dotnet/src/test/resources/translation) and [teskit](https://github.com/expload/pravda/tree/master/testkit/src/test/resources) folders.
 
@@ -26,7 +26,7 @@ For example `ProgramAddress()` method takes no parameters, but returns one value
 
 ### Translation of the method to the Pravda VM opcodes
 
-We need to add pattern-match for `Call` case with our method (similarly how it's done for other methods from [`Pravda.cs`](https://github.com/expload/pravda/blob/master/PravdaDotNet/Pravda.cs)) in the function `asmOpsOne`. There we need to implement the method using Pravda VM opcodes.
+We need to add pattern-match for `Call` case with our method (similarly how it's done for other methods from [`Pravda.cs`](https://github.com/expload/pravda/blob/master/PravdaDotNet/Pravda/Pravda.cs)) in the function `asmOpsOne`. There we need to implement the method using Pravda VM opcodes.
 
 For example for `ProgramAddress()` method we have `PADDR` opcode, so we can write the following:
 
@@ -50,7 +50,7 @@ dotnet-compilation:
   steps:
   - target: Pravda.dll
     sources:
-    - PravdaDotNet/Pravda.cs
+    - PravdaDotNet/Pravda/Pravda.cs
     optimize: true
   - target: <C# program name>.exe
     sources:
@@ -91,7 +91,7 @@ dotnet-compilation:
   steps:
   - target: Pravda.dll
     sources:
-    - PravdaDotNet/Pravda.cs
+    - PravdaDotNet/Pravda/Pravda.cs
     optimize: true
   - target: <C# program name>.exe
     sources:

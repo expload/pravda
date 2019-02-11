@@ -12,7 +12,7 @@ object ProgramInterfaceTests extends TestSuite {
     'ProgramInterface - {
       val Right(files) =
         steps(
-          "Pravda.dll" -> Seq("PravdaDotNet/Pravda.cs"),
+          "Pravda.dll" -> Seq("PravdaDotNet/Pravda/Pravda.cs"),
           "ProgramInterface.dll" -> Seq("Pravda.dll", "dotnet-tests/resources/ProgramInterface.cs")
         ).run
 

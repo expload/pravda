@@ -7,7 +7,7 @@ dotnet-compilation:
   steps:
   - target: Pravda.dll
     sources:
-    - PravdaDotNet/Pravda.cs
+    - PravdaDotNet/Pravda/Pravda.cs
     optimize: true
   - target: Object.exe
     sources:
