@@ -26,6 +26,8 @@ import pravda.node.data.cryptography.PrivateKey
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Success
 
+import pureconfig.generic.auto._
+
 object Application extends App {
 
   implicit val system: ActorSystem = ActorSystem("pravda-node-client-api")
