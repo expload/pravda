@@ -1,0 +1,22 @@
+vm:
+  watts-limit: 1000
+  stack:
+    - bytes.0000000000000000000000000000000000000000000000000000000000000000
+    - bytes.1000000000000000000000000000000000000000000000000000000000000000
+    - bytes.
+code: |-
+  push 9
+  cast
+  swap
+  push 9
+  cast
+  push 3
+  swapn
+  push 9
+  cast
+---
+watts-spent: 139
+stack:
+  - bool.true
+  - bool.false
+  - bool.false
