@@ -103,7 +103,7 @@ pipeline:
     environment:
       - PRAVDA_VERSION=${DRONE_TAG##v}
     commands:
-      - cd /workdir/code/PravdaDotNet
+      - cd /workdir/code/PravdaDotNet/Pravda
       - dotnet pack -c Release
       - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
     secrets: [ nuget_key ]
