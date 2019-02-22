@@ -18,7 +18,7 @@ final class MetadataLanguageImpl(implicit executionContext: ExecutionContext) ex
     PravdaAssembler.assembleExtractMeta(ops.map(_._2), saveLabels = true, extractMeta = true)
   }
 
-  def addIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): Future[ByteString] = Future {
+  def addPrefixIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): Future[ByteString] = Future {
     val buffer = ByteBuffer.allocate(1024 * 1024)
     includes.foreach { i =>
       buffer.put(Opcodes.META.toByte)

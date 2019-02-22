@@ -11,5 +11,5 @@ class MetadataLanguageStub[F[_]: Monad] extends MetadataLanguage[F] {
     Monad[F].pure((source, Map.empty))
   override def extractPrefixIncludes(source: ByteString): F[(ByteString, Seq[Meta.MetaInclude])] =
     Monad[F].pure((source, Seq.empty))
-  override def addIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): F[ByteString] = Monad[F].pure(source)
+  override def addPrefixIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): F[ByteString] = Monad[F].pure(source)
 }

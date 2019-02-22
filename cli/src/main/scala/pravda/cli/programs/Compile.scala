@@ -69,11 +69,15 @@ class Compile[F[_]: Monad](io: IoLanguage[F],
             case Disasm =>
               inputs match {
                 case List((path, f)) =>
-                  for {
-                    loaded <- loadIncludes(f, config.ipfsNode)(ipfs, metadata)
-                    (bytecode, meta) = loaded
-                    asm <- compilers.disasm(bytecode, meta)
-                  } yield Right(ByteString.copyFromUtf8(asm))
+                  if (config.metaFromIpfs) {
+                    for {
+                      loaded <- loadIncludes(f, config.ipfsNode)(io, ipfs, metadata)
+                      (bytecode, meta) = loaded
+                      asm <- compilers.disasm(bytecode, meta)
+                    } yield Right(ByteString.copyFromUtf8(asm))
+                  } else {
+                    compilers.disasm(f).map(asm => Right(ByteString.copyFromUtf8(asm)))
+                  }
                 case _ => Monad[F].pure(Left("Disassembly takes only one file."))
               }
 

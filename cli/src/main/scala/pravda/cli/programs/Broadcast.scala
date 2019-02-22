@@ -138,10 +138,14 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
               input <- useOption(config.input)(io.readFromStdin(), readFromFile)
               extracted <- EitherT.right(metadata.extractMeta(input))
               (withoutMeta, metas) = extracted
-              hashO <- EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
+              hashO <- if (config.metaToIpfs) {
+                EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
+              } else {
+                EitherT.right(Monad[F].pure(None))
+              }
               newInput <- hashO match {
-                case Some(hash) => EitherT.right(metadata.addIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
-                case None => EitherT.right(Monad[F].pure(input))
+                case Some(hash) => EitherT.right(metadata.addPrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
+                case None       => EitherT.right(Monad[F].pure(input))
               }
               signature = ed25519.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
               addressHex = bytes.byteString2hex(programWallet.address)
@@ -163,13 +167,25 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 config.programWallet.fold[F[Either[String, ByteString]]](
                   Monad[F].pure(Left("Program wallet file should be defined")))(readFromFile))
               programWallet = transcode(Json @@ programWalletJson.toStringUtf8).to[Wallet]
-              newCode <- useOption(config.input)(io.readFromStdin(), readFromFile)
+              input <- useOption(config.input)(io.readFromStdin(), readFromFile)
+              extracted <- EitherT.right(metadata.extractMeta(input))
+              (withoutMeta, metas) = extracted
+              hashO <- if (config.metaToIpfs) {
+                EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
+              } else {
+                EitherT.right(Monad[F].pure(None))
+              }
+              newCode <- hashO match {
+                case Some(hash) => EitherT.right(metadata.addPrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
+                case None       => EitherT.right(Monad[F].pure(input))
+              }
               oldCode <- extractCode(programWallet.address, wallet, wattPayerWallet)
               signatureHex = {
                 val message = oldCode.concat(newCode).toByteArray
                 val signature = ed25519.sign(programWallet.privateKey.toByteArray, message)
                 bytes.bytes2hex(signature)
               }
+              // TODO also extract meta
               newCodeHex = bytes.byteString2hex(newCode)
               updateCode <- EitherT {
                 val addressHex = bytes.byteString2hex(programWallet.address)

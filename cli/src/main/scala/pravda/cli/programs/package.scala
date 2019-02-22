@@ -21,8 +21,9 @@ import cats._
 import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
-import pravda.node.client.{IpfsLanguage, MetadataLanguage}
+import pravda.node.client.{IoLanguage, IpfsLanguage, MetadataLanguage}
 import pravda.vm.Meta
+import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.collection.mutable
 import scala.language.higherKinds
@@ -36,7 +37,54 @@ package object programs {
     }
   }
 
+  def loadMetaFromSource(source: ByteString): Map[Int, Seq[Meta]] = {
+    val metas = mutable.Map[Int, mutable.Buffer[Meta]]()
+
+    PravdaAssembler.disassemble(source).foreach {
+      case (i, Operation.Meta(m)) =>
+        if (metas.contains(i)) {
+          metas(i) += m
+        } else {
+          metas(i) = mutable.Buffer[Meta](m)
+        }
+      case _ =>
+    }
+
+    metas.toMap
+  }
+
+  def loadAllMetaWithoutIpfs[F[_]: Monad](source: ByteString)(metadata: MetadataLanguage[F]): F[Map[Int, Seq[Meta]]] = {
+    for {
+      extracted <- metadata.extractPrefixIncludes(source)
+      (bytecode, _) = extracted
+    } yield loadMetaFromSource(bytecode)
+  }
+
+  def loadAllMeta[F[_]: Monad](source: ByteString, ipfsNode: String)(
+      io: IoLanguage[F],
+      ipfs: IpfsLanguage[F],
+      metadata: MetadataLanguage[F]): F[Map[Int, Seq[Meta]]] = {
+    for {
+      includes <- loadIncludes(source, ipfsNode)(io, ipfs, metadata)
+      (bytecode, metas) = includes
+    } yield {
+      val extendedMetas = mutable.Map[Int, mutable.Buffer[Meta]](metas.mapValues(_.toBuffer).toSeq: _*)
+
+      loadMetaFromSource(source).foreach {
+        case (i, sourceMetas) =>
+          if (extendedMetas.contains(i)) {
+            extendedMetas(i) ++= sourceMetas
+          } else {
+            extendedMetas(i) = mutable.Buffer(sourceMetas: _*)
+          }
+      }
+
+      extendedMetas.toMap
+    }
+  }
+
   def loadIncludes[F[_]: Monad](source: ByteString, ipfsNode: String)(
+      io: IoLanguage[F],
       ipfs: IpfsLanguage[F],
       metadata: MetadataLanguage[F]): F[(ByteString, Map[Int, Seq[Meta]])] = {
     for {

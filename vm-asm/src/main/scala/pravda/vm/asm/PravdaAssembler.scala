@@ -23,7 +23,6 @@ import com.google.protobuf.ByteString
 import fastparse.parsers.Combinators.Rule
 import pravda.ParsingCommons
 import pravda.ParsingCommons.ParsingError
-import pravda.vm.Meta.IpfsFile
 import pravda.vm.{Data, Opcodes, Meta => Metadata}
 
 import scala.annotation.switch
@@ -163,7 +162,7 @@ object PravdaAssembler {
       (opcode: @switch) match {
         case Opcodes.META =>
           Metadata.readFromByteBuffer(buffer) match {
-            case m @ IpfsFile(hash) =>
+            case m: Metadata.MetaInclude =>
               lastPosition = buffer.position()
               metas += m
             case _ =>

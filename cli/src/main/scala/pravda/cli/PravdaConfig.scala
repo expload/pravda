@@ -58,6 +58,7 @@ object PravdaConfig {
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
                              wattPrice: NativeCoin = DefaultValues.Broadcast.WATT_PRICE,
                              endpoint: String = DefaultValues.Broadcast.ENDPOINT,
+                             metaToIpfs: Boolean = false,
                              ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
@@ -84,12 +85,14 @@ object PravdaConfig {
                            input: List[String] = List.empty,
                            output: Option[String] = None,
                            mainClass: Option[String] = None,
+                           metaFromIpfs: Boolean = false,
                            ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,
                                input: Option[String] = None,
                                executor: String = DefaultExecutor,
+                               metaFromIpfs: Boolean = false,
                                ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
@@ -123,6 +126,7 @@ object PravdaConfig {
 
   final case class Codegen(codegenMode: CodegenMode,
                            input: Option[String] = None,
+                           metaFromIpfs: Boolean = false,
                            ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 }

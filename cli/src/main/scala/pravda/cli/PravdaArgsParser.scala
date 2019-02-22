@@ -70,7 +70,21 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                     case (f, conf: PravdaConfig.Codegen) => conf.copy(input = Some(f.getAbsolutePath))
                     case (_, otherwise)                  => otherwise
                   }
-              )
+              ),
+            opt[Unit]("meta-from-ipfs")
+              .text("Load metadata from IPFS if necessary. To configure the IPFS node address use \"--ipfs-node\" parameter.")
+              .action {
+                case ((), config: PravdaConfig.Codegen) =>
+                  config.copy(metaFromIpfs = true)
+                case (_, otherwise) => otherwise
+              },
+            opt[String]("ipfs-node")
+              .text(s"Ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .action {
+                case (ipfsNode, config: PravdaConfig.Codegen) =>
+                  config.copy(ipfsNode = ipfsNode)
+                case (_, otherwise) => otherwise
+              }
           ),
         cmd("run")
           .text("Run byte-code on Pravda VM")
@@ -99,6 +113,20 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action {
                 case (file, config: PravdaConfig.RunBytecode) =>
                   config.copy(storage = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[Unit]("meta-from-ipfs")
+              .text("Load metadata from IPFS if necessary. To configure the IPFS node address use \"--ipfs-node\" parameter.")
+              .action {
+                case ((), config: PravdaConfig.RunBytecode) =>
+                  config.copy(metaFromIpfs = true)
+                case (_, otherwise) => otherwise
+              },
+            opt[String]("ipfs-node")
+              .text(s"Ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .action {
+                case (ipfsNode, config: PravdaConfig.RunBytecode) =>
+                  config.copy(ipfsNode = ipfsNode)
                 case (_, otherwise) => otherwise
               }
           ),
@@ -157,7 +185,21 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   "Input files are .bin contract and .abi. " +
                   "Output is binary Pravda program. " +
                   "By default read from stdin and print to stdout")
-              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm))
+              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm)),
+            opt[Unit]("meta-from-ipfs")
+              .text("Load metadata from IPFS if necessary. To configure the IPFS node address use \"--ipfs-node\" parameter.")
+              .action {
+                case ((), config: PravdaConfig.Compile) =>
+                  config.copy(metaFromIpfs = true)
+                case (_, otherwise) => otherwise
+              },
+            opt[String]("ipfs-node")
+              .text(s"Ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .action {
+                case (ipfsNode, config: PravdaConfig.Compile) =>
+                  config.copy(ipfsNode = ipfsNode)
+                case (_, otherwise) => otherwise
+              }
           ),
         cmd("broadcast")
           .text("Broadcast transactions and programs to the Pravda blockchain.")
@@ -174,7 +216,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (hex,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(to = Some(hex)))
                     case (_, otherwise) => otherwise
                   },
@@ -182,7 +224,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   .action {
                     case (amount,
                           config @ PravdaConfig
-                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _, _)) =>
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Transfer, _, _, _, _, _, _, _, _, _, _)) =>
                       config.copy(mode = mode.copy(amount = Some(amount)))
                     case (_, otherwise) => otherwise
                   }
@@ -245,6 +287,20 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .action {
                 case (endpoint, config: PravdaConfig.Broadcast) =>
                   config.copy(endpoint = endpoint)
+                case (_, otherwise) => otherwise
+              },
+            opt[Unit]("meta-to-ipfs")
+              .text("Save all metadata to IPFS. To configure the IPFS node address use \"--ipfs-node\" parameter.")
+              .action {
+                case ((), config: PravdaConfig.Broadcast) =>
+                  config.copy(metaToIpfs = true)
+                case (_, otherwise) => otherwise
+              },
+            opt[String]("ipfs-node")
+              .text(s"Ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .action {
+                case (ipfsNode, config: PravdaConfig.Broadcast) =>
+                  config.copy(ipfsNode = ipfsNode)
                 case (_, otherwise) => otherwise
               }
           ),

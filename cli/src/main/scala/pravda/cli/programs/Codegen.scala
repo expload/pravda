@@ -40,8 +40,13 @@ class Codegen[F[_]: Monad](io: IoLanguage[F], ipfs: IpfsLanguage[F], metadata: M
           config.codegenMode match {
             case Dotnet =>
               for {
-                loaded <- loadIncludes(input, config.ipfsNode)(ipfs, metadata)
-              } yield Right(DotnetCodegen.generate(loaded._2).toList)
+                extracted <- metadata.extractPrefixIncludes(input)
+                loaded <- if (config.metaFromIpfs) {
+                  loadAllMeta(input, config.ipfsNode)(io, ipfs, metadata)
+                } else {
+                  loadAllMetaWithoutIpfs(input)(metadata)
+                }
+              } yield Right(DotnetCodegen.generate(loaded).toList)
           }
         }
       } yield result
