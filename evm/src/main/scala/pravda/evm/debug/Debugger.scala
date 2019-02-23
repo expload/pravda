@@ -15,20 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.client
+package pravda.evm.debug
 
-import com.google.protobuf.ByteString
-import pravda.vm.asm.Operation
+import java.nio.ByteBuffer
 
-import scala.language.higherKinds
+import pravda.evm.debug.DebugVm.ExecutionResult
+import pravda.vm.impl.MemoryImpl
+import pravda.vm.sandbox.VmSandbox.StorageSandbox
 
-trait CompilersLanguage[F[_]] {
-  def asm(fileName: String, source: String): F[Either[String, ByteString]]
-  def asm(source: String): F[Either[String, ByteString]]
-  def disasm(source: ByteString): F[String]
-  def disasmToOps(source: ByteString): F[Seq[(Int, Operation)]]
-  def dotnet(sources: Seq[(ByteString, Option[ByteString])], mainClass: Option[String]): F[Either[String, ByteString]]
-  def evm(source: ByteString, abi: ByteString): F[Either[String, ByteString]]
-  def evmTrace(source: ByteString, abi: ByteString, yaml: ByteString): F[Either[String, ByteString]]
+trait Debugger[S] {
 
+  def debugOp(program: ByteBuffer, op: Int, mem: MemoryImpl, storage: StorageSandbox)(
+      execResult: Either[Throwable, ExecutionResult]): S
 }

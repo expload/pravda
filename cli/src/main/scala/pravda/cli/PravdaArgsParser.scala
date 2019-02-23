@@ -157,7 +157,15 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   "Input files are .bin contract and .abi. " +
                   "Output is binary Pravda program. " +
                   "By default read from stdin and print to stdout")
-              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm))
+              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm)),
+            cmd("evm_trace")
+              .text(
+                "[THIS COMPILATION MODE IS EXPERIMENTAL]" +
+                  "Compile and execute .bin produced by solc compiler to Pravda VM bytecode. " +
+                  "Input files are .bin contract and .abi. and yaml file" +
+                  "Output is log trace" +
+                  "By default read from stdin and print to stdout")
+              .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.EvmTrace))
           ),
         cmd("broadcast")
           .text("Broadcast transactions and programs to the Pravda blockchain.")

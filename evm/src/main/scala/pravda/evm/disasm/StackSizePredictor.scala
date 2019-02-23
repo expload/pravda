@@ -31,6 +31,7 @@ object StackSizePredictor {
       case (CallDataSize, ind) => CallDataSize(ind)
       case (CallDataLoad, ind) => CallDataLoad(ind)
       case (Sha3, ind)         => Sha3(ind)
+      case (Return, ind)       => Return(ind)
       case (op, _)             => op
     }
 

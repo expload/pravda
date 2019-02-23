@@ -1,4 +1,21 @@
-package pravda.vm
+/*
+ * Copyright (C) 2018  Expload.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package pravda.vm.sandbox
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes
@@ -6,6 +23,7 @@ import pravda.common.domain.{Address, NativeCoin}
 import pravda.vm
 import pravda.vm.Data.Primitive
 import pravda.vm.Error.DataError
+import pravda.vm._
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
@@ -151,27 +169,19 @@ object VmSandbox {
       ExpectationsWithoutWatts(e.stack, e.heap, e.effects, e.error)
   }
 
-  def run(input: VmSandbox.Preconditions, code: ByteString): VmSandbox.Expectations = {
-    val sandboxVm = new VmImpl()
-    val heap = {
-      if (input.heap.nonEmpty) {
-        val length = input.heap.map(_._1.data).max + 1
-        val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
-        input.heap.foreach { case (ref, value) => buffer(ref.data) = value }
-        buffer
-      } else {
-        ArrayBuffer[Data]()
-      }
+  def heap(input: VmSandbox.Preconditions): ArrayBuffer[Data] = {
+    if (input.heap.nonEmpty) {
+      val length = input.heap.map(_._1.data).max + 1
+      val buffer = ArrayBuffer.fill[Data](length)(Data.Primitive.Null)
+      input.heap.foreach { case (ref, value) => buffer(ref.data) = value }
+      buffer
+    } else {
+      ArrayBuffer[Data]()
     }
-    val memory = MemoryImpl(ArrayBuffer(input.stack: _*), heap)
-    val wattCounter = new WattCounterImpl(input.`watts-limit`)
+  }
 
-    val pExecutor = input.executor.getOrElse {
-      Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
-    }
-
-    val effects = mutable.Buffer[vm.Effect]()
-    val environment: Environment = new VmSandbox.EnvironmentSandbox(
+  def environment(input: VmSandbox.Preconditions, effects: mutable.Buffer[vm.Effect], pExecutor: Address): Environment =
+    new VmSandbox.EnvironmentSandbox(
       effects,
       input.`program-storage`,
       input.balances.toSeq,
@@ -179,13 +189,26 @@ object VmSandbox {
       pExecutor,
       input.`app-state-info`
     )
+
+  def run(input: VmSandbox.Preconditions, code: ByteString): VmSandbox.Expectations = {
+    val sandboxVm = new VmImpl()
+    val heapSandbox = heap(input)
+    val memory = MemoryImpl(ArrayBuffer(input.stack: _*), heapSandbox)
+    val wattCounter = new WattCounterImpl(input.`watts-limit`)
+
+    val pExecutor = input.executor.getOrElse {
+      Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
+    }
+
+    val effects = mutable.Buffer[vm.Effect]()
+    val environmentS: Environment = environment(input, effects, pExecutor)
     val storage = new VmSandbox.StorageSandbox(Address.Void, effects, input.storage.toSeq)
 
     val error = Try {
       memory.enterProgram(Address.Void)
       sandboxVm.runBytes(
         code.asReadOnlyByteBuffer(),
-        environment,
+        environmentS,
         memory,
         wattCounter,
         Some(storage),

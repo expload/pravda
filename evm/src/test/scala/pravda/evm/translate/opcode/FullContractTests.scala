@@ -7,29 +7,30 @@ import pravda.evm.abi.parse.AbiParser
 import pravda.evm.parse.Parser
 import pravda.evm.utils._
 import pravda.vm.Data.Primitive._
-import pravda.vm.{Data, VmSandbox}
+import pravda.vm.Data
 import pravda.common.domain.Address
 import pravda.vm.Data.Array.Int8Array
 import pravda.vm.Effect.{StorageRead, StorageWrite}
 import utest._
 import pravda.common.bytes.hex._
+import pravda.vm.sandbox.VmSandbox
+import pravda.vm.sandbox.VmSandbox._
 
 import scala.collection.mutable.ArrayBuffer
 
 object FullContractTests extends TestSuite {
-  import VmSandbox.{ExpectationsWithoutWatts => Expectations}
 
   val tests = Tests {
     'SimpleStorageGet - {
-      val preconditions = VmSandbox.Preconditions(`watts-limit` = 10000L,
-                                                  stack = Seq(Data.Primitive.Utf8("get")),
-                                                  storage = Map(evmWord(Array(0)) -> evmWord(Array(1))))
+      val preconditions = Preconditions(`watts-limit` = 10000L,
+                                        stack = Seq(Data.Primitive.Utf8("get")),
+                                        storage = Map(evmWord(Array(0)) -> evmWord(Array(1))))
 
       val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
-        Expectations(
+        ExpectationsWithoutWatts(
           stack = Seq(BigInt(scala.BigInt(1))),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -76,7 +77,7 @@ object FullContractTests extends TestSuite {
     }
 
     'SimpleStorageSet - {
-      val preconditions = VmSandbox.Preconditions(
+      val preconditions = Preconditions(
         `watts-limit` = 10000L,
         stack = Seq(Data.Primitive.Int64(10), Data.Primitive.Utf8("set")),
         storage = Map()
@@ -86,8 +87,8 @@ object FullContractTests extends TestSuite {
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleStorage/SimpleStorage.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
-        Expectations(
-          stack = Seq(),
+        ExpectationsWithoutWatts(
+          stack = Seq(Data.Primitive.Utf8("set")),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -129,7 +130,7 @@ object FullContractTests extends TestSuite {
     }
 
     'SimpleTokenEmit - {
-      val preconditions = VmSandbox.Preconditions(
+      val preconditions = Preconditions(
         `watts-limit` = 10000L,
         stack = Seq(Data.Primitive.Bytes(ByteString.copyFrom((1 to 32).toArray.map(_.toByte))),
                     Data.Primitive.Int64(10),
@@ -140,9 +141,11 @@ object FullContractTests extends TestSuite {
       val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleToken/SimpleToken.bin"))
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
 
+      val x = EvmSandbox.runAddressedCode(preconditions, ops, abi)
+      x -> 1
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
-        Expectations(
-          stack = Seq(Bool.True),
+        ExpectationsWithoutWatts(
+          stack = ArrayBuffer(Bool.True),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -190,7 +193,7 @@ object FullContractTests extends TestSuite {
     }
 
     'SimpleTokenBalance - {
-      val preconditions = VmSandbox.Preconditions(
+      val preconditions = Preconditions(
         `watts-limit` = 10000L,
         stack = Seq(
           Data.Primitive.Bytes(ByteString.copyFrom((1 to 32).toArray.map(_.toByte))),
@@ -205,7 +208,7 @@ object FullContractTests extends TestSuite {
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
-        Expectations(
+        ExpectationsWithoutWatts(
           stack = Seq(BigInt(scala.BigInt(10))),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -271,7 +274,7 @@ object FullContractTests extends TestSuite {
       val Right(abi) = AbiParser.parseAbi(readSolidityABI("SimpleToken/SimpleToken.abi"))
 
       EvmSandbox.runAddressedCode(preconditions, ops, abi) ==> Right(
-        Expectations(
+        ExpectationsWithoutWatts(
           stack = Seq(Bool.True),
           heap = Map(Ref(0) -> Int8Array(ArrayBuffer(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

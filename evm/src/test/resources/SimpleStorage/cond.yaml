@@ -1,0 +1,4 @@
+watts-limit: 100000
+stack:
+  - int64.10
+  - utf8.set

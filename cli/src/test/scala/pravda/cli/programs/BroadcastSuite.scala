@@ -50,6 +50,8 @@ object BroadcastSuite extends TestSuite {
         def dotnet(sources: Seq[(ByteString, Option[ByteString])],
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        override def evmTrace(source: ByteString, abi: ByteString, yaml: ByteString): Id[Either[String, ByteString]] =
+          Left("Nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
@@ -69,6 +71,8 @@ object BroadcastSuite extends TestSuite {
                    mainClass: Option[String]): Id[Either[String, ByteString]] = Left("nope")
 
         def evm(source: ByteString, abi: ByteString): Id[Either[String, ByteString]] = Left("nope")
+        override def evmTrace(source: ByteString, abi: ByteString, yaml: ByteString): Id[Either[String, ByteString]] =
+          Left("Nope")
       }
       val program = new Broadcast(io, api, compilers)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run))

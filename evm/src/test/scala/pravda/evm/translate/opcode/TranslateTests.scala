@@ -2,12 +2,8 @@ package pravda.evm.translate.opcode
 
 import fastparse.byte.all._
 import pravda.evm.EVM._
-import pravda.evm.abi.parse.AbiParser
-import pravda.evm.parse.Parser
-import pravda.evm.{readSolidityABI, readSolidityBinFile}
-import pravda.evm.translate.Translator
 import pravda.vm.Opcodes
-import pravda.vm.asm.{Operation, PravdaAssembler}
+import pravda.vm.asm.Operation
 import pravda.evm.utils._
 import utest._
 
@@ -33,7 +29,7 @@ object TranslateTests extends TestSuite {
       }
     }
 
-    'Contracts - {
+    /*  'Contracts - {
 
       'SimpleStorage - {
         val Right(ops) = Parser.parseWithIndices(readSolidityBinFile("SimpleStorage/SimpleStorage.bin"))
@@ -349,7 +345,7 @@ object TranslateTests extends TestSuite {
         val Right(asm) = Translator.translateActualContract(ops, abi)
 
         PravdaAssembler.render(asm) ==>
-          """@__start_evm_program:
+        """@__start_evm_program:
           |push int32(1024)
           |push int8(1)
           |new_array
@@ -2088,6 +2084,6 @@ object TranslateTests extends TestSuite {
           |stop
           |@convert_result_not_balances:""".stripMargin
       }
-    }
+    }*/
   }
 }
