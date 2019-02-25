@@ -185,7 +185,6 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 val signature = ed25519.sign(programWallet.privateKey.toByteArray, message)
                 bytes.bytes2hex(signature)
               }
-              // TODO also extract meta
               newCodeHex = bytes.byteString2hex(newCode)
               updateCode <- EitherT {
                 val addressHex = bytes.byteString2hex(programWallet.address)
