@@ -7,9 +7,9 @@ import pravda.vm.Meta
 import scala.language.higherKinds
 
 class MetadataLanguageStub[F[_]: Monad] extends MetadataLanguage[F] {
-  override def extractMeta(source: ByteString): F[(ByteString, Map[Int, Seq[Meta]])] =
+  def extractMeta(source: ByteString, initialShift: Int): F[(ByteString, Map[Int, Seq[Meta]])] =
     Monad[F].pure((source, Map.empty))
-  override def extractPrefixIncludes(source: ByteString): F[(ByteString, Seq[Meta.MetaInclude])] =
-    Monad[F].pure((source, Seq.empty))
-  override def addPrefixIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): F[ByteString] = Monad[F].pure(source)
+  def readPrefixIncludes(source: ByteString): F[Seq[Meta.MetaInclude]] =
+    Monad[F].pure(Seq.empty)
+  def writePrefixIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): F[ByteString] = Monad[F].pure(source)
 }

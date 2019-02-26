@@ -56,7 +56,7 @@ object BroadcastSuite extends TestSuite {
       }
       val metadata = new MetadataLanguageStub[Id]()
       val ipfs = new IpfsLanguageStub[Id]()
-      val program = new Broadcast(io, api, compilers, metadata, ipfs)
+      val program = new Broadcast(io, api, compilers, ipfs, metadata)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run, wallet = Some("w.json")))
       assert(io.stdout.headOption.contains(ByteString.copyFromUtf8(expectedResult)))
     }
@@ -80,7 +80,7 @@ object BroadcastSuite extends TestSuite {
       }
       val metadata = new MetadataLanguageStub[Id]()
       val ipfs = new IpfsLanguageStub[Id]()
-      val program = new Broadcast(io, api, compilers, metadata, ipfs)
+      val program = new Broadcast(io, api, compilers, ipfs, metadata)
       program(PravdaConfig.Broadcast(mode = PravdaConfig.Broadcast.Mode.Run))
       assert(io.stderr.headOption.contains(ByteString.copyFromUtf8("Wallet file should be defined\n")))
     }
