@@ -36,9 +36,13 @@ object SourceMap {
     // Add re.lastPosition to last address call stack
     val cs = {
       val xs = re.callStack
-      val (ma, ys) = xs.last
-      val i = xs.length - 1
-      xs.updated(i, (ma, ys :+ re.lastPosition))
+      if (xs.nonEmpty) {
+        val (ma, ys) = xs.last
+        val i = xs.length - 1
+        xs.updated(i, (ma, ys :+ re.lastPosition))
+      } else {
+        Seq((None, Seq(re.lastPosition)))
+      }
     }
     for ((ma, st) <- cs.reverse; pos <- st.reverse)
       yield StackTraceElement(ma, findNearestMark(metas, pos))

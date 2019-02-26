@@ -23,11 +23,14 @@ import cats.implicits._
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CodegenMode.Dotnet
 import pravda.codegen.dotnet.DotnetCodegen
-import pravda.node.client.{IoLanguage, IpfsLanguage, MetadataLanguage}
+import pravda.node.client.{CompilersLanguage, IoLanguage, IpfsLanguage, MetadataLanguage}
 
 import scala.language.higherKinds
 
-class Codegen[F[_]: Monad](io: IoLanguage[F], ipfs: IpfsLanguage[F], metadata: MetadataLanguage[F]) {
+class Codegen[F[_]: Monad](io: IoLanguage[F],
+                           compilers: CompilersLanguage[F],
+                           ipfs: IpfsLanguage[F],
+                           metadata: MetadataLanguage[F]) {
 
   def apply(config: PravdaConfig.Codegen): F[Unit] = {
     val errorOrResult: EitherT[F, String, List[(String, String)]] =
@@ -40,11 +43,10 @@ class Codegen[F[_]: Monad](io: IoLanguage[F], ipfs: IpfsLanguage[F], metadata: M
           config.codegenMode match {
             case Dotnet =>
               for {
-                extracted <- metadata.extractPrefixIncludes(input)
                 loaded <- if (config.metaFromIpfs) {
-                  loadAllMeta(input, config.ipfsNode)(io, ipfs, metadata)
+                  MetaOps.loadAllMeta(input, config.ipfsNode)(compilers, ipfs, metadata)
                 } else {
-                  loadAllMetaWithoutIpfs(input)(metadata)
+                  MetaOps.loadMetaFromSource(input)(compilers)
                 }
               } yield Right(DotnetCodegen.generate(loaded).toList)
           }

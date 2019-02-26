@@ -22,7 +22,7 @@ import cats.data.EitherT
 import cats.implicits._
 import pravda.cli.PravdaConfig
 import pravda.common.bytes
-import pravda.node.client.{IoLanguage, IpfsLanguage, MetadataLanguage, VmLanguage}
+import pravda.node.client._
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 import pravda.vm.asm.SourceMap
@@ -31,6 +31,7 @@ import scala.language.higherKinds
 
 class RunBytecode[F[_]: Monad](io: IoLanguage[F],
                                vm: VmLanguage[F],
+                               compilers: CompilersLanguage[F],
                                ipfs: IpfsLanguage[F],
                                metadata: MetadataLanguage[F]) {
 
@@ -42,13 +43,13 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F],
         program <- useOption(config.input)(io.readFromStdin(),
                                            path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.\n")))
         loaded <- if (config.metaFromIpfs) {
-          EitherT.right(loadAllMeta(program, config.ipfsNode)(io, ipfs, metadata))
+          EitherT.right(MetaOps.loadAllMeta(program, config.ipfsNode)(compilers, ipfs, metadata))
         } else {
-          EitherT.right(loadAllMetaWithoutIpfs(program)(metadata))
+          EitherT.right(MetaOps.loadMetaFromSource(program)(compilers))
         }
         memory <- EitherT(vm.run(program, executor, storagePath, Long.MaxValue)).leftMap { re =>
           val st = SourceMap.renderStackTrace(SourceMap.stackTrace(loaded, re), 2)
-          s"${transcode(re.finalState).to[Json]}${re.error}\n$st\n"
+          s"${transcode(re.finalState).to[Json]}\n${re.error}\n$st\n"
         }
       } yield {
         transcode(memory).to[Json] + "\n"

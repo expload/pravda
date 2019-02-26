@@ -71,9 +71,9 @@ class Compile[F[_]: Monad](io: IoLanguage[F],
                 case List((path, f)) =>
                   if (config.metaFromIpfs) {
                     for {
-                      loaded <- loadIncludes(f, config.ipfsNode)(io, ipfs, metadata)
-                      (bytecode, meta) = loaded
-                      asm <- compilers.disasm(bytecode, meta)
+                      includes <- metadata.readPrefixIncludes(f)
+                      meta <- MetaOps.loadIncludes(includes, config.ipfsNode)(ipfs)
+                      asm <- compilers.disasm(f, meta)
                     } yield Right(ByteString.copyFromUtf8(asm))
                   } else {
                     compilers.disasm(f).map(asm => Right(ByteString.copyFromUtf8(asm)))

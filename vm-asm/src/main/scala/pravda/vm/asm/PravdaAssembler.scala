@@ -56,15 +56,18 @@ object PravdaAssembler {
     *                   It can be used by disassembler.
     */
   def assemble(operations: Seq[Operation], saveLabels: Boolean): ByteString =
-    assembleExtractMeta(operations, saveLabels, extractMeta = false)._1
+    assembleExtractMeta(operations, saveLabels, extractMeta = false, initialShift = 0)._1
 
   def assembleExtractMeta(operations: Seq[Operation],
                           saveLabels: Boolean,
-                          extractMeta: Boolean): (ByteString, Map[Int, Seq[Metadata]]) = {
+                          extractMeta: Boolean,
+                          initialShift: Int): (ByteString, Map[Int, Seq[Metadata]]) = {
     val labels = mutable.Map.empty[String, Int] // label -> offset
     val gotos = mutable.Map.empty[Int, String] // offset -> label
     val metas = mutable.Map.empty[Int, mutable.Buffer[Metadata]]
     val bytecode = ByteBuffer.allocate(1024 * 1024)
+
+    bytecode.position(initialShift)
 
     def putOp(opcode: Int): Unit =
       bytecode.put(opcode.toByte)
@@ -151,9 +154,8 @@ object PravdaAssembler {
     (ByteString.copyFrom(bytecode), metas.toMap)
   }
 
-  def extractPrefixIncludes(bytecode: ByteString): (ByteString, Seq[Metadata.MetaInclude]) = {
+  def readPrefixIncludes(bytecode: ByteString): Seq[Metadata.MetaInclude] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
-    var lastPosition = 0
     var consumedAllIncludes = false
 
     val metas = mutable.Buffer[Metadata.MetaInclude]()
@@ -163,7 +165,6 @@ object PravdaAssembler {
         case Opcodes.META =>
           Metadata.readFromByteBuffer(buffer) match {
             case m: Metadata.MetaInclude =>
-              lastPosition = buffer.position()
               metas += m
             case _ =>
               consumedAllIncludes = true
@@ -173,8 +174,20 @@ object PravdaAssembler {
       }
     }
 
-    val newBytecode = bytecode.substring(lastPosition)
-    (newBytecode, metas)
+    metas
+  }
+
+  def writePrefixIncludes(source: ByteString, includes: Seq[Metadata.MetaInclude]): ByteString = {
+    val buffer = ByteBuffer.allocate(1024 * 1024)
+    source.copyTo(buffer)
+    buffer.flip()
+    includes.foreach { i =>
+      buffer.put(Opcodes.META.toByte)
+      i.writeToByteBuffer(buffer)
+    }
+
+    buffer.rewind()
+    ByteString.copyFrom(buffer)
   }
 
   /**

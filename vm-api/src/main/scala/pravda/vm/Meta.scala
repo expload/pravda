@@ -19,6 +19,7 @@ package pravda.vm
 
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import Data.Primitive._
 import com.google.protobuf.ByteString
@@ -65,7 +66,7 @@ sealed trait Meta {
       Utf8(mark).writeToByteBuffer(buffer)
     case IpfsFile(hash) =>
       buffer.put(TypeIpfsFile.toByte)
-      Utf8(hash).writeToByteBuffer(buffer)
+      buffer.put(hash.getBytes(StandardCharsets.US_ASCII))
     case Custom(name) =>
       buffer.put(TypeCustom.toByte)
       Utf8(name).writeToByteBuffer(buffer)
@@ -204,6 +205,10 @@ object Meta {
 
   sealed trait MetaInclude extends Meta
 
+  object IpfsFile {
+    val byteSize = 46
+  }
+
   final case class IpfsFile(hash: String) extends MetaInclude
 
   final case class LabelDef(name: String) extends Meta
@@ -272,7 +277,10 @@ object Meta {
       case TypeSourceMark     => SourceMark.fromStruct(readStruct())
       case TypeTranslatorMark => TranslatorMark(readString())
       case TypeProgramName    => ProgramName(readString())
-      case TypeIpfsFile       => IpfsFile(readString())
+      case TypeIpfsFile       =>
+        val hash = new Array[Byte](IpfsFile.byteSize)
+        buffer.get(hash)
+        IpfsFile(new String(hash, StandardCharsets.US_ASCII))
     }
   }
 

@@ -39,8 +39,8 @@ import scala.language.higherKinds
 final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                                    api: NodeLanguage[F],
                                    compilers: CompilersLanguage[F],
-                                   metadata: MetadataLanguage[F],
-                                   ipfs: IpfsLanguage[F]) {
+                                   ipfs: IpfsLanguage[F],
+                                   metadata: MetadataLanguage[F]) {
 
   import Broadcast._
 
@@ -136,7 +136,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                   Monad[F].pure(Left("Program wallet file should be defined")))(readFromFile))
               programWallet = transcode(Json @@ programWalletJson.toStringUtf8).to[Wallet]
               input <- useOption(config.input)(io.readFromStdin(), readFromFile)
-              extracted <- EitherT.right(metadata.extractMeta(input))
+              extracted <- EitherT.right(metadata.extractMeta(input, initialShift = Meta.IpfsFile.byteSize + 1 + 1))
               (withoutMeta, metas) = extracted
               hashO <- if (config.metaToIpfs) {
                 EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
@@ -144,7 +144,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 EitherT.right(Monad[F].pure(None))
               }
               newInput <- hashO match {
-                case Some(hash) => EitherT.right(metadata.addPrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
+                case Some(hash) => EitherT.right(metadata.writePrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
                 case None       => EitherT.right(Monad[F].pure(input))
               }
               signature = ed25519.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
@@ -155,7 +155,9 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
               // we should call constructor.
 
               suffix = {
-                val hasCILMark = metas.getOrElse(0, Seq.empty).contains(Translator.CILMark)
+                val hasCILMark = metas.exists {
+                  case (_, ms) => ms.contains(Translator.CILMark)
+                }
                 if (hasCILMark) s"""push "ctor" push x$addressHex push 1 pcall"""
                 else ""
               }
@@ -168,7 +170,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                   Monad[F].pure(Left("Program wallet file should be defined")))(readFromFile))
               programWallet = transcode(Json @@ programWalletJson.toStringUtf8).to[Wallet]
               input <- useOption(config.input)(io.readFromStdin(), readFromFile)
-              extracted <- EitherT.right(metadata.extractMeta(input))
+              extracted <- EitherT.right(metadata.extractMeta(input, initialShift = Meta.IpfsFile.byteSize + 1 + 1))
               (withoutMeta, metas) = extracted
               hashO <- if (config.metaToIpfs) {
                 EitherT.right(ipfs.writeToIpfs(config.ipfsNode, Meta.externalWriteToByteString(metas)))
@@ -176,7 +178,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 EitherT.right(Monad[F].pure(None))
               }
               newCode <- hashO match {
-                case Some(hash) => EitherT.right(metadata.addPrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
+                case Some(hash) => EitherT.right(metadata.writePrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
                 case None       => EitherT.right(Monad[F].pure(input))
               }
               oldCode <- extractCode(programWallet.address, wallet, wattPayerWallet)
