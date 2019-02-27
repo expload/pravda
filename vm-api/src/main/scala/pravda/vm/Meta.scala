@@ -277,7 +277,7 @@ object Meta {
       case TypeSourceMark     => SourceMark.fromStruct(readStruct())
       case TypeTranslatorMark => TranslatorMark(readString())
       case TypeProgramName    => ProgramName(readString())
-      case TypeIpfsFile       =>
+      case TypeIpfsFile =>
         val hash = new Array[Byte](IpfsFile.byteSize)
         buffer.get(hash)
         IpfsFile(new String(hash, StandardCharsets.US_ASCII))

@@ -48,6 +48,7 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
   def disasmToOps(source: ByteString): Future[Seq[(Int, Operation)]] = Future {
     PravdaAssembler.disassemble(source)
   }
+
   def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Future[Seq[(Int, Operation)]] = Future {
     PravdaAssembler.disassemble(source, metas)
   }

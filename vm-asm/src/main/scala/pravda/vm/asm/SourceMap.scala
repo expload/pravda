@@ -26,10 +26,15 @@ object SourceMap {
   case class StackTraceElement(address: Option[domain.Address], sourceMark: Option[Meta.SourceMark])
 
   def findNearestMark(metas: Map[Int, Seq[Meta]], pos: Int): Option[Meta.SourceMark] = {
-    metas.toBuffer.filter(_._1 <= pos).sortBy(_._1).flatMap(_._2).collectFirst {
-      case m: Meta.MethodSignature => None
-      case m: Meta.SourceMark      => Some(m)
-    }.flatten
+    metas.toBuffer
+      .filter(_._1 <= pos)
+      .sortBy(_._1)
+      .flatMap(_._2)
+      .collectFirst {
+        case m: Meta.MethodSignature => None
+        case m: Meta.SourceMark      => Some(m)
+      }
+      .flatten
   }
 
   def stackTrace(metas: Map[Int, Seq[Meta]], re: vm.RuntimeException): Seq[StackTraceElement] = {
