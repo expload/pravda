@@ -18,7 +18,6 @@
 package pravda.node.persistence
 
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.node.data.serialization.json._
 import pravda.node.db.DB
 import pravda.node.persistence.implicits._
 

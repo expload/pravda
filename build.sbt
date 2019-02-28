@@ -1,9 +1,6 @@
 import java.nio.file.{Files, Paths}
 import Dependencies._
 
-resolvers += "jitpack" at "https://jitpack.io"
-resolvers += Resolver.bintrayRepo("expload", "oss")
-
 enablePlugins(GitVersioning)
 
 scalaVersion := "2.12.6"
@@ -65,11 +62,13 @@ val commonSettings = Seq(
     "-unchecked",
     "-Xmacro-settings:materialize-derivations",
     "-Ypartial-unification",
+    //"-Xlog-implicits",
     "-Ypatmat-exhaust-depth",
     "40"
   ),
   resolvers += "jitpack" at "https://jitpack.io",
-  resolvers += Resolver.bintrayRepo("expload", "oss")
+  resolvers += Resolver.bintrayRepo("expload", "oss"),
+  resolvers += Resolver.bintrayRepo("beyondthelines", "maven")
 ) // ++ scalafixSettings
 
 val dotnetTests = file("dotnet-tests/resources")
@@ -224,7 +223,8 @@ lazy val node = (project in file("node"))
       // Marshalling
       tethys,
       akkaStreamUnixDomainSocket,
-      shapeless
+      shapeless,
+      pbdirect
     ),
     dependencyOverrides += "org.scala-lan" %% "scala-compiler" % "2.12.6",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),

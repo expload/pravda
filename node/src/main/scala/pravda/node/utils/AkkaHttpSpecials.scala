@@ -29,7 +29,6 @@ import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.serialization._
-import json._
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.domain.Wallet
 import pravda.node.data.cryptography
@@ -46,13 +45,13 @@ object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
     .contentType
 
   implicit def transcodingUnmarshaller[T](implicit jtc: Transcoder[Json, T],
-                                          btc: Transcoder[BJson, T],
+                                          btc: Transcoder[Protobuf, T],
                                           mat: ActorMaterializer): FromEntityUnmarshaller[T] =
     Unmarshaller { implicit ec => entity =>
       entity.toStrict(5.seconds) map {
         case strict if strict.contentType.mediaType == MediaTypes.`application/octet-stream` =>
           val bytesRaw = strict.data.toArray
-          transcode(BJson @@ bytesRaw).to[T]
+          transcode(Protobuf @@ bytesRaw).to[T]
         case strict if strict.contentType.mediaType == MediaTypes.`application/json` =>
           val charset = strict.contentType.charsetOption
             .fold(StandardCharsets.UTF_8)(_.nioCharset())

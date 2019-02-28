@@ -25,7 +25,7 @@ import com.google.protobuf.ByteString
 import pravda.common.contrib.ed25519
 import pravda.node.data.blockchain.Transaction
 import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.bjson._
+import pravda.node.data.serialization.protobuf._
 import pravda.node.data.serialization._
 import pravda.common.bytes._
 import pravda.common.domain.Address
@@ -66,13 +66,13 @@ object cryptography {
     signTransaction(privateKey.toByteArray, tx)
 
   def addWattPayerSignature(privateKey: PrivateKey, tx: SignedTransaction): SignedTransaction = {
-    val message = transcode(tx.forSignature).to[BJson]
+    val message = transcode(tx.forSignature).to[Protobuf]
     val signature = ed25519.sign(privateKey.toByteArray, message)
     tx.copy(wattPayerSignature = Some(ByteString.copyFrom(signature)))
   }
 
   private def signTransaction(privateKey: Array[Byte], tx: UnsignedTransaction): SignedTransaction = {
-    val message = transcode(tx.forSignature).to[BJson]
+    val message = transcode(tx.forSignature).to[Protobuf]
     val signature = ed25519.sign(privateKey, message)
 
     SignedTransaction(
@@ -103,7 +103,7 @@ object cryptography {
     )
 
     val pubKey = tx.from.toByteArray
-    val message = transcode(tx.forSignature).to[BJson]
+    val message = transcode(tx.forSignature).to[Protobuf]
     val signature = tx.signature.toByteArray
     if (ed25519.verify(pubKey, message, signature)) {
       (tx.wattPayer, tx.wattPayerSignature) match {

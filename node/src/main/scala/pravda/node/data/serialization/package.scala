@@ -27,8 +27,8 @@ package object serialization {
   object Json extends TaggedType[String]
   type Json = Json.Type
 
-  object BJson extends TaggedType[Array[Byte]]
-  type BJson = BJson.Type
+  object Protobuf extends TaggedType[Array[Byte]]
+  type Protobuf = Protobuf.Type
 
   object Composite extends TaggedType[Array[Byte]]
   type Composite = Composite.Type
