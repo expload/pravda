@@ -16,7 +16,6 @@ val `tendermint-version` = "0.26.4"
 
 lazy val envDockerUsername = sys.env.get("docker_username")
 
-
 lazy val cleanupTestDirTask = TaskKey[Unit]("cleanupTestDirTask", "Cleanup test dir")
 
 cleanupTestDirTask := {
@@ -55,10 +54,10 @@ val commonSettings = Seq(
     "-deprecation",
     "-feature",
     "-Xlint",
-    "-Xfatal-warnings",
+    //"-Xfatal-warnings",
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen",
-    "-Ywarn-unused-import",
+    //"-Ywarn-unused-import",
     "-unchecked",
     "-Xmacro-settings:materialize-derivations",
     "-Ypartial-unification",
@@ -149,13 +148,13 @@ lazy val `vm-asm` = (project in file("vm-asm"))
   )
   .dependsOn(`vm-api` % "test->test;compile->compile")
 
-lazy val evm = (project in file("evm")).
-  dependsOn(`vm-asm`).
-  dependsOn(vm % "test->test").
-  settings(normalizedName := "pravda-evm").
-  settings( commonSettings: _* ).
-  settings(
-    libraryDependencies ++= Seq (
+lazy val evm = (project in file("evm"))
+  .dependsOn(`vm-asm`)
+  .dependsOn(vm % "test->test")
+  .settings(normalizedName := "pravda-evm")
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
       "com.lihaoyi" %% "fastparse-byte" % "1.0.0",
       "org.bouncycastle" % "bcprov-jdk15on" % "1.60"
     )
@@ -200,7 +199,7 @@ lazy val node = (project in file("node"))
   .enablePlugins(AshScriptPlugin)
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings: _*)
-  .settings(scalacheckOps:_*)
+  .settings(scalacheckOps: _*)
   .settings(
     name := "pravda-node",
     normalizedName := "pravda-node",
@@ -285,7 +284,7 @@ lazy val codegen = (project in file("codegen"))
 lazy val `node-client` = (project in file("node-client"))
   .enablePlugins(RevolverPlugin)
   .settings(commonSettings: _*)
-  .settings(scalacheckOps:_*)
+  .settings(scalacheckOps: _*)
   .settings(
     name := "pravda-node-client",
     normalizedName := "pravda-node-client",
@@ -298,14 +297,13 @@ lazy val `node-client` = (project in file("node-client"))
   .dependsOn(dotnet)
   .dependsOn(evm)
 
-
 // A service for build, sign and broadcast transactions
 // within authorized environment
 lazy val `broadcaster` = (project in file("services/broadcaster"))
   .enablePlugins(UniversalPlugin)
   .enablePlugins(ClasspathJarPlugin)
   .settings(commonSettings: _*)
-  .settings(scalacheckOps:_*)
+  .settings(scalacheckOps: _*)
   .settings(normalizedName := "pravda-broadcaster")
   .dependsOn(`node-client`)
 

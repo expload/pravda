@@ -590,7 +590,7 @@ object Abci {
         throw vm.ThrowableVmError(Error.ProgramIsSealed)
 
       val current = blockBalancesPath.getAs[NativeCoin](byteUtils.byteString2hex(address)).getOrElse(NativeCoin.zero)
-      blockBalancesPath.put(byteUtils.byteString2hex(address), current + amount)
+      blockBalancesPath.put[NativeCoin](byteUtils.byteString2hex(address), NativeCoin @@ (current + amount))
     }
 
     def commit(height: Long, validators: Vector[Address]): Unit = {

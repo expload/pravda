@@ -33,7 +33,7 @@ import cats.syntax.invariant._
 
 object protobuf extends ProtobufTranscoder
 
-trait ProtobufTranscoder {
+trait ProtobufTranscoder extends PBDirectInstances {
 
   type ProtobufEncoder[T] = Transcoder[T, Protobuf]
   type ProtobufDecoder[T] = Transcoder[Protobuf, T]
@@ -45,6 +45,9 @@ trait ProtobufTranscoder {
 
   implicit def protobufDecoder[T: PBReader]: ProtobufDecoder[T] =
     t => t.pbTo[T]
+}
+
+trait PBDirectLowPriorityInstances {
 
   implicit def pbWriterLifter[T: PBWriter, U]: PBWriter[Tagged[T, U]] =
     lifterF[PBWriter].lift[T, U]
@@ -57,8 +60,13 @@ trait ProtobufTranscoder {
 
   implicit def tuple2PbWriter[T1: PBWriter, T2: PBWriter]: PBWriter[(T1, T2)] =
     PBWriter[Tuple2[T1, T2]]
+}
+
+trait PBDirectInstances extends PBDirectLowPriorityInstances {
 
   implicit val bytestringFormat: PBFormat[ByteString] = PBFormat[Array[Byte]].imap(ByteString.copyFrom)(_.toByteArray)
+
+  implicit val nativeCoinFormat: PBFormat[NativeCoin] = PBFormat[Tuple1[Long]].imap(t => NativeCoin @@ t._1)(Tuple1(_))
 
   implicit val dataFormat: PBFormat[Data] = PBFormat[Data]
 
