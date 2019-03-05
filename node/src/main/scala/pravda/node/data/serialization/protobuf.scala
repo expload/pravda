@@ -15,13 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+import cats.instances.option._
+import cats.instances.list._
+import cats.syntax.invariant._
+import cats.syntax.contravariant._
+import cats.syntax.functor._
+import pbdirect._
+
+class A {}
+
+implicit val af: PBFormat[A] = PBFormat[Int].imap(i => new A)(_ => 1)
+
+case class B(a: A, i: Int)
+
+PBFormat[B]
+
+ */
+
 package pravda.node.data.serialization
 
+import cats.syntax.contravariant._
+import cats.syntax.functor._
+import cats.syntax.invariant._
 import com.google.protobuf.ByteString
 import pbdirect._
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.NativeCoin
+import pravda.node.data.blockchain.SignatureData
 import pravda.node.data.blockchain.Transaction.SignedTransaction
-import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography.EncryptedPrivateKey
 import pravda.node.data.domain.Wallet
@@ -29,16 +50,45 @@ import pravda.node.servers.Abci
 import pravda.node.servers.Abci.StoredProgram
 import pravda.vm.{Data, Effect, MarshalledData}
 import supertagged.{Tagged, lifterF}
-import cats.syntax.invariant._
 
-object protobuf extends ProtobufTranscoder
+import scala.collection.mutable
 
-trait ProtobufTranscoder extends PBDirectInstances {
+object protobuf extends ProtobufTranscoder with PBDirectInstances {
+
+  implicit def tuple2PbReader[T1: PBReader, T2: PBReader]: PBReader[(T1, T2)] = PBDirectInstancesInferred.tuple2PbReader
+
+  implicit def tuple2PbWriter[T1: PBWriter, T2: PBWriter]: PBWriter[(T1, T2)] = PBDirectInstancesInferred.tuple2PbWriter
+
+  implicit val signatureDataFormat: PBFormat[SignatureData] = PBDirectInstancesInferred.signatureDataFormat
+
+  implicit val dataFormat: PBFormat[Data] = PBDirectInstancesInferred.dataFormat
+
+  implicit val marshaledDataFormat: PBFormat[MarshalledData] = PBDirectInstancesInferred.marshaledDataFormat
+
+  implicit val programEventsFormat: PBFormat[Abci.TransactionEffects.ProgramEvents] =
+    PBDirectInstancesInferred.programEventsFormat
+
+  implicit val transactionAllEffectsFormat: PBFormat[Abci.TransactionEffects.AllEffects] =
+    PBDirectInstancesInferred.transactionAllEffectsFormat
+
+  implicit val transferEffectsFormat: PBFormat[Abci.TransactionEffects.Transfers] =
+    PBDirectInstancesInferred.transferEffectsFormat
+
+  implicit val signedTransactionFormat: PBFormat[SignedTransaction] = PBDirectInstancesInferred.signedTransactionFormat
+
+  implicit val storedProgramFormat: PBFormat[StoredProgram] = PBDirectInstancesInferred.storedProgramFormat
+
+  implicit val epkFormat: PBFormat[EncryptedPrivateKey] = PBDirectInstancesInferred.epkFormat
+
+  implicit val walletFormat: PBFormat[Wallet] = PBDirectInstancesInferred.walletFormat
+
+  implicit val mtiseFormat: PBFormat[Map[TransactionId, Seq[Effect]]] = PBDirectInstancesInferred.mtiseFormat
+}
+
+trait ProtobufTranscoder {
 
   type ProtobufEncoder[T] = Transcoder[T, Protobuf]
   type ProtobufDecoder[T] = Transcoder[Protobuf, T]
-
-  (pravda.node.data.common.TransactionId, pravda.vm.MarshalledData)
 
   implicit def protobufEncoder[T: PBWriter]: ProtobufEncoder[T] =
     t => Protobuf @@ t.toPB
@@ -47,54 +97,63 @@ trait ProtobufTranscoder extends PBDirectInstances {
     t => t.pbTo[T]
 }
 
-trait PBDirectLowPriorityInstances {
+private object PBDirectInstancesInferred {
 
+  import PBDirectInstances._
+  import cats.instances.option._
+  //
+
+  def tuple2PbReader[T1: PBReader, T2: PBReader]: PBReader[(T1, T2)] = implicitly[PBReader[(T1, T2)]]
+
+  def tuple2PbWriter[T1: PBWriter, T2: PBWriter]: PBWriter[(T1, T2)] = implicitly[PBWriter[(T1, T2)]]
+
+  val signatureDataFormat = PBFormat[SignatureData]
+
+  val dataFormat = {
+    PBFormat[mutable.Buffer[Byte]]
+    ??? // PBFormat[Data]
+  }
+
+  val marshaledDataFormat = ??? // PBFormat[MarshalledData]
+
+  val programEventsFormat = ??? /// PBFormat[Abci.TransactionEffects.ProgramEvents]
+
+  val transactionAllEffectsFormat = ??? // PBFormat[Abci.TransactionEffects.AllEffects]
+
+  val transferEffectsFormat = PBFormat[Abci.TransactionEffects.Transfers]
+
+  val signedTransactionFormat = PBFormat[SignedTransaction]
+
+  val storedProgramFormat = PBFormat[StoredProgram]
+
+  val epkFormat = PBFormat[EncryptedPrivateKey]
+
+  val walletFormat = PBFormat[Wallet]
+
+  val mtiseFormat = ??? // PBFormat[Map[TransactionId, Seq[Effect]]]
+}
+
+object PBDirectInstances extends PBDirectInstances
+
+trait PBDirectInstances extends PBDirectLowPriorityInstances {
+  implicit val nativeCoinFormat: PBFormat[NativeCoin] = PBFormat[Tuple1[Long]].imap(t => NativeCoin @@ t._1)(Tuple1(_))
+
+  implicit val bytestringFormat: PBFormat[ByteString] = PBFormat[Array[Byte]].imap(ByteString.copyFrom)(_.toByteArray)
+}
+
+trait PBDirectLowPriorityInstances {
   implicit def pbWriterLifter[T: PBWriter, U]: PBWriter[Tagged[T, U]] =
     lifterF[PBWriter].lift[T, U]
 
   implicit def pbReaderLifter[T: PBReader, U]: PBReader[Tagged[T, U]] =
     lifterF[PBReader].lift[T, U]
 
-  implicit def tuple2PbReader[T1: PBReader, T2: PBReader]: PBReader[(T1, T2)] =
-    PBReader[Tuple2[T1, T2]]
+  implicit def seqReader[T: PBReader]: PBReader[List[T]] =
+    PBReader[List[T]].map(l => l)
 
-  implicit def tuple2PbWriter[T1: PBWriter, T2: PBWriter]: PBWriter[(T1, T2)] =
-    PBWriter[Tuple2[T1, T2]]
-}
+  implicit def seqWriter[T: PBWriter]: PBWriter[Seq[T]] = {
+    import cats.instances.list._
+    PBWriter[List[T]].contramap(l => l.toList)
+  }
 
-trait PBDirectInstances extends PBDirectLowPriorityInstances {
-
-  implicit val bytestringFormat: PBFormat[ByteString] = PBFormat[Array[Byte]].imap(ByteString.copyFrom)(_.toByteArray)
-
-  implicit val nativeCoinFormat: PBFormat[NativeCoin] = PBFormat[Tuple1[Long]].imap(t => NativeCoin @@ t._1)(Tuple1(_))
-
-  implicit val dataFormat: PBFormat[Data] = PBFormat[Data]
-
-  implicit val marshaledDataFormat: PBFormat[MarshalledData] = PBFormat[MarshalledData]
-
-  implicit val programEventsFormat: PBFormat[Abci.TransactionEffects.ProgramEvents] =
-    PBFormat[Abci.TransactionEffects.ProgramEvents]
-
-  implicit val transactionAllEffectsFormat: PBFormat[Abci.TransactionEffects.AllEffects] =
-    PBFormat[Abci.TransactionEffects.AllEffects]
-
-  implicit val transferEffectsFormat: PBFormat[Abci.TransactionEffects.Transfers] =
-    PBFormat[Abci.TransactionEffects.Transfers]
-
-  implicit val signedTransactionFormat: PBFormat[SignedTransaction] =
-    PBFormat[SignedTransaction]
-
-  implicit val storedProgramFormat: PBFormat[StoredProgram] =
-    PBFormat[StoredProgram]
-
-  implicit val forSignatureReaderFormat: PBFormat[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
-    PBFormat[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])]
-
-  implicit val epkFormat: PBFormat[EncryptedPrivateKey] =
-    PBFormat[EncryptedPrivateKey]
-
-  implicit val walletFormat: PBFormat[Wallet] =
-    PBFormat[Wallet]
-
-  implicit val mtiseFormat: PBFormat[Map[TransactionId, Seq[Effect]]] = PBFormat[Map[TransactionId, Seq[Effect]]]
 }

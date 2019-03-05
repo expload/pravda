@@ -21,8 +21,9 @@ package persistence
 
 import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
 import data.serialization._
+import pravda.node.data.serialization.composite.CompositeEncoder
 
-object implicits extends ProtobufTranscoder with CompositeTranscoder {
+object implicits {
 
   implicit def keyWriter[T: CompositeEncoder]: KeyWriter[T] = (value: T) => transcode(value).to[Composite]
 

@@ -37,6 +37,8 @@ import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTrans
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.composite._
+import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry

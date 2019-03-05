@@ -24,6 +24,13 @@ import supertagged.TaggedType
 
 object blockchain {
 
+  final case class SignatureData(address: Address,
+                                 data: TransactionData,
+                                 wattLimit: Long,
+                                 wattPrice: NativeCoin,
+                                 nonce: Int,
+                                 wattPayer: Option[Address])
+
   sealed trait Transaction {
     def from: Address
     def program: TransactionData
@@ -32,8 +39,8 @@ object blockchain {
     def wattPayer: Option[Address]
     def nonce: Int
 
-    def forSignature: (Address, TransactionData, Long, NativeCoin, Int, Option[Address]) =
-      (from, program, wattLimit, wattPrice, nonce, wattPayer)
+    def forSignature: SignatureData =
+      SignatureData(from, program, wattLimit, wattPrice, nonce, wattPayer)
   }
 
   object Transaction {
