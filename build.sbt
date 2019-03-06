@@ -57,7 +57,6 @@ val commonSettings = Seq(
     //"-Xfatal-warnings",
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen",
-    //"-Ywarn-unused-import",
     "-unchecked",
     "-Xmacro-settings:materialize-derivations",
     "-Ypartial-unification",
