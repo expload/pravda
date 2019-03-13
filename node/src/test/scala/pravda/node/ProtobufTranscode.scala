@@ -10,7 +10,7 @@ import utest._
 object ProtobufTranscode extends TestSuite {
 
   val tests = Tests {
-    "trancode StoredProgram" - {
+    "transcode StoredProgram" - {
       import pravda.node.data.serialization._
       import pravda.node.data.serialization.protobuf._
 
@@ -19,7 +19,25 @@ object ProtobufTranscode extends TestSuite {
       transcode(protobuf).to[StoredProgram] ==> storedProrgram
     }
 
-    "trancode SignedTransaction" - {
+    "transcode Address" - {
+      import pravda.node.data.serialization._
+      import pravda.node.data.serialization.protobuf._
+
+      val addr = Address @@ ByteString.copyFromUtf8("foo")
+      val protobuf = transcode(addr).to[Protobuf]
+      transcode(protobuf).to[Address] ==> addr
+    }
+
+    "transcode NativeCoin" - {
+      import pravda.node.data.serialization._
+      import pravda.node.data.serialization.protobuf._
+
+      val nc = NativeCoin @@ 100L
+      val protobuf = transcode(nc).to[Protobuf]
+      transcode(protobuf).to[NativeCoin] ==> nc
+    }
+
+    "transcode SignedTransaction" - {
       import pravda.node.data.serialization._
       import pravda.node.data.serialization.protobuf._
 

@@ -19,7 +19,8 @@ package pravda.node.data.serialization
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.node.data.blockchain.SignatureData
+import pravda.common.domain.{Address, NativeCoin}
+import pravda.node.data.blockchain.{SignatureData, TransactionData}
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography.EncryptedPrivateKey
@@ -46,6 +47,41 @@ trait ProtobufTranscoder {
 }
 
 trait ZhukovInstances extends ZhukovLowPriorityInstances {
+
+  implicit object ByteStringBytes extends Bytes[ByteString] {
+    def empty: ByteString = ByteString.EMPTY
+    def copyFromArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
+
+    def copyFromArray(bytes: Array[Byte], offset: Long, size: Long): ByteString =
+      ByteString.copyFrom(bytes, offset.toInt, size.toInt)
+
+    def copyToArray(value: ByteString, array: Array[Byte], sourceOffset: Int, targetOffset: Int, length: Int): Unit =
+      value.copyTo(array, sourceOffset, targetOffset, length)
+    def wrapArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
+    def copyBuffer(buffer: ByteBuffer): ByteString = ByteString.copyFrom(buffer)
+    def toArray(bytes: ByteString): Array[Byte] = bytes.toByteArray
+    def toBuffer(bytes: ByteString): ByteBuffer = bytes.asReadOnlyByteBuffer()
+    def get(bytes: ByteString, i: Long): Int = bytes.byteAt(i.toInt).toInt
+    def size(bytes: ByteString): Long = bytes.size().toLong
+    def concat(left: ByteString, right: ByteString): ByteString = left.concat(right)
+    def slice(value: ByteString, start: Long, end: Long): ByteString = value.substring(start.toInt, end.toInt)
+  }
+
+  implicit val nativeCoinMarshaller = Marshaller.LongMarshaller.contramap[NativeCoin](n => n)
+  implicit val nativeCoinUnmarshaller = Unmarshaller.long.map(NativeCoin @@ _)
+  implicit val nativeCoinSizeMeter = SizeMeter.long.contramap[NativeCoin](n => n)
+
+  implicit val addressMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[Address](bs => bs)
+  implicit val addressUnmarshaller = Unmarshaller.bytes[ByteString].map(Address @@ _)
+  implicit val addressSizeMeter = SizeMeter.bytes[ByteString].contramap[Address](bs => bs)
+
+  implicit val transctionIdMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[TransactionId](bs => bs)
+  implicit val transctionIdUnmarshaller = Unmarshaller.bytes[ByteString].map(TransactionId @@ _)
+  implicit val transctionIdSizeMeter = SizeMeter.bytes[ByteString].contramap[TransactionId](bs => bs)
+
+  implicit val transactionDataMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[TransactionData](bs => bs)
+  implicit val transactionDataUnmarshaller = Unmarshaller.bytes[ByteString].map(TransactionData @@ _)
+  implicit val transactionDataSizeMeter = SizeMeter.bytes[ByteString].contramap[TransactionData](bs => bs)
 
   implicit val signatureDataFormat: Format[SignatureData] = format
 
@@ -119,34 +155,6 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
 
 trait ZhukovLowPriorityInstances {
 
-  implicit object ByteStringBytes extends Bytes[ByteString] {
-    def empty: ByteString = ByteString.EMPTY
-    def copyFromArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
-
-    def copyFromArray(bytes: Array[Byte], offset: Long, size: Long): ByteString =
-      ByteString.copyFrom(bytes, offset.toInt, size.toInt)
-
-    def copyToArray(value: ByteString, array: Array[Byte], sourceOffset: Int, targetOffset: Int, length: Int): Unit =
-      value.copyTo(array, sourceOffset, targetOffset, length)
-    def wrapArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
-    def copyBuffer(buffer: ByteBuffer): ByteString = ByteString.copyFrom(buffer)
-    def toArray(bytes: ByteString): Array[Byte] = bytes.toByteArray
-    def toBuffer(bytes: ByteString): ByteBuffer = bytes.asReadOnlyByteBuffer()
-    def get(bytes: ByteString, i: Long): Int = bytes.byteAt(i.toInt).toInt
-    def size(bytes: ByteString): Long = bytes.size().toLong
-    def concat(left: ByteString, right: ByteString): ByteString = left.concat(right)
-    def slice(value: ByteString, start: Long, end: Long): ByteString = value.substring(start.toInt, end.toInt)
-  }
-
-  implicit def zhukovUnmarshallerLifter[T: Unmarshaller, U]: Unmarshaller[Tagged[T, U]] =
-    lifterF[Unmarshaller].lift[T, U]
-
-  implicit def zhukovMarshallerLifter[T: Marshaller, U]: Marshaller[Tagged[T, U]] =
-    lifterF[Marshaller].lift[T, U]
-
   implicit def zhukovDefaultLifter[T: Default, U]: Default[Tagged[T, U]] =
     lifterF[Default].lift[T, U]
-
-  implicit def zhukovSizeMeterLifter[T: SizeMeter, U]: SizeMeter[Tagged[T, U]] =
-    lifterF[SizeMeter].lift[T, U]
 }
