@@ -16,168 +16,137 @@
  */
 package pravda.node.data.serialization
 
-import cats.syntax.contravariant._
-import cats.syntax.functor._
-import cats.syntax.invariant._
+import java.nio.ByteBuffer
+
 import com.google.protobuf.ByteString
-import pravda.common.domain.NativeCoin
 import pravda.node.data.blockchain.SignatureData
 import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography.EncryptedPrivateKey
 import pravda.node.data.domain.Wallet
-import pravda.node.servers.Abci
-import pravda.node.servers.Abci.StoredProgram
+import pravda.node.servers.Abci.{AdditionalDataForAddress, StoredProgram, TransactionEffects}
 import pravda.vm.{Data, Effect, MarshalledData}
 import supertagged.{Tagged, lifterF}
-import pbdirect._
+import zhukov._
+import zhukov.derivation._
+import zhukov.Default.auto._
 
-import scala.collection.mutable
-
-object protobuf extends ProtobufTranscoder with PBDirectInstances {
-
-  implicit def tuple2PbReader[T1: PBReader, T2: PBReader]: PBReader[(T1, T2)] = PBDirectInstancesInferred.tuple2PbReader
-
-  implicit def tuple2PbWriter[T1: PBWriter, T2: PBWriter]: PBWriter[(T1, T2)] = PBDirectInstancesInferred.tuple2PbWriter
-
-  implicit val signatureDataFormat: PBFormat[SignatureData] = PBDirectInstancesInferred.signatureDataFormat
-
-  implicit val dataFormat: PBFormat[Data] = PBDirectInstancesInferred.dataFormat
-
-  implicit val marshaledDataFormat: PBFormat[MarshalledData] = PBDirectInstancesInferred.marshaledDataFormat
-
-  implicit val programEventsFormat: PBFormat[Abci.TransactionEffects.ProgramEvents] =
-    PBDirectInstancesInferred.programEventsFormat
-
-  implicit val transactionAllEffectsFormat: PBFormat[Abci.TransactionEffects.AllEffects] =
-    PBDirectInstancesInferred.transactionAllEffectsFormat
-
-  implicit val transferEffectsFormat: PBFormat[Abci.TransactionEffects.Transfers] =
-    PBDirectInstancesInferred.transferEffectsFormat
-
-  implicit val signedTransactionFormat: PBFormat[SignedTransaction] = PBDirectInstancesInferred.signedTransactionFormat
-
-  implicit val storedProgramFormat: PBFormat[StoredProgram] = PBDirectInstancesInferred.storedProgramFormat
-
-  implicit val epkFormat: PBFormat[EncryptedPrivateKey] = PBDirectInstancesInferred.epkFormat
-
-  implicit val walletFormat: PBFormat[Wallet] = PBDirectInstancesInferred.walletFormat
-
-  implicit val mtiseFormat: PBFormat[Map[TransactionId, Seq[Effect]]] = PBDirectInstancesInferred.mtiseFormat
-}
+object protobuf extends ProtobufTranscoder with ZhukovInstances
 
 trait ProtobufTranscoder {
 
   type ProtobufEncoder[T] = Transcoder[T, Protobuf]
   type ProtobufDecoder[T] = Transcoder[Protobuf, T]
 
-  implicit def protobufEncoder[T: PBWriter]: ProtobufEncoder[T] =
-    t => Protobuf @@ t.toPB
+  implicit def protobufEncoder[T: Marshaller]: ProtobufEncoder[T] =
+    t => Protobuf @@ Marshaller[T].write(t)
 
-  implicit def protobufDecoder[T: PBReader]: ProtobufDecoder[T] =
-    t => t.pbTo[T]
+  implicit def protobufDecoder[T: Unmarshaller]: ProtobufDecoder[T] =
+    t => Unmarshaller[T].read(Protobuf.untag(t))
 }
 
-private object PBDirectInstancesInferred {
+trait ZhukovInstances extends ZhukovLowPriorityInstances {
 
-  import PBDirectInstances._
-  import cats.instances.option._
+  implicit val signatureDataFormat: Format[SignatureData] = format
 
-  def tuple2PbReader[T1: PBReader, T2: PBReader]: PBReader[(T1, T2)] = implicitly[PBReader[(T1, T2)]]
+  implicit def dataUnmarshaller: Unmarshaller[Data] = Unmarshaller.bytes[Array[Byte]].map(Data.fromBytes)
+  implicit val dataMarshaller: Marshaller[Data] =
+    Marshaller.bytesMarshaller[Array[Byte]].contramap[Data](_.toByteString.toByteArray)
+  implicit val dataDefault: Default[Data] = Default(Data.Primitive.Null)
+  implicit def dataSizeMeter[T <: Data]: SizeMeter[T] = SizeMeter(d => d.volume)
 
-  def tuple2PbWriter[T1: PBWriter, T2: PBWriter]: PBWriter[(T1, T2)] = implicitly[PBWriter[(T1, T2)]]
+  implicit val marshaledDataFormat: Format[MarshalledData] = {
+    implicit val marshaledDataSimpleFormat: Format[MarshalledData.Simple] = format
 
-  val signatureDataFormat = PBFormat[SignatureData]
+    implicit val drefFormat: Format[Data.Primitive.Ref] = format
+    implicit val drefDefault: Default[Data.Primitive.Ref] = Default(Data.Primitive.Ref(0))
+    implicit val drefToDataFormat: Format[(Data.Primitive.Ref, Data)] = format
+    implicit val marshaledDataComplexFormat: Format[MarshalledData.Complex] = format
 
-  val dataFormat = PBFormat[Data]
-
-  val marshaledDataFormat = PBFormat[MarshalledData]
-
-  val programEventsFormat = {
-    import PBDirectInstances._
-
-    implicit val mData = marshaledDataFormat
-
-    PBFormat[Abci.TransactionEffects.ProgramEvents]
+    format
   }
 
-  val transactionAllEffectsFormat = {
-    import PBDirectInstances._
+  implicit val marshalledDataDefault: Default[MarshalledData] = Default(MarshalledData.Simple(Data.Primitive.Null))
 
-    implicit val data = dataFormat
-    implicit val mData = marshaledDataFormat
+  implicit val eventFormat: Format[Effect.Event] = format
 
-    PBFormat[Abci.TransactionEffects.AllEffects]
+  implicit val effectFormat: Format[Effect] = {
+    import pravda.vm.Effect._
+
+    implicit val pBytesDefault: Default[Data.Primitive.Bytes] = Default(Data.Primitive.Bytes.apply(ByteString.EMPTY))
+    implicit val pBytesFormat: Format[Data.Primitive.Bytes] = format
+
+    implicit val storageRemoveFormat: Format[StorageRemove] = format
+    implicit val storageWriteFormat: Format[StorageWrite] = format
+    implicit val storageReadFormat: Format[StorageRead] = format
+    implicit val programCreateFormat: Format[ProgramCreate] = format
+    implicit val programSealFormat: Format[ProgramSeal] = format
+    implicit val programUpdateFormat: Format[ProgramUpdate] = format
+    implicit val transferFormat: Format[Transfer] = format
+    implicit val showBalanceFormat: Format[ShowBalance] = format
+    implicit val eventFormat: Format[Event] = format
+
+    format
   }
 
-  val transferEffectsFormat = {
-    import PBDirectInstances._
+  implicit val programEventsFormat: Format[TransactionEffects.ProgramEvents] = format
 
-    PBFormat[Abci.TransactionEffects.Transfers]
-  }
+  implicit val transactionAllEffectsFormat: Format[TransactionEffects.AllEffects] = format
 
-  val signedTransactionFormat = {
-    import PBDirectInstances._
+  implicit val transferFormat: Format[Effect.Transfer] = format
 
-    PBFormat[SignedTransaction]
-  }
+  implicit val transferEffectsFormat: Format[TransactionEffects.Transfers] = format
 
-  val storedProgramFormat = PBFormat[StoredProgram]
+  implicit val signedTransactionFormat: Format[SignedTransaction] = format
 
-  val epkFormat = PBFormat[EncryptedPrivateKey]
+  implicit val storedProgramFormat: Format[StoredProgram] = format
 
-  val walletFormat = PBFormat[Wallet]
+  implicit val epkFormat: Format[EncryptedPrivateKey] = format
+  implicit val epkDefault: Default[EncryptedPrivateKey] =
+    Default(EncryptedPrivateKey(ByteString.EMPTY, ByteString.EMPTY, ByteString.EMPTY))
 
-  val mtiseFormat = {
-    import PBDirectInstances._
+  implicit val walletFormat: Format[Wallet] = format
 
-    implicit val data = dataFormat
-    implicit val mData = marshaledDataFormat
+  implicit val additionalDataForAddressFormat: Format[AdditionalDataForAddress] = format
 
-    PBFormat[List[(TransactionId, Seq[Effect])]].imap(_.toMap)(_.toList)
-  }
-}
+  implicit val tidMdataFormat: Format[(TransactionId, MarshalledData)] = format
 
-object PBDirectInstances extends PBDirectInstances
-
-trait PBDirectInstances extends PBDirectLowPriorityInstances {
-
-  implicit val nativeCoinFormat: PBFormat[NativeCoin] = PBFormat[Tuple1[Long]].imap(t => NativeCoin @@ t._1)(Tuple1(_))
-
-  implicit val bytestringFormat: PBFormat[ByteString] = PBFormat[Array[Byte]].imap(ByteString.copyFrom)(_.toByteArray)
-
-  implicit val byteFormat: PBFormat[Byte] = PBFormat[Int].imap(_.toByte)(_.toInt)
-  implicit val shortFormat: PBFormat[Short] = PBFormat[Int].imap(_.toShort)(_.toInt)
-
-  implicit val bigIntFormat: PBFormat[scala.BigInt] = PBFormat[Array[Byte]].imap(scala.BigInt(_))(_.toByteArray)
-
-  implicit val dataStructFormat: PBFormat[Data.Struct] = {
-    import cats.instances.list._
-    PBFormat[List[(Data.Primitive, Data.Primitive)]].imap(m => Data.Struct(mutable.Map(m: _*)))(_.data.toList)
+  implicit val mtiseFormat: Format[Tuple1[Map[TransactionId, Seq[Effect]]]] = {
+    implicit val tidToEffectFormat: Format[(TransactionId, Seq[Effect])] = format
+    format
   }
 }
 
-trait PBDirectLowPriorityInstances {
+trait ZhukovLowPriorityInstances {
 
-  implicit def pbWriterLifter[T: PBWriter, U]: PBWriter[Tagged[T, U]] =
-    lifterF[PBWriter].lift[T, U]
+  implicit object ByteStringBytes extends Bytes[ByteString] {
+    def empty: ByteString = ByteString.EMPTY
+    def copyFromArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
 
-  implicit def pbReaderLifter[T: PBReader, U]: PBReader[Tagged[T, U]] =
-    lifterF[PBReader].lift[T, U]
+    def copyFromArray(bytes: Array[Byte], offset: Long, size: Long): ByteString =
+      ByteString.copyFrom(bytes, offset.toInt, size.toInt)
 
-  implicit def seqReader[T: PBReader]: PBReader[Seq[T]] =
-    PBReader[List[T]].map(l => l)
-
-  implicit def seqWriter[T: PBWriter]: PBWriter[Seq[T]] = {
-    import cats.instances.list._
-    PBWriter[List[T]].contramap(l => l.toList)
+    def copyToArray(value: ByteString, array: Array[Byte], sourceOffset: Int, targetOffset: Int, length: Int): Unit =
+      value.copyTo(array, sourceOffset, targetOffset, length)
+    def wrapArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
+    def copyBuffer(buffer: ByteBuffer): ByteString = ByteString.copyFrom(buffer)
+    def toArray(bytes: ByteString): Array[Byte] = bytes.toByteArray
+    def toBuffer(bytes: ByteString): ByteBuffer = bytes.asReadOnlyByteBuffer()
+    def get(bytes: ByteString, i: Long): Int = bytes.byteAt(i.toInt).toInt
+    def size(bytes: ByteString): Long = bytes.size().toLong
+    def concat(left: ByteString, right: ByteString): ByteString = left.concat(right)
+    def slice(value: ByteString, start: Long, end: Long): ByteString = value.substring(start.toInt, end.toInt)
   }
 
-  implicit def bufferReader[T: PBReader]: PBReader[mutable.Buffer[T]] =
-    PBReader[List[T]].map(l => l.toBuffer)
+  implicit def zhukovUnmarshallerLifter[T: Unmarshaller, U]: Unmarshaller[Tagged[T, U]] =
+    lifterF[Unmarshaller].lift[T, U]
 
-  implicit def bufferWriter[T: PBWriter]: PBWriter[mutable.Buffer[T]] = {
-    import cats.instances.list._
-    PBWriter[List[T]].contramap(l => l.toList)
-  }
+  implicit def zhukovMarshallerLifter[T: Marshaller, U]: Marshaller[Tagged[T, U]] =
+    lifterF[Marshaller].lift[T, U]
+
+  implicit def zhukovDefaultLifter[T: Default, U]: Default[Tagged[T, U]] =
+    lifterF[Default].lift[T, U]
+
+  implicit def zhukovSizeMeterLifter[T: SizeMeter, U]: SizeMeter[Tagged[T, U]] =
+    lifterF[SizeMeter].lift[T, U]
 }

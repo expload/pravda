@@ -428,7 +428,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
     for {
       blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
-        transcode(Protobuf @@ r.bytes).to[Map[TransactionId, Seq[vm.Effect]]])
+        transcode(Protobuf @@ r.bytes).to[Tuple1[Map[TransactionId, Seq[vm.Effect]]]]._1)
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {

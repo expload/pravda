@@ -55,12 +55,12 @@ val commonSettings = Seq(
     "-feature",
     "-Xlint",
     //"-Xfatal-warnings",
+    "-Ywarn-macros:after",
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen",
     "-unchecked",
     "-Xmacro-settings:materialize-derivations",
     "-Ypartial-unification",
-    //"-Xlog-implicits",
     "-Ypatmat-exhaust-depth",
     "40"
   ),
@@ -222,7 +222,7 @@ lazy val node = (project in file("node"))
       tethys,
       akkaStreamUnixDomainSocket,
       shapeless,
-      pbdirect
+      zhukov
     ),
     dependencyOverrides += "org.scala-lan" %% "scala-compiler" % "2.12.6",
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),

@@ -10,8 +10,6 @@ object DataProtobufSpecification extends Properties("DataProtobuf") {
 
   property("write->read") = forAll(DataSpecification.data) { data =>
     val bytes = transcode(data).to[Protobuf]
-    println(bytes.toSeq)
-    println(transcode(bytes).to[Data])
     transcode(bytes).to[Data] == data
   }
 }

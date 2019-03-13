@@ -21,7 +21,6 @@ package servers
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
-import pbdirect.PBWriter
 import pravda.common.domain._
 import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
@@ -38,6 +37,7 @@ import pravda.node.utils
 import pravda.vm
 import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
+import zhukov.Marshaller
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -354,7 +354,7 @@ object Abci {
         storeEventsToAddress(eventsByAddressPath, executor, transactionId, transactionEffects)
       }
 
-      private def putByOffset[A: PBWriter](dbPath: DbPath, address: Address, offset: Long, objToStore: A): Unit = {
+      private def putByOffset[A: Marshaller](dbPath: DbPath, address: Address, offset: Long, objToStore: A): Unit = {
         val key = keyWithOffset(byteUtils.byteString2hex(address), offset)
         dbPath.put(key, objToStore)
       }
@@ -604,7 +604,8 @@ object Abci {
 
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
-        blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), data)
+        blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), Tuple1(data))
+        // TODO zhukov will probably support raw Maps without wrapper
       }
 
       effectsMap

@@ -17,7 +17,7 @@
 
 package pravda.node.persistence
 
-import pbdirect.{PBReader, PBWriter}
+import zhukov.{Marshaller, Unmarshaller}
 import pravda.common.{bytes => byteUtils}
 import pravda.node.data.serialization.protobuf.{protobufEncoder, protobufDecoder}
 import pravda.node.data.serialization.{Protobuf, transcode}
@@ -33,12 +33,12 @@ trait DbPath {
 
   def :+(suffix: String): DbPath
 
-  def getAs[V: PBReader](suffix: String): Option[V] =
+  def getAs[V: Unmarshaller](suffix: String): Option[V] =
     getRawBytes(suffix).map(arr => transcode[Protobuf](Protobuf @@ arr).to[V])
 
   def getRawBytes(suffix: String): Option[Array[Byte]]
 
-  def put[V: PBWriter](suffix: String, value: V): Option[Array[Byte]] = {
+  def put[V: Marshaller](suffix: String, value: V): Option[Array[Byte]] = {
     val bytes: Array[Byte] = transcode(value).to[Protobuf]
     putRawBytes(suffix, bytes)
   }
@@ -47,11 +47,11 @@ trait DbPath {
 
   def remove(suffix: String): Option[Array[Byte]]
 
-  def startsWith[V: PBReader: PBWriter](suffix: String, offset: Long, count: Long)(
+  def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long, count: Long)(
       implicit keyWriter: KeyWriter[String],
       ec: ExecutionContext): Future[List[V]]
 
-  def startsWith[V: PBReader: PBWriter](suffix: String, offset: Long)(implicit keyWriter: KeyWriter[String],
+  def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long)(implicit keyWriter: KeyWriter[String],
                                                                       ec: ExecutionContext): Future[List[V]] =
     startsWith(suffix, offset, Long.MaxValue)
 
@@ -86,7 +86,7 @@ class CachedDbPath(dbPath: DbPath,
     dbCache.put(key, None)
   }
 
-  def startsWith[V: PBReader: PBWriter](suffix: String, offset: Long, count: Long)(
+  def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long, count: Long)(
       implicit keyWriter: KeyWriter[String],
       ec: ExecutionContext) = {
     // Delegate to pure db
@@ -115,7 +115,7 @@ class PureDbPath(db: DB, path: String) extends DbPath {
     db.syncDeleteBytes(byteUtils.stringToBytes(key))
   }
 
-  def startsWith[V: PBReader: PBWriter](suffix: String, offset: Long, count: Long)(
+  def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long, count: Long)(
       implicit keyWriter: KeyWriter[String],
       ec: ExecutionContext): Future[List[V]] = {
     val key = mkKey(suffix)
