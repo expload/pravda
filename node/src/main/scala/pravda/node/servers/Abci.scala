@@ -26,7 +26,7 @@ import pravda.common.{bytes => byteUtils}
 import pravda.node.clients.AbciClient
 import pravda.node.data.blockchain.Transaction
 import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTransaction}
-import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
+import pravda.node.data.common._
 import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.protobuf._
@@ -310,6 +310,7 @@ object Abci {
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
     private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(db, "effects"), cache, operations)
     private lazy val eventsPath = new CachedDbPath(new PureDbPath(db, "events"), cache, operations)
+    private lazy val txIdIndexPath = new CachedDbPath(new PureDbPath(db, "txIdIndex"), cache, operations)
     private lazy val blockBalancesPath = new CachedDbPath(new PureDbPath(db, "balance"), cache, operations)
     private lazy val transactionsByAddressPath =
       new CachedDbPath(new PureDbPath(db, "transactionsByAddress"), cache, operations)
@@ -608,6 +609,8 @@ object Abci {
         // TODO zhukov will probably support raw Maps without wrapper
       }
 
+      val txIndex = mutable.Map[TransactionId, mutable.Buffer[(Address, Long)]]()
+
       effectsMap
         .flatMap {
           case (tx, buffer) =>
@@ -617,17 +620,32 @@ object Abci {
             }
         }
         .groupBy {
-          case (_, Effect.Event(address, name, _)) => (address, name)
+          case (_, Effect.Event(address, _, _)) => address
         }
         .foreach {
-          case ((address, name), evs) =>
-            val len = eventsPath.getAs[Long](eventKeyLength(address, name)).getOrElse(0L)
+          case (address, evs) =>
+            val len = eventsPath.getAs[Long](eventKeyLength(address)).getOrElse(0L)
             evs.zipWithIndex.foreach {
-              case ((tx, Effect.Event(_, _, data)), i) =>
-                eventsPath.put(eventKeyOffset(address, name, len + i.toLong), (tx, data))
+              case ((tx, Effect.Event(_, name, data)), i) =>
+                txIndex.get(tx) match {
+                  case Some(buf) => buf += ((address, len + i.toLong))
+                  case None => txIndex(tx) = mutable.Buffer((address, len + i.toLong))
+                }
+                eventsPath.put(eventKeyOffset(address, len + i.toLong), (tx, name, data))
             }
-            eventsPath.put(eventKeyLength(address, name), len + evs.length.toLong)
+            eventsPath.put(eventKeyLength(address), len + evs.length.toLong)
         }
+
+      txIndex.foreach {
+        case (txId, offsets) =>
+          val len = txIdIndexPath.getAs[Long](transactionIdKeyLength(txId)).getOrElse(0L)
+          offsets.zipWithIndex.foreach {
+            case (offset, i) =>
+              txIdIndexPath.put(transactionIdKeyOffset(txId, len + i.toLong), offset)
+          }
+          txIdIndexPath.put(transactionIdKeyLength(txId), len + offsets.length.toLong)
+      }
+
       db.syncBatch(operations: _*)
       clear()
     }

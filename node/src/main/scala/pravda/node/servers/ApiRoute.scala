@@ -22,7 +22,8 @@ package servers
 import java.util.Base64
 
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
+import akka.http.scaladsl.model.{HttpEntity, HttpResponse, MediaTypes}
+import akka.http.scaladsl.model.StatusCodes.BadRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
 import akka.http.scaladsl.server.{PathMatcher1, Route}
@@ -35,7 +36,7 @@ import pravda.node.clients.AbciClient
 import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
 import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common.TransactionId
+import pravda.node.data.common._
 import pravda.node.data.serialization.json._
 import pravda.node.data.serialization.composite._
 import pravda.node.data.serialization.protobuf._
@@ -47,7 +48,7 @@ import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Random, Success, Try}
@@ -77,6 +78,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
   val balances: Entry[Address, NativeCoin] = balanceEntry(db)
   val eventsByAddress = eventsByAddressEntry(db)
   val events = eventsEntry(db)
+  val txIdIndex = txIdIndexEntry(db)
   val transferEffectsByAddress = transferEffectsEntry(db)
   val transactionsByAddress = transactionsEntry(db)
 
@@ -232,25 +234,52 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
           path("events") {
             parameters(
               (
-                'program.as(hexUnmarshaller),
-                'name,
+                'program.as(hexUnmarshaller).?,
+                'name.?,
                 'transactionId.as(hexUnmarshaller).?,
                 'offset.as(longUnmarshaller).?,
                 'count.as(longUnmarshaller).?
-              )) { (address, name, maybeTransaction, maybeOffset, maybeCount) =>
+              )) { (maybeAddress, maybeName, maybeTransaction, maybeOffset, maybeCount) =>
               val offset = maybeOffset.getOrElse(0L)
               val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
-              val eventuallyResult =
-                events.startsWith[(TransactionId, MarshalledData)](eventKey(Address @@ address, name), offset, count)
 
-              onSuccess(eventuallyResult) { result =>
-                val items = {
-                  val xs = result.zipWithIndex.map {
-                    case ((tid, d), n) => ApiRoute.EventItem(n + offset, tid, d)
-                  }
-                  maybeTransaction.fold(xs)(tid => xs.filter(_.transactionId == tid))
+              def filterByName(items: Seq[ApiRoute.EventItem]) = maybeName match {
+                case Some(name) => items.filter(_.name == name)
+                case None       => items
+              }
+
+              def toItems(evs: List[(TransactionId, String, MarshalledData)]): List[ApiRoute.EventItem] =
+                evs.zipWithIndex.map {
+                  case ((tid, name, d), n) => ApiRoute.EventItem(n + offset, tid, name, d)
                 }
-                complete(items)
+
+              maybeTransaction match {
+                case Some(transaction) =>
+                  val evs = for {
+                    forTx <- txIdIndex.startsWith[(Address, Long)](transactionIdKey(TransactionId @@ transaction),
+                                                                   offset,
+                                                                   count)
+                    evs <- Future.sequence(forTx.map {
+                      case (addr, offs) if !maybeAddress.contains(addr) =>
+                        Future { events.getAs[(TransactionId, String, MarshalledData)](eventKeyOffset(addr, offs)) }
+                    })
+                  } yield evs.flatten
+
+                  onSuccess(evs) { result =>
+                    complete(filterByName(toItems(result)))
+                  }
+                case None =>
+                  maybeAddress match {
+                    case Some(address) =>
+                      val evs = events.startsWith[(TransactionId, String, MarshalledData)](eventKey(Address @@ address),
+                                                                                           offset,
+                                                                                           count)
+                      onSuccess(evs) { result =>
+                        complete(filterByName(toItems(result)))
+                      }
+                    case None =>
+                      complete(HttpResponse(BadRequest, entity = "Both address and transactionId are not specified"))
+                  }
               }
             }
           }
@@ -344,5 +373,5 @@ object ApiRoute {
     }
   }
 
-  final case class EventItem(offset: Long, transactionId: TransactionId, data: MarshalledData)
+  final case class EventItem(offset: Long, transactionId: TransactionId, name: String, data: MarshalledData)
 }

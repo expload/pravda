@@ -53,13 +53,13 @@ package object domain {
   }
   type Address = Address.Type
 
-  def eventKey(address: Address, name: String): String =
-    s"${byteString2hex(address)}:$name"
+  def eventKey(address: Address): String =
+    s"${byteString2hex(address)}"
 
-  def eventKeyLength(address: Address, name: String): String =
-    s"${byteString2hex(address)}:$name:#length"
+  def eventKeyLength(address: Address): String =
+    s"${byteString2hex(address)}:#len"
   // the # character has the lower ASCII code so it will be place before any number
 
-  def eventKeyOffset(address: Address, name: String, offset: Long): String =
-    f"${byteString2hex(address)}:$name:$offset%016x"
+  def eventKeyOffset(address: Address, offset: Long): String =
+    f"${byteString2hex(address)}:$offset%016x"
 }
