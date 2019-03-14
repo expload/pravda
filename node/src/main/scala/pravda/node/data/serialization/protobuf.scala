@@ -26,6 +26,7 @@ import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography.EncryptedPrivateKey
 import pravda.node.data.domain.Wallet
 import pravda.node.servers.Abci.{AdditionalDataForAddress, StoredProgram, TransactionEffects}
+import pravda.vm.Effect.Event
 import pravda.vm.{Data, Effect, MarshalledData}
 import supertagged.{Tagged, lifterF}
 import zhukov._
@@ -83,73 +84,128 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
   implicit val transactionDataUnmarshaller = Unmarshaller.bytes[ByteString].map(TransactionData @@ _)
   implicit val transactionDataSizeMeter = SizeMeter.bytes[ByteString].contramap[TransactionData](bs => bs)
 
-  implicit val signatureDataFormat: Format[SignatureData] = format
-
   implicit def dataUnmarshaller: Unmarshaller[Data] = Unmarshaller.bytes[Array[Byte]].map(Data.fromBytes)
   implicit val dataMarshaller: Marshaller[Data] =
     Marshaller.bytesMarshaller[Array[Byte]].contramap[Data](_.toByteString.toByteArray)
   implicit val dataDefault: Default[Data] = Default(Data.Primitive.Null)
   implicit def dataSizeMeter[T <: Data]: SizeMeter[T] = SizeMeter(d => d.volume)
 
-  implicit val marshaledDataFormat: Format[MarshalledData] = {
-    implicit val marshaledDataSimpleFormat: Format[MarshalledData.Simple] = format
+  implicit val signatureDataMarshaller: Marshaller[SignatureData] = marshaller
+  implicit val signatureDataUnmarshaller: Unmarshaller[SignatureData] = unmarshaller
+  implicit val signatureDataSizeMeter: SizeMeter[SignatureData] = sizeMeter
 
-    implicit val drefFormat: Format[Data.Primitive.Ref] = format
+  implicit val (marshaledDataMarshaller, marshaledDataUnmarshaller, marshaledDataSizeMeter) = {
     implicit val drefDefault: Default[Data.Primitive.Ref] = Default(Data.Primitive.Ref(0))
-    implicit val drefToDataFormat: Format[(Data.Primitive.Ref, Data)] = format
-    implicit val marshaledDataComplexFormat: Format[MarshalledData.Complex] = format
 
-    format
+    implicit val marshaledDataSimpleMarshaller: Marshaller[MarshalledData.Simple] = marshaller
+
+    implicit val drefMarshaller: Marshaller[Data.Primitive.Ref] = marshaller
+    implicit val drefToDataMarshaller: Marshaller[(Data.Primitive.Ref, Data)] = marshaller
+    implicit val marshaledDataComplexMarshaller: Marshaller[MarshalledData.Complex] = marshaller
+
+    implicit val marshaledDataSimpleUnmarshaller: Unmarshaller[MarshalledData.Simple] = unmarshaller
+
+    implicit val drefUnmarshaller: Unmarshaller[Data.Primitive.Ref] = unmarshaller
+    implicit val drefToDataUnmarshaller: Unmarshaller[(Data.Primitive.Ref, Data)] = unmarshaller
+    implicit val marshaledDataComplexUnmarshaller: Unmarshaller[MarshalledData.Complex] = unmarshaller
+
+    implicit val marshaledDataSimpleSizeMeter: SizeMeter[MarshalledData.Simple] = sizeMeter
+
+    implicit val drefSizeMeter: SizeMeter[Data.Primitive.Ref] = sizeMeter
+    implicit val drefToDataSizeMeter: SizeMeter[(Data.Primitive.Ref, Data)] = sizeMeter
+    implicit val marshaledDataComplexSizeMeter: SizeMeter[MarshalledData.Complex] = sizeMeter
+
+    (marshaller[MarshalledData], unmarshaller[MarshalledData], sizeMeter[MarshalledData])
   }
 
   implicit val marshalledDataDefault: Default[MarshalledData] = Default(MarshalledData.Simple(Data.Primitive.Null))
 
-  implicit val eventFormat: Format[Effect.Event] = format
+  implicit val eventMarshaller: Marshaller[Event] = marshaller
+  implicit val eventUnmarshaller: Unmarshaller[Event] = unmarshaller
+  implicit val eventSizeMeter: SizeMeter[Event] = sizeMeter
 
-  implicit val effectFormat: Format[Effect] = {
+  implicit val (effectMarshaller, effectUnmarshaller, effectSizeMeter) = {
     import pravda.vm.Effect._
 
     implicit val pBytesDefault: Default[Data.Primitive.Bytes] = Default(Data.Primitive.Bytes.apply(ByteString.EMPTY))
-    implicit val pBytesFormat: Format[Data.Primitive.Bytes] = format
 
-    implicit val storageRemoveFormat: Format[StorageRemove] = format
-    implicit val storageWriteFormat: Format[StorageWrite] = format
-    implicit val storageReadFormat: Format[StorageRead] = format
-    implicit val programCreateFormat: Format[ProgramCreate] = format
-    implicit val programSealFormat: Format[ProgramSeal] = format
-    implicit val programUpdateFormat: Format[ProgramUpdate] = format
-    implicit val transferFormat: Format[Transfer] = format
-    implicit val showBalanceFormat: Format[ShowBalance] = format
-    implicit val eventFormat: Format[Event] = format
+    implicit val pBytesMarshaller: Marshaller[Data.Primitive.Bytes] = marshaller
+    implicit val storageRemoveMarshaller: Marshaller[StorageRemove] = marshaller
+    implicit val storageWriteMarshaller: Marshaller[StorageWrite] = marshaller
+    implicit val storageReadMarshaller: Marshaller[StorageRead] = marshaller
+    implicit val programCreateMarshaller: Marshaller[ProgramCreate] = marshaller
+    implicit val programSealMarshaller: Marshaller[ProgramSeal] = marshaller
+    implicit val programUpdateMarshaller: Marshaller[ProgramUpdate] = marshaller
+    implicit val transferMarshaller: Marshaller[Transfer] = marshaller
+    implicit val showBalanceMarshaller: Marshaller[ShowBalance] = marshaller
 
-    format
+    implicit val pBytesUnmarshaller: Unmarshaller[Data.Primitive.Bytes] = unmarshaller
+    implicit val storageRemoveUnmarshaller: Unmarshaller[StorageRemove] = unmarshaller
+    implicit val storageWriteUnmarshaller: Unmarshaller[StorageWrite] = unmarshaller
+    implicit val storageReadUnmarshaller: Unmarshaller[StorageRead] = unmarshaller
+    implicit val programCreateUnmarshaller: Unmarshaller[ProgramCreate] = unmarshaller
+    implicit val programSealUnmarshaller: Unmarshaller[ProgramSeal] = unmarshaller
+    implicit val programUpdateUnmarshaller: Unmarshaller[ProgramUpdate] = unmarshaller
+    implicit val transferUnmarshaller: Unmarshaller[Transfer] = unmarshaller
+    implicit val showBalanceUnmarshaller: Unmarshaller[ShowBalance] = unmarshaller
+
+    implicit val pBytesSizeMeter: SizeMeter[Data.Primitive.Bytes] = sizeMeter
+    implicit val storageRemoveSizeMeter: SizeMeter[StorageRemove] = sizeMeter
+    implicit val storageWriteSizeMeter: SizeMeter[StorageWrite] = sizeMeter
+    implicit val storageReadSizeMeter: SizeMeter[StorageRead] = sizeMeter
+    implicit val programCreateSizeMeter: SizeMeter[ProgramCreate] = sizeMeter
+    implicit val programSealSizeMeter: SizeMeter[ProgramSeal] = sizeMeter
+    implicit val programUpdateSizeMeter: SizeMeter[ProgramUpdate] = sizeMeter
+    implicit val transferSizeMeter: SizeMeter[Transfer] = sizeMeter
+    implicit val showBalanceSizeMeter: SizeMeter[ShowBalance] = sizeMeter
+
+    (marshaller[Effect], unmarshaller[Effect], sizeMeter[Effect])
   }
 
-  implicit val programEventsFormat: Format[TransactionEffects.ProgramEvents] = format
-
-  implicit val transactionAllEffectsFormat: Format[TransactionEffects.AllEffects] = format
-
-  implicit val transferFormat: Format[Effect.Transfer] = format
-
-  implicit val transferEffectsFormat: Format[TransactionEffects.Transfers] = format
-
-  implicit val signedTransactionFormat: Format[SignedTransaction] = format
-
-  implicit val storedProgramFormat: Format[StoredProgram] = format
-
-  implicit val epkFormat: Format[EncryptedPrivateKey] = format
   implicit val epkDefault: Default[EncryptedPrivateKey] =
     Default(EncryptedPrivateKey(ByteString.EMPTY, ByteString.EMPTY, ByteString.EMPTY))
 
-  implicit val walletFormat: Format[Wallet] = format
+  implicit val programEventsMarshaller: Marshaller[TransactionEffects.ProgramEvents] = marshaller
+  implicit val transactionAllEffectsMarshaller: Marshaller[TransactionEffects.AllEffects] = marshaller
+  implicit val transferMarshaller: Marshaller[Effect.Transfer] = marshaller
+  implicit val transferEffectsMarshaller: Marshaller[TransactionEffects.Transfers] = marshaller
+  implicit val signedTransactionMarshaller: Marshaller[SignedTransaction] = marshaller
+  implicit val storedProgramMarshaller: Marshaller[StoredProgram] = marshaller
+  implicit val epkMarshaller: Marshaller[EncryptedPrivateKey] = marshaller
+  implicit val walletMarshaller: Marshaller[Wallet] = marshaller
+  implicit val additionalDataForAddressMarshaller: Marshaller[AdditionalDataForAddress] = marshaller
+  implicit val tidMdataMarshaller: Marshaller[(TransactionId, MarshalledData)] = marshaller
 
-  implicit val additionalDataForAddressFormat: Format[AdditionalDataForAddress] = format
+  implicit val programEventsUnmarshaller: Unmarshaller[TransactionEffects.ProgramEvents] = unmarshaller
+  implicit val transactionAllEffectsUnmarshaller: Unmarshaller[TransactionEffects.AllEffects] = unmarshaller
+  implicit val transferUnmarshaller: Unmarshaller[Effect.Transfer] = unmarshaller
+  implicit val transferEffectsUnmarshaller: Unmarshaller[TransactionEffects.Transfers] = unmarshaller
+  implicit val signedTransactionUnmarshaller: Unmarshaller[SignedTransaction] = unmarshaller
+  implicit val storedProgramUnmarshaller: Unmarshaller[StoredProgram] = unmarshaller
+  implicit val epkUnmarshaller: Unmarshaller[EncryptedPrivateKey] = unmarshaller
+  implicit val walletUnmarshaller: Unmarshaller[Wallet] = unmarshaller
+  implicit val additionalDataForAddressUnmarshaller: Unmarshaller[AdditionalDataForAddress] = unmarshaller
+  implicit val tidMdataUnmarshaller: Unmarshaller[(TransactionId, MarshalledData)] = unmarshaller
 
-  implicit val tidMdataFormat: Format[(TransactionId, MarshalledData)] = format
+  implicit val programEventsSizeMeter: SizeMeter[TransactionEffects.ProgramEvents] = sizeMeter
+  implicit val transactionAllEffectsSizeMeter: SizeMeter[TransactionEffects.AllEffects] = sizeMeter
+  implicit val transferSizeMeter: SizeMeter[Effect.Transfer] = sizeMeter
+  implicit val transferEffectsSizeMeter: SizeMeter[TransactionEffects.Transfers] = sizeMeter
+  implicit val signedTransactionSizeMeter: SizeMeter[SignedTransaction] = sizeMeter
+  implicit val storedProgramSizeMeter: SizeMeter[StoredProgram] = sizeMeter
+  implicit val epkSizeMeter: SizeMeter[EncryptedPrivateKey] = sizeMeter
+  implicit val walletSizeMeter: SizeMeter[Wallet] = sizeMeter
+  implicit val additionalDataForAddressSizeMeter: SizeMeter[AdditionalDataForAddress] = sizeMeter
+  implicit val tidMdataSizeMeter: SizeMeter[(TransactionId, MarshalledData)] = sizeMeter
 
-  implicit val mtiseFormat: Format[Tuple1[Map[TransactionId, Seq[Effect]]]] = {
-    implicit val tidToEffectFormat: Format[(TransactionId, Seq[Effect])] = format
-    format
+  implicit val (mtiseMarshaller, mtiseUnmarshaller, mtiseSizeMeter) = {
+    implicit val tidToEffectMarshaller: Marshaller[(TransactionId, Seq[Effect])] = marshaller
+    implicit val tidToEffectUnmarshaller: Unmarshaller[(TransactionId, Seq[Effect])] = unmarshaller
+    implicit val tidToEffectSizeMeter: SizeMeter[(TransactionId, Seq[Effect])] = sizeMeter
+
+    (marshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
+     unmarshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
+     sizeMeter[Tuple1[Map[TransactionId, Seq[Effect]]]])
   }
 }
 
