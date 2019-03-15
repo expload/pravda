@@ -54,7 +54,7 @@ val commonSettings = Seq(
     "-deprecation",
     "-feature",
     "-Xlint:-unused,_",
-    //"-Xfatal-warnings",
+    "-Xfatal-warnings",
     "-Ywarn-macros:after",
     "-Yno-adapted-args",
     "-Ywarn-numeric-widen",

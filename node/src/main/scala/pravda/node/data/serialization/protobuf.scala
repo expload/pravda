@@ -42,7 +42,7 @@ trait ProtobufTranscoder {
   type ProtobufDecoder[T] = Transcoder[Protobuf, T]
 
   implicit def protobufEncoder[T: Marshaller]: ProtobufEncoder[T] =
-    t => Protobuf @@ Marshaller[T].write(t)
+    t => Protobuf @@ Marshaller[T].write(t, 1024 * 1024)
 
   implicit def protobufDecoder[T: Unmarshaller]: ProtobufDecoder[T] =
     t => Unmarshaller[T].read(Protobuf.untag(t))
