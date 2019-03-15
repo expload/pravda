@@ -52,7 +52,7 @@ trait DbPath {
       ec: ExecutionContext): Future[List[V]]
 
   def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long)(implicit keyWriter: KeyWriter[String],
-                                                                      ec: ExecutionContext): Future[List[V]] =
+                                                                            ec: ExecutionContext): Future[List[V]] =
     startsWith(suffix, offset, Long.MaxValue)
 
   protected def returningPrevious(suffix: String)(f: => Unit): Option[Array[Byte]] = {

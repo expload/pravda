@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package pravda.node.data.serialization
 
 import java.nio.ByteBuffer
@@ -159,7 +160,6 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
     implicit lazy val programCreateUnmarshaller: Unmarshaller[ProgramCreate] = unmarshaller
     implicit lazy val programSealUnmarshaller: Unmarshaller[ProgramSeal] = unmarshaller
     implicit lazy val programUpdateUnmarshaller: Unmarshaller[ProgramUpdate] = unmarshaller
-
 
     implicit lazy val pBytesSizeMeter: SizeMeter[Data.Primitive.Bytes] = sizeMeter
     implicit lazy val storageRemoveSizeMeter: SizeMeter[StorageRemove] = sizeMeter
