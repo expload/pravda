@@ -53,7 +53,7 @@ val commonSettings = Seq(
   scalacOptions ++= Seq(
     "-deprecation",
     "-feature",
-    "-Xlint",
+    "-Xlint:-unused,_",
     //"-Xfatal-warnings",
     "-Ywarn-macros:after",
     "-Yno-adapted-args",
