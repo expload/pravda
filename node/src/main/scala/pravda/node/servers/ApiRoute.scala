@@ -248,34 +248,38 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
                 case None       => items
               }
 
-              def toItems(evs: List[(TransactionId, String, MarshalledData)]): List[ApiRoute.EventItem] =
+              def toItems(evs: List[(Address, (TransactionId, String, MarshalledData))]): List[ApiRoute.EventItem] =
                 evs.zipWithIndex.map {
-                  case ((tid, name, d), n) => ApiRoute.EventItem(n + offset, tid, name, d)
+                  case ((addr, (tid, name, d)), n) => ApiRoute.EventItem(n + offset, tid, addr, name, d)
                 }
 
               maybeTransaction match {
                 case Some(transaction) =>
-                  val evs = for {
+                  val res = for {
                     forTx <- txIdIndex.startsWith[(Address, Long)](transactionIdKey(TransactionId @@ transaction),
                                                                    offset,
                                                                    count)
                     evs <- Future.sequence(forTx.map {
-                      case (addr, offs) if !maybeAddress.contains(addr) =>
-                        Future { events.getAs[(TransactionId, String, MarshalledData)](eventKeyOffset(addr, offs)) }
+                      case (addr, offs) if maybeAddress.contains(addr) =>
+                        Future {
+                          val eOpt = events.getAs[(TransactionId, String, MarshalledData)](eventKeyOffset(addr, offs))
+                          eOpt.map(e => (addr, e))
+                        }
+                      case _ => Future.successful(None)
                     })
                   } yield evs.flatten
 
-                  onSuccess(evs) { result =>
-                    complete(filterByName(toItems(result)))
+                  onSuccess(res) { evs =>
+                    complete(filterByName(toItems(evs)))
                   }
                 case None =>
                   maybeAddress match {
                     case Some(address) =>
-                      val evs = events.startsWith[(TransactionId, String, MarshalledData)](eventKey(Address @@ address),
+                      val res = events.startsWith[(TransactionId, String, MarshalledData)](eventKey(Address @@ address),
                                                                                            offset,
                                                                                            count)
-                      onSuccess(evs) { result =>
-                        complete(filterByName(toItems(result)))
+                      onSuccess(res) { evs =>
+                        complete(filterByName(toItems(evs.map(e => (Address @@ address, e)))))
                       }
                     case None =>
                       complete(HttpResponse(BadRequest, entity = "Both address and transactionId are not specified"))
@@ -373,5 +377,9 @@ object ApiRoute {
     }
   }
 
-  final case class EventItem(offset: Long, transactionId: TransactionId, name: String, data: MarshalledData)
+  final case class EventItem(offset: Long,
+                             transactionId: TransactionId,
+                             address: Address,
+                             name: String,
+                             data: MarshalledData)
 }
