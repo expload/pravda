@@ -14,26 +14,30 @@ You can get the generated events by name and the address of the program where th
 
 |Parameter|Optional|Type|
 |---|--|---|
-|program|No|hex|
-|name|No|string|
+|program|Yes|hex|
+|name|Yes|string|
 |transactionId|Yes|hex|
 |offset|Yes|integer|
 |count|Yes|integer|
 
 ### Response
 
-The list of data from events with given name at the given address:
+The list of events' offsets, `transactionId`s, addresses, names and datas:
 ```
 [
     {
-        "data": "<some data from the first event>",
-        "transactionId": 0000000,
-        "offset": 0
-    },
+        "offset": 0,
+        "transactionId": "0123456789abcdef", 
+        "address" : "<address of the program emited event>",
+        "name": "event-name",
+        "data": "<some data from the first event>"                
+    },    
     {
-        "data": "<some data from the second event>",
-        "transactionId": 1111111,
-        "offset": 1
+        "offset": 1,       
+        "transactionId": "fedcba9876543210",
+        "address" : "<address of the program emited event>",
+        "name": "another-name"
+        "data": "<some data from the second event>"               
     }
     ...
 ]
@@ -41,9 +45,14 @@ The list of data from events with given name at the given address:
 
 ### Examples
 ```
+curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0
+```
+will return all events for given address in chronological order
+
+```
 curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent
 ```
-will return all events for give address and name
+will return all events for given address and name
 
 ```
 curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10
@@ -54,3 +63,20 @@ will return all events starting from offset 10
 curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10&count=20
 ```
 will return only first 20 events from offset 10
+
+```
+curl <api url>/api/public/events?transactionId=07c3271089cc86b21058d50cb72b82bf45c548b2
+```
+will return all events for given `transactionId`
+
+```
+curl <api url>/api/public/events?transactionId=07c3271089cc86b21058d50cb72b82bf45c548b2
+```
+will return all events for given `transactionId`
+
+# Filtering by name
+
+When `name` is specified the result is formed in the same manner 
+as getting events **without** `name` and then filtering these events by `name` in memory. 
+It means `offsets` can be inconsistent, some offsets may be skipped, for example 
+we can get `1, 2, 5, 10, 100` series of offsets for some request.

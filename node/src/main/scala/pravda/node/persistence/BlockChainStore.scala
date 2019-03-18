@@ -28,5 +28,6 @@ object BlockChainStore {
   def transferEffectsEntry(db: DB): DbPath = new PureDbPath(db, "transferEffectsByAddress")
   def eventsByAddressEntry(db: DB): DbPath = new PureDbPath(db, "eventsByAddress")
   def eventsEntry(db: DB): DbPath = new PureDbPath(db, "events")
+  def txIdIndexEntry(db: DB): DbPath = new PureDbPath(db, "txIdIndex")
   def transactionsEntry(db: DB): DbPath = new PureDbPath(db, "transactionsByAddress")
 }

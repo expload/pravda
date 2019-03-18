@@ -87,11 +87,10 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
   implicit lazy val transactionDataUnmarshaller = Unmarshaller.bytes[ByteString].map(TransactionData @@ _)
   implicit lazy val transactionDataSizeMeter = SizeMeter.bytes[ByteString].contramap[TransactionData](bs => bs)
 
-  implicit def dataUnmarshaller: Unmarshaller[Data] = Unmarshaller.bytes[Array[Byte]].map(Data.fromBytes)
-  implicit lazy val dataMarshaller: Marshaller[Data] =
-    Marshaller.bytesMarshaller[Array[Byte]].contramap[Data](_.toByteString.toByteArray)
+  implicit lazy val dataUnmarshaller = Unmarshaller.bytes[ByteString].map[Data](Data.fromByteString(_)._2)
+  implicit lazy val dataMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[Data](_.toByteString)
   implicit lazy val dataDefault: Default[Data] = Default(Data.Primitive.Null)
-  implicit def dataSizeMeter[T <: Data]: SizeMeter[T] = SizeMeter(d => d.volume)
+  implicit lazy val dataSizeMeter: SizeMeter[Data] = SizeMeter.bytes[ByteString].contramap[Data](_.toByteString)
 
   implicit lazy val signatureDataMarshaller: Marshaller[SignatureData] = marshaller
   implicit lazy val signatureDataUnmarshaller: Unmarshaller[SignatureData] = unmarshaller
@@ -185,7 +184,7 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
   implicit lazy val epkMarshaller: Marshaller[EncryptedPrivateKey] = marshaller
   implicit lazy val walletMarshaller: Marshaller[Wallet] = marshaller
   implicit lazy val additionalDataForAddressMarshaller: Marshaller[AdditionalDataForAddress] = marshaller
-  implicit lazy val eventDataMarshaller: Marshaller[(TransactionId, MarshalledData)] = marshaller
+  implicit lazy val eventDataMarshaller: Marshaller[(TransactionId, String, MarshalledData)] = marshaller
   implicit lazy val txIdIndexDataMarshaller: Marshaller[(Address, Long)] = marshaller
 
   implicit lazy val programEventsUnmarshaller: Unmarshaller[TransactionEffects.ProgramEvents] = unmarshaller
@@ -196,7 +195,7 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
   implicit lazy val epkUnmarshaller: Unmarshaller[EncryptedPrivateKey] = unmarshaller
   implicit lazy val walletUnmarshaller: Unmarshaller[Wallet] = unmarshaller
   implicit lazy val additionalDataForAddressUnmarshaller: Unmarshaller[AdditionalDataForAddress] = unmarshaller
-  implicit lazy val eventDataUnmarshaller: Unmarshaller[(TransactionId, MarshalledData)] = unmarshaller
+  implicit lazy val eventDataUnmarshaller: Unmarshaller[(TransactionId, String, MarshalledData)] = unmarshaller
   implicit lazy val txIdIndexDataUnmarshaller: Unmarshaller[(Address, Long)] = unmarshaller
 
   implicit lazy val programEventsSizeMeter: SizeMeter[TransactionEffects.ProgramEvents] = sizeMeter
@@ -207,7 +206,7 @@ trait ZhukovInstances extends ZhukovLowPriorityInstances {
   implicit lazy val epkSizeMeter: SizeMeter[EncryptedPrivateKey] = sizeMeter
   implicit lazy val walletSizeMeter: SizeMeter[Wallet] = sizeMeter
   implicit lazy val additionalDataForAddressSizeMeter: SizeMeter[AdditionalDataForAddress] = sizeMeter
-  implicit lazy val eventDataSizeMeter: SizeMeter[(TransactionId, MarshalledData)] = sizeMeter
+  implicit lazy val eventDataSizeMeter: SizeMeter[(TransactionId, String, MarshalledData)] = sizeMeter
   implicit lazy val txIdIndexDataSizeMeter: SizeMeter[(Address, Long)] = sizeMeter
 
   implicit lazy val (mtiseMarshaller: Marshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
