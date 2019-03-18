@@ -629,7 +629,7 @@ object Abci {
               case ((tx, Effect.Event(_, name, data)), i) =>
                 txIndex.get(tx) match {
                   case Some(buf) => buf += ((address, len + i.toLong))
-                  case None => txIndex(tx) = mutable.Buffer((address, len + i.toLong))
+                  case None      => txIndex(tx) = mutable.Buffer((address, len + i.toLong))
                 }
                 eventsPath.put(eventKeyOffset(address, len + i.toLong), (tx, name, data))
             }
