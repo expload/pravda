@@ -19,10 +19,9 @@ package pravda.node.data.serialization
 
 import com.google.protobuf.ByteString
 import fastparse.utils.Base64
-import pravda.common.domain.{Address, NativeCoin}
 import pravda.node.clients.AbciClient._
 import pravda.node.data.PravdaConfig
-import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember, TransactionId}
+import pravda.node.data.common.{ApplicationStateInfo, CoinDistributionMember}
 import pravda.node.servers.{Abci, ApiRoute}
 import tethys._
 import tethys.derivation.builder._
@@ -30,15 +29,7 @@ import tethys.derivation.semiauto._
 import tethys.jackson.jacksonTokenIteratorProducer
 import tethys.jackson.pretty.prettyJacksonTokenWriterProducer
 import pravda.common.json._
-import pravda.node.data.blockchain.Transaction.SignedTransaction
-import pravda.node.data.blockchain.TransactionData
-import pravda.node.servers.Abci.StoredProgram
-import pravda.vm.Effect
-import pravda.common.json._
-import pravda.node.data.cryptography.EncryptedPrivateKey
-import pravda.node.data.domain.Wallet
 import pravda.vm.json._
-import pravda.common.bytes.{byteString2hex, hex2byteString}
 
 trait TethysInstances {
   //----------------------------------------------------------------------
@@ -169,20 +160,6 @@ trait TethysInstances {
   implicit val transactionAllEffectsWriter: JsonObjectWriter[Abci.TransactionEffects.AllEffects] =
     jsonWriter[Abci.TransactionEffects.AllEffects]
 
-  implicit val transactionEffectsReader: JsonReader[Abci.TransactionEffects] =
-    JsonReader.builder
-      .addField[String]("transactionEffectsType")
-      .selectReader[Abci.TransactionEffects] {
-        case Abci.TransactionEffects.Transfers.identifier     => jsonReader[Abci.TransactionEffects.Transfers]
-        case Abci.TransactionEffects.ProgramEvents.identifier => jsonReader[Abci.TransactionEffects.ProgramEvents]
-        case Abci.TransactionEffects.AllEffects.identifier    => jsonReader[Abci.TransactionEffects.AllEffects]
-      }
-
-  implicit val transactionEffectsWriter: JsonWriter[Abci.TransactionEffects] =
-    JsonWriter
-      .obj[Abci.TransactionEffects]
-      .addField[String]("transactionEffectsType")(_.identifier) ++ jsonWriter[Abci.TransactionEffects]
-
   //---------------------------------------------------------------------------
   // ABCI
   //---------------------------------------------------------------------------
@@ -232,64 +209,4 @@ trait TethysInstances {
 
   implicit def tethysJsonDecoder[T: JsonReader]: Transcoder[Json, T] =
     _.jsonAs[T].fold(throw _, identity)
-
-  //---------------------------------------------------------------------------
-  // Hack for BJson
-  //---------------------------------------------------------------------------
-
-  implicit val signedTransactionReader: JsonReader[SignedTransaction] =
-    jsonReader[SignedTransaction]
-
-  implicit val signedTransactionWriter: JsonWriter[SignedTransaction] =
-    jsonWriter[SignedTransaction]
-
-  implicit val storedProgramReader: JsonReader[StoredProgram] =
-    jsonReader[StoredProgram]
-
-  implicit val storedProgramWriter: JsonWriter[StoredProgram] =
-    jsonWriter[StoredProgram]
-
-  implicit val forSignatureReaderReader
-    : JsonReader[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
-    JsonReader.builder
-      .addField[Address]("a")
-      .addField[TransactionData]("td")
-      .addField[Long]("l")
-      .addField[NativeCoin]("nc")
-      .addField[Int]("i")
-      .addField[Option[Address]]("oa")
-      .buildReader((a, td, l, nc, i, oa) => (a, td, l, nc, i, oa))
-
-  implicit val forSignatureReaderWriter
-    : JsonWriter[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])] =
-    JsonWriter
-      .obj[(Address, TransactionData, Long, NativeCoin, Int, Option[Address])]
-      .addField[Address]("a")(_._1)
-      .addField[TransactionData]("td")(_._2)
-      .addField[Long]("l")(_._3)
-      .addField[NativeCoin]("nc")(_._4)
-      .addField[Int]("i")(_._5)
-      .addField[Option[Address]]("oa")(_._6)
-
-  implicit val epkReader: JsonReader[EncryptedPrivateKey] =
-    jsonReader[EncryptedPrivateKey]
-
-  implicit val epkWriter: JsonWriter[EncryptedPrivateKey] =
-    jsonWriter[EncryptedPrivateKey]
-
-  implicit val walletReader: JsonReader[Wallet] =
-    jsonReader[Wallet]
-
-  implicit val walletWriter: JsonWriter[Wallet] =
-    jsonWriter[Wallet]
-
-  implicit val tIdKeySupport: MapKeySupport[TransactionId] = new MapKeySupport[TransactionId] {
-    def show(x: TransactionId): String = byteString2hex(x)
-    def mk(x: String): TransactionId = TransactionId @@ hex2byteString(x)
-  }
-
-  implicit val mtiseReader: JsonReader[Map[TransactionId, Seq[Effect]]] = mapReader
-
-  implicit val mtiseWriter: JsonWriter[Map[TransactionId, Seq[Effect]]] = mapWriter
-
 }

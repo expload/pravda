@@ -28,6 +28,7 @@ object Dependencies {
   lazy val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.10.0"
   lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
   lazy val akkaStreamUnixDomainSocket = "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17"
+  lazy val zhukov = "com.github.fomkin" %% "zhukov-derivation" % "0.3.1"
 
   lazy val exploadAbciServer = "com.expload" %% "scala-abci-server" % "0.13.0"
 }

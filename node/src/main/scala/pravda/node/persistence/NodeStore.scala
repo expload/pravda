@@ -23,7 +23,8 @@ import scala.concurrent.Future
 
 // Implicits
 import pravda.node.persistence.implicits._
-import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.composite._
+import pravda.node.data.serialization.protobuf._
 
 object NodeStore {
   def apply(path: String): NodeStore = new NodeStore(path)

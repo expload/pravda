@@ -37,6 +37,8 @@ import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTrans
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.common.TransactionId
 import pravda.node.data.serialization.json._
+import pravda.node.data.serialization.composite._
+import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.Entry
@@ -45,7 +47,7 @@ import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
 import pravda.vm.{MarshalledData, ThrowableVmError}
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Failure, Random, Success, Try}

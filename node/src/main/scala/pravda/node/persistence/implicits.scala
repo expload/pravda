@@ -21,15 +21,16 @@ package persistence
 
 import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
 import data.serialization._
+import pravda.node.data.serialization.composite.CompositeEncoder
 
-object implicits extends BJsonTranscoder with CompositeTranscoder {
+object implicits {
 
   implicit def keyWriter[T: CompositeEncoder]: KeyWriter[T] = (value: T) => transcode(value).to[Composite]
 
-  implicit def valueReader[T](implicit t: Transcoder[BJson, T]): ValueReader[T] =
-    (array: Array[Byte]) => transcode(BJson @@ array).to[T]
+  implicit def valueReader[T](implicit t: Transcoder[Protobuf, T]): ValueReader[T] =
+    (array: Array[Byte]) => transcode(Protobuf @@ array).to[T]
 
-  implicit def valueWriter[T](implicit t: Transcoder[T, BJson]): ValueWriter[T] =
-    (value: T) => transcode(value).to[BJson]
+  implicit def valueWriter[T](implicit t: Transcoder[T, Protobuf]): ValueWriter[T] =
+    (value: T) => transcode(value).to[Protobuf]
 
 }

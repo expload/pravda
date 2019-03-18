@@ -29,7 +29,7 @@ import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
 import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.bjson._
+import pravda.node.data.serialization.protobuf._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
 import pravda.common.domain.{Address, NativeCoin}
@@ -97,7 +97,7 @@ class AbciClient(port: Int)(implicit
               case Some(error) =>
                 throw RpcException(error)
               case None =>
-                transcode(BJson @@ txResponse.result.get.tx.toByteArray).to[SignedTransaction]
+                transcode(Protobuf @@ txResponse.result.get.tx.toByteArray).to[SignedTransaction]
             }
           }
         case HttpResponse(code, _, entity, _) =>
@@ -118,7 +118,7 @@ class AbciClient(port: Int)(implicit
 
   def broadcastTransaction(tx: SignedTransaction, mode: String = "commit"): Future[ErrorOrExecInfo] = {
 
-    val bytes = transcode(tx).to[BJson]
+    val bytes = transcode(tx).to[Protobuf]
     broadcastBytes(bytes, mode)
   }
 
@@ -131,7 +131,7 @@ class AbciClient(port: Int)(implicit
 
     val unsignedTx = Transaction.UnsignedTransaction(from, data, wattLimit, wattPrice, None, Random.nextInt())
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
-    val bytes = transcode(tx).to[BJson]
+    val bytes = transcode(tx).to[Protobuf]
     broadcastBytes(bytes, mode)
   }
 }
