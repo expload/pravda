@@ -221,7 +221,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 
     def putOffset(x: Int): Unit = {
       buffer.put(Type.Offset)
-      buffer.putShort(x.toShort)
+      buffer.putInt(x)
     }
 
     def putPrimitive(typeTag: Type)(f: ByteBuffer => Unit): Unit = {
@@ -859,7 +859,7 @@ import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
     def getBigInt = scala.BigInt(getBytes(getLength))
     def getDouble = primitiveBuffer(8).getDouble
     def getRef = buffer.getInt()
-    def getOffset = buffer.getShort() & 0xFFFF
+    def getOffset = buffer.getInt()
 
     buffer.get match {
       case Type.Null    => Primitive.Null

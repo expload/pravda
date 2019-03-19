@@ -39,7 +39,7 @@ import scala.collection.mutable
 
   val (ref, refArray) = genPrimitive(arbitrary[Int], Ref.apply, RefArray)
 
-  val offset: Gen[Offset] = Gen.chooseNum(0, 65535).map(i => Data.Primitive.Offset(i))
+  val offset: Gen[Offset] = Gen.chooseNum[Int](0, Int.MaxValue).map(i => Data.Primitive.Offset(i))
 
   val (boolean, booleanArray) = {
     val f: Boolean => Bool = {
