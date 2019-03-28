@@ -32,20 +32,22 @@ pipeline:
       - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage faucet/universal:stage
     when:
       event: tag
-  package-msi:
-    image: gcr.io/time-coin/wix-builder:0.2
+  pack-win-installer:
+    image: gcr.io/time-coin/builder:0.1
     environment:
       - PRAVDA_VERSION=${DRONE_TAG}
     commands:
       - cp -rf /workdir/code/cli/target/universal/stage /workdir/code/win-installer/
       - cd /workdir/code/win-installer && bash build.sh
-      - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$$PRAVDA_VERSION.tgz
+      - find . -iname "*.zip" | grep ".zip"
     when:
       event: tag
-  sign-msi:
-    image: byrnedo/alpine-curl
+  build-sign-msi:
+    image: gcr.io/time-coin/alpine-curl:0.1
     commands:
-      - find . -name *.msi -exec curl -F msi=@{} http://35.246.239.138:8080/sign-msi -o {} \;
+      - export MSI_SERVICE_URI="http://35.246.239.138:8080/pravda-upload-win"
+      - for zip_file in /workdir/code/win-installer/*.zip; do curl -F zip=@$zip_file "$MSI_SERVICE_URI?version=$DRONE_TAG" -o $${zip_file%.zip}.msi; done
+      - cd /workdir/code/win-installer && find . -iname "*.msi" | grep ".msi"
     when:
       event: tag
   publish-to-bintray:

@@ -1,14 +1,9 @@
 #!/bin/sh
 
-set -e
-set -v
-
-export WINEPREFIX=/root/.wine
 export NORMALIZED_PRAVDA_VERSION=$(echo $PRAVDA_VERSION | sed 's/[a-z-]//g')
 
-wine /wix/heat.exe dir stage -t set-platform.xslt -gg -cg PravdaCLIComponent -ke -srd -dr PravdaCLI -sfrag -o PravdaCLI.wxs
-wine /wix/candle.exe PravdaCLI.wxs
-wine /wix/candle.exe pravda.wxs
-wine /wix/light.exe -b stage PravdaCLI.wixobj pravda.wixobj -sval -o PravdaSDK.msi
+echo "Packing windows application..."
 
-mv PravdaSDK.msi PravdaSDK-$PRAVDA_VERSION.msi
+zip -r "pravda-sdk-${NORMALIZED_PRAVDA_VERSION}.zip" stage pravda.wxs set-platform.xslt
+
+echo "Done packing"
