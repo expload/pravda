@@ -5,7 +5,7 @@
 		Id="e257aa60-ffba-4f77-9aba-4bd8503ecd5b"
 		UpgradeCode="352b8593-b82c-4451-989c-cafb56e05bb9"
 		Name="Pravda SDK CLI"
-		Version="$(env.NORMALIZED_PRAVDA_VERSION)"
+		Version="$(var.PravdaVersion)"
 		Manufacturer="Expload"
 		Language="1033">
 
