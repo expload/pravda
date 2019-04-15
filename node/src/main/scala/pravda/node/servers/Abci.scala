@@ -197,7 +197,6 @@ class Abci(applicationStateDb: DB,
       case (addr, power) => ValidatorUpdate(Some(PubKey("ed25519", addr)), power)
     }
 
-    //Future.successful(ResponseEndBlock.defaultInstance
     Future.successful(ResponseEndBlock.defaultInstance.withValidatorUpdates(tendermintValidatorUpdates))
   }
 
