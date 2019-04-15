@@ -34,7 +34,7 @@ final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends 
     Future {
 
       val executorAddress = Address @@ executor
-      val envProvider = new servers.Abci.BlockDependentEnvironment(DB(storagePath, None))
+      val envProvider = new servers.Abci.BlockDependentEnvironment(DB(storagePath, None), None)
       val env = envProvider.transactionEnvironment(executorAddress, TransactionId.forEncodedTransaction(program))
       val vm = new VmImpl()
       val result = vm.spawn(program, env, wattLimit)

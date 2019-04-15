@@ -73,6 +73,8 @@ object VmSandbox {
     def chainHeight = appStateInfo.height
     def lastBlockHash = appStateInfo.`app-hash`
     def lastBlockTime = appStateInfo.timestamp
+
+    def updateValidator(validator: Address, power: Long): Unit = ()
   }
 
   class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])

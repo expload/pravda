@@ -108,7 +108,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
              'wattPayerSignature.as(hexUnmarshaller).?)) {
             (from, maybeSignature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature) =>
               extractStrictEntity(1.second) { body =>
-                val env = new node.servers.Abci.BlockDependentEnvironment(db)
+                val env = new node.servers.Abci.BlockDependentEnvironment(db, None)
                 val program = bodyToTransactionData(body)
                 val nonce = maybeNonce.getOrElse(Random.nextInt())
                 val verificationResult = maybeSignature match {
@@ -155,7 +155,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
         path("execute") {
           parameters('from.as(hexUnmarshaller)) { from =>
             extractStrictEntity(1.second) { body =>
-              val bde = new node.servers.Abci.BlockDependentEnvironment(db)
+              val bde = new node.servers.Abci.BlockDependentEnvironment(db, None)
               val program = bodyToTransactionData(body)
               val wattLimit = Long.MaxValue
               val transactionId = TransactionId.Empty

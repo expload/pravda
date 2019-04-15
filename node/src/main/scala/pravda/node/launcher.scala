@@ -61,7 +61,7 @@ object launcher extends App {
     path = new File(Config.pravdaConfig.dataDirectory, "application-state").getAbsolutePath,
     initialHash = FileStore.readApplicationStateInfo().map(_.appHash.toByteArray)
   )
-  val abci = new Abci(applicationStateDb, abciClient, pravdaConfig.coinDistribution)
+  val abci = new Abci(applicationStateDb, abciClient, pravdaConfig.coinDistribution, pravdaConfig.validatorManager)
 
   val abciServer = Server(
     cfg = Server.Config(

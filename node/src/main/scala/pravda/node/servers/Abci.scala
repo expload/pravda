@@ -33,7 +33,6 @@ import pravda.node.data.serialization.protobuf._
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
 import pravda.node.persistence.{FileStore, _}
-import pravda.node.utils
 import pravda.vm
 import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
@@ -43,14 +42,16 @@ import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: Seq[CoinDistributionMember])(
-    implicit ec: ExecutionContext)
+class Abci(applicationStateDb: DB,
+           abciClient: AbciClient,
+           initialDistribution: Seq[CoinDistributionMember],
+           validatorManager: Option[Address])(implicit ec: ExecutionContext)
     extends io.mytc.tendermint.abci.Api {
 
   import Abci._
 
-  val consensusEnv = new BlockDependentEnvironment(applicationStateDb)
-  val mempoolEnv = new BlockDependentEnvironment(applicationStateDb)
+  val consensusEnv = new BlockDependentEnvironment(applicationStateDb, validatorManager)
+  val mempoolEnv = new BlockDependentEnvironment(applicationStateDb, validatorManager)
 
   // It is updated each time when EndBlock called. It is a height of the proposed block,
   // but since this value is updated after a transactions already processed, thus when a transaction
@@ -191,8 +192,13 @@ class Abci(applicationStateDb: DB, abciClient: AbciClient, initialDistribution: 
   def endBlock(request: RequestEndBlock): Future[ResponseEndBlock] = {
     // save the height of the current proposed block. It will be stored later as a last block height
     lastBlockHeight = request.height
-    // TODO: Validators update
-    Future.successful(ResponseEndBlock.defaultInstance)
+
+    val tendermintValidatorUpdates = consensusEnv.getValidatorUpdates.toList.map {
+      case (addr, power) => ValidatorUpdate(Some(PubKey("ed25519", addr)), power)
+    }
+
+    //Future.successful(ResponseEndBlock.defaultInstance
+    Future.successful(ResponseEndBlock.defaultInstance.withValidatorUpdates(tendermintValidatorUpdates))
   }
 
   def commit(request: RequestCommit): Future[ResponseCommit] = {
@@ -300,12 +306,14 @@ object Abci {
                                             eventsLastTransactionNumber: Long = 1L,
                                             lastTransactionNumber: Long = 1L)
 
-  final class BlockDependentEnvironment(db: DB) {
+  final class BlockDependentEnvironment(db: DB, validatorManager: Option[Address]) { blockEnv =>
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[Effect])]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
+
+    private val validatorUpdates = mutable.Map.empty[Address, Long]
 
     private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
     private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(db, "effects"), cache, operations)
@@ -560,6 +568,10 @@ object Abci {
           .readApplicationStateInfo()
           .fold(throw ThrowableVmError(Error.NoInfoAboutAppState))(_.blockTimestamp)
       }
+
+      def updateValidator(validator: Address, power: Long): Unit = {
+        blockEnv.updateValidator(executor, validator, power)
+      }
     }
 
     def appendFee(coins: NativeCoin): Unit = {
@@ -571,6 +583,7 @@ object Abci {
       operations.clear()
       effectsMap.clear()
       cache.clear()
+      validatorUpdates.clear()
       fee = NativeCoin.zero
     }
 
@@ -650,6 +663,15 @@ object Abci {
       clear()
     }
 
+    def updateValidator(executor: Address, validator: Address, power: Long): Unit = {
+      if (validatorManager.contains(executor)) {
+        validatorUpdates(validator) = power
+      } else {
+        throw vm.ThrowableVmError(Error.NonValidatorManager)
+      }
+    }
+
+    def getValidatorUpdates: Map[Address, Long] = validatorUpdates.toMap
   }
 
   def keyWithOffset(key: String, offset: Long) = f"$key:$offset%016x"

@@ -247,6 +247,7 @@ trait TethysInstances {
       case ErrorJson(202, _)       => vm.Error.NotEnoughMoney
       case ErrorJson(203, _)       => vm.Error.AmountShouldNotBeNegative
       case ErrorJson(204, _)       => vm.Error.ProgramIsSealed
+      case ErrorJson(205, _)       => vm.Error.NonValidatorManager
       case ErrorJson(300, _)       => vm.Error.NoSuchProgram
       case ErrorJson(302, _)       => vm.Error.NoSuchMethod
       case ErrorJson(400, _)       => vm.Error.NoSuchElement
