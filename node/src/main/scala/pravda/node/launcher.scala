@@ -31,6 +31,8 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor}
 import pravda.node.persistence.FileStore
 
+import scala.util.{Failure, Success}
+
 object launcher extends App {
 
   import Config._
@@ -86,6 +88,18 @@ object launcher extends App {
 
   println("Tendermint node started")
 
+  // Handle tendermint shutdown
+  res.map(_._3).map(_.waitFor()).onComplete {
+    case Failure(t) =>
+      println(
+        s"${Console.RED}ERROR${Console.RESET}: Something wrong happened while running Tendermint: ${t.getLocalizedMessage}")
+    case Success(code) =>
+      if (code != 0) {
+        println(s"${Console.RED}ERROR${Console.RESET}: Tendermint unexpected shutdown with exit code $code")
+        sys.exit(code)
+      }
+  }
+
   sys.addShutdownHook {
     val (httpServer, abciServer, tendermintNode) = Await.result(res, 10.seconds)
 
@@ -101,6 +115,7 @@ object launcher extends App {
 
     print("Closing application state db...")
     applicationStateDb.close()
+    println(s"${Console.GREEN} done${Console.RESET}")
   }
 
 }
