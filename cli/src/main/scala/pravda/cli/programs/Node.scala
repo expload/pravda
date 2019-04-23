@@ -77,7 +77,16 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                 |  }
               """.stripMargin
        } else ""}
-       |}""".stripMargin
+       |}
+       |akka {
+       |  http {
+       |    host-connection-pool {
+       |      // default value is 32
+       |      max-open-requests = 1024
+       |    }
+       |  }
+       |}
+       |""".stripMargin
 
   private def mkConfigPath(dataDir: String): F[String] =
     io.concatPath(dataDir, "node.conf")
