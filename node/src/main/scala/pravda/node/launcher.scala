@@ -89,7 +89,7 @@ object launcher extends App {
   println("Tendermint node started")
 
   // Handle tendermint shutdown
-  res.map(_._3).map(_.waitFor()).onComplete {
+  res.map(_._3.waitFor()).onComplete {
     case Failure(t) =>
       println(
         s"${Console.RED}ERROR${Console.RESET}: Something wrong happened while running Tendermint: ${t.getLocalizedMessage}")
