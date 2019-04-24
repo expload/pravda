@@ -178,6 +178,7 @@ class VmImpl extends Vm {
             throw ThrowableVmError(PcallDenied)
           }
         case PEXIST  => systemOperations.pexist()
+        case VUPDATE => systemOperations.vupdate()
         case THROW   => systemOperations.`throw`()
         case EVENT   => systemOperations.event()
         case CALLERS => systemOperations.callers()

@@ -91,6 +91,7 @@ object Opcodes {
   final val HASH = 0xad
   final val TIME = 0xae
   final val PEXIST = 0xaf
+  final val VUPDATE = 0xb0
 
   // Native coins
   final val TRANSFER = 0xc0

@@ -37,6 +37,7 @@ object Error {
   case object NotEnoughMoney            extends Error(202)
   case object AmountShouldNotBeNegative extends Error(203)
   case object ProgramIsSealed           extends Error(204)
+  case object NonValidatorManager       extends Error(205)
 
   case object NoSuchProgram         extends Error(300)
   case object NoSuchMethod          extends Error(302)

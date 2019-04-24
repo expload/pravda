@@ -42,4 +42,6 @@ trait Environment {
   // Balance
   def balance(address: Address): NativeCoin
   def transfer(from: Address, to: Address, amount: NativeCoin): Unit
+
+  def updateValidator(validator: Address, power: Long): Unit
 }

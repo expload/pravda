@@ -333,6 +333,19 @@ final class SystemOperations(program: ByteBuffer,
 
     memory.push(Data.Primitive.Bool(env.getProgram(programAddress).isDefined))
   }
+
+  @OpcodeImplementation(
+    opcode = VUPDATE,
+    description = "Takes address (pubKey). Returns true if program with given address exists, otherwise false."
+  )
+  def vupdate(): Unit = {
+    val power = integer(memory.pop())
+    val validatorAddress = address(memory.pop())
+
+    wattCounter.cpuUsage(CpuStorageUse)
+
+    env.updateValidator(validatorAddress, power)
+  }
 }
 
 object SystemOperations {

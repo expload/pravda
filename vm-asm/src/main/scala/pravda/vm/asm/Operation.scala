@@ -93,7 +93,8 @@ object Operation {
     Orphan(HEIGHT),
     Orphan(HASH),
     Orphan(TIME),
-    Orphan(PEXIST)
+    Orphan(PEXIST),
+    Orphan(VUPDATE)
   )
 
   val mnemonicByOpcode: Map[Int, String] = Map(
@@ -154,7 +155,8 @@ object Operation {
     HEIGHT -> "height",
     HASH -> "hash",
     TIME -> "time",
-    PEXIST -> "pexist"
+    PEXIST -> "pexist",
+    VUPDATE -> "vupdate"
   )
 
   /**
