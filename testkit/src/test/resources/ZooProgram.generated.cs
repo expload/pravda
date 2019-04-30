@@ -4,6 +4,32 @@ using Expload.Unity.Codegen;
 
 namespace Expload.Pravda.ZooProgram
 {
+    public class TransferZooRequest: ProgramRequest<object>
+    {
+        public TransferZooRequest(byte[] programAddress) : base(programAddress) { }
+
+        protected override object ParseResult(string elem)
+        {
+            return ExploadTypeConverters.ParseNull(elem);
+        }
+
+        public IEnumerator Test(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, true);
+        }
+
+        public IEnumerator Call(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
+        public IEnumerator TransferZoo(byte[] arg0, int arg1)
+        {
+            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
+        }
+    }
     public class BreedPetsRequest: ProgramRequest<string>
     {
         public BreedPetsRequest(byte[] programAddress) : base(programAddress) { }
@@ -106,32 +132,6 @@ namespace Expload.Pravda.ZooProgram
         public IEnumerator TransferPet(byte[] arg0, int arg1, string arg2)
         {
             yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, false);
-        }
-    }
-    public class TransferZooRequest: ProgramRequest<object>
-    {
-        public TransferZooRequest(byte[] programAddress) : base(programAddress) { }
-
-        protected override object ParseResult(string elem)
-        {
-            return ExploadTypeConverters.ParseNull(elem);
-        }
-
-        public IEnumerator Test(byte[] arg0, int arg1)
-        {
-            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, true);
-        }
-
-        public IEnumerator Call(byte[] arg0, int arg1)
-        {
-            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
-        }
-
-        // Same as Call
-        // Deprecated
-        public IEnumerator TransferZoo(byte[] arg0, int arg1)
-        {
-            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
         }
     }
 }

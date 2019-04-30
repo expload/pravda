@@ -15,17 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.client.impl
+package pravda.node.client
 
 import com.google.protobuf.ByteString
-import pravda.codegen.dotnet.DotnetCodegen
-import pravda.node.client.CodeGeneratorsLanguage
+import pravda.vm.Meta
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.language.higherKinds
 
-final class CodeGeneratorsLanguageImpl(implicit executionContext: ExecutionContext)
-    extends CodeGeneratorsLanguage[Future] {
-  override def dotnet(input: ByteString): Future[List[(String, String)]] = Future {
-    DotnetCodegen.generate(input).toList
-  }
+trait MetadataLanguage[F[_]] {
+  def extractMeta(source: ByteString, initialShift: Int): F[(ByteString, Map[Int, Seq[Meta]])]
+  def readPrefixIncludes(source: ByteString): F[Seq[Meta.MetaInclude]]
+  def writePrefixIncludes(source: ByteString, includes: Seq[Meta.MetaInclude]): F[ByteString]
 }

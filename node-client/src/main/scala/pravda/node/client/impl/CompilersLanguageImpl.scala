@@ -23,6 +23,7 @@ import pravda.dotnet.translation.{Translator => DotnetTranslator}
 import pravda.vm.asm.{Operation, PravdaAssembler}
 import cats.implicits._
 import pravda.node.client.CompilersLanguage
+import pravda.vm.Meta
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,8 +41,16 @@ final class CompilersLanguageImpl(implicit executionContext: ExecutionContext) e
     PravdaAssembler.render(PravdaAssembler.disassemble(source).map(_._2))
   }
 
+  def disasm(source: ByteString, metas: Map[Int, Seq[Meta]]): Future[String] = Future {
+    PravdaAssembler.render(PravdaAssembler.disassemble(source, metas).map(_._2))
+  }
+
   def disasmToOps(source: ByteString): Future[Seq[(Int, Operation)]] = Future {
     PravdaAssembler.disassemble(source)
+  }
+
+  def disasmToOps(source: ByteString, metas: Map[Int, Seq[Meta]]): Future[Seq[(Int, Operation)]] = Future {
+    PravdaAssembler.disassemble(source, metas)
   }
 
   def dotnet(sources: Seq[(ByteString, Option[ByteString])],

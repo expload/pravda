@@ -22,11 +22,15 @@ import cats.data.EitherT
 import cats.implicits._
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.CodegenMode.Dotnet
-import pravda.node.client.{CodeGeneratorsLanguage, IoLanguage}
+import pravda.codegen.dotnet.DotnetCodegen
+import pravda.node.client.{CompilersLanguage, IoLanguage, IpfsLanguage, MetadataLanguage}
 
 import scala.language.higherKinds
 
-class Codegen[F[_]: Monad](io: IoLanguage[F], codegen: CodeGeneratorsLanguage[F]) {
+class Codegen[F[_]: Monad](io: IoLanguage[F],
+                           compilers: CompilersLanguage[F],
+                           ipfs: IpfsLanguage[F],
+                           metadata: MetadataLanguage[F]) {
 
   def apply(config: PravdaConfig.Codegen): F[Unit] = {
     val errorOrResult: EitherT[F, String, List[(String, String)]] =
@@ -37,12 +41,17 @@ class Codegen[F[_]: Monad](io: IoLanguage[F], codegen: CodeGeneratorsLanguage[F]
         )
         result <- EitherT[F, String, List[(String, String)]] {
           config.codegenMode match {
-            case Dotnet => codegen.dotnet(input).map(Right(_))
+            case Dotnet =>
+              for {
+                loaded <- if (config.metaFromIpfs) {
+                  MetaOps.loadAllMeta(input, config.ipfsNode)(compilers, ipfs, metadata)
+                } else {
+                  MetaOps.loadMetaFromSource(input)(compilers)
+                }
+              } yield Right(DotnetCodegen.generate(loaded).toList)
           }
         }
-      } yield {
-        result
-      }
+      } yield result
 
     errorOrResult.value.flatMap {
       case Left(error) => io.writeStringToStderrAndExit(s"$error\n")

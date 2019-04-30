@@ -43,6 +43,7 @@ object PravdaConfig {
       val WATT_LIMIT = 300L
       val WATT_PRICE = NativeCoin.amount(1)
       val ENDPOINT = "http://localhost:8080/api/public"
+      val IPFS_NODE = "/ip4/127.0.0.1/tcp/5001"
     }
   }
 
@@ -56,7 +57,9 @@ object PravdaConfig {
                              dryRun: Boolean = false,
                              wattLimit: Long = DefaultValues.Broadcast.WATT_LIMIT,
                              wattPrice: NativeCoin = DefaultValues.Broadcast.WATT_PRICE,
-                             endpoint: String = DefaultValues.Broadcast.ENDPOINT)
+                             endpoint: String = DefaultValues.Broadcast.ENDPOINT,
+                             metaToIpfs: Boolean = false,
+                             ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   final case class Execute(input: Option[String] = None,
@@ -81,12 +84,16 @@ object PravdaConfig {
   final case class Compile(compiler: CompileMode,
                            input: List[String] = List.empty,
                            output: Option[String] = None,
-                           mainClass: Option[String] = None)
+                           mainClass: Option[String] = None,
+                           metaFromIpfs: Boolean = false,
+                           ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   final case class RunBytecode(storage: Option[String] = None,
                                input: Option[String] = None,
-                               executor: String = DefaultExecutor)
+                               executor: String = DefaultExecutor,
+                               metaFromIpfs: Boolean = false,
+                               ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
   object Node {
@@ -117,5 +124,9 @@ object PravdaConfig {
     case object Dotnet extends CodegenMode
   }
 
-  final case class Codegen(codegenMode: CodegenMode, input: Option[String] = None) extends PravdaConfig
+  final case class Codegen(codegenMode: CodegenMode,
+                           input: Option[String] = None,
+                           metaFromIpfs: Boolean = false,
+                           ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
+      extends PravdaConfig
 }

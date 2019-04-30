@@ -21,6 +21,8 @@ import com.google.protobuf.ByteString
 
 import scala.language.higherKinds
 
-trait CodeGeneratorsLanguage[F[_]] {
-  def dotnet(input: ByteString): F[List[(String, String)]]
+trait IpfsLanguage[F[_]] {
+  def loadFromIpfs(ipfsHost: String, base58: String): F[Option[ByteString]]
+
+  def writeToIpfs(ipfsHost: String, bytes: ByteString): F[Option[String]]
 }

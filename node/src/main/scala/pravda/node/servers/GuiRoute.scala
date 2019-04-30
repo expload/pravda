@@ -182,7 +182,7 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
     programToAsm(program.data)
 
   private def programToAsm(program: ByteString): String =
-    asmAstToAsm(PravdaAssembler.disassemble(program))
+    asmAstToAsm(PravdaAssembler.disassemble(program)) // doesn't load meta from includes
 
   private val codeArea = elementId()
   private val wattLimitField = elementId()

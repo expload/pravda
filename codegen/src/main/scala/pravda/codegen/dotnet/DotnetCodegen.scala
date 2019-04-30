@@ -20,10 +20,8 @@ package pravda.codegen.dotnet
 import java.io.StringWriter
 
 import com.github.mustachejava.DefaultMustacheFactory
-import com.google.protobuf.ByteString
 import pravda.vm.Meta
 import pravda.vm.Meta.ProgramName
-import pravda.vm.asm
 
 import scala.collection.JavaConverters._
 import scala.io.Source
@@ -139,15 +137,13 @@ object DotnetCodegen {
         .asJava
     )
 
-  def extractInfo(bytecode: ByteString): (String, List[Meta.MethodSignature]) = {
-    val ops = asm.PravdaAssembler.disassemble(bytecode)
-
-    val programName = ops.collectFirst {
-      case (_, asm.Operation.Meta(ProgramName(name))) => name
+  def extractInfo(metas: Map[Int, Seq[Meta]]): (String, List[Meta.MethodSignature]) = {
+    val programName = metas.values.flatten.collectFirst {
+      case ProgramName(name) => name
     }
 
-    val methods = ops.collect {
-      case (_, asm.Operation.Meta(m: Meta.MethodSignature)) => m
+    val methods = metas.values.flatten.collect {
+      case m: Meta.MethodSignature => m
     }
 
     (programName.getOrElse("Program"), methods.toList)
@@ -161,8 +157,8 @@ object DotnetCodegen {
     sw.toString
   }
 
-  def generate(byteCode: ByteString): Seq[GeneratedFile] = {
-    val (name, methods) = extractInfo(byteCode)
+  def generate(metas: Map[Int, Seq[Meta]]): Seq[GeneratedFile] = {
+    val (name, methods) = extractInfo(metas)
     Seq(
       (name.capitalize + ".cs", generateMethods(name, methods.filter(_.name != "ctor"))),
       ("ExploadUnityCodegen.cs", Source.fromResource("ExploadUnityCodegen.cs").mkString)

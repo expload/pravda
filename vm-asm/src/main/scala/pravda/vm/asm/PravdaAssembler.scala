@@ -55,19 +55,39 @@ object PravdaAssembler {
     * @param saveLabels Add META opcodes with infomation about labels.
     *                   It can be used by disassembler.
     */
-  def assemble(operations: Seq[Operation], saveLabels: Boolean): ByteString = {
+  def assemble(operations: Seq[Operation], saveLabels: Boolean): ByteString =
+    assembleExtractMeta(operations, saveLabels, extractMeta = false, initialShift = 0)._1
+
+  def assembleExtractMeta(operations: Seq[Operation],
+                          saveLabels: Boolean,
+                          extractMeta: Boolean,
+                          initialShift: Int): (ByteString, Map[Int, Seq[Metadata]]) = {
     val labels = mutable.Map.empty[String, Int] // label -> offset
     val gotos = mutable.Map.empty[Int, String] // offset -> label
+    val metas = mutable.Map.empty[Int, mutable.Buffer[Metadata]]
     val bytecode = ByteBuffer.allocate(1024 * 1024)
+
+    bytecode.position(initialShift)
 
     def putOp(opcode: Int): Unit =
       bytecode.put(opcode.toByte)
 
+    def putMeta(data: Metadata): Unit = {
+      if (extractMeta) {
+        metas.get(bytecode.position()) match {
+          case Some(buff) => buff += data
+          case None       => metas += bytecode.position() -> mutable.Buffer(data)
+        }
+      } else {
+        putOp(Opcodes.META)
+        data.writeToByteBuffer(bytecode)
+      }
+    }
+
     // put placeholder for the label reference
     def pushLabel(name: String): Unit = {
       if (saveLabels) {
-        putOp(Opcodes.META)
-        Metadata.LabelUse(name).writeToByteBuffer(bytecode)
+        putMeta(Metadata.LabelUse(name))
       }
       putOp(Opcodes.PUSHX)
       // Save goto offset to set in a future
@@ -102,13 +122,11 @@ object PravdaAssembler {
       // Control
       case Label(name) =>
         if (saveLabels) {
-          putOp(Opcodes.META)
-          Metadata.LabelDef(name).writeToByteBuffer(bytecode)
+          putMeta(Metadata.LabelDef(name))
         }
         labels.put(name, bytecode.position)
       case Meta(data) =>
-        putOp(Opcodes.META)
-        data.writeToByteBuffer(bytecode)
+        putMeta(data)
       case Jump(Some(name))  => goto(name, Opcodes.JUMP)
       case JumpI(Some(name)) => goto(name, Opcodes.JUMPI)
       case Call(Some(name))  => goto(name, Opcodes.CALL)
@@ -133,32 +151,75 @@ object PravdaAssembler {
     }
 
     bytecode.rewind()
-    ByteString.copyFrom(bytecode)
+    (ByteString.copyFrom(bytecode), metas.toMap)
+  }
+
+  def readPrefixIncludes(bytecode: ByteString): Seq[Metadata.MetaInclude] = {
+    val buffer = bytecode.asReadOnlyByteBuffer()
+    var consumedAllIncludes = false
+
+    val metas = mutable.Buffer[Metadata.MetaInclude]()
+    while (buffer.hasRemaining && !consumedAllIncludes) {
+      val opcode = buffer.get & 0xff
+      (opcode: @switch) match {
+        case Opcodes.META =>
+          Metadata.readFromByteBuffer(buffer) match {
+            case m: Metadata.MetaInclude =>
+              metas += m
+            case _ =>
+              consumedAllIncludes = true
+          }
+        case _ =>
+          consumedAllIncludes = true
+      }
+    }
+
+    metas
+  }
+
+  def writePrefixIncludes(source: ByteString, includes: Seq[Metadata.MetaInclude]): ByteString = {
+    val buffer = ByteBuffer.allocate(1024 * 1024)
+    source.copyTo(buffer)
+    buffer.flip()
+    includes.foreach { i =>
+      buffer.put(Opcodes.META.toByte)
+      i.writeToByteBuffer(buffer)
+    }
+
+    buffer.rewind()
+    ByteString.copyFrom(buffer)
   }
 
   /**
     * Disassembles bytecode to sequence of operations.
     * Use render() to build text from sequence of operations.
     */
-  def disassemble(bytecode: ByteString): Seq[(Int, Operation)] = {
+  def disassemble(bytecode: ByteString, externalMeta: Map[Int, Seq[Metadata]] = Map.empty): Seq[(Int, Operation)] = {
     val buffer = bytecode.asReadOnlyByteBuffer()
+    val initOffset = buffer.position()
     val operations = mutable.Buffer.empty[(Int, Operation)]
     var label = Option.empty[String]
 
+    def processMeta(offset: Int, meta: Metadata): Unit = meta match {
+      case Metadata.LabelDef(name) =>
+        operations += (offset -> Operation.Label(name))
+      case Metadata.LabelUse(name) =>
+        label = Some(name)
+      case metadata =>
+        operations += (offset -> Operation.Meta(metadata))
+    }
+
     while (buffer.hasRemaining) {
-      val offset = buffer.position()
+      val offset = buffer.position() - initOffset
       val opcode = buffer.get & 0xff
+
+      val offsetMetas = externalMeta.getOrElse(offset, Seq.empty)
+
+      offsetMetas.foreach(m => processMeta(offset, m))
 
       (opcode: @switch) match {
         case Opcodes.META =>
-          Metadata.readFromByteBuffer(buffer) match {
-            case Metadata.LabelDef(name) =>
-              operations += (offset -> Operation.Label(name))
-            case Metadata.LabelUse(name) =>
-              label = Some(name)
-            case metadata =>
-              operations += (offset -> Operation.Meta(metadata))
-          }
+          processMeta(offset, Metadata.readFromByteBuffer(buffer))
         case Opcodes.STRUCT_GET_STATIC =>
           val offset = buffer.position()
           Data.readFromByteBuffer(buffer) match {
@@ -270,9 +331,8 @@ object PravdaAssembler {
     */
   val parser: fastparse.all.Parser[Seq[Operation]] = {
 
+    import Data.parser.{all => dataAll, primitive => dataPrimitive}
     import fastparse.all._
-
-    import Data.parser.{primitive => dataPrimitive, all => dataAll}
     val digit = P(CharIn('0' to '9'))
     val alpha = P(CharIn('a' to 'z', 'A' to 'Z', "_"))
     val alphadigdot = P(alpha | digit | ".")

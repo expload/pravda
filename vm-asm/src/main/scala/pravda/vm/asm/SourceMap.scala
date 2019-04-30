@@ -17,7 +17,6 @@
 
 package pravda.vm.asm
 
-import com.google.protobuf.ByteString
 import pravda.common.{bytes, domain}
 import pravda.vm
 import pravda.vm.Meta
@@ -26,30 +25,29 @@ object SourceMap {
 
   case class StackTraceElement(address: Option[domain.Address], sourceMark: Option[Meta.SourceMark])
 
-  def findNearestMark(metas: Seq[(Int, Meta)], pos: Int): Option[Meta.SourceMark] =
-    metas
-      .foldRight(Right(None): Either[Unit, Option[Meta.SourceMark]]) {
-        case (_, either @ Left(_))                                  => either
-        case (_, either @ Right(sourceMark)) if sourceMark.nonEmpty => either
-        case ((i, _: Meta.MethodSignature), _) if i <= pos          => Left(())
-        case ((i, m: Meta.SourceMark), _) if i <= pos               => Right(Some(m))
-        case (_, either)                                            => either
+  def findNearestMark(metas: Map[Int, Seq[Meta]], pos: Int): Option[Meta.SourceMark] = {
+    metas.toBuffer
+      .filter(_._1 <= pos)
+      .sortBy(_._1)
+      .flatMap(_._2)
+      .collectFirst {
+        case m: Meta.MethodSignature => None
+        case m: Meta.SourceMark      => Some(m)
       }
-      .toOption
       .flatten
+  }
 
-  def stackTrace(program: ByteString, re: vm.RuntimeException): Seq[StackTraceElement] = {
-    val metas = PravdaAssembler
-      .disassemble(program)
-      .collect {
-        case (i, Operation.Meta(meta)) => (i, meta)
-      }
+  def stackTrace(metas: Map[Int, Seq[Meta]], re: vm.RuntimeException): Seq[StackTraceElement] = {
     // Add re.lastPosition to last address call stack
     val cs = {
       val xs = re.callStack
-      val (ma, ys) = xs.last
-      val i = xs.length - 1
-      xs.updated(i, (ma, ys :+ re.lastPosition))
+      if (xs.nonEmpty) {
+        val (ma, ys) = xs.last
+        val i = xs.length - 1
+        xs.updated(i, (ma, ys :+ re.lastPosition))
+      } else {
+        Seq((None, Seq(re.lastPosition)))
+      }
     }
     for ((ma, st) <- cs.reverse; pos <- st.reverse)
       yield StackTraceElement(ma, findNearestMark(metas, pos))

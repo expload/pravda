@@ -44,14 +44,15 @@ object Pravda extends App {
   lazy val compilers = new CompilersLanguageImpl()
   lazy val random = new RandomLanguageImpl()
   lazy val vm = new VmLanguageImpl()
-  lazy val codeGenerators = new CodeGeneratorsLanguageImpl()
+  lazy val metadata = new MetadataLanguageImpl()
+  lazy val ipfs = new IpfsLanguageImpl()
 
-  lazy val compile = new Compile(io, compilers)
+  lazy val compile = new Compile(io, compilers, ipfs, metadata)
   lazy val genAddress = new GenAddress(io, random)
-  lazy val runner = new RunBytecode(io, vm)
-  lazy val broadcast = new Broadcast(io, nodeLanguage, compilers)
+  lazy val runner = new RunBytecode(io, vm, compilers, ipfs, metadata)
+  lazy val broadcast = new Broadcast(io, nodeLanguage, compilers, ipfs, metadata)
   lazy val nodeProgram = new Node(io, random, nodeLanguage)
-  lazy val codegen = new Codegen(io, codeGenerators)
+  lazy val codegen = new Codegen(io, compilers, ipfs, metadata)
   lazy val execute = new Execute(io, nodeLanguage)
 
   java.security.Security.setProperty(

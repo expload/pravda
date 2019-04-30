@@ -288,6 +288,9 @@ lazy val `node-client` = (project in file("node-client"))
     name := "pravda-node-client",
     normalizedName := "pravda-node-client",
     description := "Pravda node client",
+    libraryDependencies ++= Seq(
+      "com.github.ipfs" % "java-ipfs-http-client" % "1.2.3"
+    )
   )
   .dependsOn(common)
   .dependsOn(vm)

@@ -19,6 +19,7 @@ package pravda.vm
 
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import Data.Primitive._
 import com.google.protobuf.ByteString
@@ -26,6 +27,8 @@ import com.google.protobuf.ByteString
 import scala.annotation.switch
 import scala.collection.mutable
 import fastparse.all._
+
+import scala.collection.mutable.ArrayBuffer
 
 sealed trait Meta {
 
@@ -39,6 +42,7 @@ sealed trait Meta {
     case s: SourceMark        => s"source_mark ${s.toStruct.mkString()}"
     case TranslatorMark(mark) => s"translator_mark ${Utf8(mark).mkString()}"
     case Custom(name)         => s"custom ${Utf8(name).mkString()}"
+    case IpfsFile(hash)       => s"ipfs_file ${Utf8(hash).mkString()}"
   }
 
   def writeToByteBuffer(buffer: ByteBuffer): Unit = this match {
@@ -60,6 +64,9 @@ sealed trait Meta {
     case TranslatorMark(mark) =>
       buffer.put(TypeTranslatorMark.toByte)
       Utf8(mark).writeToByteBuffer(buffer)
+    case IpfsFile(hash) =>
+      buffer.put(TypeIpfsFile.toByte)
+      buffer.put(hash.getBytes(StandardCharsets.US_ASCII))
     case Custom(name) =>
       buffer.put(TypeCustom.toByte)
       Utf8(name).writeToByteBuffer(buffer)
@@ -196,17 +203,16 @@ object Meta {
     }
   }
 
-  /** Marks only one straight following non-meta opcode */
-  sealed trait SingleMeta extends Meta
+  sealed trait MetaInclude extends Meta
 
-  /** Marks the whole segment of opcodes before next meta of this kind */
-  sealed trait SegmentMeta extends Meta
+  object IpfsFile {
+    val byteSize = 46
+  }
 
-  /** Global meta, marks the whole sequence of opcodes */
-  sealed trait GlobalMeta extends Meta
+  final case class IpfsFile(hash: String) extends MetaInclude
 
-  final case class LabelDef(name: String) extends SingleMeta
-  final case class LabelUse(name: String) extends SingleMeta
+  final case class LabelDef(name: String) extends Meta
+  final case class LabelUse(name: String) extends Meta
   final case class MethodSignature(name: String, returnTpe: TypeSignature, args: List[TypeSignature]) extends Meta {
 
     def toStruct: Data.Struct = {
@@ -220,7 +226,7 @@ object Meta {
   }
   final case class ProgramName(name: String) extends Meta
   final case class SourceMark(source: String, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int)
-      extends SegmentMeta {
+      extends Meta {
 
     def markString: String = {
       def extractFileName(src: String): String = {
@@ -245,7 +251,7 @@ object Meta {
           Data.Primitive.Utf8("ec") -> Data.Primitive.Int32(endColumn)
         ))
   }
-  final case class TranslatorMark(mark: String) extends SegmentMeta
+  final case class TranslatorMark(mark: String) extends Meta
   final case class Custom(name: String)         extends Meta
 
   def readFromByteBuffer(buffer: ByteBuffer): Meta = {
@@ -271,30 +277,42 @@ object Meta {
       case TypeSourceMark     => SourceMark.fromStruct(readStruct())
       case TypeTranslatorMark => TranslatorMark(readString())
       case TypeProgramName    => ProgramName(readString())
+      case TypeIpfsFile =>
+        val hash = new Array[Byte](IpfsFile.byteSize)
+        buffer.get(hash)
+        IpfsFile(new String(hash, StandardCharsets.US_ASCII))
     }
   }
 
-  def externalReadFromByteBuffer(buffer: ByteBuffer): Map[Long, List[Meta]] = {
-    val res = mutable.Map.empty[Long, List[Meta]]
+  def externalReadFromByteBuffer(buffer: ByteBuffer): Map[Int, Seq[Meta]] = {
+    val res = mutable.Map.empty[Int, ArrayBuffer[Meta]]
     while (buffer.hasRemaining) {
-      val offset = buffer.getLong
+      val offset = buffer.getInt
       val meta = Meta.readFromByteBuffer(buffer)
-      if (res.contains(offset)) {
-        res.put(offset, meta :: res(offset))
-      } else {
-        res.put(offset, List(meta))
+      res.get(offset) match {
+        case Some(buff) => buff += meta
+        case None       => res += offset -> ArrayBuffer(meta)
       }
     }
 
     res.toMap
   }
 
-  def externalWriteToByteBuffer(buffer: ByteBuffer, metas: List[(Long, Meta)]): Unit = {
+  def externalWriteToByteBuffer(buffer: ByteBuffer, metas: Map[Int, Seq[Meta]]): Unit = {
     metas.foreach {
-      case (offset, meta) =>
-        buffer.putLong(offset)
-        meta.writeToByteBuffer(buffer)
+      case (offset, ms) =>
+        ms.foreach { meta =>
+          buffer.putInt(offset)
+          meta.writeToByteBuffer(buffer)
+        }
     }
+  }
+
+  def externalWriteToByteString(metas: Map[Int, Seq[Meta]]): ByteString = {
+    val buffer = ByteBuffer.allocate(1024 * 1024)
+    externalWriteToByteBuffer(buffer, metas)
+    buffer.flip()
+    ByteString.copyFrom(buffer)
   }
 
   object parser {
@@ -306,7 +324,8 @@ object Meta {
         ("custom " ~ Data.parser.utf8.map(s => Custom(s.data))) |
         ("method " ~ Data.parser.struct.map(MethodSignature.fromStruct)) |
         ("source_mark " ~ Data.parser.struct.map(SourceMark.fromStruct)) |
-        ("translator_mark " ~ Data.parser.utf8.map(s => TranslatorMark(s.data)))
+        ("translator_mark " ~ Data.parser.utf8.map(s => TranslatorMark(s.data))) |
+        ("ipfs_file " ~ Data.parser.utf8.map(h => IpfsFile(h.data)))
     )
   }
 
@@ -316,5 +335,6 @@ object Meta {
   final val TypeProgramName = 0x03
   final val TypeSourceMark = 0x04
   final val TypeTranslatorMark = 0x05
+  final val TypeIpfsFile = 0x06
   final val TypeCustom = 0xFF
 }
