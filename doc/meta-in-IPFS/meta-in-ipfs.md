@@ -42,3 +42,9 @@ pravda compile disasm \
 
 This command will read IPFS hash of file with meta from the bytecode, 
 read this file from IPFS and disassemble bytecode with this new information.
+
+### IPFS node
+
+Hosting open IPFS is dangerous, 
+thus we suggest you to run your own IPFS node on your private host if you want to write meta to IPFS, 
+if you just want to read meta from IPFS you can use any open IPFS node (for example, ipfs.io).   
