@@ -20,6 +20,7 @@ package pravda.dotnet.data
 import fastparse.byte.all._
 import pravda.dotnet.utils._
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.272
 object Heaps {
   private val blobBytes: P[Bytes] = P(Int8).flatMap(b => {
     if ((b & (1 << 7)) == 0) {

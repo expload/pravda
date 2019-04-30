@@ -25,21 +25,42 @@ import pravda.vm.Opcodes
 
 import scala.annotation.tailrec
 
-// We can't compute delta offset from generated asm code,
-// because in general asm generation requires stack offset,
-// which itself requires delta offsets
 trait OpcodeTranslator {
 
+  /**
+    * Computes delta stack offset, e.g change of stack offset.
+    *
+    * @param ops CIL opcodes
+    * @return error or tuple of [[OpcodeTranslator.Taken]] value that represents how many elements was taken from `ops`,
+    *         delta stack offset for the taken opcodes
+    */
   def deltaOffset(ops: List[CIL.Op],
                   ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)]
 
+  /**
+    * Translates one portion of CIL opcodes to Pravda opcodes.
+    *
+    * @param ops CIL opcodes
+    * @param stackOffsetO optional current stack offset,
+    *                     some CIL opcodes requires stack offset and produces error when `stackOffsetO` is `None`
+    * @return error or tuple of [[OpcodeTranslator.Taken]] value that represents how many elements was taken from `ops`,
+    *         translated Pravda opcodes for the taken opcodes
+    */
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],
              ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, List[asm.Operation])]
+
+  // We can't compute delta offset from generated asm code,
+  // because in general asm generation requires stack offset,
+  // which itself requires delta offsets
 }
 
 object OpcodeTranslatorOnlyAsm {
 
+  /**
+    * Computes delta stack offset for Pravda opcodes.
+    * It used in calculation of [[OpcodeTranslator.deltaOffset]] from [[OpcodeTranslator.asmOps]]
+    */
   def asmOpOffset(asmOp: asm.Operation): Int = asmOp match {
     case Nop              => 0
     case Comment(_)       => 0
@@ -112,6 +133,7 @@ object OpcodeTranslatorOnlyAsm {
   }
 }
 
+/** Translator that computes `deltaOffset` from `asmOps` */
 trait OpcodeTranslatorOnlyAsm extends OpcodeTranslator {
 
   def deltaOffset(ops: List[CIL.Op],

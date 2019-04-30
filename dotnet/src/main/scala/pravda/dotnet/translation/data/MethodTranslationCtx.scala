@@ -22,6 +22,17 @@ import pravda.dotnet.data.TablesData.{FieldData, MethodDebugInformationData, Met
 import pravda.dotnet.parser.CIL.CilData
 import pravda.dotnet.parser.Signatures
 
+/**
+  *
+  * @param signatures
+  * @param cilData
+  * @param mainProgramClass
+  * @param programClasses
+  * @param structs
+  * @param methodIndex
+  * @param fieldIndex
+  * @param pdbTables
+  */
 final case class TranslationCtx(
     signatures: Map[Long, Signatures.Signature],
     cilData: CilData,
@@ -44,6 +55,19 @@ final case class TranslationCtx(
   def methodRow(fileIdx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(fileIdx)
 }
 
+/**
+  *
+  * @param tctx
+  * @param argsCount
+  * @param localsCount
+  * @param name
+  * @param kind
+  * @param void
+  * @param func
+  * @param static
+  * @param struct
+  * @param debugInfo
+  */
 final case class MethodTranslationCtx(
     tctx: TranslationCtx,
     argsCount: Int,

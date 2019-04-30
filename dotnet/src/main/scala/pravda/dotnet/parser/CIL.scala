@@ -24,6 +24,8 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.323
+// III.3 Base instructions
 object CIL {
   final case class CilData(sections: List[(PE.Info.SectionHeader, Bytes)],
                            stringHeap: Bytes,

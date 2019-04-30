@@ -20,6 +20,8 @@ package pravda.dotnet.parser
 import fastparse.byte.all._
 import LE._
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.209
+// II.22 Metadata logical format: tables
 final case class TablesInfo(
     customAttributeTable: Vector[TablesInfo.CustomAttributeRow] = Vector.empty,
     fieldTable: Vector[TablesInfo.FieldRow] = Vector.empty,

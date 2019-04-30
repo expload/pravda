@@ -22,10 +22,23 @@ import pravda.dotnet.parser.CIL._
 
 object BranchTransformer {
 
+  /**
+    * Transforms raw CIL opcodes, exchanging all conditional opcodes
+    * for comparing opocdes (Clt, Cgt, Not) and jumping opcodes (JumpI, Jump).
+    * It also calculates absolute offsets for all labels in the program,
+    * CIL opcodes only have relative offsets, not absolute.
+    *
+    * Jump and JumpI are fictional opcodes needed only as intermediate step.
+    *
+    * @param cil raw CIL opcodes
+    * @param labelPrefix prefix for labels used in result opcodes,
+    *                    needed to distinguish labels in different methods
+    */
   def transformBranches(cil: List[CIL.Op], labelPrefix: String): List[CIL.Op] = {
     val offsets = cil
       .foldLeft((0, List.empty[Int])) {
         case ((curOffset, offsets), opcode) =>
+          // we must consider the offset of the current opcode
           val newOffsets = opcode match {
             case BrS(t) if t != 0 => List(curOffset + t + 2)
             case Br(t) if t != 0  => List(curOffset + t + 5)

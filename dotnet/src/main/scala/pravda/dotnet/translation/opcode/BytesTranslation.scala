@@ -51,7 +51,7 @@ object BytesTranslation extends OneToManyTranslator {
         case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(DotNetString, false)))) =>
           // TODO 0x04 is an index of HexToByes standard function
           // TODO there is should be some way to obtain indexes of
-          // TODO procedures of standard library. May be it is
+          // TODO procedures of standard library. Maybe it is
           // TODO good idea to make translator dependent `vm`
           // TODO instead of `vm-api`.
           Right(List(pushInt(0x04), Operation(Opcodes.SCALL)))

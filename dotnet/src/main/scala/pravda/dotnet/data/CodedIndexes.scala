@@ -19,6 +19,7 @@ package pravda.dotnet.data
 
 import pravda.dotnet.data.TablesData._
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.274
 object CodedIndexes {
 
   def memberRefParent(idx: Long,

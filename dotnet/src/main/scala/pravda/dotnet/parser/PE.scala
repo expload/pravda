@@ -26,9 +26,11 @@ import cats.instances.list._
 import cats.instances.either._
 import cats.syntax.traverse._
 
-// See
-//   http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf
-//   page 303
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.271
+// II.24 Metadata physical layout
+
+// For portable PDB format see
+// https://github.com/dotnet/corefx/blob/master/src/System.Reflection.Metadata/specs/PortablePdb-Metadata.md
 object PE {
 
   object Info {
