@@ -43,7 +43,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
       case LdcI4(num) => List(pushInt(num))
       case LdcI4S(v)  => List(pushInt(v.toInt))
-      case LdcI8(v)   => List(pushBigInt(v))
+      case LdcI8(v)   => List(pushLong(v))
       case LdcR4(f)   => List(pushFloat(f.toDouble))
       case LdcR8(d)   => List(pushFloat(d))
       case LdStr(s)   => List(Operation.Push(Data.Primitive.Utf8(s)))
@@ -56,7 +56,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case ConvI4 => cast(Data.Type.Int32)
       case ConvU4 => cast(Data.Type.Int32)
       case ConvI8 => cast(Data.Type.Int64)
-      case ConvU8 => cast(Data.Type.BigInt)
+      case ConvU8 => cast(Data.Type.Int64)
 
       case ConvR4 => cast(Data.Type.Number)
       case ConvR8 => cast(Data.Type.Number)
