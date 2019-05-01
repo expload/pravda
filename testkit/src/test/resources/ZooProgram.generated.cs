@@ -4,30 +4,56 @@ using Expload.Unity.Codegen;
 
 namespace Expload.Pravda.ZooProgram
 {
-    public class TransferZooRequest: ProgramRequest<object>
+    public class NewPetRequest: ProgramRequest<string>
     {
-        public TransferZooRequest(byte[] programAddress) : base(programAddress) { }
+        public NewPetRequest(byte[] programAddress) : base(programAddress) { }
+
+        protected override string ParseResult(string elem)
+        {
+            return ExploadTypeConverters.ParseUtf8(elem);
+        }
+
+        public IEnumerator Test(int arg0)
+        {
+            yield return SendRequest("NewPet", new string[] { ExploadTypeConverters.PrintInt32(arg0) }, true);
+        }
+
+        public IEnumerator Call(int arg0)
+        {
+            yield return SendRequest("NewPet", new string[] { ExploadTypeConverters.PrintInt32(arg0) }, false);
+        }
+
+        // Same as Call
+        // Deprecated
+        public IEnumerator NewPet(int arg0)
+        {
+            yield return SendRequest("NewPet", new string[] { ExploadTypeConverters.PrintInt32(arg0) }, false);
+        }
+    }
+    public class TransferPetRequest: ProgramRequest<object>
+    {
+        public TransferPetRequest(byte[] programAddress) : base(programAddress) { }
 
         protected override object ParseResult(string elem)
         {
             return ExploadTypeConverters.ParseNull(elem);
         }
 
-        public IEnumerator Test(byte[] arg0, int arg1)
+        public IEnumerator Test(byte[] arg0, int arg1, string arg2)
         {
-            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, true);
+            yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, true);
         }
 
-        public IEnumerator Call(byte[] arg0, int arg1)
+        public IEnumerator Call(byte[] arg0, int arg1, string arg2)
         {
-            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
+            yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, false);
         }
 
         // Same as Call
         // Deprecated
-        public IEnumerator TransferZoo(byte[] arg0, int arg1)
+        public IEnumerator TransferPet(byte[] arg0, int arg1, string arg2)
         {
-            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
+            yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, false);
         }
     }
     public class BreedPetsRequest: ProgramRequest<string>
@@ -56,30 +82,30 @@ namespace Expload.Pravda.ZooProgram
             yield return SendRequest("BreedPets", new string[] { ExploadTypeConverters.PrintUtf8(arg0), ExploadTypeConverters.PrintUtf8(arg1) }, false);
         }
     }
-    public class NewPetRequest: ProgramRequest<string>
+    public class TransferZooRequest: ProgramRequest<object>
     {
-        public NewPetRequest(byte[] programAddress) : base(programAddress) { }
+        public TransferZooRequest(byte[] programAddress) : base(programAddress) { }
 
-        protected override string ParseResult(string elem)
+        protected override object ParseResult(string elem)
         {
-            return ExploadTypeConverters.ParseUtf8(elem);
+            return ExploadTypeConverters.ParseNull(elem);
         }
 
-        public IEnumerator Test(int arg0)
+        public IEnumerator Test(byte[] arg0, int arg1)
         {
-            yield return SendRequest("NewPet", new string[] { ExploadTypeConverters.PrintInt32(arg0) }, true);
+            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, true);
         }
 
-        public IEnumerator Call(int arg0)
+        public IEnumerator Call(byte[] arg0, int arg1)
         {
-            yield return SendRequest("NewPet", new string[] { ExploadTypeConverters.PrintInt32(arg0) }, false);
+            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
         }
 
         // Same as Call
         // Deprecated
-        public IEnumerator NewPet(int arg0)
+        public IEnumerator TransferZoo(byte[] arg0, int arg1)
         {
-            yield return SendRequest("NewPet", new string[] { ExploadTypeConverters.PrintInt32(arg0) }, false);
+            yield return SendRequest("TransferZoo", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1) }, false);
         }
     }
     public class NewZooRequest: ProgramRequest<int>
@@ -106,32 +132,6 @@ namespace Expload.Pravda.ZooProgram
         public IEnumerator NewZoo()
         {
             yield return SendRequest("NewZoo", new string[] {  }, false);
-        }
-    }
-    public class TransferPetRequest: ProgramRequest<object>
-    {
-        public TransferPetRequest(byte[] programAddress) : base(programAddress) { }
-
-        protected override object ParseResult(string elem)
-        {
-            return ExploadTypeConverters.ParseNull(elem);
-        }
-
-        public IEnumerator Test(byte[] arg0, int arg1, string arg2)
-        {
-            yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, true);
-        }
-
-        public IEnumerator Call(byte[] arg0, int arg1, string arg2)
-        {
-            yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, false);
-        }
-
-        // Same as Call
-        // Deprecated
-        public IEnumerator TransferPet(byte[] arg0, int arg1, string arg2)
-        {
-            yield return SendRequest("TransferPet", new string[] { ExploadTypeConverters.PrintBytes(arg0), ExploadTypeConverters.PrintInt32(arg1), ExploadTypeConverters.PrintUtf8(arg2) }, false);
         }
     }
 }
