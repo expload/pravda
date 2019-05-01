@@ -32,7 +32,7 @@ case object JumpsTranslation extends OneToManyTranslatorOnlyAsm {
                          stackOffset: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] =
     op match {
-      case Jump(label) => Right(List(asm.Operation.Jump(Some(label))))
+      case Jump(label)  => Right(List(asm.Operation.Jump(Some(label))))
       case JumpI(label) =>
         // CIL doesn't have booolean, it uses ints instead
         Right(List(pushInt(0), asm.Operation(Opcodes.EQ), asm.Operation(Opcodes.NOT), asm.Operation.JumpI(Some(label))))

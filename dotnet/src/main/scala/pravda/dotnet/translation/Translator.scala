@@ -588,7 +588,7 @@ object Translator {
     } yield methodsFuncs
 
     val programMethodsE = programMethodsFuncsE.map(_.filter(isPublic)) // public methods are "program methods"
-    val programFuncsE = programMethodsFuncsE.map(_.filter(isPrivate))  // private methods are "program functions"
+    val programFuncsE = programMethodsFuncsE.map(_.filter(isPrivate)) // private methods are "program functions"
 
     // find constructor
     val programCtorE = for {
@@ -758,7 +758,7 @@ object Translator {
           val method = methods(i)
           val methodRow = tctx.methodRow(i)
           val methodName = NamesBuilder.fullMethod(methodRow.name, tctx.signatures.get(methodRow.signatureIdx))
-          val tpe = tctx.methodIndex.parent(i).get  // class that contains this method
+          val tpe = tctx.methodIndex.parent(i).get // class that contains this method
           val structName = NamesBuilder.fullTypeDef(tpe) // name of that class
           val name = s"$structName.$methodName"
 
