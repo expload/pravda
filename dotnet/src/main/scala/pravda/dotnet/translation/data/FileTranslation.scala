@@ -19,12 +19,37 @@ package pravda.dotnet.translation.data
 
 import pravda.vm.{Meta, asm}
 
+/**
+  * Translation of one CIL opcode
+  * @param sourceMarks source marks to the C# source of CIL opcode
+  * @param asmOps resulted Pravda opcodes
+  */
 final case class OpCodeTranslation(sourceMarks: List[Meta.SourceMark], asmOps: List[asm.Operation])
 
+/**
+  * Translation of CIL method
+  *
+  * @param kind special prefix needed to distinguish different kinds of methods inside translation
+  * @param name name of the method
+  * @param forceAdd mark indicating that this method shouldn't be removed by dead code elimination
+  * @param opcodes translations of each opcode in the method
+  */
 final case class MethodTranslation(kind: String, name: String, forceAdd: Boolean, opcodes: List[OpCodeTranslation]) {
   lazy val label: String = s"${kind}_$name"
 }
 
+/**
+  * Translation of file with CIL code
+  *
+  * @param methods translations of each public [Program] method in the file
+  * @param funcs translations of other method in the file
+  */
 final case class FileTranslation(methods: List[MethodTranslation], funcs: List[MethodTranslation])
 
+/**
+  * Translation of the whole compiled program
+  *
+  * @param file merged [[FileTranslation]]s of all files in the program
+  * @param programName name of the program
+  */
 final case class Translation(file: FileTranslation, programName: String)

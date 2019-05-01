@@ -27,6 +27,7 @@ import scodec.bits.ByteOrdering
 
 import scala.util.Try
 
+/** Translator that handles basic array operations: creating new array, loading/storing elements, getting the length */
 object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: Op,
@@ -34,6 +35,7 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[Operation]] = {
 
     def newArrByTypeName(typeName: String, namespaceName: String): Either[InnerTranslationError, List[Operation]] = {
+      // convert type of CIL array to Pravda type
       val arrTypeF: PartialFunction[(String, String), Operation] = {
         case ("System", "SByte")  => pushType(Data.Type.Int8)
         case ("System", "Char")   => pushType(Data.Type.Int16)
@@ -69,12 +71,14 @@ object ArrayTranslation extends OneToManyTranslatorOnlyAsm {
   }
 }
 
+/** Special translator that handles static array initialization */
 object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
   override def asmOps(ops: List[Op],
                       stackOffsetO: Option[Int],
                       ctx: MethodTranslationCtx): Either[InnerTranslationError, (Int, List[Operation])] = {
     ops.take(5) match {
       case List(
+          // reverse engineered from CIL, see `resources/parser/Array.prs` for example
           OpcodeDetectors.IntLoad(arraySize),
           NewArr(TypeRefData(_, typeName, namespaceName)),
           Dup,
@@ -86,6 +90,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
             rva <- ctx.tctx.cilData.tables.fieldRVATable.find(_.field.name == fieldName)
           } yield rva.rva
 
+        // retrieve bytes that used to initialize array
         def bytesSize =
           for {
             token <- ctx.tctx.signatures.get(tokenSignIdx)
@@ -101,6 +106,7 @@ object ArrayInitializationTranslation extends OpcodeTranslatorOnlyAsm {
             }
           } yield size
 
+        // group these bytes and convert to appropriate type
         def data(bytes: fastparse.byte.all.Bytes): Option[Data] = (namespaceName, typeName) match {
           case ("System", "SByte") => Some(Data.Array.Int8Array(bytes.toArray.toBuffer))
           case ("System", "Char") =>

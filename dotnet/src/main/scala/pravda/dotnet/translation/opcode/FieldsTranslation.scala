@@ -27,12 +27,15 @@ import pravda.dotnet.translation.{FieldExtractors, NamesBuilder, TypeDetectors}
 import pravda.dotnet.translation.data._
 import pravda.vm.{Data, Opcodes, asm}
 
+/** Translator that handles fields operations */
 case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] = {
 
+    // search for TypeDefData and FieldData, these structures have full description of the field
+    // MemberRefData has only basic info: name of parent, name of the field, signature
     def refToDef(m: MemberRefData): Option[(TypeDefData, FieldData)] = m match {
       case MemberRefData(TypeRefData(_, name, namespace), fieldName, signatureIdx) =>
         val key = s"${NamesBuilder.fullType(namespace, name)}.$fieldName"
@@ -41,9 +44,11 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
     }
 
     def loadField(p: TypeDefData, fd: FieldData, sigIdx: Long): Either[InnerTranslationError, List[asm.Operation]] = {
+
+      // load from program's storage
       lazy val defaultLoad = Right(
         List(
-          pushString(s"p_${fd.name}"),
+          pushString(s"p_${fd.name}"), // p for program fields
           asm.Operation(Opcodes.SGET)
         ))
 
@@ -52,6 +57,8 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
           case Some(FieldSig(tpe)) =>
             tpe match {
               case SigType.Generic(TypeDetectors.Mapping(), _) =>
+                // if we want to load Mapping we just load the name of the Mapping
+                // when we want to access this Mapping we just prepend the name of Mapping to the key
                 Right(List(pushBytes(fd.name.getBytes(StandardCharsets.UTF_8))))
               case _ =>
                 defaultLoad
@@ -64,19 +71,24 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
         if (FieldExtractors.isStatic(fd.flags)) {
           Right(
             List(
+              // s for static
+              // static fields of all user-defined structures lay in the storage
               pushString(s"s_${NamesBuilder.fullTypeDef(p)}_${fd.name}"),
               asm.Operation(Opcodes.SGET)
             ))
         } else {
+          // load from structure
           Right(List(asm.Operation.StructGet(Some(Data.Primitive.Utf8(fd.name)))))
         }
       }
     }
 
     def storeField(p: TypeDefData, fd: FieldData, sigIdx: Long): Either[InnerTranslationError, List[asm.Operation]] = {
+
+      // store to program's storage
       lazy val defaultStore = Right(
         List(
-          pushString(s"p_${fd.name}"),
+          pushString(s"p_${fd.name}"), // p for program fields
           asm.Operation(Opcodes.SPUT)
         ))
 
@@ -87,6 +99,7 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
               case SigType.Generic(TypeDetectors.Mapping(), _) =>
                 Right(
                   List(
+                    // remove mapping name and key from the stack
                     asm.Operation(Opcodes.POP),
                     asm.Operation(Opcodes.POP),
                     pushString("Mapping modification is forbidden"),
@@ -102,10 +115,13 @@ case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {
         if (FieldExtractors.isStatic(fd.flags)) {
           Right(
             List(
+              // s for static
+              // static fields of all user-defined structures lay in the storage
               pushString(s"s_${NamesBuilder.fullTypeDef(p)}_${fd.name}"),
               asm.Operation(Opcodes.SPUT)
             ))
         } else {
+          // store to structure
           Right(List(asm.Operation.StructMut(Some(Data.Primitive.Utf8(fd.name)))))
         }
       }

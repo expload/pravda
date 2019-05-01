@@ -22,11 +22,14 @@ import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Opcodes, asm}
 
+/** Translator that handles arguments/local variables loading/storing */
 case object ArgsLocalsTranslations extends OneToManyTranslator {
 
   override def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = {
 
     def loadArg(num: Int): Int =
+      // 0th argument is the reference to the current class ("this" reference)
+      // if we are in the non-static program (non-struct) method we ignore this reference
       if (!ctx.static && ctx.struct.isEmpty && num == 0) 0 else 1
 
     val offsetF: PartialFunction[CIL.Op, Int] = {
@@ -64,8 +67,9 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
 
     def computeArgOffset(num: Int, stackOffset: Int): Int =
       (ctx.argsCount - num) + stackOffset + ctx.localsCount + 1 +
+        // well, just don't touch this logic
+        // it is a result of trials and errors
         (if (!ctx.func) 1 else 0) + (if (ctx.static) -1 else 0)
-    // for method there's name of the method
 
     def storeLocal(num: Int): Either[InternalError, List[asm.Operation]] =
       stackOffsetO
@@ -93,8 +97,10 @@ case object ArgsLocalsTranslations extends OneToManyTranslator {
     def loadArg(num: Int): Either[InternalError, List[asm.Operation]] =
       stackOffsetO
         .map { s =>
+          // 0th argument is the reference to the current class ("this" reference)
+          // if we are in the non-static program (non-struct) method we ignore this reference
           if (!ctx.static && ctx.struct.isEmpty && num == 0) {
-            Right(List.empty) // skip this reference
+            Right(List.empty)
           } else {
             Right(
               List(

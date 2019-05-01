@@ -21,6 +21,12 @@ import pravda.dotnet.translation.data.{MethodTranslation, OpCodeTranslation}
 import pravda.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
+/**
+  * Helpful functions used in different Translators.
+  *
+  * They all are added to the resulted Pravda code,
+  * but then some of them can be removed by dead code elimination.
+  */
 object StdlibAsm {
 
   private def stdlibFunc(name: String, ops: List[Operation]): MethodTranslation =
@@ -36,6 +42,7 @@ object StdlibAsm {
       )
     )
 
+  // function needed to implement `Mapping.GetOrDefault`
   val stdlibFuncs: List[MethodTranslation] = List(
     stdlibFunc(
       "storage_get_default",
@@ -62,6 +69,7 @@ object StdlibAsm {
           Operation.Orphan(Opcodes.RET)
         )
     ),
+    // convert array of bytes to immutable Bytes
     stdlibFunc(
       "array_to_bytes",
       List(
@@ -98,6 +106,7 @@ object StdlibAsm {
         Operation(Opcodes.RET)
       )
     ),
+    // concat array of strings to one big string
     stdlibFunc(
       "concat_all_string",
       List(
