@@ -23,6 +23,7 @@ import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationErr
 import pravda.vm.Data
 import pravda.vm.asm.Operation
 
+/** Translator that handles conversions via `System.Convert...` */
 object ConvertTranslation extends OneToManyTranslatorOnlyAsm {
   override def asmOpsOne(op: CIL.Op,
                          stackOffsetO: Option[Int],

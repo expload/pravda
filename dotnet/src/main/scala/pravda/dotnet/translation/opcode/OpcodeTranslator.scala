@@ -25,14 +25,36 @@ import pravda.vm.Opcodes
 
 import scala.annotation.tailrec
 
-// We can't compute delta offset from generated asm code,
-// because in general asm generation requires stack offset,
-// which itself requires delta offsets
+/**
+  * Most general form of Translator
+  * where we handle several sequential CIL opcodes
+  * and translate them to several Pravda opcodes/compute delta stack offset.
+  *
+  * Note: We can't compute delta stack offset from generated Pravda opcodes,
+  * because, in general, Pravda opcodes generation requires stack offset,
+  * which itself requires computation of previous delta offsets.
+  */
 trait OpcodeTranslator {
 
+  /**
+    * Computes delta stack offset, e.g change of stack offset.
+    *
+    * @param ops CIL opcodes
+    * @return error or tuple of [[OpcodeTranslator.Taken]] value that represents how many elements was taken from `ops`,
+    *         delta stack offset for the taken opcodes
+    */
   def deltaOffset(ops: List[CIL.Op],
                   ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, Int)]
 
+  /**
+    * Translates one portion of CIL opcodes to Pravda opcodes.
+    *
+    * @param ops CIL opcodes
+    * @param stackOffsetO optional current stack offset,
+    *                     some CIL opcodes requires stack offset and produces error when `stackOffsetO` is `None`
+    * @return error or tuple of [[OpcodeTranslator.Taken]] value that represents how many elements was taken from `ops`,
+    *         translated Pravda opcodes for the taken opcodes
+    */
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],
              ctx: MethodTranslationCtx): Either[InnerTranslationError, (OpcodeTranslator.Taken, List[asm.Operation])]
@@ -40,6 +62,10 @@ trait OpcodeTranslator {
 
 object OpcodeTranslatorOnlyAsm {
 
+  /**
+    * Computes delta stack offset for Pravda opcodes.
+    * It used in calculation of [[OpcodeTranslator.deltaOffset]] from [[OpcodeTranslator.asmOps]]
+    */
   def asmOpOffset(asmOp: asm.Operation): Int = asmOp match {
     case Nop              => 0
     case Comment(_)       => 0
@@ -112,6 +138,10 @@ object OpcodeTranslatorOnlyAsm {
   }
 }
 
+/**
+  * Translator that computes `deltaOffset` from `asmOps`.
+  * This computation can be done only in some cases, not in general.
+  */
 trait OpcodeTranslatorOnlyAsm extends OpcodeTranslator {
 
   def deltaOffset(ops: List[CIL.Op],
@@ -119,6 +149,10 @@ trait OpcodeTranslatorOnlyAsm extends OpcodeTranslator {
     asmOps(ops, None, ctx).map { case (rest, aOps) => (rest, aOps.map(OpcodeTranslatorOnlyAsm.asmOpOffset).sum) }
 }
 
+/**
+  * Translator that handles frequent case
+  * when we want to translate only one CIL opcode to several (including zero or one) Pravda opcodes.
+  */
 trait OneToManyTranslator extends OpcodeTranslator {
 
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int]
@@ -143,6 +177,7 @@ trait OneToManyTranslator extends OpcodeTranslator {
     }
 }
 
+/** Same as [[OpcodeTranslatorOnlyAsm]] but also computes delta stack offset from generated Pravda opcodes */
 trait OneToManyTranslatorOnlyAsm extends OneToManyTranslator {
 
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] =
@@ -155,6 +190,7 @@ object OpcodeTranslator {
 
   final case class HelperFunction(name: String, ops: List[asm.Operation])
 
+  // to register a new translator add the new one here
   val translators: List[OpcodeTranslator] =
     List(
       ArrayInitializationTranslation,
@@ -170,6 +206,7 @@ object OpcodeTranslator {
       CallsTranslation
     )
 
+  // UnknownOpcodes indicates that translator doesn't support it
   private def notUnknownOpcode[T](res: Either[InnerTranslationError, T]): Boolean = res match {
     case Left(UnknownOpcode) => false
     case _                   => true
@@ -187,12 +224,23 @@ object OpcodeTranslator {
     case _ => None
   }
 
+  /**
+    * Finds first translator from `translators` that can translate given opcodes and return this translation.
+    *
+    * Logic of processing is same as [[OpcodeTranslator.asmOps]].
+    */
   def asmOps(ops: List[CIL.Op],
              stackOffsetO: Option[Int],
              ctx: MethodTranslationCtx): Either[InnerTranslationError, (Taken, List[asm.Operation])] =
     findAndReturn(translators, (t: OpcodeTranslator) => t.asmOps(ops, stackOffsetO, ctx), notUnknownOpcode)
       .getOrElse(Left(NotSupportedOpcode(ops.head)))
 
+  /**
+    * Finds first translator from `translators` that can compute delta stack offset from given opcodes
+    * and return it.
+    *
+    * Logic of processing is same as [[OpcodeTranslator.deltaOffset]].
+    */
   def deltaOffset(ops: List[CIL.Op], ctx: MethodTranslationCtx): Either[InnerTranslationError, (Taken, Int)] =
     findAndReturn(translators, (t: OpcodeTranslator) => t.deltaOffset(ops, ctx), notUnknownOpcode)
       .getOrElse(Left(NotSupportedOpcode(ops.head)))

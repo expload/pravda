@@ -22,6 +22,7 @@ import pravda.dotnet.parser.CIL.Op
 import pravda.dotnet.parser.PE.Info._
 import pravda.dotnet.utils._
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.285
 final case class Method(opcodes: List[Op], maxStack: Int, localVarSigIdx: Option[Long])
 
 object Method {

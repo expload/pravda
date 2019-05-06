@@ -23,6 +23,7 @@ import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes}
 
+/** Translator that handles basic opcodes which translation can typically be written in one line */
 case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
   override def asmOpsOne(op: CIL.Op,
@@ -71,6 +72,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
       case And => List(Operation(Opcodes.AND))
       case Xor => List(Operation(Opcodes.XOR))
 
+      // we cast back to int, because CIL doesn't have native booleans
       case Clt   => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
       case CltUn => Operation(Opcodes.SWAP) :: Operation(Opcodes.LT) :: cast(Data.Type.Int32)
       case Cgt   => Operation(Opcodes.SWAP) :: Operation(Opcodes.GT) :: cast(Data.Type.Int32)
@@ -83,6 +85,7 @@ case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {
 
       case Pop => List(Operation(Opcodes.POP))
       case Nop => List()
+      // return to variables cleaning
       case Ret => List(Operation.Jump(Some(s"${ctx.name}_lvc")))
     }
 

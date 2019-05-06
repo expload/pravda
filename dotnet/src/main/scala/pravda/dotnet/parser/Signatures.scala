@@ -28,6 +28,8 @@ import cats.instances.either._
 import cats.syntax.traverse._
 import pravda.dotnet.parser.Signatures.SigType.ArrayShape
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.258
+// II.23.2 Blobs and signatures
 object Signatures {
 
   import Heaps._

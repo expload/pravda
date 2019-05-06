@@ -26,6 +26,7 @@ import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationC
 import pravda.vm.asm.Operation
 import pravda.vm.{Data, Opcodes, asm}
 
+/** Translator that handles `Bytes` operations from Pravda.cs library */
 object BytesTranslation extends OneToManyTranslator {
 
   def deltaOffsetOne(op: CIL.Op, ctx: MethodTranslationCtx): Either[InnerTranslationError, Int] = op match {
@@ -51,8 +52,8 @@ object BytesTranslation extends OneToManyTranslator {
         case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(DotNetString, false)))) =>
           // TODO 0x04 is an index of HexToByes standard function
           // TODO there is should be some way to obtain indexes of
-          // TODO procedures of standard library. May be it is
-          // TODO good idea to make translator dependent `vm`
+          // TODO standard library functions. Maybe it is a
+          // TODO good idea to make translator dependent on `vm`
           // TODO instead of `vm-api`.
           Right(List(pushInt(0x04), Operation(Opcodes.SCALL)))
         case Some(MethodRefDefSig(_, _, _, _, 0, _, List(Tpe(Arr(I1, ArrayShape(1, Nil, Nil)), false)))) =>

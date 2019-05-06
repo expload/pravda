@@ -23,6 +23,7 @@ import pravda.dotnet.translation.data.{InternalError, MethodTranslationCtx, Inne
 import pravda.dotnet.translation.opcode.OpcodeTranslator.Taken
 import pravda.vm.asm.Operation
 
+/** Translator used to ignore initializations of Mappings as fields of class */
 object MappingInitializationTranslation extends OpcodeTranslatorOnlyAsm {
   override def asmOps(ops: List[CIL.Op],
                       stackOffsetO: Option[Int],

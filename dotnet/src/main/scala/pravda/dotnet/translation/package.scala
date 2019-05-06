@@ -24,6 +24,7 @@ import pravda.dotnet.parser.Signatures._
 
 package object translation {
 
+  /** Extractors for important CIL types */
   object TypeDetectors {
 
     object Bytes {
@@ -43,6 +44,7 @@ package object translation {
     }
   }
 
+  /** Extractors of important information about CIL methods */
   object MethodExtractors {
 
     def localVariables(m: Method, signatures: Map[Long, Signatures.Signature]): Option[List[Signatures.LocalVar]] = {
@@ -98,12 +100,15 @@ package object translation {
     def isVoid(m: MethodRefDefData, signatures: Map[Long, Signature]): Boolean =
       withMethodRefDef(isVoid)(m, signatures).getOrElse(false)
 
+    /** Checks if method is constructor */
     def isCtor(m: MethodDefData): Boolean =
       m.name == ".ctor" && (m.flags & 0x1800) != 0 // maybe the mask should be different (see 252-nd page in spec)
 
+    /** Checks if method is static constructor */
     def isCctor(m: MethodDefData): Boolean =
       m.name == ".cctor" && (m.flags & 0x1810) != 0 // maybe the mask should be different (see 252-nd page in spec)
 
+    /** Checks if method is main entry point of the program */
     def isMain(m: MethodDefData): Boolean =
       m.name == "Main" && (m.flags & 0x10) != 0
 
@@ -131,7 +136,9 @@ package object translation {
 
   object NamesBuilder {
 
+    /** Construct full method name with type signature of the parameters */
     def fullMethod(name: String, sigO: Option[Signature]): String = {
+      // we drop "." at the begging of the method, because "." is not a good char in the method name
       val normalizedName = if (name == ".ctor" || name == ".cctor") name.drop(1) else name
       val sigParams = sigO.collect { case m: MethodRefDefSig => m.params }.getOrElse(List.empty)
       if (sigParams.nonEmpty) {
@@ -141,6 +148,7 @@ package object translation {
       }
     }
 
+    /** Constructs full type name including namespace */
     def fullType(namespace: String, name: String): String =
       if (namespace.nonEmpty) {
         s"$namespace.$name"
@@ -148,9 +156,11 @@ package object translation {
         name
       }
 
+    /** Constructs full type name including namespace */
     def fullTypeDef(typeDefData: TypeDefData): String =
       fullType(typeDefData.namespace, typeDefData.name)
 
+    /** Constructs full method name including full parent class name */
     def fullTypeMethod(typeDef: TypeDefData, methodName: String, sig: Option[Signature]): String =
       s"${fullTypeDef(typeDef)}.${fullMethod(methodName, sig)}"
   }

@@ -21,6 +21,7 @@ import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data._
 import pravda.vm.{Opcodes, asm}
 
+/** Translator that handles Jump, JumpI, Label */
 case object JumpsTranslation extends OneToManyTranslatorOnlyAsm {
 
   val labelStackOffset = 0
@@ -31,8 +32,9 @@ case object JumpsTranslation extends OneToManyTranslatorOnlyAsm {
                          stackOffset: Option[Int],
                          ctx: MethodTranslationCtx): Either[InnerTranslationError, List[asm.Operation]] =
     op match {
-      case Jump(label) => Right(List(asm.Operation.Jump(Some(label))))
+      case Jump(label)  => Right(List(asm.Operation.Jump(Some(label))))
       case JumpI(label) =>
+        // CIL doesn't have booolean, it uses ints instead
         Right(List(pushInt(0), asm.Operation(Opcodes.EQ), asm.Operation(Opcodes.NOT), asm.Operation.JumpI(Some(label))))
       case Label(label) => Right(List(asm.Operation.Label(label)))
       case _            => Left(UnknownOpcode)

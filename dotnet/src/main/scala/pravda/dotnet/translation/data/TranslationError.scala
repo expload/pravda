@@ -23,12 +23,17 @@ import pravda.vm.Meta
 sealed trait InnerTranslationError {
   def mkString: String
 }
+
+/** Error indicating that [[pravda.dotnet.translation.opcode.OpcodeTranslator]] couldn't handle the opcode */
 case object UnknownOpcode extends InnerTranslationError {
   def mkString: String = ???
 }
+
+/** Error indicating that such opcode isn't supported by the translation */
 final case class NotSupportedOpcode(op: CIL.Op) extends InnerTranslationError {
   def mkString: String = s"$op is not supported"
 }
+
 final case class InternalError(err: String) extends InnerTranslationError {
   def mkString: String = err
 }

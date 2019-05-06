@@ -22,6 +22,18 @@ import pravda.dotnet.data.TablesData.{FieldData, MethodDebugInformationData, Met
 import pravda.dotnet.parser.CIL.CilData
 import pravda.dotnet.parser.Signatures
 
+/**
+  * Context for translation in one file
+  *
+  * @param signatures all CIL signatures in the file
+  * @param cilData all other information from the file
+  * @param mainProgramClass main [Program] class
+  * @param programClasses all [Program] classes
+  * @param structs all non [Program] classes
+  * @param methodIndex inverted index for searching for methods
+  * @param fieldIndex inverted index for searching for fields
+  * @param pdbTables optional CIL tables from .pdb file
+  */
 final case class TranslationCtx(
     signatures: Map[Long, Signatures.Signature],
     cilData: CilData,
@@ -44,6 +56,21 @@ final case class TranslationCtx(
   def methodRow(fileIdx: Int): TablesData.MethodDefData = cilData.tables.methodDefTable(fileIdx)
 }
 
+/**
+  * Context for translation in one method
+  *
+  * @param tctx        context for translation in the file where the method is sutiated
+  * @param argsCount   count of method arguments
+  * @param localsCount count of method local variables
+  * @param name        name of the method
+  * @param kind        special prefix needed to distinguish different kinds of methods
+  * @param void        is method void
+  * @param func is method "program function".
+  *             It means it doesn't have name of method after its arguments on the stack as "program method".
+  * @param static is method static
+  * @param struct name of struct that contains the method if such struct exists
+  * @param debugInfo info about debug symbols
+  */
 final case class MethodTranslationCtx(
     tctx: TranslationCtx,
     argsCount: Int,

@@ -27,6 +27,8 @@ import cats.syntax.traverse._
 
 import pravda.dotnet.utils._
 
+// See http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-335.pdf p.209
+// II.22 Metadata logical format: tables
 final case class TablesData(
     customAttributeTable: Vector[TablesData.CustomAttributeData],
     fieldTable: Vector[TablesData.FieldData],
