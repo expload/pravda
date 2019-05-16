@@ -130,6 +130,34 @@ the following result:
 }
 ```
 
+## Get username by Pravda address
+
+You can get username (nickname) of the Pravda user by its address.
+
+### Request
+
+`GET api/username?[address=<hex formatted address>]`
+
+### Response
+
+Username as string value
+
+### Examples
+
+```
+curl <api url>/api/username
+```
+
+will return username, example:
+
+```
+{
+  "error":"",
+  "errorCode":"",
+  "data":"nickname"
+}
+```
+
 ## Call program method
 
 DApps API Specification introduces __method__ entity. This entity is similar to [Solidity](http://solidity.readthedocs.io/en/v0.4.24/) methods from Ethereum ecosystem.
