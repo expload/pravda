@@ -49,7 +49,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    ttl = 60
        |    negative-ttl = 20
        |  }
-       http {
+       |  http {
        |    host = "127.0.0.1"
        |    port = 8080
        |  }
