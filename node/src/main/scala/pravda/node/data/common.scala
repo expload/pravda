@@ -25,9 +25,9 @@ import pravda.common.domain.{Address, NativeCoin}
 import supertagged.TaggedType
 import java.security.MessageDigest
 
-object common {
+import pravda.common.Hasher
 
-  private val sha256 = MessageDigest.getInstance("SHA-256")
+object common {
 
   /**
     * Sha256 hash of Protobuf representation of signed transaction
@@ -44,7 +44,7 @@ object common {
 //        .putShort(tx.size.toShort) // size
 //        .put(tx.toByteArray) // data
 //      val hash = ripemd160.getHash(buffer.array())
-      val hash = sha256.digest(tx.toByteArray)
+      val hash = Hasher.sha256.get().digest(tx.toByteArray)
       TransactionId @@ ByteString.copyFrom(hash)
     }
   }
