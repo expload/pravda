@@ -19,14 +19,14 @@ package pravda.node.db.hash
 
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
+
+import pravda.common.Hasher
 
 object utils {
-  val DIGEST = MessageDigest.getInstance("SHA-256")
 
   def hex(arr: Array[Byte]) = String.format("%032x", new BigInteger(1, arr))
 
-  def hash(value: Array[Byte]): Array[Byte] = DIGEST.digest(value)
+  def hash(value: Array[Byte]): Array[Byte] = Hasher.sha256.get().digest(value)
 
   def hash(value: String, charset: String = StandardCharsets.UTF_8.name()): Array[Byte] =
     hash(value.getBytes(charset))
@@ -46,6 +46,6 @@ object utils {
     }
   }
 
-  lazy val zeroHash = Array.fill[Byte](DIGEST.getDigestLength)(0.toByte)
+  lazy val zeroHash = Array.fill[Byte](Hasher.sha256.get().getDigestLength)(0.toByte)
 
 }

@@ -156,6 +156,6 @@ object AbciClient {
   final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])
 
   object RpcTxResponse {
-    final case class Result(height: Long, tx: PbByteString)
+    final case class Result(hash: String, height: String, tx: PbByteString)
   }
 }

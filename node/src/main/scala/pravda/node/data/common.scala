@@ -21,14 +21,16 @@ import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes.byteString2hex
-import pravda.common.contrib.ripemd160
 import pravda.common.domain.{Address, NativeCoin}
 import supertagged.TaggedType
+import java.security.MessageDigest
+
+import pravda.common.Hasher
 
 object common {
 
   /**
-    * Sha3 hash of BSON representation of signed transaction
+    * Sha256 hash of Protobuf representation of signed transaction
     */
   object TransactionId extends TaggedType[ByteString] {
 
@@ -36,12 +38,13 @@ object common {
 
     def forEncodedTransaction(tx: ByteString): TransactionId = {
       // go-wire encoding
-      val buffer = ByteBuffer
-        .allocate(3 + tx.size)
-        .put(0x02.toByte) // size of size
-        .putShort(tx.size.toShort) // size
-        .put(tx.toByteArray) // data
-      val hash = ripemd160.getHash(buffer.array())
+//      val buffer = ByteBuffer
+//        .allocate(3 + tx.size)
+//        .put(0x02.toByte) // size of size
+//        .putShort(tx.size.toShort) // size
+//        .put(tx.toByteArray) // data
+//      val hash = ripemd160.getHash(buffer.array())
+      val hash = Hasher.sha256.get().digest(tx.toByteArray)
       TransactionId @@ ByteString.copyFrom(hash)
     }
   }

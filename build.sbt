@@ -192,6 +192,7 @@ lazy val `node-db` = (project in file("node-db"))
     normalizedName := "pravda-node-db",
     libraryDependencies += levelDb
   )
+  .dependsOn(common)
 
 lazy val node = (project in file("node"))
   .enablePlugins(UniversalPlugin)
