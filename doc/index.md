@@ -85,6 +85,8 @@ Now your directory contains:
  - `HelloProgram.csproj` - project configuration. It includes scripts for compiling and deployment, as well as .NET dependencies & metadata
  - `README.md` - feel free to consult it whenever you feel confused
 
+You can also check the section [Hello, World](https://developers.expload.com/documentation/pravda/hello-world/) that contains a more complex sample of a Pravda program.
+
 ### Compiling the Program
 
 To compile C# code into pravda binary run:
@@ -92,7 +94,7 @@ To compile C# code into pravda binary run:
 dotnet publish -c Debug
 ```
 Now you have `MyProject.pravda` in your project directory.  
-You can use [local node](#Getting-started-with-CLI) and [Pravda CLI commands](https://github.com/expload/pravda/blob/master/doc/ref/cli/pravda-broadcast-deploy.md) to deploy to a local node or proceed further to work with Pravda Testnet.
+You can use [local node](#Getting-started-with-CLI) and [Pravda CLI commands](https://developers.expload.com/documentation/pravda/CLI/pravda-broadcast-deploy/) to deploy to a local node or proceed further to work with Pravda Testnet.
 
 ### Deploying to Testnet
 

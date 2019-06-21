@@ -1,4 +1,4 @@
-# "Hello, world!"
+# "Hello, world!". Your first program
 
 Let's go throughout the process of developing and deploying a Pravda 
 program using a basic token program as an example. We will create 
