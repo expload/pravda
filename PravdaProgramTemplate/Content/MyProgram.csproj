@@ -6,7 +6,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>$(PackageId)</AssemblyName>
     <WattsLimit>500000</WattsLimit>
-    <PravdaApi>https://publicnode.expload.com/api/public</PravdaApi> 
+    <PravdaApi>https://node.playground.expload.com/api/public</PravdaApi>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Expload.Pravda" Version="0.*" />
@@ -21,7 +21,6 @@
   </Target>
   <Target Name="DeployPravdaAfterPublish" AfterTargets="Publish" Condition="'$(Configuration)' == 'Deploy'">
     <Exec Command="pravda compile dotnet -i &quot;bin/Deploy/netstandard2.0/publish&quot; -o bin/$(PackageName).pravda --main-class $(PackageId)" />
-    <Exec Command="pravda gen address -o program-wallet.json" />
     <Exec Command="pravda broadcast deploy -i bin/$(PackageName).pravda -w wallet.json -p program-wallet.json -l $(WattsLimit) -e $(PravdaApi)" />
   </Target>
   <Target Name="UpdatePravdaAfterPublish" AfterTargets="Publish" Condition="'$(Configuration)' == 'Update'">
