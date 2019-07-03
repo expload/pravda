@@ -68,7 +68,36 @@ class ApiRoute(api: NodeLanguageImpl, url: String, publicKey: Address, secretKey
               )
             }
           }
-        }
+        } ~
+          path("broadcast-call") {
+            parameters(
+              ('address.as[String],
+               'method.as[String],
+               'arg.*,
+               'wattLimit.as[Long] ? (100000L),
+               'wattPrice.as[Long] ? (1L))) {
+              case (programAddress, programMethod, programArgs, wattLimit, wattPrice) =>
+                // Arguments from the query string are extracted from the end, thus we should reverse the arguments list
+                val arguments = programArgs.toSeq.reverse
+                val f = api.broadcastMethodCall(
+                  url,
+                  publicKey,
+                  secretKey,
+                  None,
+                  wattLimit,
+                  NativeCoin @@ wattPrice,
+                  None,
+                  programAddress,
+                  programMethod,
+                  arguments
+                )
+
+                onSuccess(f) {
+                  case Left(s)  => complete((StatusCodes.BadRequest, s))
+                  case Right(s) => complete(s)
+                }
+            }
+          }
       }
     }
 

@@ -27,6 +27,19 @@ class NodeLanguageStub[F[_]: Monad](result: Either[String, TransactionResult]) e
     result
   }
 
+  def broadcastMethodCall(uriPrefix: String,
+                          walletAddress: ByteString,
+                          walletPrivateKey: ByteString,
+                          wattPayerPrivateKey: Option[ByteString],
+                          wattLimit: Long,
+                          wattPrice: NativeCoin,
+                          wattPayer: Option[Address],
+                          programAddress: String,
+                          programMethod: String,
+                          programArgs: Seq[String]): F[Either[String, TransactionResult]] = {
+    Monad[F].pure(result)
+  }
+
   def execute(data: ByteString, address: Address, endpoint: String): F[Either[String, TransactionResult]] =
     Monad[F].pure(result)
 }
