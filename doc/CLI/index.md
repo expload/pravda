@@ -24,6 +24,7 @@ No options available
 |[`broadcast run`](pravda-broadcast-run.md)|Send a transaction with Pravda Program address to the blockchain to run it|
 |[`broadcast transfer`](pravda-broadcast-transfer.md)|Transfer native coins to a given wallet.|
 |[`broadcast deploy`](pravda-broadcast-deploy.md)|Deploy Pravda program to the blockchain.|
+|[`broadcast call`](pravda-broadcast-call.md)|Call the method of the program with arguments|
 |[`broadcast seal`](pravda-broadcast-seal.md)|Seal existing Pravda program in the blockchain.|
 |[`broadcast update`](pravda-broadcast-update.md)|Update existing Pravda program in the blockchain.|
 |[`execute`](pravda-execute.md)|Executes program without side-effects. No watt-limit is required.|
