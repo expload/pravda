@@ -78,6 +78,10 @@ object PravdaConfig {
       case object Update                                                  extends Mode
       case object Seal                                                    extends Mode
       final case class Transfer(to: Option[String], amount: Option[Long]) extends Mode
+      final case class Call(address: Option[String] = None,
+                            method: Option[String] = None,
+                            args: Seq[String] = Seq.empty)
+          extends Mode
     }
   }
 

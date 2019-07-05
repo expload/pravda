@@ -20,15 +20,44 @@ docker run \
   expload/pravda-broadcaster
 ```
 
-### Request
+
+## API
+
+### Broadcast
+
+#### Request
 
 ```
 curl --request POST \
   --url '<api url>/broadcast?wattLimit=<integer>&wattPrice=<integer>' \
   --header 'content-type: <text/x-asm or plain/text or application/octet-stream' \
   --data '<assembler or compiled bytecode>'
-  ```
-### Response
+```
+
+### Call the method of the program
+
+#### Request
+
+The example of the full request string is provided below:
+
+```
+curl --request POST \
+  --url '<api url>/broadcast-call?address=<address>&method=<method>&arg=<arg1>&arg=<arg2>&arg=<argN>&wattLimit=<integer>&wattPrice=<integer>'
+```
+
+The repeated parameter `arg` is optional and can be omitted when the method doesn't have arguments. For example,
+
+```
+curl --request POST \
+     --url 'localhost:5000/broadcast-call?address=xdc5056337b83726b881f241bf534ca04f7694452e0e879018872679cf8815af4&method=MyBalance&wattLimit=1000&wattPrice=1'
+```
+
+The parameters `wattLimit`, `wattPrice` are optional and have the following default values:
+
+- wattLimit: 100000
+- wattPrice: 1
+
+## API Response
 
 ```
 {
@@ -49,6 +78,7 @@ curl --request POST \
   }, ...]
 }
 ```
+
 or with error
 
 ```

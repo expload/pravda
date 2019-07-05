@@ -233,6 +233,38 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               .text("Deploy Pravda program to the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Deploy))
               .children(broadcastInput),
+            cmd("call")
+              .text("Call the method of the program with arguments")
+              .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Call()))
+              .children(
+                opt[String]("address")
+                  .text("Address of the program that will be called. For example, \"xdc5056337b83726b881f241bf534ca04f7694452e0e879018872679cf8815af4\" ")
+                  .action {
+                    case (address,
+                          config @ PravdaConfig
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Call, _, _, _, _, _, _, _, _, _, _)) =>
+                      config.copy(mode = mode.copy(address = Some(address)))
+                    case (_, otherwise) => otherwise
+                  },
+                opt[String]("method")
+                  .text("Method's name. For example, \"Spend\"")
+                  .action {
+                    case (method,
+                          config @ PravdaConfig
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Call, _, _, _, _, _, _, _, _, _, _)) =>
+                      config.copy(mode = mode.copy(method = Some(method)))
+                    case (_, otherwise) => otherwise
+                  },
+                opt[Seq[String]]("args")
+                  .text("Method's arguments (comma separated). For example, \"xdc5056337b83726b881f241bf534ca04f7694452e0e879018872679cf8815af4,20\"")
+                  .action {
+                    case (args,
+                          config @ PravdaConfig
+                            .Broadcast(mode: PravdaConfig.Broadcast.Mode.Call, _, _, _, _, _, _, _, _, _, _)) =>
+                      config.copy(mode = mode.copy(args = args))
+                    case (_, otherwise) => otherwise
+                  }
+              ),
             cmd("seal")
               .text("Seal existing Pravda program in the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Seal))

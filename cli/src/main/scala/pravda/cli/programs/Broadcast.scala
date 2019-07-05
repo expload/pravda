@@ -193,6 +193,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 compilers.asm(s"push x$addressHex push x$newCodeHex push x$signatureHex pupdate")
               }
             } yield updateCode
+          case mode @ Mode.Call(_, _, _) => programCall[F](mode)(io, compilers)
           case _ =>
             EitherT[F, String, ByteString](Monad[F].pure(Left("Broadcast mode should be selected.")))
         }
@@ -224,4 +225,29 @@ object Broadcast {
   final case class Wallet(address: Address, privateKey: ByteString)
 
   implicit val walletReader: JsonReader[Wallet] = jsonReader[Wallet]
+
+  def programCall[F[_]: Monad](call: PravdaConfig.Broadcast.Mode.Call)(
+      io: IoLanguage[F],
+      compilers: CompilersLanguage[F]): EitherT[F, String, ByteString] = {
+    def mkCallCode(address: String, method: String, args: Seq[String]): String = {
+      val sb = new StringBuilder
+      args.foreach(arg => sb.append(s"push $arg "))
+      sb.append(s"""push "$method" """)
+      sb.append(s"push $address ")
+      sb.append(s"push ${args.size + 1} ")
+      sb.append("pcall")
+      sb.mkString
+    }
+
+    for {
+      address <- call.address.fold(
+        EitherT.leftT[F, String]("Address of the program should be defined. " +
+          "Run \"pravda broadcast call -h\" for help."))(EitherT.rightT[F, String](_))
+      method <- call.method.fold(
+        EitherT.leftT[F, String]("Method of the program should be defined. " +
+          "Run \"pravda broadcast call -h\" for help."))(EitherT.rightT[F, String](_))
+      asmCode = mkCallCode(address, method, call.args)
+      code <- EitherT(compilers.asm(asmCode))
+    } yield code
+  }
 }

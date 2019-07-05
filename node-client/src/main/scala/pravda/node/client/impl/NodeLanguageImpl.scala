@@ -22,6 +22,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpEntity, HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import akka.util.{ByteString => AkkaByteString}
+import cats.data.EitherT
+import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.common.bytes
 import pravda.common.domain.{Address, NativeCoin}
@@ -36,6 +38,7 @@ import pravda.node.launcher
 import pravda.node.servers.Abci.TransactionResult
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
+import pravda.vm.asm.PravdaAssembler
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
@@ -104,6 +107,46 @@ final class NodeLanguageImpl(implicit system: ActorSystem,
             txr.left.map(_.message)
           }
       }
+  }
+
+  def broadcastMethodCall(uriPrefix: String,
+                          walletAddress: ByteString,
+                          walletPrivateKey: ByteString,
+                          wattPayerPrivateKey: Option[ByteString],
+                          wattLimit: Long,
+                          wattPrice: NativeCoin,
+                          wattPayer: Option[Address],
+                          programAddress: String,
+                          programMethod: String,
+                          programArgs: Seq[String]): Future[Either[String, TransactionResult]] = {
+
+    def mkCallCode(address: String, method: String, args: Seq[String]): String = {
+      val sb = new StringBuilder
+      args.foreach(arg => sb.append(s"push $arg "))
+      sb.append(s"""push "$method" """)
+      sb.append(s"push $address ")
+      sb.append(s"push ${args.size + 1} ")
+      sb.append("pcall")
+      sb.mkString
+    }
+    val code = mkCallCode(programAddress, programMethod, programArgs)
+    val result = for {
+      compiledCode <- PravdaAssembler
+        .assemble(code, saveLabels = true)
+        .left
+        .map(s => s"Invalid asm code: ${s.mkString}")
+        .toEitherT[Future]
+      res <- EitherT(
+        singAndBroadcastTransaction(uriPrefix,
+                                    walletAddress,
+                                    walletPrivateKey,
+                                    wattPayerPrivateKey,
+                                    wattLimit,
+                                    wattPrice,
+                                    wattPayer,
+                                    compiledCode))
+    } yield res
+    result.value
   }
 
   def execute(data: ByteString, address: Address, endpoint: String): Future[Either[String, TransactionResult]] = {
