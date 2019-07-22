@@ -132,6 +132,8 @@ the following result:
 
 ## Get username by Pravda address
 
+**Note** This is the specific feature for Expload Platform.
+
 You can get username (nickname) of the Pravda user by its address.
 
 ### Request
@@ -155,6 +157,36 @@ will return username, example:
   "error":"",
   "errorCode":"",
   "data":"nickname"
+}
+```
+
+## Get XGold's balance of the current user
+
+**Note** This is the specific feature for Expload Platform.
+
+You can get the actual XGold's balance of the current logged user.
+
+### Request
+
+`GET api/balance/xgold`
+
+### Response
+
+Balance in miniXG (1 XGold = 100000000 miniXG) expressed in numeric as long type.
+
+### Examples
+
+```
+curl <api url>/api/balance/xgold
+```
+
+will return balance, example:
+
+```
+{
+  "error":"",
+  "errorCode":"",
+  "data": 100000000
 }
 ```
 
