@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets
 import com.google.protobuf.ByteString
 import org.bouncycastle.jcajce.provider.digest._
 import pravda.vm._
+import pravda.common.vm._
 
 object Sha3 extends FunctionDefinition {
 

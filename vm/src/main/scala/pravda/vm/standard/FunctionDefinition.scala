@@ -17,7 +17,8 @@
 
 package pravda.vm.standard
 
-import pravda.vm.{Data, Memory, WattCounter}
+import pravda.common.vm.Data
+import pravda.vm.{Memory, WattCounter}
 
 trait FunctionDefinition {
 

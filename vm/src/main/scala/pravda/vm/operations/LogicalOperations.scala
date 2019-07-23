@@ -18,11 +18,12 @@
 package pravda.vm.operations
 
 import com.google.protobuf.ByteString
-import pravda.vm.Error.WrongType
+import pravda.common.vm.Data
+import pravda.common.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuSimpleArithmetic
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Data, Memory, ThrowableVmError, WattCounter}
-import pravda.vm.Opcodes._
+import pravda.vm.{Memory, ThrowableVmError, WattCounter}
+import pravda.common.vm.Opcodes._
 
 import scala.annotation.strictfp
 

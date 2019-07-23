@@ -21,6 +21,7 @@ package vm
 
 import com.google.protobuf.ByteString
 import pravda.common.domain
+import pravda.common.vm.ExecutionResult
 
 trait Vm {
 

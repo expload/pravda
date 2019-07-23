@@ -19,11 +19,11 @@ package pravda.node.client.impl
 
 import com.google.protobuf.ByteString
 import pravda.common.domain.Address
+import pravda.common.vm.ExecutionResult
 import pravda.node.client.VmLanguage
-import pravda.node.data.common.TransactionId
+import pravda.common.data.blockchain._
 import pravda.node.db.DB
 import pravda.node.servers
-import pravda.vm.ExecutionResult
 import pravda.vm.impl.VmImpl
 
 import scala.concurrent.{ExecutionContext, Future}

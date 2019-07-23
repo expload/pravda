@@ -18,7 +18,7 @@
 package pravda.dotnet.translation.opcode
 import com.google.protobuf.ByteString
 import pravda.dotnet.translation.data.{MethodTranslation, OpCodeTranslation}
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
 /**

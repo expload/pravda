@@ -21,7 +21,7 @@ import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 
 /** Translator that handles basic opcodes which translation can typically be written in one line */
 case object SimpleTranslations extends OneToManyTranslatorOnlyAsm {

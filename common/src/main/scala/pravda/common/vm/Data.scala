@@ -15,16 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.common.vm
 
+import java.nio.charset.StandardCharsets
+import java.nio.{ByteBuffer, ByteOrder}
+
+import com.google.protobuf.ByteString
+import pravda.common.bytes.{byteString2hex, hex2byteString}
+import supertagged.TaggedType
 import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.StandardCharsets
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes.{byteString2hex, hex2byteString}
-import pravda.vm.Data.Primitive.Bool.{False, True}
+import pravda.common.vm.Data.Primitive.Bool.{False, True}
 import supertagged.TaggedType
 
+import scala.annotation.{strictfp, switch, tailrec}
+import scala.collection.mutable
+import scala.{Array => ScalaArray, BigInt => ScalaBigInt}
 import scala.annotation.{strictfp, switch, tailrec}
 import scala.collection.mutable
 import scala.{Array => ScalaArray, BigInt => ScalaBigInt}

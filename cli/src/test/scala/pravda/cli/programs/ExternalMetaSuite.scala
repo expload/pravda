@@ -5,10 +5,10 @@ import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.node.client.impl.{CompilersLanguageImpl, MetadataLanguageImpl}
 import pravda.node.client.{IoLanguageStub, IpfsLanguageStub, NodeLanguageStub}
-import pravda.node.data.common.TransactionId
+import pravda.common.data.blockchain.TransactionId
 import pravda.node.servers.Abci.TransactionResult
 import pravda.vm.asm.{Operation, PravdaAssembler}
-import pravda.vm.{Data, FinalState, Meta, Opcodes}
+import pravda.common.vm._
 import utest._
 
 import scala.collection.mutable

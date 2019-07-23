@@ -19,7 +19,8 @@ package pravda.evm.translate
 
 import com.google.protobuf.ByteString
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Opcodes, asm}
+import pravda.common.vm.{Data, Opcodes}
+import pravda.vm.asm
 
 //TODO merge with pravda.dotnet.translation.opcode.opcode
 package object opcode {

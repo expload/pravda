@@ -16,11 +16,11 @@
  */
 
 package pravda.dotnet.translation.opcode
+import pravda.common.vm.Data
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
-import pravda.dotnet.translation.data.{MethodTranslationCtx, InnerTranslationError, UnknownOpcode}
-import pravda.vm.Data
+import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationCtx, UnknownOpcode}
 import pravda.vm.asm.Operation
 
 /** Translator that handles conversions via `System.Convert...` */

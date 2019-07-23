@@ -17,7 +17,8 @@
 
 package pravda.vm.standard
 
-import pravda.vm.Data.Type
+import pravda.common.vm.Data.Type
+import pravda.common.vm._
 import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 import pravda.vm.operations._

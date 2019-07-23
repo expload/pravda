@@ -20,8 +20,8 @@ package pravda.cli.programs
 import cats._
 import cats.implicits._
 import com.google.protobuf.ByteString
+import pravda.common.vm.Meta
 import pravda.node.client.{CompilersLanguage, IpfsLanguage, MetadataLanguage}
-import pravda.vm.Meta
 import pravda.vm.asm.Operation
 
 import scala.collection.mutable

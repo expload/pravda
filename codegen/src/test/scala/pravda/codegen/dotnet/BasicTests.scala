@@ -1,7 +1,7 @@
 package pravda.codegen.dotnet
 
 import pravda.common.TestUtils
-import pravda.vm.Meta
+import pravda.common.vm.Meta
 import utest._
 
 import scala.io.Source

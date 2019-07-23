@@ -15,11 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data
+package pravda.common.data
 
 import cats.Show
 import com.google.protobuf.ByteString
-import pravda.common.domain._
+import pravda.common.bytes.byteString2hex
+import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.Hasher
+import pravda.common.vm.Effect
 import supertagged.TaggedType
 
 object blockchain {
@@ -88,4 +91,98 @@ object blockchain {
   object TransactionData extends TaggedType[ByteString]
   type TransactionData = TransactionData.Type
 
+  /**
+    * Sha256 hash of Protobuf representation of signed transaction
+    */
+  object TransactionId extends TaggedType[ByteString] {
+
+    final val Empty = forEncodedTransaction(ByteString.EMPTY)
+
+    def forEncodedTransaction(tx: ByteString): TransactionId = {
+      // go-wire encoding
+      //      val buffer = ByteBuffer
+      //        .allocate(3 + tx.size)
+      //        .put(0x02.toByte) // size of size
+      //        .putShort(tx.size.toShort) // size
+      //        .put(tx.toByteArray) // data
+      //      val hash = ripemd160.getHash(buffer.array())
+      val hash = Hasher.sha256.get().digest(tx.toByteArray)
+      TransactionId @@ ByteString.copyFrom(hash)
+    }
+  }
+
+  type TransactionId = TransactionId.Type
+
+  def transactionIdKey(transactionId: TransactionId): String =
+    s"${byteString2hex(transactionId)}"
+
+  def transactionIdKeyLength(transactionId: TransactionId): String =
+    s"${byteString2hex(transactionId)}:#len"
+  // the # character has the lower ASCII code so it will be place before any number
+
+  def transactionIdKeyOffset(transactionId: TransactionId, offset: Long): String =
+    f"${byteString2hex(transactionId)}:$offset%016x"
+
+  final case class ApplicationStateInfo(blockHeight: Long,
+                                        appHash: ByteString,
+                                        validators: Vector[Address],
+                                        blockTimestamp: Long)
+
+  object ApplicationStateInfo {
+    lazy val Empty = ApplicationStateInfo(0, ByteString.EMPTY, Vector.empty[Address], 0L)
+  }
+
+  final case class CoinDistributionMember(address: Address, amount: NativeCoin)
+
+  final case class StoredProgram(code: ByteString, `sealed`: Boolean)
+
+  sealed trait TransactionEffects {
+    def num: Long
+    def transactionId: TransactionId
+    // A height of the block that the transaction was committed in
+    def blockHeight: Long
+    def blockTimestamp: Long
+    def identifier: String
+  }
+
+  object TransactionEffects {
+    final case class Transfers(num: Long,
+                               blockHeight: Long,
+                               blockTimestamp: Long,
+                               transactionId: TransactionId,
+                               transfers: Seq[Effect.Transfer])
+        extends TransactionEffects {
+      override val identifier = Transfers.identifier
+    }
+
+    object Transfers {
+      lazy val identifier = "Transfers"
+    }
+
+    final case class ProgramEvents(num: Long,
+                                   blockHeight: Long,
+                                   blockTimestamp: Long,
+                                   transactionId: TransactionId,
+                                   events: Seq[Effect.Event])
+        extends TransactionEffects {
+      override val identifier = ProgramEvents.identifier
+    }
+
+    object ProgramEvents {
+      lazy val identifier = "ProgramEvents"
+    }
+
+    final case class AllEffects(num: Long,
+                                blockHeight: Long,
+                                blockTimestamp: Long,
+                                transactionId: TransactionId,
+                                effects: Seq[Effect])
+        extends TransactionEffects {
+      override val identifier = AllEffects.identifier
+    }
+
+    object AllEffects {
+      lazy val identifier = "AllEffects"
+    }
+  }
 }

@@ -28,9 +28,9 @@ import pravda.common.domain.Address
 import pravda.dotnet.translation.Translator
 import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
-import pravda.vm.{Data, Meta}
+import pravda.common.vm.{Data, Meta}
 import pravda.vm.operations.SystemOperations
 
 import scala.language.higherKinds

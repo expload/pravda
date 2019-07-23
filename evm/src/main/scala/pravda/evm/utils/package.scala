@@ -18,7 +18,7 @@
 package pravda.evm
 
 import com.google.protobuf.ByteString
-import pravda.vm.Data
+import pravda.common.vm.Data
 
 package object utils {
 

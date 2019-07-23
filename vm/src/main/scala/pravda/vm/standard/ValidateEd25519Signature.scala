@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets
 
 import pravda.common.crypto
 import pravda.vm._
+import pravda.common.vm._
 
 object ValidateEd25519Signature extends FunctionDefinition {
 

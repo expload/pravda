@@ -22,8 +22,8 @@ import pravda.dotnet.parser.FileParser
 import pravda.dotnet.translation.{Translator => DotnetTranslator}
 import pravda.vm.asm.{Operation, PravdaAssembler}
 import cats.implicits._
+import pravda.common.vm.Meta
 import pravda.node.client.CompilersLanguage
-import pravda.vm.Meta
 
 import scala.concurrent.{ExecutionContext, Future}
 

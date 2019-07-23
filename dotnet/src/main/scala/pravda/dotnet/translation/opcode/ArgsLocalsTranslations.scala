@@ -17,10 +17,11 @@
 
 package pravda.dotnet.translation.opcode
 
+import pravda.common.vm.Opcodes
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.translation.data._
-import pravda.vm.{Opcodes, asm}
+import pravda.vm.asm
 
 /** Translator that handles arguments/local variables loading/storing */
 case object ArgsLocalsTranslations extends OneToManyTranslator {

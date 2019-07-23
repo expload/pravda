@@ -1,12 +1,12 @@
 package pravda.evm.translate.opcode
 
 import fastparse.byte.all._
+import pravda.common.vm.Opcodes
 import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser
 import pravda.evm.parse.Parser
 import pravda.evm.{readSolidityABI, readSolidityBinFile}
 import pravda.evm.translate.Translator
-import pravda.vm.Opcodes
 import pravda.vm.asm.{Operation, PravdaAssembler}
 import pravda.evm.utils._
 import utest._

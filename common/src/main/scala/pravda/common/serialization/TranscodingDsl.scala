@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.common.serialization
 
-object json extends TethysInstances
+final class TranscodingDsl[From](val value: From) extends AnyVal {
+
+  def to[To](implicit transcoder: Transcoder[From, To]): To =
+    transcoder(value)
+}

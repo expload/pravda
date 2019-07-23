@@ -19,6 +19,7 @@ package pravda.vm.operations
 
 import java.nio.ByteBuffer
 
+import pravda.common.vm.Opcodes
 import pravda.vm.WattCounter.{CpuProgControl, CpuSimpleArithmetic}
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation

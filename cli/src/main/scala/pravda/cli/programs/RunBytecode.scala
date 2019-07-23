@@ -23,7 +23,7 @@ import cats.implicits._
 import pravda.cli.PravdaConfig
 import pravda.common.bytes
 import pravda.node.client._
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 import pravda.vm.asm.SourceMap
 

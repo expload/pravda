@@ -17,9 +17,10 @@
 
 package pravda.vm.standard
 
-import pravda.vm.Data.Array.Int8Array
-import pravda.vm.Data.Type
-import pravda.vm.Error.{InvalidArgument, WrongType}
+import pravda.common.vm.Data.Array.Int8Array
+import pravda.common.vm.Data.Type
+import pravda.common.vm.Error.{InvalidArgument, WrongType}
+import pravda.common.vm._
 import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 import pravda.vm.operations._

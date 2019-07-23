@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data
+package pravda.common
 
 import java.security.SecureRandom
 
@@ -23,11 +23,10 @@ import com.google.protobuf.ByteString
 import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{BadPaddingException, Cipher, SecretKeyFactory}
 import pravda.common.bytes._
-import pravda.common.crypto
-import pravda.common.domain.PrivateKey
-import pravda.node.data.blockchain.Transaction
-import pravda.node.data.serialization._
-import pravda.node.data.serialization.protobuf._
+import pravda.common.domain.{PrivateKey, Address}
+import pravda.common.data.blockchain.Transaction
+import pravda.common.serialization._
+import pravda.common.serialization.protobuf._
 
 object cryptography {
 

@@ -21,8 +21,8 @@ package persistence
 
 import java.io.{File, PrintWriter}
 
-import pravda.node.data.common.ApplicationStateInfo
-import pravda.node.data.serialization._
+import pravda.common.data.blockchain.ApplicationStateInfo
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global

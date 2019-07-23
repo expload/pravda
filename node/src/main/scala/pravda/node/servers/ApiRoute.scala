@@ -34,19 +34,20 @@ import pravda.common.domain._
 import pravda.node
 import pravda.node.clients.AbciClient
 import pravda.node.clients.AbciClient.RpcError
-import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
-import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common._
+import pravda.common.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
+import pravda.common.data.blockchain.TransactionData
+import pravda.common.data.blockchain._
 import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.composite._
-import pravda.node.data.serialization.protobuf._
+import pravda.common.serialization.composite._
+import pravda.common.serialization.protobuf._
+import pravda.common.vm.MarshalledData
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.PureDbPath
-import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
+import pravda.node.servers.Abci.TransactionResult
 import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
-import pravda.vm.{MarshalledData, ThrowableVmError}
+import pravda.vm.ThrowableVmError
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._

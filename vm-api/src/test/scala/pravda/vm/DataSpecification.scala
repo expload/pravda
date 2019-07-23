@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.{BooleanOperators, forAll}
 import org.scalacheck.{Properties, _}
+import pravda.common.vm.Data
 
 import scala.annotation.strictfp
 import scala.collection.mutable

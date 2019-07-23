@@ -24,7 +24,8 @@ import pravda.common.contrib.ripemd160
 import pravda.node.data.PravdaConfig
 import pravda.node.utils.{CpuArchitecture, OperationSystem}
 import pravda.node.data.serialization._
-import json._
+import pravda.node.data.serialization.json._
+import pravda.common.serialization._
 import pravda.common.domain.Address
 
 import scala.concurrent.{ExecutionContext, Future}

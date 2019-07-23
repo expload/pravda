@@ -20,9 +20,10 @@ package pravda.vm.operations
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.{crypto, domain}
-import pravda.vm.Opcodes._
-import pravda.vm.Error.{OperationDenied, UserError}
+import pravda.common.{domain, crypto}
+import pravda.common.vm.{Data, Error, MarshalledData}
+import pravda.common.vm.Opcodes._
+import pravda.common.vm.Error.{OperationDenied, UserError}
 import pravda.vm.WattCounter._
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation

@@ -17,11 +17,12 @@
 
 package pravda.evm.translate.opcode
 
+import pravda.common.vm.Opcodes
 import pravda.evm.EVM
 import pravda.evm.EVM.JumpDest
 import pravda.evm.translate.Translator.startLabelName
 import pravda.vm.asm.Operation
-import pravda.vm.{Opcodes, asm}
+import pravda.vm.asm
 import pravda.vm.asm.Operation.PushOffset
 
 object JumpDestinationPrepare {

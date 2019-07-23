@@ -17,6 +17,7 @@
 
 package pravda.dotnet.translation.opcode
 import com.google.protobuf.ByteString
+import pravda.common.vm.Opcodes
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
@@ -24,7 +25,8 @@ import pravda.dotnet.parser.Signatures.SigType.{String => DotNetString, _}
 import pravda.dotnet.parser.Signatures.{MethodRefDefSig, Tpe}
 import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationCtx, UnknownOpcode}
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Opcodes, asm}
+import pravda.vm.asm
+import pravda.common.vm._
 
 /** Translator that handles `Bytes` operations from Pravda.cs library */
 object BytesTranslation extends OneToManyTranslator {

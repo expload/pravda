@@ -16,12 +16,13 @@
  */
 
 package pravda.dotnet.translation.opcode
+import pravda.common.vm.Opcodes
 import pravda.dotnet.data.TablesData.{MemberRefData, TypeRefData}
 import pravda.dotnet.parser.{CIL, Signatures}
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.Signatures.{MethodRefDefSig, SigType}
 import pravda.dotnet.translation.data.{InnerTranslationError, InternalError, MethodTranslationCtx, UnknownOpcode}
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
 /** Translator that handles `System.String` operations */

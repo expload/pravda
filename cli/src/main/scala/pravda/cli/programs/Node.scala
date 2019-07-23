@@ -27,8 +27,8 @@ import pravda.node.client.{IoLanguage, NodeLanguage, RandomLanguage}
 import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.common.{bytes, crypto}
 import pravda.node.data.PravdaConfig.Validator
-import pravda.node.data.common.CoinDistributionMember
-import pravda.node.data.serialization._
+import pravda.common.data.blockchain.CoinDistributionMember
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 
 import scala.language.higherKinds

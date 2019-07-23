@@ -18,8 +18,9 @@
 package pravda.vm.standard
 
 import com.google.protobuf.ByteString
-import pravda.vm.Data.Type
-import pravda.vm.Error.InvalidArgument
+import pravda.common.vm.Data.Type
+import pravda.common.vm.Error.InvalidArgument
+import pravda.common.vm._
 import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm._
 import pravda.vm.operations._

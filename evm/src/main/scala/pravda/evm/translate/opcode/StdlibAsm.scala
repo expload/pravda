@@ -19,7 +19,7 @@ package pravda.evm.translate.opcode
 
 import com.google.protobuf.ByteString
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 
 object StdlibAsm {
   final case class Function(name: String, code: List[Operation])

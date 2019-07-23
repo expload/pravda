@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data.serialization
+package pravda.common.vm
 
-final class TranscodingDsl[From](val value: From) extends AnyVal {
+import pravda.common.domain.Address
 
-  def to[To](implicit transcoder: Transcoder[From, To]): To =
-    transcoder(value)
-}
+final case class RuntimeException(error: Error,
+                                  finalState: FinalState,
+                                  callStack: Seq[(Option[Address], Seq[Int])],
+                                  lastPosition: Int)

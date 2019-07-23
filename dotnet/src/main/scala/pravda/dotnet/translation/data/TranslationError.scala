@@ -17,8 +17,8 @@
 
 package pravda.dotnet.translation.data
 
+import pravda.common.vm.Meta
 import pravda.dotnet.parser.CIL
-import pravda.vm.Meta
 
 sealed trait InnerTranslationError {
   def mkString: String

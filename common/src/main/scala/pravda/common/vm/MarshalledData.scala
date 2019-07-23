@@ -15,22 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.common.vm
 
-final case class FinalState(
-    spentWatts: Long,
-    refundWatts: Long,
-    totalWatts: Long,
-    stack: Seq[Data],
-    heap: Seq[Data]
-)
+sealed trait MarshalledData
 
-object FinalState {
-  final val Empty = FinalState(
-    spentWatts = 0,
-    refundWatts = 0,
-    totalWatts = 0,
-    stack = Nil,
-    heap = Nil
-  )
+object MarshalledData {
+
+  final case class Simple(data: Data) extends MarshalledData
+
+  final case class Complex(data: Data, pseudoHeap: Map[Data.Primitive.Ref, Data]) extends MarshalledData
 }

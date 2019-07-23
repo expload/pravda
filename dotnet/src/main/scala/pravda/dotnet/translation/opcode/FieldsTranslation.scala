@@ -19,13 +19,14 @@ package pravda.dotnet.translation.opcode
 
 import java.nio.charset.StandardCharsets
 
+import pravda.common.vm.{Data, Opcodes}
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.CIL
 import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.{FieldExtractors, NamesBuilder, TypeDetectors}
 import pravda.dotnet.translation.data._
-import pravda.vm.{Data, Opcodes, asm}
+import pravda.vm.asm
 
 /** Translator that handles fields operations */
 case object FieldsTranslation extends OneToManyTranslatorOnlyAsm {

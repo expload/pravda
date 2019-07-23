@@ -23,7 +23,8 @@ import com.google.protobuf.ByteString
 import fastparse.parsers.Combinators.Rule
 import pravda.ParsingCommons
 import pravda.ParsingCommons.ParsingError
-import pravda.vm.{Data, Opcodes, Meta => Metadata}
+import pravda.common.vm.{Data, Opcodes, Meta => Metadata}
+import pravda.common.vm
 
 import scala.annotation.switch
 import scala.collection.mutable
@@ -351,7 +352,7 @@ object PravdaAssembler {
     val struct_mut = P(IgnoreCase("struct_mut") ~ (delim ~ dataPrimitive).?).map(Operation.StructMut)
     val comment = P("/*" ~ (!"*/" ~ AnyChar).rep.! ~ "*/").map(Operation.Comment)
 
-    val meta = P("meta " ~ pravda.vm.Meta.parser.meta).map(Meta)
+    val meta = P("meta " ~ pravda.common.vm.Meta.parser.meta).map(Meta)
 
     val operation = Operation.Orphans
       .map(op => Rule(mnemonic(op.opcode), () => IgnoreCase(mnemonic(op.opcode))).map(_ => op))

@@ -5,7 +5,8 @@ import java.nio.ByteBuffer
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Properties, _}
-import pravda.vm.Meta.{MethodSignature, TypeSignature}
+import pravda.common.vm.Meta
+import pravda.common.vm.Meta.{MethodSignature, TypeSignature}
 
 import scala.annotation.strictfp
 

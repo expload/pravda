@@ -1,10 +1,11 @@
 package pravda.vm.asm
 
 import org.scalacheck.Arbitrary._
-import org.scalacheck.Gen.{alphaLowerChar, alphaUpperChar, frequency, const}
+import org.scalacheck.Gen.{alphaLowerChar, alphaUpperChar, const, frequency}
 import org.scalacheck.Prop._
 import org.scalacheck._
-import pravda.vm.{Data, DataSpecification}
+import pravda.common.vm.Data
+import pravda.vm.DataSpecification
 
 import scala.util.Random
 

@@ -15,11 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.common
 
-import pravda.common.domain.Address
+import supertagged.TaggedType
 
-final case class RuntimeException(error: Error,
-                                  finalState: FinalState,
-                                  callStack: Seq[(Option[Address], Seq[Int])],
-                                  lastPosition: Int)
+/**
+  * Unified interface for binary and json encoding/decoding
+  */
+package object serialization {
+
+  object Json extends TaggedType[String]
+  type Json = Json.Type
+
+  object Protobuf extends TaggedType[Array[Byte]]
+  type Protobuf = Protobuf.Type
+
+  object Composite extends TaggedType[Array[Byte]]
+  type Composite = Composite.Type
+
+  def transcode[From](value: From): TranscodingDsl[From] = new TranscodingDsl(value)
+}

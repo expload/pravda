@@ -27,8 +27,8 @@ import com.google.protobuf.ByteString
 import pravda.common.bytes
 import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.node.client.impl.NodeLanguageImpl
-import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.cryptography._
+import pravda.common.data.blockchain.TransactionData
+import pravda.common.cryptography._
 import pravda.node.data.serialization.json._
 import pravda.node.utils.AkkaHttpSpecials._
 import pravda.vm.asm.PravdaAssembler

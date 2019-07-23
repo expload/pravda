@@ -19,8 +19,8 @@ package pravda.node.persistence
 
 import zhukov.{Marshaller, Unmarshaller}
 import pravda.common.{bytes => byteUtils}
-import pravda.node.data.serialization.protobuf.{protobufEncoder, protobufDecoder}
-import pravda.node.data.serialization.{Protobuf, transcode}
+import pravda.common.serialization.protobuf.{protobufEncoder, protobufDecoder}
+import pravda.common.serialization.{Protobuf, transcode}
 import pravda.node.db.serialyzer.KeyWriter
 import pravda.node.db.{DB, Operation}
 

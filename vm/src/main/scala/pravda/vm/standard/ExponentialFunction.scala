@@ -17,10 +17,11 @@
 
 package pravda.vm.standard
 
-import pravda.vm.Data.Primitive._
-import pravda.vm.Data.Type
-import pravda.vm.Error.WrongType
+import pravda.common.vm.Data.Primitive._
+import pravda.common.vm.Data.Type
+import pravda.common.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuArithmetic
+import pravda.common.vm._
 import pravda.vm._
 
 object ExponentialFunction extends FunctionDefinition {

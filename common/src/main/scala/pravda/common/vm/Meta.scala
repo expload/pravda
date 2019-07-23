@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.common.vm
 
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-import Data.Primitive._
 import com.google.protobuf.ByteString
+import pravda.common.vm.Data.Primitive._
 
 import scala.annotation.switch
 import scala.collection.mutable

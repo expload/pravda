@@ -17,12 +17,14 @@
 
 package pravda.vm.operations
 
-import pravda.vm.Error.OperationDenied
+import pravda.common.vm.Data
+import pravda.common.vm.Error.OperationDenied
+import pravda.common.vm.Error
 import pravda.vm.WattCounter._
-import pravda.vm.Data.Primitive
+import pravda.common.vm.Data.Primitive
 import pravda.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.Opcodes._
+import pravda.common.vm.Opcodes._
 
 /**
   * Pravda VM storage pravda.vm.Opcodes implementation.

@@ -15,6 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data.serialization
+package pravda.common.vm
 
-trait Transcoder[From, To] extends (From => To)
+final case class FinalState(
+    spentWatts: Long,
+    refundWatts: Long,
+    totalWatts: Long,
+    stack: Seq[Data],
+    heap: Seq[Data]
+)
+
+object FinalState {
+  final val Empty = FinalState(
+    spentWatts = 0,
+    refundWatts = 0,
+    totalWatts = 0,
+    stack = Nil,
+    heap = Nil
+  )
+}

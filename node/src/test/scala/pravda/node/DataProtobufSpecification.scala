@@ -2,9 +2,11 @@ package pravda.node
 
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
+import pravda.common.serialization._
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.protobuf._
-import pravda.vm.{Data, DataSpecification}
+import pravda.common.serialization.protobuf._
+import pravda.common.vm.Data
+import pravda.vm.DataSpecification
 
 object DataProtobufSpecification extends Properties("DataProtobuf") {
 

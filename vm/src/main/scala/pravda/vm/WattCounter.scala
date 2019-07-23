@@ -17,6 +17,8 @@
 
 package pravda.vm
 
+import pravda.common.vm.Data
+
 trait WattCounter {
 
   def refund: Long

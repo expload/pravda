@@ -20,8 +20,8 @@ package pravda.codegen.dotnet
 import java.io.StringWriter
 
 import com.github.mustachejava.DefaultMustacheFactory
-import pravda.vm.Meta
-import pravda.vm.Meta.ProgramName
+import pravda.common.vm.Meta
+import pravda.common.vm.Meta.ProgramName
 
 import scala.collection.JavaConverters._
 import scala.io.Source

@@ -87,7 +87,10 @@ lazy val common = (project in file("common"))
       tethysDerivation,
       tethysJson4s,
       json4sAst,
-      bcprov
+      bcprov,
+      shapeless,
+      zhukov,
+      fastParse
     )
   )
 

@@ -20,12 +20,13 @@ package pravda.vm.operations
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.vm.Data.Array._
-import pravda.vm.Data.Primitive.{Bool, _}
-import pravda.vm.Data.{Primitive, Struct, Type}
-import pravda.vm.Opcodes._
-import pravda.vm.Error.{InvalidArgument, WrongType}
+import pravda.common.vm.Data.Array._
+import pravda.common.vm.Data.Primitive.{Bool, _}
+import pravda.common.vm.Data.{Primitive, Struct, Type}
+import pravda.common.vm.Opcodes._
+import pravda.common.vm.Error.{InvalidArgument, WrongType}
 import pravda.vm._
+import pravda.common.vm._
 import pravda.vm.operations.annotation.OpcodeImplementation
 
 import scala.collection.mutable.ArrayBuffer
