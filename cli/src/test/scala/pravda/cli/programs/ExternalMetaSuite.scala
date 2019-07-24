@@ -6,7 +6,7 @@ import pravda.cli.PravdaConfig
 import pravda.node.client.impl.{CompilersLanguageImpl, MetadataLanguageImpl}
 import pravda.node.client.{IoLanguageStub, IpfsLanguageStub, NodeLanguageStub}
 import pravda.common.data.blockchain.TransactionId
-import pravda.node.servers.Abci.TransactionResult
+import pravda.common.data.blockchain._
 import pravda.vm.asm.{Operation, PravdaAssembler}
 import pravda.common.vm._
 import utest._

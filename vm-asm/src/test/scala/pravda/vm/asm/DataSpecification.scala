@@ -1,4 +1,4 @@
-package pravda.vm
+package pravda.vm.asm
 
 import java.nio.ByteBuffer
 
@@ -14,8 +14,8 @@ import scala.collection.mutable
 @strictfp object DataSpecification extends Properties("Data") {
 
   import Data._
-  import Primitive._
   import Array._
+  import Primitive._
 
   def genPrimitive[T, P, A](gen: Gen[T], p: T => P, a: mutable.Buffer[T] => A): (Gen[P], Gen[A]) =
     (gen.map(p), Gen.containerOf[mutable.Buffer, T](gen).map(a))

@@ -1,4 +1,4 @@
-package pravda.vm
+package pravda.vm.asm
 
 import java.nio.ByteBuffer
 

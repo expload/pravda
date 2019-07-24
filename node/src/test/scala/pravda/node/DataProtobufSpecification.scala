@@ -6,7 +6,7 @@ import pravda.common.serialization._
 import pravda.node.data.serialization._
 import pravda.common.serialization.protobuf._
 import pravda.common.vm.Data
-import pravda.vm.DataSpecification
+import pravda.vm.asm.DataSpecification
 
 object DataProtobufSpecification extends Properties("DataProtobuf") {
 

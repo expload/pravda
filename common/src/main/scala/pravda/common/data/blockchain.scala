@@ -22,7 +22,7 @@ import com.google.protobuf.ByteString
 import pravda.common.bytes.byteString2hex
 import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.Hasher
-import pravda.common.vm.Effect
+import pravda.common.vm.{Effect, ExecutionResult, MarshalledData}
 import supertagged.TaggedType
 
 object blockchain {
@@ -185,4 +185,38 @@ object blockchain {
       lazy val identifier = "AllEffects"
     }
   }
+
+  final case class TransactionResult(
+      transactionId: TransactionId,
+      executionResult: ExecutionResult,
+      effects: Seq[Effect]
+  )
+
+  final val UnknownError = RpcError(-1, "", "")
+
+  final case class RpcException(error: RpcError) extends Exception(s"${error.message}: ${error.data}")
+  final case class RpcHttpException(httpCode: Int)
+      extends Exception(s"RPC request to Tendermint failed with HTTP code $httpCode")
+
+  final case class TxSyncResult(check_tx: TxResult)
+  final case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)
+  final case class RpcAsyncResponse(jsonrpc: String, id: String, result: TxResult)
+
+  final case class RpcCommitResponse(result: Option[TxCommitResult], error: Option[RpcError])
+  final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
+  final case class TxResult(log: Option[String])
+
+  final case class RpcError(code: Int, message: String, data: String)
+  final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])
+
+  object RpcTxResponse {
+    import com.google.protobuf.{ByteString => PbByteString}
+    final case class Result(hash: String, height: String, tx: PbByteString)
+  }
+
+  final case class EventItem(offset: Long,
+                             transactionId: TransactionId,
+                             address: Address,
+                             name: String,
+                             data: MarshalledData)
 }

@@ -94,26 +94,6 @@ lazy val common = (project in file("common"))
     )
   )
 
-lazy val `vm-api` = (project in file("vm-api"))
-  .settings(commonSettings: _*)
-  .settings(
-    name := "pravda-vm-api",
-    normalizedName := "pravda-vm-api",
-    description := "Pravda VM API"
-  )
-  .settings(scalacheckOps: _*)
-  .settings(
-    testOptions in Test ++= Seq(
-      Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000")
-    ),
-    libraryDependencies ++= Seq(
-      protobufJava,
-      fastParse,
-      tethys
-    )
-  )
-  .dependsOn(common)
-
 lazy val vm = (project in file("vm"))
   .settings(commonSettings: _*)
   .settings(
@@ -129,7 +109,7 @@ lazy val vm = (project in file("vm"))
     publishArtifact in packageDoc := false,
     testFrameworks := Seq(new TestFramework("pravda.common.PreserveColoursFramework"))
   )
-  .dependsOn(`vm-api`, `vm-asm` % "compile->test")
+  .dependsOn(`vm-asm` % "compile->test")
   .dependsOn(common % "compile->compile;test->test")
   .dependsOn(plaintest % "compile->test")
 
@@ -138,7 +118,10 @@ lazy val `vm-asm` = (project in file("vm-asm"))
   .settings(
     name := "pravda-vm-asm",
     normalizedName := "pravda-vm-asm",
-    description := "Pravda Virtual Machine Assembly language"
+    description := "Pravda Virtual Machine Assembly language",
+    libraryDependencies ++= Seq(
+      fastParse
+    )
   )
   .settings(scalacheckOps: _*)
   .settings(
@@ -148,7 +131,7 @@ lazy val `vm-asm` = (project in file("vm-asm"))
       Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "7"),
     )
   )
-  .dependsOn(`vm-api` % "test->test;compile->compile")
+  .dependsOn(`common`)
 
 lazy val evm = (project in file("evm"))
   .dependsOn(`vm-asm`)
@@ -352,7 +335,6 @@ lazy val testkit = (project in file("testkit"))
   )
   .dependsOn(common % "test->test")
   .dependsOn(vm % "compile->compile;test->test")
-  .dependsOn(`vm-api`)
   .dependsOn(`vm-asm`)
   .dependsOn(dotnet % "compile->compile;test->test")
   .dependsOn(codegen)

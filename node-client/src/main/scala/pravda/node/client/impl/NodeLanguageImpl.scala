@@ -28,11 +28,10 @@ import com.google.protobuf.ByteString
 import pravda.common.{bytes, cryptography}
 import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.node.client.NodeLanguage
-import pravda.node.clients.AbciClient.RpcError
 import pravda.common.data.blockchain.Transaction.UnsignedTransaction
 import pravda.common.data.blockchain.TransactionData
+import pravda.common.data.blockchain._
 import pravda.node.launcher
-import pravda.node.servers.Abci.TransactionResult
 import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 import pravda.vm.asm.PravdaAssembler

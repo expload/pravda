@@ -5,7 +5,6 @@ import org.scalacheck.Gen.{alphaLowerChar, alphaUpperChar, const, frequency}
 import org.scalacheck.Prop._
 import org.scalacheck._
 import pravda.common.vm.Data
-import pravda.vm.DataSpecification
 
 import scala.util.Random
 

@@ -21,9 +21,8 @@ import fastparse.utils.Base64
 import com.google.protobuf.ByteString
 import pravda.common.data.blockchain._
 import pravda.common.serialization.{Json, Transcoder}
-import pravda.node.clients.AbciClient._
 import pravda.node.data.PravdaConfig
-import pravda.node.servers.{Abci, ApiRoute}
+import pravda.node.servers.Abci
 import tethys._
 import tethys.derivation.builder._
 import tethys.derivation.semiauto._
@@ -103,16 +102,6 @@ trait TethysInstances extends pravda.common.serialization.TethysInstances {
     jsonWriter[PravdaConfig.TendermintConfig]
 
   //---------------------------------------------------------------------------
-  // Domain RWs for tethys
-  //---------------------------------------------------------------------------
-
-  implicit val execResultReader: JsonReader[Abci.TransactionResult] =
-    jsonReader[Abci.TransactionResult]
-
-  implicit val execResultWriter: JsonWriter[Abci.TransactionResult] =
-    jsonWriter[Abci.TransactionResult]
-
-  //---------------------------------------------------------------------------
   // Misc RWs
   //---------------------------------------------------------------------------
 
@@ -127,12 +116,6 @@ trait TethysInstances extends pravda.common.serialization.TethysInstances {
 
   implicit val initialDistributionWriter: JsonWriter[CoinDistributionMember] =
     jsonWriter[CoinDistributionMember]
-
-  implicit val eventItemReader: JsonReader[ApiRoute.EventItem] =
-    jsonReader[ApiRoute.EventItem]
-
-  implicit val eventItemWriter: JsonWriter[ApiRoute.EventItem] =
-    jsonWriter[ApiRoute.EventItem]
 
   implicit val additionalDataReader: JsonReader[Abci.AdditionalDataForAddress] =
     jsonReader[Abci.AdditionalDataForAddress]
@@ -161,12 +144,6 @@ trait TethysInstances extends pravda.common.serialization.TethysInstances {
 
   implicit val rpcCommitResponseReader: JsonReader[RpcCommitResponse] =
     jsonReader[RpcCommitResponse]
-
-  implicit val rpcErrorReader: JsonReader[RpcError] =
-    jsonReader[RpcError]
-
-  implicit val rpcErrorWriter: JsonWriter[RpcError] =
-    jsonWriter[RpcError]
 
   implicit val rpcTxResponseReader: JsonReader[RpcTxResponse] =
     jsonReader[RpcTxResponse]

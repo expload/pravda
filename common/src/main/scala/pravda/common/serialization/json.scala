@@ -1,12 +1,11 @@
 package pravda.common.serialization
 
-import pravda.common.data.blockchain.TransactionEffects
+import pravda.common.data.blockchain._
 import tethys._
 import tethys.derivation.builder._
 import tethys.derivation.semiauto._
 import tethys.jackson.jacksonTokenIteratorProducer
 import tethys.jackson.pretty.prettyJacksonTokenWriterProducer
-
 import pravda.common.bytes
 import pravda.common.vm
 import tethys._
@@ -19,7 +18,6 @@ import pravda.common.vm.Error
 import tethys.commons.Token
 
 import scala.collection.mutable
-
 import com.google.protobuf.ByteString
 import pravda.common.bytes.{byteString2hex, hex2byteString}
 import supertagged.{Tagged, lifterF}
@@ -440,6 +438,22 @@ trait TethysInstances extends CommonTethysInstances {
   implicit val runtimeExceptionWriter: JsonWriter[RuntimeException] =
     jsonWriter[RuntimeException]
 
+  //---------------------------------------------------------------------------
+  // Domain RWs for tethys
+  //---------------------------------------------------------------------------
+
+  implicit val execResultReader: JsonReader[TransactionResult] =
+    jsonReader[TransactionResult]
+
+  implicit val execResultWriter: JsonWriter[TransactionResult] =
+    jsonWriter[TransactionResult]
+
+  implicit val rpcErrorReader: JsonReader[RpcError] =
+    jsonReader[RpcError]
+
+  implicit val rpcErrorWriter: JsonWriter[RpcError] =
+    jsonWriter[RpcError]
+
   /////// OTHER /////
   implicit val transferEffectsReader: JsonReader[TransactionEffects.Transfers] =
     jsonReader[TransactionEffects.Transfers]
@@ -458,6 +472,12 @@ trait TethysInstances extends CommonTethysInstances {
 
   implicit val transactionAllEffectsWriter: JsonObjectWriter[TransactionEffects.AllEffects] =
     jsonWriter[TransactionEffects.AllEffects]
+
+  implicit val eventItemReader: JsonReader[EventItem] =
+    jsonReader[EventItem]
+
+  implicit val eventItemWriter: JsonWriter[EventItem] =
+    jsonWriter[EventItem]
 }
 
 object json extends TethysInstances {

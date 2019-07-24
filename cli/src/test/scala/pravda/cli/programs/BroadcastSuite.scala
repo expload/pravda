@@ -6,7 +6,6 @@ import pravda.cli.PravdaConfig
 import pravda.common.vm.Meta
 import pravda.node.client._
 import pravda.common.data.blockchain._
-import pravda.node.servers.Abci.TransactionResult
 import pravda.common.vm._
 import pravda.vm.asm.Operation
 import utest._

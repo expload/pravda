@@ -24,7 +24,7 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.common.data.blockchain.Transaction.SignedTransaction
-import pravda.common.data.blockchain.{Transaction, TransactionData}
+import pravda.common.data.blockchain._
 import pravda.common.data.blockchain.TransactionId
 import pravda.common.serialization._
 import pravda.node.data.serialization._
@@ -33,7 +33,6 @@ import pravda.node.data.serialization.json._
 import pravda.common.bytes._
 import pravda.common.cryptography
 import pravda.common.domain.{Address, NativeCoin, PrivateKey}
-import pravda.node.servers.Abci.TransactionResult
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random
@@ -45,8 +44,6 @@ class AbciClient(port: Int)(implicit
 
   // Response format:
   // https://tendermint.readthedocs.io/en/master/getting-started.html
-
-  import AbciClient._
 
 //  private def throwIfError(prefix: String, res: TxResult): Unit = {
 //    if (res.code != 0)
@@ -92,7 +89,7 @@ class AbciClient(port: Int)(implicit
       .flatMap {
         case HttpResponse(StatusCodes.OK, _, entity, _) =>
           entity.dataBytes.runFold(ByteString.empty)(_ ++ _).map { data =>
-            val txResponse = transcode(Json @@ data.utf8String).to[AbciClient.RpcTxResponse]
+            val txResponse = transcode(Json @@ data.utf8String).to[RpcTxResponse]
             txResponse.error match {
               case Some(error) =>
                 throw RpcException(error)
@@ -133,29 +130,5 @@ class AbciClient(port: Int)(implicit
     val tx = cryptography.signTransaction(privateKey, unsignedTx)
     val bytes = transcode(tx).to[Protobuf]
     broadcastBytes(bytes, mode)
-  }
-}
-
-object AbciClient {
-
-  final val UnknownError = RpcError(-1, "", "")
-
-  final case class RpcException(error: RpcError) extends Exception(s"${error.message}: ${error.data}")
-  final case class RpcHttpException(httpCode: Int)
-      extends Exception(s"RPC request to Tendermint failed with HTTP code $httpCode")
-
-  final case class TxSyncResult(check_tx: TxResult)
-  final case class RpcSyncResponse(jsonrpc: String, id: String, result: TxSyncResult)
-  final case class RpcAsyncResponse(jsonrpc: String, id: String, result: TxResult)
-
-  final case class RpcCommitResponse(result: Option[TxCommitResult], error: Option[RpcError])
-  final case class TxCommitResult(check_tx: TxResult, deliver_tx: TxResult)
-  final case class TxResult(log: Option[String])
-
-  final case class RpcError(code: Int, message: String, data: String)
-  final case class RpcTxResponse(error: Option[RpcError], result: Option[RpcTxResponse.Result])
-
-  object RpcTxResponse {
-    final case class Result(hash: String, height: String, tx: PbByteString)
   }
 }

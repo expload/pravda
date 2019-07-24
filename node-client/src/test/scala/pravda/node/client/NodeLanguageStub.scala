@@ -3,7 +3,7 @@ package pravda.node.client
 import cats._
 import com.google.protobuf.ByteString
 import pravda.common.domain.{Address, NativeCoin}
-import pravda.node.servers.Abci.TransactionResult
+import pravda.common.data.blockchain._
 
 import scala.collection.mutable
 import scala.language.higherKinds

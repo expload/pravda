@@ -9,13 +9,12 @@ import pravda.common.vm.{Effect, FinalState, MarshalledData, RuntimeException}
 import pravda.common.data.blockchain._
 import pravda.common.serialization._
 import pravda.node.data.serialization.json._
-import pravda.node.servers.Abci.TransactionResult
 import pravda.vm._
 import pravda.common.vm._
 
 object TransactionResultJsonSpecification extends Properties("TransactionResultJson") {
 
-  import pravda.vm.DataSpecification
+  import pravda.vm.asm.DataSpecification
   import DataSpecification.{byteString, bytes, data, ref, primitive}
 
   val address: Gen[domain.Address] =

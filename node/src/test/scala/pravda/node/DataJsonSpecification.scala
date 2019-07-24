@@ -5,7 +5,7 @@ import pravda.node.data.serialization.json._
 import org.scalacheck.Prop._
 import org.scalacheck.{Gen, Properties}
 import pravda.common.vm.Data
-import pravda.vm.DataSpecification
+import pravda.vm.asm.DataSpecification
 
 object DataJsonSpecification extends Properties("DataJson") {
 

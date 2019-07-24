@@ -53,37 +53,6 @@ trait ProtobufTranscoder {
 
 trait CommonZhukovInstances extends ZhukovLowPriorityInstances {
 
-//  implicit lazy val nativeCoinMarshaller = Marshaller.LongMarshaller.contramap[NativeCoin](n => n)
-//  implicit lazy val nativeCoinUnmarshaller = Unmarshaller.long.map(NativeCoin @@ _)
-//  implicit lazy val nativeCoinSizeMeter = SizeMeter.long.contramap[NativeCoin](n => n)
-//
-//  implicit object ByteStringBytes extends Bytes[ByteString] {
-//    def empty: ByteString = ByteString.EMPTY
-//    def copyFromArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
-//
-//    def copyFromArray(bytes: Array[Byte], offset: Long, size: Long): ByteString =
-//      ByteString.copyFrom(bytes, offset.toInt, size.toInt)
-//
-//    def copyToArray(value: ByteString, array: Array[Byte], sourceOffset: Int, targetOffset: Int, length: Int): Unit =
-//      value.copyTo(array, sourceOffset, targetOffset, length)
-//    def wrapArray(bytes: Array[Byte]): ByteString = ByteString.copyFrom(bytes)
-//    def copyBuffer(buffer: ByteBuffer): ByteString = ByteString.copyFrom(buffer)
-//    def toArray(bytes: ByteString): Array[Byte] = bytes.toByteArray
-//    def toBuffer(bytes: ByteString): ByteBuffer = bytes.asReadOnlyByteBuffer()
-//    def get(bytes: ByteString, i: Long): Int = bytes.byteAt(i.toInt).toInt
-//    def size(bytes: ByteString): Long = bytes.size().toLong
-//    def concat(left: ByteString, right: ByteString): ByteString = left.concat(right)
-//    def slice(value: ByteString, start: Long, end: Long): ByteString = value.substring(start.toInt, end.toInt)
-//  }
-//
-//  implicit lazy val addressMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[Address](bs => bs)
-//  implicit lazy val addressUnmarshaller = Unmarshaller.bytes[ByteString].map(Address @@ _)
-//  implicit lazy val addressSizeMeter = SizeMeter.bytes[ByteString].contramap[Address](bs => bs)
-
-}
-
-trait VmZhukovInstances extends ZhukovLowPriorityInstances {
-
   implicit lazy val nativeCoinMarshaller = Marshaller.LongMarshaller.contramap[NativeCoin](n => n)
   implicit lazy val nativeCoinUnmarshaller = Unmarshaller.long.map(NativeCoin @@ _)
   implicit lazy val nativeCoinSizeMeter = SizeMeter.long.contramap[NativeCoin](n => n)
@@ -110,6 +79,10 @@ trait VmZhukovInstances extends ZhukovLowPriorityInstances {
   implicit lazy val addressMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[Address](bs => bs)
   implicit lazy val addressUnmarshaller = Unmarshaller.bytes[ByteString].map(Address @@ _)
   implicit lazy val addressSizeMeter = SizeMeter.bytes[ByteString].contramap[Address](bs => bs)
+
+}
+
+trait VmZhukovInstances extends CommonZhukovInstances {
   implicit lazy val dataUnmarshaller = Unmarshaller.bytes[ByteString].map[Data](Data.fromByteString(_)._2)
   implicit lazy val dataMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[Data](_.toByteString)
   implicit lazy val dataDefault: Default[Data] = Default(Data.Primitive.Null)
@@ -190,12 +163,6 @@ trait VmZhukovInstances extends ZhukovLowPriorityInstances {
 
     (marshaller[Effect], unmarshaller[Effect], sizeMeter[Effect])
   }
-}
-
-trait ZhukovInstances extends VmZhukovInstances {
-  implicit lazy val transctionIdMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[TransactionId](bs => bs)
-  implicit lazy val transctionIdUnmarshaller = Unmarshaller.bytes[ByteString].map(TransactionId @@ _)
-  implicit lazy val transctionIdSizeMeter = SizeMeter.bytes[ByteString].contramap[TransactionId](bs => bs)
 
   implicit lazy val transactionDataMarshaller =
     Marshaller.bytesMarshaller[ByteString].contramap[TransactionData](bs => bs)
@@ -205,6 +172,12 @@ trait ZhukovInstances extends VmZhukovInstances {
   implicit lazy val signatureDataMarshaller: Marshaller[SignatureData] = marshaller
   implicit lazy val signatureDataUnmarshaller: Unmarshaller[SignatureData] = unmarshaller
   implicit lazy val signatureDataSizeMeter: SizeMeter[SignatureData] = sizeMeter
+}
+
+trait ZhukovInstances extends CommonZhukovInstances with VmZhukovInstances {
+  implicit lazy val transctionIdMarshaller = Marshaller.bytesMarshaller[ByteString].contramap[TransactionId](bs => bs)
+  implicit lazy val transctionIdUnmarshaller = Unmarshaller.bytes[ByteString].map(TransactionId @@ _)
+  implicit lazy val transctionIdSizeMeter = SizeMeter.bytes[ByteString].contramap[TransactionId](bs => bs)
 
   implicit lazy val epkDefault: Default[EncryptedPrivateKey] =
     Default(EncryptedPrivateKey(ByteString.EMPTY, ByteString.EMPTY, ByteString.EMPTY))

@@ -234,12 +234,6 @@ class Abci(applicationStateDb: DB,
 
 object Abci {
 
-  final case class TransactionResult(
-      transactionId: TransactionId,
-      executionResult: ExecutionResult,
-      effects: Seq[Effect]
-  )
-
   sealed abstract class TransactionValidationException(message: String) extends Exception(message)
 
   final case class TransactionUnauthorizedException()
