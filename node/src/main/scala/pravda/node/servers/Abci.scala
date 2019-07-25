@@ -43,6 +43,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class Abci(applicationStateDb: DB,
+           effectsDb: DB,
            abciClient: AbciClient,
            initialDistribution: Seq[CoinDistributionMember],
            validatorManager: Option[Address])(implicit ec: ExecutionContext)
@@ -50,8 +51,8 @@ class Abci(applicationStateDb: DB,
 
   import Abci._
 
-  val consensusEnv = new BlockDependentEnvironment(applicationStateDb, validatorManager)
-  val mempoolEnv = new BlockDependentEnvironment(applicationStateDb, validatorManager)
+  val consensusEnv = new BlockDependentEnvironment(applicationStateDb, effectsDb, validatorManager)
+  val mempoolEnv = new BlockDependentEnvironment(applicationStateDb, effectsDb, validatorManager)
 
   // It is updated each time when EndBlock called. It is a height of the proposed block,
   // but since this value is updated after a transactions already processed, thus when a transaction
@@ -305,7 +306,8 @@ object Abci {
                                             eventsLastTransactionNumber: Long = 1L,
                                             lastTransactionNumber: Long = 1L)
 
-  final class BlockDependentEnvironment(db: DB, validatorManager: Option[Address]) { blockEnv =>
+  final class BlockDependentEnvironment(applicationStateDb: DB, effectsDb: DB, validatorManager: Option[Address]) {
+    blockEnv =>
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
@@ -314,18 +316,25 @@ object Abci {
 
     private val validatorUpdates = mutable.Map.empty[Address, Long]
 
-    private lazy val blockProgramsPath = new CachedDbPath(new PureDbPath(db, "program"), cache, operations)
-    private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(db, "effects"), cache, operations)
-    private lazy val eventsPath = new CachedDbPath(new PureDbPath(db, "events"), cache, operations)
-    private lazy val txIdIndexPath = new CachedDbPath(new PureDbPath(db, "txIdIndex"), cache, operations)
-    private lazy val blockBalancesPath = new CachedDbPath(new PureDbPath(db, "balance"), cache, operations)
+    // BEGIN Any puts in these db paths will be written in applicationState and used during appHash calculation
+    private lazy val blockProgramsPath =
+      new CachedDbPath(new PureDbPath(applicationStateDb, "program"), cache, operations)
+    private lazy val blockBalancesPath =
+      new CachedDbPath(new PureDbPath(applicationStateDb, "balance"), cache, operations)
+    private lazy val eventsPath = new CachedDbPath(new PureDbPath(applicationStateDb, "events"), cache, operations)
+    // END
+
+    private lazy val txIdIndexPath =
+      new CachedDbPath(new PureDbPath(effectsDb, "txIdIndex"), cache, operations)
+    private lazy val blockEffectsPath = new CachedDbPath(new PureDbPath(effectsDb, "effects"), cache, operations)
     private lazy val transactionsByAddressPath =
-      new CachedDbPath(new PureDbPath(db, "transactionsByAddress"), cache, operations)
+      new CachedDbPath(new PureDbPath(effectsDb, "transactionsByAddress"), cache, operations)
     private lazy val transferEffectsByAddressPath =
-      new CachedDbPath(new PureDbPath(db, "transferEffectsByAddress"), cache, operations)
-    private lazy val eventsByAddressPath = new CachedDbPath(new PureDbPath(db, "eventsByAddress"), cache, operations)
+      new CachedDbPath(new PureDbPath(effectsDb, "transferEffectsByAddress"), cache, operations)
+    private lazy val eventsByAddressPath =
+      new CachedDbPath(new PureDbPath(effectsDb, "eventsByAddress"), cache, operations)
     private lazy val additionalDataByAddressPath =
-      new CachedDbPath(new PureDbPath(db, "additionalDataByAddress"), cache, operations)
+      new CachedDbPath(new PureDbPath(effectsDb, "additionalDataByAddress"), cache, operations)
 
     def transactionEnvironment(executor: Address,
                                tid: TransactionId,
@@ -658,7 +667,8 @@ object Abci {
           txIdIndexPath.put(transactionIdKeyLength(txId), len + offsets.length.toLong)
       }
 
-      db.syncBatch(operations: _*)
+      applicationStateDb.syncBatch(operations: _*)
+      effectsDb.syncBatch(operations: _*)
       clear()
     }
 

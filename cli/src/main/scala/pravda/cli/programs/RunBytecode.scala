@@ -38,7 +38,10 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F],
   def apply(config: PravdaConfig.RunBytecode): F[Unit] = {
     val errorOrMemory: EitherT[F, String, String] =
       for {
-        storagePath <- EitherT.liftF(config.storage.fold(io.createTmpDir())(path => Monad[F].pure(path)))
+        appStateDbPath <- EitherT.liftF(
+          config.appStateDbPath.fold(io.createTmpDir().map(_ + "application-state"))(path => Monad[F].pure(path)))
+        effectsDbPath <- EitherT.liftF(
+          config.effectsDbPath.fold(io.createTmpDir().map(_ + "effects"))(path => Monad[F].pure(path)))
         executor = bytes.hex2byteString(config.executor)
         program <- useOption(config.input)(io.readFromStdin(),
                                            path => io.readFromFile(path).map(_.toRight(s"`$path` is not found.\n")))
@@ -47,7 +50,7 @@ class RunBytecode[F[_]: Monad](io: IoLanguage[F],
         } else {
           EitherT.right(MetaOps.loadMetaFromSource(program)(compilers))
         }
-        memory <- EitherT(vm.run(program, executor, storagePath, Long.MaxValue)).leftMap { re =>
+        memory <- EitherT(vm.run(program, executor, appStateDbPath, effectsDbPath, Long.MaxValue)).leftMap { re =>
           val st = SourceMap.renderStackTrace(SourceMap.stackTrace(loaded, re), 2)
           s"${transcode(re.finalState).to[Json]}\n${re.error}\n$st\n"
         }

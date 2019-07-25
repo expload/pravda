@@ -63,7 +63,14 @@ object launcher extends App {
     path = new File(Config.pravdaConfig.dataDirectory, "application-state").getAbsolutePath,
     initialHash = FileStore.readApplicationStateInfo().map(_.appHash.toByteArray)
   )
-  val abci = new Abci(applicationStateDb, abciClient, pravdaConfig.coinDistribution, pravdaConfig.validatorManager)
+
+  val effectsDb = DB(
+    path = new File(Config.pravdaConfig.dataDirectory, "effects").getAbsolutePath,
+    initialHash = None
+  )
+
+  val abci =
+    new Abci(applicationStateDb, effectsDb, abciClient, pravdaConfig.coinDistribution, pravdaConfig.validatorManager)
 
   val abciServer = Server(
     cfg = Server.Config(
@@ -77,8 +84,8 @@ object launcher extends App {
     api = abci
   )
 
-  val apiRoute = new ApiRoute(abciClient, applicationStateDb, abci)
-  val guiRoute = new GuiRoute(abciClient, applicationStateDb)
+  val apiRoute = new ApiRoute(abciClient, applicationStateDb, effectsDb, abci)
+  val guiRoute = new GuiRoute(abciClient, applicationStateDb, effectsDb)
 
   val res = for {
     h <- HttpServer.start(pravdaConfig.http, apiRoute.route, guiRoute.route)

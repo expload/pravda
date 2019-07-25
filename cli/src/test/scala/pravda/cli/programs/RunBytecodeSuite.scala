@@ -47,9 +47,13 @@ object RunBytecodeSuite extends TestSuite {
     "run using default executor and stdin" - {
       val io = new IoLanguageStub(Some(ProgramFromStdIn))
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
-          (program, executor, storagePath) match {
-            case (_, _, "/tmp/") =>
+        def run(program: ByteString,
+                executor: ByteString,
+                appStateDbPath: String,
+                effectsDbPath: String,
+                wattLimit: Long): Id[ExecutionResult] =
+          (program, executor, appStateDbPath, effectsDbPath) match {
+            case (_, _, "/tmp/application-state", "/tmp/effects") =>
               buildExecResult(
                 new MemoryImpl(
                   stack = ArrayBuffer(ProgramFromStdInResult),
@@ -73,9 +77,13 @@ object RunBytecodeSuite extends TestSuite {
         files = mutable.Map(ProgramFromFileName -> ProgramFromFile)
       )
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
-          (program, executor, storagePath) match {
-            case (_, _, "/tmp/") =>
+        def run(program: ByteString,
+                executor: ByteString,
+                appStateDbPath: String,
+                effectsDbPath: String,
+                wattLimit: Long): Id[ExecutionResult] =
+          (program, executor, appStateDbPath, effectsDbPath) match {
+            case (_, _, "/tmp/application-state", "/tmp/effects") =>
               buildExecResult(
                 new MemoryImpl(
                   stack = ArrayBuffer(ProgramFromFileResult),
@@ -96,7 +104,11 @@ object RunBytecodeSuite extends TestSuite {
     "check file not found error" - {
       val io = new IoLanguageStub()
       val vm = new VmLanguage[Id] {
-        def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Id[ExecutionResult] =
+        def run(program: ByteString,
+                executor: ByteString,
+                appStateDbPath: String,
+                effectsDbPath: String,
+                wattLimit: Long): Id[ExecutionResult] =
           buildExecResult(EmptyMemory)
       }
       val compilers = new CompilersLanguageStub[Id]()
