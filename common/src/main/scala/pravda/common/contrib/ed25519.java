@@ -31,8 +31,6 @@ public final class ed25519 {
         System.arraycopy(publicKey, 0, privateKey, 32, 32);
     }
 
-    private static final SecureRandom random = new SecureRandom();
-
     /**
      * Sign signs the message with privateKey and returns a signature.
      *
@@ -40,8 +38,6 @@ public final class ed25519 {
      * @param message arbitrary length message
      */
     public static byte[] sign(byte[] privateKey, byte[] message) {
-        byte[] pk = new byte[Ed25519.PUBLIC_KEY_SIZE];
-        Ed25519.generatePublicKey(privateKey, 0, pk, 0);
         byte[] sig = new byte[Ed25519.SIGNATURE_SIZE];
         Ed25519.sign(privateKey, 0, message, 0, message.length, sig, 0);
         return sig;
