@@ -1,14 +1,7 @@
 package pravda.common.contrib;
 
-import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
-import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.math.ec.rfc8032.Ed25519;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Arrays;
 
 /**
  * Package ed25519 implements the Ed25519 signature algorithm. See
@@ -28,7 +21,6 @@ public final class ed25519 {
     public static void generateKey(byte[] publicKey, byte[] privateKey) {
         Ed25519PrivateKeyParameters pk = new Ed25519PrivateKeyParameters(privateKey, 0);
         System.arraycopy(pk.generatePublicKey().getEncoded(), 0, publicKey, 0, 32);
-        System.arraycopy(publicKey, 0, privateKey, 32, 32);
     }
 
     /**
