@@ -82,12 +82,12 @@ lazy val common = (project in file("common"))
     libraryDependencies ++= Seq(
       protobufJava,
       contextual,
-      curve25519Java,
       superTagged,
       tethys,
       tethysDerivation,
       tethysJson4s,
-      json4sAst
+      json4sAst,
+      bcprov
     )
   )
 

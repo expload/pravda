@@ -22,13 +22,13 @@ object Dependencies {
   lazy val scopt = "com.github.scopt" %% "scopt" % "3.7.0"
   lazy val javaCompiler = "com.github.spullara.mustache.java" % "compiler" % "0.9.5"
   lazy val contextual = "com.propensive" %% "contextual" % "1.1.0"
-  lazy val curve25519Java = "org.whispersystems" % "curve25519-java" % "0.4.1"
   lazy val levelDb = "org.iq80.leveldb" % "leveldb" % "0.10"
   lazy val korolevServerAkkaHttp = "com.github.fomkin" %% "korolev-server-akkahttp" % "0.10.0"
   lazy val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.10.0"
   lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
   lazy val akkaStreamUnixDomainSocket = "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % "0.17"
   lazy val zhukov = "com.github.fomkin" %% "zhukov-derivation" % "0.3.2"
+  lazy val bcprov = "org.bouncycastle" % "bcprov-jdk15on" % "1.62"
 
   lazy val exploadAbciServer = "com.expload" %% "scala-abci-server" % "0.13.0"
 }
