@@ -71,24 +71,14 @@ steps:
   - name: coursier-cache
     path: /workdir/coursier
   environment:
-    BINTRAY_USER: ${bintray_user}
-    BINTRAY_PASS: ${bintray_pass}
-  commands:
-  - echo "bintray_user=${bintray_user}"
-  - echo "bintray_user=${bintray_pass}"
-  - echo "BINTRAY_USER=${BINTRAY_USER}"
-  - export COURSIER_CACHE='/workdir/coursier/'
-  - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-  - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
-  settings:
-    bintray_user:
-      from_secret: bintray_user
-    bintray_pass:
-      from_secret: bintray_pass
     BINTRAY_USER:
       from_secret: bintray_user
     BINTRAY_PASS:
       from_secret: bintray_pass
+  commands:
+  - export COURSIER_CACHE='/workdir/coursier/'
+  - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+  - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
   when:
     event: tag
 - name: publish-github-releases
