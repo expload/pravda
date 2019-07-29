@@ -77,6 +77,10 @@ steps:
     BINTRAY_PASS:
       from_secret: bintray_pass
   commands:
+  - echo $BINTRAY_USER
+  - echo ${BINTRAY_USER}
+  - echo $BINTRAY_PASS
+  - echo ${BINTRAY_PASS}
   - export COURSIER_CACHE='/workdir/coursier/'
   - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
   - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
