@@ -24,7 +24,7 @@ import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.Node.{Mode, Network}
 import pravda.node.client.{IoLanguage, NodeLanguage, RandomLanguage}
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
+import pravda.common.data.blockchain._
 import pravda.common.{bytes, crypto}
 import pravda.node.data.PravdaConfig.Validator
 import pravda.common.data.blockchain.CoinDistributionMember

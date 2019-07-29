@@ -19,7 +19,7 @@ package pravda.broadcaster
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import pravda.common.domain.{Address, PrivateKey}
+import pravda.common.data.blockchain._
 import pravda.node.client.impl.NodeLanguageImpl
 
 import scala.concurrent.ExecutionContextExecutor

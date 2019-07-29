@@ -1,7 +1,7 @@
 package pravda.node
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import pravda.common.data.blockchain.Transaction.SignedTransaction
 import pravda.common.data.blockchain.TransactionData
 import pravda.common.data.blockchain._

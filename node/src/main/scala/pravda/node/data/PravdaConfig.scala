@@ -19,7 +19,7 @@ package pravda.node.data
 
 import java.io.File
 
-import pravda.common.domain.{Address, PrivateKey}
+import pravda.common.data.blockchain._
 import pravda.common.data.blockchain.CoinDistributionMember
 
 final case class PravdaConfig(networkAddressCache: Option[PravdaConfig.NetworkAddressCache],

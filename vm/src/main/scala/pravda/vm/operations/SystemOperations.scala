@@ -20,7 +20,8 @@ package pravda.vm.operations
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.{domain, crypto}
+import pravda.common.crypto
+import pravda.common.data.blockchain._
 import pravda.common.vm.{Data, Error, MarshalledData}
 import pravda.common.vm.Opcodes._
 import pravda.common.vm.Error.{OperationDenied, UserError}
@@ -35,7 +36,7 @@ final class SystemOperations(program: ByteBuffer,
                              currentStorage: Option[Storage],
                              wattCounter: WattCounter,
                              env: Environment,
-                             maybeProgramAddress: Option[domain.Address],
+                             maybeProgramAddress: Option[Address],
                              standardLibrary: Map[Long, (Memory, WattCounter) => Unit],
                              vm: Vm) {
 

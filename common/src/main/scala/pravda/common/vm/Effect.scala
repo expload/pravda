@@ -17,7 +17,7 @@
 
 package pravda.common.vm
 
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.data.blockchain.{Address, NativeCoin}
 
 sealed trait Effect
 

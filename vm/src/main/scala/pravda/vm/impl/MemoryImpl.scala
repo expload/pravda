@@ -17,7 +17,7 @@
 
 package pravda.vm.impl
 
-import pravda.common.domain.Address
+import pravda.common.data.blockchain.Address
 import pravda.common.vm.Error._
 import pravda.common.vm.{Data, Error}
 import pravda.vm.{Memory, ThrowableVmError}

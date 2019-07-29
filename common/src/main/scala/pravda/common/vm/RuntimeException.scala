@@ -17,7 +17,7 @@
 
 package pravda.common.vm
 
-import pravda.common.domain.Address
+import pravda.common.data.blockchain.Address
 
 final case class RuntimeException(error: Error,
                                   finalState: FinalState,

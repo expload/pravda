@@ -32,7 +32,7 @@ import pravda.common.serialization.protobuf._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
 import pravda.common.cryptography
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
+import pravda.common.data.blockchain._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.Random

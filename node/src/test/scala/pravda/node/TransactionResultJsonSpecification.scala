@@ -3,8 +3,8 @@ package pravda.node
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Gen, Properties}
-import pravda.common.{domain, vm}
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.vm
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import pravda.common.vm.{Effect, FinalState, MarshalledData, RuntimeException}
 import pravda.common.data.blockchain._
 import pravda.common.serialization._
@@ -17,10 +17,10 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
   import pravda.vm.asm.DataSpecification
   import DataSpecification.{byteString, bytes, data, ref, primitive}
 
-  val address: Gen[domain.Address] =
+  val address: Gen[Address] =
     byteString.map(Address @@ _)
 
-  val amount: Gen[domain.NativeCoin] =
+  val amount: Gen[NativeCoin] =
     arbitrary[Long].map(NativeCoin @@ _)
 
   val marshalledData: Gen[MarshalledData] = {

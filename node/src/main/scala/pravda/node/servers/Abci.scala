@@ -21,7 +21,7 @@ package servers
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
-import pravda.common.domain._
+import pravda.common.data.blockchain._
 import pravda.common.{cryptography, bytes => byteUtils}
 import pravda.node.clients.AbciClient
 import pravda.common.data.blockchain._

@@ -3,12 +3,12 @@ package pravda.node.data.serialization
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import supertagged.{Tagged, lifterF}
 import zhukov._
 import com.google.protobuf.ByteString
-import pravda.common.domain
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.data.blockchain
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import pravda.common.data.blockchain._
 import pravda.common.data.blockchain.Transaction._
 import pravda.common.cryptography.EncryptedPrivateKey

@@ -22,7 +22,7 @@ import java.security.SecureRandom
 import com.google.protobuf.ByteString
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.math.ec.rfc8032.Ed25519
-import pravda.common.domain.{Address, PrivateKey}
+import pravda.common.data.blockchain._
 
 object crypto {
 

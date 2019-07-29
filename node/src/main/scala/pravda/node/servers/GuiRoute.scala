@@ -30,7 +30,7 @@ import korolev.execution._
 import korolev.server.KorolevServiceConfig
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
+import pravda.common.data.blockchain._
 import pravda.common.{cryptography, bytes => byteUtils}
 import pravda.node.clients.AbciClient
 import pravda.common.data.blockchain.Transaction.UnsignedTransaction

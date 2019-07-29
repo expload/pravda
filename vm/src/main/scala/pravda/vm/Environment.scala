@@ -18,7 +18,7 @@
 package pravda.vm
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import pravda.common.vm.MarshalledData
 
 trait Environment {

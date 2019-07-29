@@ -27,7 +27,7 @@ import korolev.server.{KorolevServiceConfig, emptyRouter}
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
 import pravda.common.bytes
-import pravda.common.domain.NativeCoin
+import pravda.common.data.blockchain.NativeCoin
 import pravda.node.client.impl.{CompilersLanguageImpl, NodeLanguageImpl}
 
 import scala.concurrent.Future

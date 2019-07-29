@@ -16,7 +16,7 @@
  */
 
 package pravda.vm
-import pravda.common.domain.Address
+import pravda.common.data.blockchain.Address
 import pravda.common.vm.Data
 
 trait Memory {

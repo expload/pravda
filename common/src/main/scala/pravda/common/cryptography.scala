@@ -23,8 +23,8 @@ import com.google.protobuf.ByteString
 import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{BadPaddingException, Cipher, SecretKeyFactory}
 import pravda.common.bytes._
-import pravda.common.domain.{PrivateKey, Address}
 import pravda.common.data.blockchain.Transaction
+import pravda.common.data.blockchain._
 import pravda.common.serialization._
 import pravda.common.serialization.protobuf._
 

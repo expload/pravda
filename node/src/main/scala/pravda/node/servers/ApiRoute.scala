@@ -30,7 +30,7 @@ import akka.http.scaladsl.server.{PathMatcher1, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain._
+import pravda.common.data.blockchain._
 import pravda.node
 import pravda.node.clients.AbciClient
 import pravda.common.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}

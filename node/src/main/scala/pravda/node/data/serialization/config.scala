@@ -17,7 +17,7 @@
 
 package pravda.node.data.serialization
 
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
+import pravda.common.data.blockchain._
 import pravda.common.{bytes => byteUtils}
 import pravda.node.data.PravdaConfig.{CryptoKey, GenesisValidator}
 import pravda.common.data.blockchain.CoinDistributionMember

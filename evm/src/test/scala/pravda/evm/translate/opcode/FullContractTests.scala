@@ -8,7 +8,7 @@ import pravda.evm.parse.Parser
 import pravda.evm.utils._
 import pravda.common.vm.Data.Primitive._
 import pravda.vm.VmSandbox
-import pravda.common.domain.Address
+import pravda.common.data.blockchain.Address
 import pravda.common.vm.Data.Array.Int8Array
 import pravda.common.vm.Effect.{StorageRead, StorageWrite}
 import pravda.common.vm.Data

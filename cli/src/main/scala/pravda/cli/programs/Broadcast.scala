@@ -23,8 +23,9 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.node.client._
-import pravda.common.{bytes, crypto}
-import pravda.common.domain.Address
+import pravda.common.bytes
+import pravda.common.data.blockchain._
+import pravda.common.crypto
 import pravda.dotnet.translation.Translator
 import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader

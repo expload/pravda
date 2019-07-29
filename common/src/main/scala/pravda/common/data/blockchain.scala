@@ -19,13 +19,59 @@ package pravda.common.data
 
 import cats.Show
 import com.google.protobuf.ByteString
-import pravda.common.bytes.byteString2hex
-import pravda.common.domain.{Address, NativeCoin}
 import pravda.common.Hasher
 import pravda.common.vm.{Effect, ExecutionResult, MarshalledData}
 import supertagged.TaggedType
+import pravda.common.bytes._
+
+import scala.util.Try
 
 object blockchain {
+
+  object NativeCoin extends TaggedType[Long] {
+    val zero = apply(0L)
+    def amount(v: Int) = NativeCoin(v.toLong)
+    def amount(v: String) = NativeCoin(v.toLong)
+    def fromString(s: String) = amount(s)
+  }
+
+  type NativeCoin = NativeCoin.Type
+
+  object Address extends TaggedType[ByteString] {
+
+    final val Void = {
+      val bytes = ByteString.copyFrom(Array.fill(32)(0.toByte))
+      Address(bytes)
+    }
+
+    def tryFromHex(hex: String): Try[Address] =
+      Try(Address(hex2byteString(hex)))
+
+    def fromHex(hex: String): Address =
+      Address(hex2byteString(hex))
+
+    def fromByteArray(arr: Array[Byte]): Address = {
+      Address(ByteString.copyFrom(arr))
+    }
+  }
+  type Address = Address.Type
+
+  def eventKey(address: Address): String =
+    s"${byteString2hex(address)}"
+
+  def eventKeyLength(address: Address): String =
+    s"${byteString2hex(address)}:#len"
+  // the # character has the lower ASCII code so it will be place before any number
+
+  def eventKeyOffset(address: Address, offset: Long): String =
+    f"${byteString2hex(address)}:$offset%016x"
+
+  object PrivateKey extends TaggedType[ByteString] {
+
+    def fromHex(hex: String): PrivateKey =
+      PrivateKey(ByteString.copyFrom(hex2bytes(hex)))
+  }
+  type PrivateKey = PrivateKey.Type
 
   final case class SignatureData(address: Address,
                                  data: TransactionData,

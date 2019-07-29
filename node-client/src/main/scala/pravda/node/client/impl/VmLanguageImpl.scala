@@ -18,7 +18,7 @@
 package pravda.node.client.impl
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.Address
+import pravda.common.data.blockchain.Address
 import pravda.common.vm.ExecutionResult
 import pravda.node.client.VmLanguage
 import pravda.common.data.blockchain._

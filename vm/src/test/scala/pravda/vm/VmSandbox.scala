@@ -2,7 +2,7 @@ package pravda.vm
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import pravda.common.vm.{Data, Effect, Error, FinalState, MarshalledData, RuntimeException}
 import pravda.common.vm
 import pravda.common.vm.Data.Primitive

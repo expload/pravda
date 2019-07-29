@@ -26,7 +26,7 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.common.{bytes, cryptography}
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
+import pravda.common.data.blockchain._
 import pravda.node.client.NodeLanguage
 import pravda.common.data.blockchain.Transaction.UnsignedTransaction
 import pravda.common.data.blockchain.TransactionData

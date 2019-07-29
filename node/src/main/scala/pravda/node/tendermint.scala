@@ -26,7 +26,7 @@ import pravda.node.utils.{CpuArchitecture, OperationSystem}
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 import pravda.common.serialization._
-import pravda.common.domain.Address
+import pravda.common.data.blockchain.Address
 
 import scala.concurrent.{ExecutionContext, Future}
 import pravda.common.{bytes => byteUtils}

@@ -20,8 +20,8 @@ package pravda.vm.impl
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.domain
-import pravda.common.domain.Address
+import pravda.common.data.blockchain
+import pravda.common.data.blockchain.Address
 import pravda.common.vm.{ExecutionResult, FinalState, RuntimeException}
 import pravda.common.vm.Error.{DataError, NoSuchProgram, PcallDenied}
 import pravda.vm.WattCounter.{CpuBasic, CpuStorageUse}
@@ -94,7 +94,7 @@ class VmImpl extends Vm {
                mem: Memory,
                counter: WattCounter,
                maybeStorage: Option[Storage],
-               maybePA: Option[domain.Address],
+               maybePA: Option[Address],
                pcallAllowed: Boolean): Unit = {
 
     val logicalOperations = new LogicalOperations(mem, counter)
