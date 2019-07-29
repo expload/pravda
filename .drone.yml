@@ -1,126 +1,170 @@
+kind: pipeline
+name: default
+
+### Клонируем репозиторий
 clone:
   clone:
     image: plugins/git
     tags: true
-workspace:
-  base: /workdir
-  path: code
-pipeline:
-  tag-the-image:
-    image: alpine/git:1.0.4
-    pull: false
-    commands:
-      - echo -n `git describe --tags | sed -e "s/^v//"`",latest" > .tags
-  tests:
-    image: gcr.io/time-coin/sbt:latest
-    pull: true
-    volumes:
-      - /var/lib/sbt-cache:/workdir/sbt
-      - /var/lib/coursier-cache:/workdir/coursier
-    commands:
-      - export COURSIER_CACHE='/workdir/coursier/'
-      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
-  package-zip:
-    image: gcr.io/time-coin/sbt:latest
-    volumes:
-      - /var/lib/sbt-cache:/workdir/sbt
-      - /var/lib/coursier-cache:/workdir/coursier
-    commands:
-      - export COURSIER_CACHE='/workdir/coursier/'
-      - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-      - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage faucet/universal:stage
-      - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$DRONE_TAG.tgz
-    when:
-      event: tag
-  pack-win-installer:
-    image: gcr.io/time-coin/builder:0.1
-    environment:
-      - PRAVDA_VERSION=${DRONE_TAG}
-    commands:
-      - cp -rf /workdir/code/cli/target/universal/stage /workdir/code/win-installer/
-      - cd /workdir/code/win-installer && bash build.sh
-      - find . -iname "*.zip" | grep ".zip"
-    when:
-      event: tag
-  build-sign-msi:
-    image: gcr.io/time-coin/alpine-curl:0.1
-    commands:
-      - export MSI_SERVICE_URI="http://35.246.239.138:8080/pravda-upload-win"
-      - for zip_file in /workdir/code/win-installer/*.zip; do curl -F zip=@$zip_file "$MSI_SERVICE_URI?version=$DRONE_TAG" -o $${zip_file%.zip}.msi; done
-      - cd /workdir/code/win-installer && find . -iname "*.msi" | grep ".msi"
-    when:
-      event: tag
-  publish-to-bintray:
-    group: publish
-    image: gcr.io/time-coin/sbt:latest
-    volumes:
-    - /var/lib/sbt-cache:/workdir/sbt
-    - /var/lib/coursier-cache:/workdir/coursier
-    commands:
+steps:
+- name: fetch-tags
+  image: docker:git
+  commands:
+  - git fetch --tags
+  when:
+    event:
+    - tag
+- name: tag-the-image
+  image: alpine/git:1.0.4
+  pull: false
+  commands:
+    - echo -n `git describe --tags | sed -e "s/^v//"`",latest" > .tags
+- name: tests
+  image: gcr.io/time-coin/sbt:latest
+  pull: true
+  volumes:
+  - name: sbt-cache
+    path: /workdir/sbt
+  - name: coursier-cache
+    path: /workdir/coursier
+  commands:
     - export COURSIER_CACHE='/workdir/coursier/'
     - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
-    secrets: [ bintray_user, bintray_pass ]
-    when:
-      event: tag
-  publish-github-releases:
-    group: publish
-    image: plugins/github-release
-    files:
-      - /workdir/code/win-installer/*.msi
-      - /workdir/code/cli/target/universal/*.tgz
-    secrets: [ GITHUB_RELEASE_API_KEY ]
-    when:
-      event: tag
-  publish-docker-hub:
-    group: publish
-    image: plugins/docker
+    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
+- name: package-zip
+  image: gcr.io/time-coin/sbt:latest
+  volumes:
+  - name: sbt-cache
+    path: /workdir/sbt
+  - name: coursier-cache
+    path: /workdir/coursier
+  commands:
+    - export COURSIER_CACHE='/workdir/coursier/'
+    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 cli/universal:packageZipTarball cli/universal:stage broadcaster/universal:stage faucet/universal:stage
+    - mv /workdir/code/cli/target/universal/*.tgz /workdir/code/cli/target/universal/PravdaSDK-$DRONE_TAG.tgz
+  when:
+    event: tag
+- name: pack-win-installer
+  image: gcr.io/time-coin/builder:0.1
+  environment:
+    - PRAVDA_VERSION=${DRONE_TAG}
+  commands:
+    - cp -rf /workdir/code/cli/target/universal/stage /workdir/code/win-installer/
+    - cd /workdir/code/win-installer && bash build.sh
+    - find . -iname "*.zip" | grep ".zip"
+  when:
+    event: tag
+- name: build-sign-msi
+  image: gcr.io/time-coin/alpine-curl:0.1
+  commands:
+    - export MSI_SERVICE_URI="http://35.246.239.138:8080/pravda-upload-win"
+    - for zip_file in /workdir/code/win-installer/*.zip; do curl -F zip=@$zip_file "$MSI_SERVICE_URI?version=$DRONE_TAG" -o $${zip_file%.zip}.msi; done
+    - cd /workdir/code/win-installer && find . -iname "*.msi" | grep ".msi"
+  when:
+    event: tag
+- name: publish-to-bintray
+  image: gcr.io/time-coin/sbt:latest
+  volumes:
+  - name: sbt-cache
+    path: /workdir/sbt
+  - name: coursier-cache
+    path: /workdir/coursier
+  commands:
+  - export COURSIER_CACHE='/workdir/coursier/'
+  - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+  - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
+  settings:
+    bintray_user:
+      from_secret: bintray_user
+    bintray_pass:
+      from_secret: bintray_pass
+  when:
+    event: tag
+- name: publish-github-releases
+  image: plugins/github-release
+  files:
+    - /workdir/code/win-installer/*.msi
+    - /workdir/code/cli/target/universal/*.tgz
+  settings:
+    GITHUB_RELEASE_API_KEY:
+      from_secret: GITHUB_RELEASE_API_KEY
+  when:
+    event: tag
+- name: publish-docker-hub
+  image: plugins/docker
+  settings:
     repo: expload/pravda
     context: .
     dockerfile: docker/images/pravda-cli/Dockerfile
-    secrets: [ docker_username, docker_password ]
-    when:
-      event: tag
-  publish-pravda-faucet:
-    group: publish
-    image: plugins/docker
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event: tag
+- name:   publish-pravda-faucet
+  image: plugins/docker
+  settings:
     repo: expload/pravda-faucet
     context: .
     dockerfile: docker/images/pravda-faucet/Dockerfile
-    secrets: [ docker_username, docker_password ]
-    when:
-      event: tag
-  publish-broadcaster-to-docker:
-    group: publish
-    image: plugins/docker
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event: tag
+- name: publish-broadcaster-to-docker
+  image: plugins/docker
+  settings:
     repo: expload/pravda-broadcaster
     context: .
     dockerfile: docker/images/broadcaster/Dockerfile
-    secrets: [ docker_username, docker_password ]
-    when:
-      event: tag
-  publish-pravda-dll-nuget:
-    group: dotnet
-    image: microsoft/dotnet:2.2-sdk
-    environment:
-      - PRAVDA_VERSION=${DRONE_TAG##v}
-    commands:
-      - cd /workdir/code/PravdaDotNet/Pravda
-      - dotnet pack -c Release
-      - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
-    secrets: [ nuget_key ]
-    when:
-      event: tag
-  publish-pravda-program-template-nuget:
-    group: dotnet
-    image: chicker/nuget:0.8
-    environment:
-      - PRAVDA_VERSION=${DRONE_TAG##v}
-    commands:
-      - cd /workdir/code/PravdaProgramTemplate
-      - nuget pack -Version $PRAVDA_VERSION Expload.PravdaProgramTemplate.nuspec
-      - dotnet nuget push Expload.PravdaProgramTemplate.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
-    secrets: [ nuget_key ]
-    when:
-      event: tag
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event: tag
+- name: publish-pravda-dll-nuget
+  image: microsoft/dotnet:2.2-sdk
+  environment:
+    - PRAVDA_VERSION=${DRONE_TAG##v}
+  commands:
+    - cd /workdir/code/PravdaDotNet/Pravda
+    - dotnet pack -c Release
+    - dotnet nuget push bin/Release/Expload.Pravda.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+  settings:
+    nuget_key:
+      from_secret: nuget_key
+  when:
+    event: tag
+- name: publish-pravda-program-template-nuget
+  image: chicker/nuget:0.8
+  environment:
+    - PRAVDA_VERSION=${DRONE_TAG##v}
+  commands:
+    - cd /workdir/code/PravdaProgramTemplate
+    - nuget pack -Version $PRAVDA_VERSION Expload.PravdaProgramTemplate.nuspec
+    - dotnet nuget push Expload.PravdaProgramTemplate.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
+  settings:
+  settings:
+    nuget_key:
+      from_secret: nuget_key
+  when:
+    event: tag
+
+workspace:
+  base: /workdir
+  path: code
+
+image_pull_secrets:
+- dockerconfigjson
+
+volumes:
+- name: sbt-cache
+  temp: {}
+- name: coursier-cache
+  temp: {}
+
