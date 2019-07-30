@@ -153,20 +153,18 @@ class DB(
 
   def put[K](key: K)(implicit keyWriter: KeyWriter[K]): Unit = put(key, null)(keyWriter, ValueWriter.nullWriter)
 
-  def get[K](key: K)(implicit keyWriter: KeyWriter[K]): Future[Option[Result]] = Future(syncGet(key))
-
-  def syncGet[K](key: K)(implicit keyWriter: KeyWriter[K]): Option[Result] =
+  def get[K](key: K)(implicit keyWriter: KeyWriter[K]): Option[Result] =
     Option(db.get(keyWriter.toBytes(key))).map(Result)
 
-  def syncContains[K](key: K)(implicit keyWriter: KeyWriter[K]): Boolean = syncGet(key)(keyWriter).isDefined
+  def contains[K](key: K)(implicit keyWriter: KeyWriter[K]): Boolean = get(key)(keyWriter).isDefined
 
-  class SyncGetConstructor[V] {
+  class GetConstructor[V] {
 
     def apply[K](key: K)(implicit keyWriter: KeyWriter[K], valueReader: ValueReader[V]): Option[V] =
-      syncGet[K](key)(keyWriter).map(_.as[V](valueReader))
+      get[K](key)(keyWriter).map(_.as[V](valueReader))
   }
 
-  def syncGetAs[V] = new SyncGetConstructor[V]
+  def getAs[V] = new GetConstructor[V]
 
   class StartsConstructor[V] {
 

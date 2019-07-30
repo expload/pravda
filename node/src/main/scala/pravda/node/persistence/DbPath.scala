@@ -102,7 +102,7 @@ class PureDbPath(db: DB, path: String) extends DbPath {
 
   def getRawBytes(suffix: String): Option[Array[Byte]] = {
     val key = mkKey(suffix)
-    db.syncGet(byteUtils.stringToBytes(key)).map(_.bytes)
+    db.get(byteUtils.stringToBytes(key)).map(_.bytes)
   }
 
   def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = returningPrevious(suffix) {

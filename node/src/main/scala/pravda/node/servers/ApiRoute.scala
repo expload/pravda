@@ -42,7 +42,7 @@ import pravda.node.data.serialization.composite._
 import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
-import pravda.node.persistence.{Entry, PureDbPath}
+import pravda.node.persistence.PureDbPath
 import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
 import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl

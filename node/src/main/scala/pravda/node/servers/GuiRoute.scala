@@ -40,7 +40,7 @@ import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
-import pravda.node.persistence.{Entry, FileStore, PureDbPath}
+import pravda.node.persistence.{FileStore, PureDbPath}
 import pravda.node.utils
 import pravda.vm
 import pravda.vm.{Data, MarshalledData}
