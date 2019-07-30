@@ -62,4 +62,11 @@ package object domain {
 
   def eventKeyOffset(address: Address, offset: Long): String =
     f"${byteString2hex(address)}:$offset%016x"
+
+  object PrivateKey extends TaggedType[ByteString] {
+
+    def fromHex(hex: String): PrivateKey =
+      PrivateKey(ByteString.copyFrom(hex2bytes(hex)))
+  }
+  type PrivateKey = PrivateKey.Type
 }

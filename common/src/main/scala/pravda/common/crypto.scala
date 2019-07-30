@@ -17,21 +17,50 @@
 
 package pravda.common
 
+import java.security.SecureRandom
+
 import com.google.protobuf.ByteString
-import pravda.common.contrib.ed25519
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
+import org.bouncycastle.math.ec.rfc8032.Ed25519
+import pravda.common.domain.{Address, PrivateKey}
 
 object crypto {
 
+  def generateKeyPair(): (Address, PrivateKey) = {
+    val secureRandom = new SecureRandom()
+    val privateKeySource = new Array[Byte](64)
+    secureRandom.nextBytes(privateKeySource)
+    generateKeyPair(ByteString.copyFrom(privateKeySource))
+  }
+
   /**
     * Generates ed25519 key pair.
-    * @param randomBytes64 base random 64 bytes
+    * @param privateKeySource base random 64 bytes
     * @return (pub[32], sec[64])
     */
-  def ed25519KeyPair(randomBytes64: ByteString): (ByteString, ByteString) = {
+  def generateKeyPair(privateKeySource: ByteString): (Address, PrivateKey) = {
     // FIXME use Address and PrivateKey tagged types
-    val sec = randomBytes64.toByteArray
-    val pub = new Array[Byte](32)
-    ed25519.generateKey(pub, sec)
-    (ByteString.copyFrom(pub), ByteString.copyFrom(sec))
+//    val privateKey = randomBytes64.toByteArray
+    val pk = new Ed25519PrivateKeyParameters(privateKeySource.toByteArray, 0)
+    val publicKey = pk.generatePublicKey.getEncoded
+//    System.arraycopy(pk.generatePublicKey.getEncoded, 0, publicKey, 0, 32)
+//    System.arraycopy(publicKey, 0, privateKey, 32, 32)
+
+    (Address(ByteString.copyFrom(publicKey)), PrivateKey(ByteString.copyFrom(pk.getEncoded.slice(0, 32) ++ publicKey)))
   }
+
+  /**
+    * Sign signs the message with privateKey and returns a signature.
+    *
+    * @param privateKey copy of private key 64 bytes length. array will be mutated
+    * @param message    arbitrary length message
+    */
+  def sign(privateKey: Array[Byte], message: Array[Byte]): Array[Byte] = {
+    val sig = new Array[Byte](Ed25519.SIGNATURE_SIZE)
+    Ed25519.sign(privateKey, 0, message, 0, message.length, sig, 0)
+    sig
+  }
+
+  def verify(publicKey: Array[Byte], message: Array[Byte], sig: Array[Byte]): Boolean =
+    Ed25519.verify(sig, 0, publicKey, 0, message, 0, message.length)
 }

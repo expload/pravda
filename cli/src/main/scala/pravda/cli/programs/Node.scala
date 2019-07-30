@@ -24,11 +24,10 @@ import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.Node.{Mode, Network}
 import pravda.node.client.{IoLanguage, NodeLanguage, RandomLanguage}
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.common.{bytes, crypto}
 import pravda.node.data.PravdaConfig.Validator
 import pravda.node.data.common.CoinDistributionMember
-import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.json._
 
@@ -102,8 +101,8 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
     val result = for {
       configPath <- EitherT[F, String, String](io.concatPath(dataDir, "node.conf").map(Right.apply))
       randomBytes <- EitherT[F, String, ByteString](random.secureBytes64().map(Right.apply))
-      (pub, sec) = crypto.ed25519KeyPair(randomBytes)
-      paymentWallet = Validator(PrivateKey @@ sec, Address @@ pub)
+      (pub, sec) = crypto.generateKeyPair(randomBytes)
+      paymentWallet = Validator(sec, pub)
       initialDistribution <- initDistrConf
         .map { path =>
           EitherT[F, String, ByteString](readFromFile(path)).flatMap { bs =>
@@ -118,7 +117,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         .getOrElse(
           EitherT[F, String, Seq[CoinDistributionMember]](
             Monad[F].pure(
-              Right(List(CoinDistributionMember(Address @@ pub, NativeCoin.amount(50000))))
+              Right(List(CoinDistributionMember(pub, NativeCoin.amount(50000))))
             )
           )
         )

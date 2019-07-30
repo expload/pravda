@@ -29,7 +29,6 @@ import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.serialization._
-import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.domain.Wallet
 import pravda.node.data.cryptography
 import pravda.node.persistence.NodeStore
@@ -37,6 +36,7 @@ import pravda.node.persistence.NodeStore
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import akka.http.scaladsl.marshalling.PredefinedToResponseMarshallers
+import pravda.common.domain.PrivateKey
 
 object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
 

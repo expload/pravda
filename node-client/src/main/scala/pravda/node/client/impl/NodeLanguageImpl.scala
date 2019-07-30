@@ -26,13 +26,12 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.node.client.NodeLanguage
 import pravda.node.clients.AbciClient.RpcError
 import pravda.node.data.blockchain.Transaction.UnsignedTransaction
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.cryptography
-import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization.Json
 import pravda.node.launcher
 import pravda.node.servers.Abci.TransactionResult
