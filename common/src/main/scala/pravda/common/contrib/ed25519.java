@@ -21,6 +21,7 @@ public final class ed25519 {
     public static void generateKey(byte[] publicKey, byte[] privateKey) {
         Ed25519PrivateKeyParameters pk = new Ed25519PrivateKeyParameters(privateKey, 0);
         System.arraycopy(pk.generatePublicKey().getEncoded(), 0, publicKey, 0, 32);
+        System.arraycopy(publicKey, 0, privateKey, 32, 32);
     }
 
     /**
