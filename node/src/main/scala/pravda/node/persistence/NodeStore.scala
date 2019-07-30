@@ -19,7 +19,8 @@ package pravda.node.persistence
 
 import pravda.node.db.DB
 import pravda.node.data.domain._
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 
 // Implicits
 import pravda.node.persistence.implicits._
@@ -27,10 +28,10 @@ import pravda.node.data.serialization.composite._
 import pravda.node.data.serialization.protobuf._
 
 object NodeStore {
-  def apply(path: String): NodeStore = new NodeStore(path)
+  def apply(path: String)(implicit ec: ExecutionContext): NodeStore = new NodeStore(path)
 }
 
-class NodeStore(path: String) {
+class NodeStore(path: String)(implicit ec: ExecutionContext) {
 
   type FOpt[A] = Future[Option[A]]
 

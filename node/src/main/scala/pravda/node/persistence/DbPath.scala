@@ -107,12 +107,12 @@ class PureDbPath(db: DB, path: String) extends DbPath {
 
   def putRawBytes(suffix: String, value: Array[Byte]): Option[Array[Byte]] = returningPrevious(suffix) {
     val key = mkKey(suffix)
-    db.syncPutBytes(byteUtils.stringToBytes(key), value)
+    db.putBytes(byteUtils.stringToBytes(key), value)
   }
 
   def remove(suffix: String): Option[Array[Byte]] = returningPrevious(suffix) {
     val key = mkKey(suffix)
-    db.syncDeleteBytes(byteUtils.stringToBytes(key))
+    db.deleteBytes(byteUtils.stringToBytes(key))
   }
 
   def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long, count: Long)(

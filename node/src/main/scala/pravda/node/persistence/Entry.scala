@@ -22,7 +22,7 @@ import pravda.node.db.Operation.{Delete, Put}
 import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
 import shapeless.{::, HNil}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Entry[K, V](
     db: DB,
@@ -30,31 +30,22 @@ class Entry[K, V](
     keyWriter: KeyWriter[String :: K :: HNil],
     valueWriter: ValueWriter[V],
     valueReader: ValueReader[V]
-) {
+)(implicit ec: ExecutionContext) {
   type KeyType = String :: K :: HNil
 
   def key(id: K): KeyType = prefix :: id :: HNil
 
-  def put(id: K) = db.put(key(id))(keyWriter)
+  def put(id: K) = Future(db.put(key(id))(keyWriter))
 
-  def delete(id: K) = db.delete(key(id))(keyWriter)
+  def delete(id: K) = Future(db.delete(key(id))(keyWriter))
 
-  def contains(id: K): Future[Boolean] = db.contains(key(id))(keyWriter)
+  def contains(id: K): Future[Boolean] = Future(db.syncContains(key(id))(keyWriter))
 
-  def syncContains(id: K): Boolean = db.syncContains(key(id))(keyWriter)
+  def get(id: K): Future[Option[V]] = Future(db.syncGetAs[V](key(id))(keyWriter, valueReader))
 
-  def get(id: K): Future[Option[V]] =
-    db.getAs[V](key(id))(keyWriter, valueReader)
-
-  def syncGet(id: K): Option[V] =
-    db.syncGetAs[V](key(id))(keyWriter, valueReader)
-
-  def put(id: K, value: V) =
-    db.put(key(id), value)(keyWriter, valueWriter)
+  def put(id: K, value: V) = Future(db.put(key(id), value)(keyWriter, valueWriter))
 
   def startsWith(id: K, offset: K, count: Long): Future[List[V]] = {
-    println(key(id))
-    println(key(offset))
     db.startsWithAs[V](key(id), key(offset), count)(keyWriter, valueReader)
   }
 
@@ -84,7 +75,8 @@ object Entry {
       implicit
       keyWriter: KeyWriter[String :: K :: HNil],
       valueWriter: ValueWriter[V],
-      valueReader: ValueReader[V]
+      valueReader: ValueReader[V],
+      ec: ExecutionContext
   ) = new Entry(db, prefix, keyWriter, valueWriter, valueReader)
 }
 
@@ -94,13 +86,11 @@ class SingleEntry[V](
     keyWriter: KeyWriter[String],
     valueWriter: ValueWriter[V],
     valueReader: ValueReader[V]
-) {
+)(implicit ec: ExecutionContext) {
 
-  def put(value: V): Future[Unit] = db.put(key, value)(keyWriter, valueWriter)
+  def put(value: V): Future[Unit] = Future(db.put(key, value)(keyWriter, valueWriter))
 
-  def get(): Future[Option[V]] = db.getAs[V](key)(keyWriter, valueReader)
-
-  def syncGet(): Option[V] = db.syncGetAs[V](key)(keyWriter, valueReader)
+  def get(): Future[Option[V]] = Future(db.syncGetAs[V](key)(keyWriter, valueReader))
 
   def putBatch(value: V): Put = Put(key, value)(keyWriter, valueWriter)
 
@@ -111,8 +101,10 @@ class SingleEntry[V](
 object SingleEntry {
 
   def apply[V](db: DB, key: String)(
-      implicit keyWriter: KeyWriter[String],
+      implicit
+      keyWriter: KeyWriter[String],
       valueWriter: ValueWriter[V],
-      valueReader: ValueReader[V]
+      valueReader: ValueReader[V],
+      ec: ExecutionContext
   ) = new SingleEntry(db, key, keyWriter, valueWriter, valueReader)
 }

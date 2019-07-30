@@ -42,7 +42,7 @@ import pravda.node.data.serialization.composite._
 import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
-import pravda.node.persistence.Entry
+import pravda.node.persistence.{Entry, PureDbPath}
 import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
 import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
@@ -76,7 +76,7 @@ class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, ab
   val longUnmarshaller: Unmarshaller[String, Long] =
     Unmarshaller.strict(s => s.toLong)
 
-  val balances: Entry[Address, NativeCoin] = balanceEntry(applicationStateDb)
+  val balances = new PureDbPath(applicationStateDb, "balance")
   val events = eventsEntry(applicationStateDb)
 
   val txIdIndex = txIdIndexEntry(effectsDb)
@@ -221,8 +221,7 @@ class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, ab
         get {
           path("balance") {
             parameters('address.as(hexUnmarshaller)) { address =>
-              val f = balances
-                .get(Address @@ address)
+              val f = Future(balances.getAs[NativeCoin](bytes.byteString2hex(address)))
                 .map(
                   _.getOrElse(NativeCoin @@ 0L)
                 )

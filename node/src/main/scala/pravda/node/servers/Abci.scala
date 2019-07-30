@@ -65,7 +65,7 @@ class Abci(applicationStateDb: DB,
   var proposedBlockTimestamp = 0L
 
   var validators: Vector[Address] = Vector.empty[Address]
-  val balances: Entry[Address, NativeCoin] = balanceEntry(applicationStateDb)
+  val balances = new PureDbPath(applicationStateDb, "balance")
 
   def info(request: RequestInfo): Future[ResponseInfo] = {
     FileStore.readApplicationStateInfoAsync().map { maybeInfo =>
@@ -84,7 +84,7 @@ class Abci(applicationStateDb: DB,
         .updateApplicationStateInfoAsync(ApplicationStateInfo(lastBlockHeight, ByteString.EMPTY, initValidators, 0L))
       _ <- Future.sequence(initialDistribution.map {
         case CoinDistributionMember(address, amount) =>
-          balances.put(address, amount)
+          Future(balances.put(byteUtils.byteString2hex(address), amount))
       })
     } yield ResponseInitChain.defaultInstance
 
@@ -667,8 +667,8 @@ object Abci {
           txIdIndexPath.put(transactionIdKeyLength(txId), len + offsets.length.toLong)
       }
 
-      applicationStateDb.syncBatch(operations: _*)
-      effectsDb.syncBatch(operations: _*)
+      applicationStateDb.applyBatchOperations(operations: _*)
+      effectsDb.applyBatchOperations(operations: _*)
       clear()
     }
 

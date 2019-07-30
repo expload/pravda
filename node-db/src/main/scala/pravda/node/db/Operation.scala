@@ -17,17 +17,53 @@
 
 package pravda.node.db
 
+import pravda.node.db.hash.utils._
 import pravda.node.db.serialyzer.{KeyWriter, ValueWriter}
+import pravda.node.db.utils.ByteArray
 
 sealed trait Operation {
   val key: Array[Byte]
+
+  def diff(getMaybePrevValueFromDb: () => Option[Array[Byte]],
+           cache: Map[ByteArray, Operation] = Map.empty): Array[Byte]
 }
 
 object Operation {
+  private def maybePrevValueFromCache(key: Array[Byte], cache: Map[ByteArray, Operation]): Option[Array[Byte]] = {
+    cache
+      .get(ByteArray(key))
+      .flatMap {
+        case Operation.Put(_, v) => Some(v)
+        case Operation.Delete(_) => None
+      }
+  }
 
-  final case class Delete(key: Array[Byte]) extends Operation
+  final case class Delete(key: Array[Byte]) extends Operation {
 
-  final case class Put(key: Array[Byte], value: Array[Byte]) extends Operation
+    def diff(maybePrevValueFromDb: () => Option[Array[Byte]],
+             cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
+      maybePrevValueFromCache(key, cache).orElse(maybePrevValueFromDb()).map(hashPair(key, _)).getOrElse(zeroHash)
+    }
+  }
+
+  final case class Put(key: Array[Byte], value: Array[Byte]) extends Operation {
+
+    def diff(getMaybePrevValueFromDb: () => Option[Array[Byte]],
+             cache: Map[ByteArray, Operation] = Map.empty): Array[Byte] = {
+      val maybePrevValue = maybePrevValueFromCache(key, cache).orElse(getMaybePrevValueFromDb())
+      val newHash = hashPair(key, value)
+
+      maybePrevValue.fold(newHash) { pValue =>
+        // If newValue and previousValue are equal then hashPair will be equal too, so there is no difference
+        if (value sameElements pValue) {
+          zeroHash
+        } else {
+          val prevHash = hashPair(key, pValue)
+          xor(prevHash, newHash)
+        }
+      }
+    }
+  }
 
   object Delete {
 
