@@ -19,13 +19,11 @@ package pravda.broadcaster
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import pravda.common.domain.Address
+import pravda.common.domain.{Address, PrivateKey}
 import pravda.node.client.impl.NodeLanguageImpl
-import pravda.node.data.cryptography.PrivateKey
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Success
-
 import pureconfig.generic.auto._
 
 object Application extends App {

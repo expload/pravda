@@ -19,28 +19,19 @@ package pravda.node.data
 
 import java.security.SecureRandom
 
+import com.google.protobuf.ByteString
 import javax.crypto.spec.{IvParameterSpec, PBEKeySpec, SecretKeySpec}
 import javax.crypto.{BadPaddingException, Cipher, SecretKeyFactory}
-import com.google.protobuf.ByteString
-import pravda.common.contrib.ed25519
-import pravda.node.data.blockchain.Transaction
-import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.protobuf._
-import pravda.node.data.serialization._
 import pravda.common.bytes._
-import pravda.common.domain.Address
-import supertagged.TaggedType
+import pravda.common.crypto
+import pravda.common.domain.PrivateKey
+import pravda.node.data.blockchain.Transaction
+import pravda.node.data.serialization._
+import pravda.node.data.serialization.protobuf._
 
 object cryptography {
 
   import Transaction._
-
-  object PrivateKey extends TaggedType[ByteString] {
-
-    def fromHex(hex: String): PrivateKey =
-      PrivateKey(ByteString.copyFrom(hex2bytes(hex)))
-  }
-  type PrivateKey = PrivateKey.Type
 
   final case class EncryptedPrivateKey(
       keyEncryptedData: ByteString,
@@ -67,13 +58,13 @@ object cryptography {
 
   def addWattPayerSignature(privateKey: PrivateKey, tx: SignedTransaction): SignedTransaction = {
     val message = transcode(tx.forSignature).to[Protobuf]
-    val signature = ed25519.sign(privateKey.toByteArray, message)
+    val signature = crypto.sign(privateKey.toByteArray, message)
     tx.copy(wattPayerSignature = Some(ByteString.copyFrom(signature)))
   }
 
   private def signTransaction(privateKey: Array[Byte], tx: UnsignedTransaction): SignedTransaction = {
     val message = transcode(tx.forSignature).to[Protobuf]
-    val signature = ed25519.sign(privateKey, message)
+    val signature = crypto.sign(privateKey, message)
 
     SignedTransaction(
       tx.from,
@@ -105,10 +96,10 @@ object cryptography {
     val pubKey = tx.from.toByteArray
     val message = transcode(tx.forSignature).to[Protobuf]
     val signature = tx.signature.toByteArray
-    if (ed25519.verify(pubKey, message, signature)) {
+    if (crypto.verify(pubKey, message, signature)) {
       (tx.wattPayer, tx.wattPayerSignature) match {
         case (Some(wattPayer), Some(wattPayerSignature)) =>
-          if (ed25519.verify(wattPayer.toByteArray, message, wattPayerSignature.toByteArray)) authorizedTransaction
+          if (crypto.verify(wattPayer.toByteArray, message, wattPayerSignature.toByteArray)) authorizedTransaction
           else None
         case (None, _) => authorizedTransaction
         case _         => None
@@ -116,24 +107,6 @@ object cryptography {
     } else {
       None
     }
-  }
-
-  def generateKeyPair(): (Address, PrivateKey) = {
-    val secureRandom = new SecureRandom()
-    val privateKeyBytes = new Array[Byte](64)
-    val publicKeyBytes = new Array[Byte](32)
-    secureRandom.nextBytes(privateKeyBytes)
-    ed25519.generateKey(publicKeyBytes, privateKeyBytes)
-    val privateKey = PrivateKey(ByteString.copyFrom(privateKeyBytes))
-    val address = Address(ByteString.copyFrom(publicKeyBytes))
-
-    (address, privateKey)
-  }
-
-  def generateKeyPair(password: String): (Address, EncryptedPrivateKey) = {
-    val (address, priv) = generateKeyPair()
-    val epk = encryptPrivateKey(password, priv)
-    (address, epk)
   }
 
   def encryptPrivateKey(password: String, privateKey: PrivateKey): EncryptedPrivateKey =

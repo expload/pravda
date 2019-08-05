@@ -17,11 +17,10 @@
 
 package pravda.node.data.serialization
 
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.common.{bytes => byteUtils}
 import pravda.node.data.PravdaConfig.{CryptoKey, GenesisValidator}
 import pravda.node.data.common.CoinDistributionMember
-import pravda.node.data.cryptography.PrivateKey
 import pravda.node.tendermint
 import pureconfig.ConfigReader
 

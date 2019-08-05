@@ -20,8 +20,7 @@ package pravda.vm.operations
 import java.nio.ByteBuffer
 
 import com.google.protobuf.ByteString
-import pravda.common.contrib.ed25519
-import pravda.common.domain
+import pravda.common.{crypto, domain}
 import pravda.vm.Opcodes._
 import pravda.vm.Error.{OperationDenied, UserError}
 import pravda.vm.WattCounter._
@@ -133,7 +132,7 @@ final class SystemOperations(program: ByteBuffer,
       case Some(ProgramContext(_, oldCode, false)) =>
         wattCounter.cpuUsage((newCode.size() + oldCode.size()) * CpuArithmetic * 2)
         val message = oldCode.concat(newCode).toByteArray
-        if (ed25519.verify(programAddress.toByteArray, message, signature)) {
+        if (crypto.verify(programAddress.toByteArray, message, signature)) {
           wattCounter.storageUsage(newCode.size().toLong, oldCode.size().toLong)
           env.updateProgram(programAddress, newCode)
         } else {
@@ -158,7 +157,7 @@ final class SystemOperations(program: ByteBuffer,
     wattCounter.cpuUsage(code.size() * CpuArithmetic)
 
     env.getProgram(programAddress) match {
-      case None if ed25519.verify(programAddress.toByteArray, code.toByteArray, signature) =>
+      case None if crypto.verify(programAddress.toByteArray, code.toByteArray, signature) =>
         wattCounter.storageUsage(occupiedBytes = code.size().toLong)
         env.createProgram(programAddress, code)
       case _ =>
@@ -181,7 +180,7 @@ final class SystemOperations(program: ByteBuffer,
       case Some(ProgramContext(_, code, false)) =>
         wattCounter.cpuUsage(code.size() * CpuArithmetic * 2)
         val message = SealTag.concat(code).toByteArray // Seal ++ Code
-        if (ed25519.verify(programAddress.toByteArray, message, signature)) {
+        if (crypto.verify(programAddress.toByteArray, message, signature)) {
           env.sealProgram(programAddress)
         } else {
           throw ThrowableVmError(Error.OperationDenied)

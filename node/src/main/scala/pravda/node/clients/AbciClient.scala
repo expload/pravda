@@ -27,12 +27,11 @@ import pravda.node.data.blockchain.Transaction.SignedTransaction
 import pravda.node.data.blockchain.{Transaction, TransactionData}
 import pravda.node.data.common.TransactionId
 import pravda.node.data.cryptography
-import pravda.node.data.cryptography.PrivateKey
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.protobuf._
 import pravda.node.data.serialization.json._
 import pravda.common.bytes._
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.node.servers.Abci.TransactionResult
 
 import scala.concurrent.{ExecutionContextExecutor, Future}

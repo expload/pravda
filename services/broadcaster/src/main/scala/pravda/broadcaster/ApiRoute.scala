@@ -25,7 +25,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
+import pravda.common.domain.{Address, NativeCoin, PrivateKey}
 import pravda.node.client.impl.NodeLanguageImpl
 import pravda.node.data.blockchain.TransactionData
 import pravda.node.data.cryptography._

@@ -23,8 +23,7 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.node.client._
-import pravda.common.bytes
-import pravda.common.contrib.ed25519
+import pravda.common.{bytes, crypto}
 import pravda.common.domain.Address
 import pravda.dotnet.translation.Translator
 import tethys.JsonReader
@@ -113,7 +112,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
               programCode <- extractCode(programWallet.address, wallet, wattPayerWallet)
               signatureHex = {
                 val message = SystemOperations.SealTag.concat(programCode).toByteArray
-                val signature = ed25519.sign(programWallet.privateKey.toByteArray, message)
+                val signature = crypto.sign(programWallet.privateKey.toByteArray, message)
                 bytes.bytes2hex(signature)
               }
               sealCode <- EitherT {
@@ -147,7 +146,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 case Some(hash) => EitherT.right(metadata.writePrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
                 case None       => EitherT.right(Monad[F].pure(input))
               }
-              signature = ed25519.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
+              signature = crypto.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
               addressHex = bytes.byteString2hex(programWallet.address)
               programHex = bytes.byteString2hex(newInput)
               signatureHex = bytes.bytes2hex(signature)
@@ -184,7 +183,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
               oldCode <- extractCode(programWallet.address, wallet, wattPayerWallet)
               signatureHex = {
                 val message = oldCode.concat(newCode).toByteArray
-                val signature = ed25519.sign(programWallet.privateKey.toByteArray, message)
+                val signature = crypto.sign(programWallet.privateKey.toByteArray, message)
                 bytes.bytes2hex(signature)
               }
               newCodeHex = bytes.byteString2hex(newCode)

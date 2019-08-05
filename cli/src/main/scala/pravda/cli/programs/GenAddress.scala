@@ -35,7 +35,7 @@ class GenAddress[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F]) {
   def apply(config: PravdaConfig.GenAddress): F[Unit] =
     for {
       randomBytes <- random.secureBytes64()
-      (pub, sec) = crypto.ed25519KeyPair(randomBytes)
+      (pub, sec) = crypto.generateKeyPair(randomBytes)
       json = s"""{"address":"${bytes.byteString2hex(pub)}","privateKey":"${bytes.byteString2hex(sec)}"}"""
       outputBytes = ByteString.copyFromUtf8(json)
       _ <- config.output.fold(io.writeToStdout(outputBytes))(io.writeToFile(_, outputBytes))

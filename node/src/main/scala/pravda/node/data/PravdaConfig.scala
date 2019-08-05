@@ -19,9 +19,8 @@ package pravda.node.data
 
 import java.io.File
 
-import pravda.common.domain.Address
+import pravda.common.domain.{Address, PrivateKey}
 import pravda.node.data.common.CoinDistributionMember
-import pravda.node.data.cryptography.PrivateKey
 
 final case class PravdaConfig(networkAddressCache: Option[PravdaConfig.NetworkAddressCache],
                               genesis: PravdaConfig.Genesis,
