@@ -17,11 +17,12 @@
 
 package pravda.vm.operations
 
-import pravda.vm.Data.Primitive.{BigInt, Int16, Int32, Int64, Int8, Number}
-import pravda.vm.Error.WrongType
+import pravda.common.vm.Opcodes
+import pravda.common.vm.Data.Primitive.{BigInt, Int16, Int32, Int64, Int8, Number}
+import pravda.common.vm.Error.WrongType
 import pravda.vm.WattCounter.CpuArithmetic
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Memory, Opcodes, ThrowableVmError, WattCounter}
+import pravda.vm.{Memory, ThrowableVmError, WattCounter}
 
 /**
   * Pravda VM arithmetic opcodes implementation.

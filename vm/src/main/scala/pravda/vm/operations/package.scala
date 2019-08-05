@@ -18,9 +18,10 @@
 package pravda.vm
 
 import com.google.protobuf.ByteString
-import pravda.common.domain.{Address, NativeCoin}
-import pravda.vm.Data.Primitive._
-import pravda.vm.Error.{InvalidAddress, WrongType}
+import pravda.common.data.blockchain.{Address, NativeCoin}
+import pravda.common.vm.Data
+import pravda.common.vm.Data.Primitive._
+import pravda.common.vm.Error.{InvalidAddress, WrongType}
 
 package object operations {
 

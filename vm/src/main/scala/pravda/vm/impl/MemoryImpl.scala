@@ -17,9 +17,10 @@
 
 package pravda.vm.impl
 
-import pravda.common.domain.Address
-import pravda.vm.Error._
-import pravda.vm.{Data, Error, Memory, ThrowableVmError}
+import pravda.common.data.blockchain.Address
+import pravda.common.vm.Error._
+import pravda.common.vm.{Data, Error}
+import pravda.vm.{Memory, ThrowableVmError}
 
 import scala.collection.mutable.ArrayBuffer
 

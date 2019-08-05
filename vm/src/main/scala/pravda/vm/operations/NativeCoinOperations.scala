@@ -17,16 +17,16 @@
 
 package pravda.vm.operations
 
-import pravda.common.domain
-import pravda.vm.Error.OperationDenied
+import pravda.common.data.blockchain._
+import pravda.common.vm.Error.OperationDenied
 import pravda.vm.WattCounter._
 import pravda.vm.operations.annotation.OpcodeImplementation
 import pravda.vm.{Environment, Memory, ThrowableVmError, WattCounter}
-import pravda.vm.Opcodes._
+import pravda.common.vm.Opcodes._
 final class NativeCoinOperations(memory: Memory,
                                  environment: Environment,
                                  wattCounter: WattCounter,
-                                 maybeProgramAddress: Option[domain.Address]) {
+                                 maybeProgramAddress: Option[Address]) {
 
   @OpcodeImplementation(
     opcode = BALANCE,

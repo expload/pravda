@@ -20,9 +20,10 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import pravda.cli.PravdaArgsParser
-import pravda.vm.{Data, StandardLibrary}
+import pravda.vm.StandardLibrary
 import pravda.vm.asm.Operation
 import pravda.vm.operations.annotation.OpcodeImplementation
+import pravda.common.vm.Data
 
 import cats.data._
 import cats.data.Validated._

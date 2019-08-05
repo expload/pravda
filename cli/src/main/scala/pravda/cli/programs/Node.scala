@@ -24,11 +24,11 @@ import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.PravdaConfig.Node.{Mode, Network}
 import pravda.node.client.{IoLanguage, NodeLanguage, RandomLanguage}
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
-import pravda.common.{bytes, crypto}
+import pravda.common.data.blockchain._
+import pravda.common.{bytes, cryptography}
 import pravda.node.data.PravdaConfig.Validator
-import pravda.node.data.common.CoinDistributionMember
-import pravda.node.data.serialization._
+import pravda.common.data.blockchain.CoinDistributionMember
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 
 import scala.language.higherKinds
@@ -101,7 +101,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
     val result = for {
       configPath <- EitherT[F, String, String](io.concatPath(dataDir, "node.conf").map(Right.apply))
       randomBytes <- EitherT[F, String, ByteString](random.secureBytes64().map(Right.apply))
-      (pub, sec) = crypto.generateKeyPair(randomBytes)
+      (pub, sec) = cryptography.generateKeyPair(randomBytes)
       paymentWallet = Validator(sec, pub)
       initialDistribution <- initDistrConf
         .map { path =>

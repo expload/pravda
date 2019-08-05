@@ -19,9 +19,11 @@ package pravda.node
 
 package persistence
 
+import pravda.common.serialization.Composite
 import pravda.node.db.serialyzer.{KeyWriter, ValueReader, ValueWriter}
-import data.serialization._
-import pravda.node.data.serialization.composite.CompositeEncoder
+import pravda.common.serialization.json._
+import pravda.common.serialization._
+import pravda.common.serialization.composite.CompositeEncoder
 
 object implicits {
 

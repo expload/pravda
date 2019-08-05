@@ -3,23 +3,24 @@ package pravda.node
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Gen, Properties}
-import pravda.common.domain
-import pravda.common.domain.{Address, NativeCoin}
-import pravda.node.data.common.TransactionId
-import pravda.node.data.serialization._
+import pravda.common.vm
+import pravda.common.data.blockchain.{Address, NativeCoin}
+import pravda.common.vm.{Effect, FinalState, MarshalledData, RuntimeException}
+import pravda.common.data.blockchain._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
-import pravda.node.servers.Abci.TransactionResult
 import pravda.vm._
+import pravda.common.vm._
 
 object TransactionResultJsonSpecification extends Properties("TransactionResultJson") {
 
-  import pravda.vm.DataSpecification
+  import pravda.vm.asm.DataSpecification
   import DataSpecification.{byteString, bytes, data, ref, primitive}
 
-  val address: Gen[domain.Address] =
+  val address: Gen[Address] =
     byteString.map(Address @@ _)
 
-  val amount: Gen[domain.NativeCoin] =
+  val amount: Gen[NativeCoin] =
     arbitrary[Long].map(NativeCoin @@ _)
 
   val marshalledData: Gen[MarshalledData] = {
@@ -75,9 +76,9 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
 
   val finalState: Gen[FinalState] =
     for (sw <- watts; tw <- watts; rw <- watts; stack <- Gen.listOf(primitive); heap <- Gen.listOf(data))
-      yield FinalState(sw, rw, tw, stack, heap)
+      yield vm.FinalState(sw, rw, tw, stack, heap)
 
-  val error: Gen[Error] = Gen.oneOf(
+  val error: Gen[vm.Error] = Gen.oneOf(
     Error.StackOverflow,
     Error.StackUnderflow,
     Error.WrongStackIndex,
@@ -131,7 +132,7 @@ object TransactionResultJsonSpecification extends Properties("TransactionResultJ
 
   property("Error/write->read") = forAll(error) { error =>
     val json = transcode(error).to[Json]
-    transcode(json).to[Error] == error
+    transcode(json).to[vm.Error] == error
   }
 
 }

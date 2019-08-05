@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda
+package pravda.common.serialization
 
-package object vm {
-  // Result of program execution
-  type ExecutionResult = Either[RuntimeException, FinalState]
+final class TranscodingDsl[From](val value: From) extends AnyVal {
+
+  def to[To](implicit transcoder: Transcoder[From, To]): To =
+    transcoder(value)
 }

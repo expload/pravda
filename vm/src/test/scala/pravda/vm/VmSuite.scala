@@ -4,12 +4,12 @@ import java.io.File
 
 import com.google.protobuf.ByteString
 import org.json4s.DefaultFormats
-import pravda.common.json._
+import pravda.common.vm.{Data, Effect, Error}
 import pravda.plaintest._
-import pravda.vm
-import pravda.vm.Data.Primitive
+import pravda.common.vm
+import pravda.common.vm.Data.Primitive
 import pravda.vm.asm.PravdaAssembler
-import pravda.vm.json._
+import pravda.common.serialization.json._
 
 object VmSuiteData {
   final case class Preconditions(vm: VmSandbox.Preconditions, code: String)
@@ -27,8 +27,8 @@ object VmSuite extends Plaintest[Preconditions, VmSandbox.Expectations] {
       json4sFormat[Primitive.Int64] +
       json4sFormat[Primitive.Bytes] +
       json4sFormat[ByteString] +
-      json4sFormat[vm.Effect] +
-      json4sFormat[vm.Error] +
+      json4sFormat[Effect] +
+      json4sFormat[Error] +
       json4sKeyFormat[ByteString] +
       json4sKeyFormat[Primitive.Ref] +
       json4sKeyFormat[Primitive]

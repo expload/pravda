@@ -26,7 +26,7 @@ import pravda.dotnet.parser.Signatures.SigType._
 import pravda.dotnet.parser.Signatures._
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 
 /** Translator that handles calling of different kinds of methods */
 case object CallsTranslation extends OneToManyTranslator {

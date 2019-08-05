@@ -18,8 +18,8 @@
 package pravda.node.client.impl
 
 import com.google.protobuf.ByteString
+import pravda.common.vm.Meta
 import pravda.node.client.MetadataLanguage
-import pravda.vm.Meta
 import pravda.vm.asm.PravdaAssembler
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -23,14 +23,14 @@ import cats.implicits._
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.node.client._
-import pravda.common.{bytes, crypto}
-import pravda.common.domain.Address
+import pravda.common.{bytes, cryptography}
+import pravda.common.data.blockchain._
 import pravda.dotnet.translation.Translator
 import tethys.JsonReader
 import tethys.derivation.semiauto.jsonReader
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
-import pravda.vm.{Data, Meta}
+import pravda.common.vm.{Data, Meta}
 import pravda.vm.operations.SystemOperations
 
 import scala.language.higherKinds
@@ -112,7 +112,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
               programCode <- extractCode(programWallet.address, wallet, wattPayerWallet)
               signatureHex = {
                 val message = SystemOperations.SealTag.concat(programCode).toByteArray
-                val signature = crypto.sign(programWallet.privateKey.toByteArray, message)
+                val signature = cryptography.sign(programWallet.privateKey.toByteArray, message)
                 bytes.bytes2hex(signature)
               }
               sealCode <- EitherT {
@@ -146,7 +146,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
                 case Some(hash) => EitherT.right(metadata.writePrefixIncludes(withoutMeta, Seq(Meta.IpfsFile(hash))))
                 case None       => EitherT.right(Monad[F].pure(input))
               }
-              signature = crypto.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
+              signature = cryptography.sign(programWallet.privateKey.toByteArray, newInput.toByteArray)
               addressHex = bytes.byteString2hex(programWallet.address)
               programHex = bytes.byteString2hex(newInput)
               signatureHex = bytes.bytes2hex(signature)
@@ -183,7 +183,7 @@ final class Broadcast[F[_]: Monad](io: IoLanguage[F],
               oldCode <- extractCode(programWallet.address, wallet, wattPayerWallet)
               signatureHex = {
                 val message = oldCode.concat(newCode).toByteArray
-                val signature = crypto.sign(programWallet.privateKey.toByteArray, message)
+                val signature = cryptography.sign(programWallet.privateKey.toByteArray, message)
                 bytes.bytes2hex(signature)
               }
               newCodeHex = bytes.byteString2hex(newCode)

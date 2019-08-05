@@ -17,6 +17,8 @@
 
 package pravda.vm
 
+import pravda.common.vm.Data
+
 trait Storage {
   def get(key: Data.Primitive): Option[Data]
   def put(key: Data.Primitive, value: Data): Option[Data]

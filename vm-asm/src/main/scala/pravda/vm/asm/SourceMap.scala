@@ -17,13 +17,14 @@
 
 package pravda.vm.asm
 
-import pravda.common.{bytes, domain}
+import pravda.common.data.blockchain._
+import pravda.common.vm.{Meta, RuntimeException}
+import pravda.common.bytes
 import pravda.vm
-import pravda.vm.Meta
 
 object SourceMap {
 
-  case class StackTraceElement(address: Option[domain.Address], sourceMark: Option[Meta.SourceMark])
+  case class StackTraceElement(address: Option[Address], sourceMark: Option[Meta.SourceMark])
 
   def findNearestMark(metas: Map[Int, Seq[Meta]], pos: Int): Option[Meta.SourceMark] = {
     metas.toBuffer
@@ -37,7 +38,7 @@ object SourceMap {
       .flatten
   }
 
-  def stackTrace(metas: Map[Int, Seq[Meta]], re: vm.RuntimeException): Seq[StackTraceElement] = {
+  def stackTrace(metas: Map[Int, Seq[Meta]], re: RuntimeException): Seq[StackTraceElement] = {
     // Add re.lastPosition to last address call stack
     val cs = {
       val xs = re.callStack

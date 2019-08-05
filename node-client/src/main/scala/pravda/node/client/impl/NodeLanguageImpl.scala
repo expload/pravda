@@ -25,17 +25,14 @@ import akka.util.{ByteString => AkkaByteString}
 import cats.data.EitherT
 import cats.implicits._
 import com.google.protobuf.ByteString
-import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
+import pravda.common.{bytes, cryptography}
+import pravda.common.data.blockchain._
 import pravda.node.client.NodeLanguage
-import pravda.node.clients.AbciClient.RpcError
-import pravda.node.data.blockchain.Transaction.UnsignedTransaction
-import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.cryptography
-import pravda.node.data.serialization.Json
+import pravda.common.data.blockchain.Transaction.UnsignedTransaction
+import pravda.common.data.blockchain.TransactionData
+import pravda.common.data.blockchain._
 import pravda.node.launcher
-import pravda.node.servers.Abci.TransactionResult
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 import pravda.vm.asm.PravdaAssembler
 

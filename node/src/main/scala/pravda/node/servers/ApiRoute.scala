@@ -30,23 +30,22 @@ import akka.http.scaladsl.server.{PathMatcher1, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain._
+import pravda.common.data.blockchain._
 import pravda.node
 import pravda.node.clients.AbciClient
-import pravda.node.clients.AbciClient.RpcError
-import pravda.node.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
-import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common._
+import pravda.common.data.blockchain.Transaction.{SignedTransaction, UnsignedTransaction}
+import pravda.common.data.blockchain.TransactionData
+import pravda.common.data.blockchain._
 import pravda.node.data.serialization.json._
-import pravda.node.data.serialization.composite._
-import pravda.node.data.serialization.protobuf._
+import pravda.common.serialization.composite._
+import pravda.common.serialization.protobuf._
+import pravda.common.vm.MarshalledData
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
 import pravda.node.persistence.PureDbPath
-import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
 import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
-import pravda.vm.{MarshalledData, ThrowableVmError}
+import pravda.vm.ThrowableVmError
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -244,14 +243,14 @@ class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, ab
               val offset = maybeOffset.getOrElse(0L)
               val count = maybeCount.fold(ApiRoute.MaxEventCount)(math.min(_, ApiRoute.MaxEventCount))
 
-              def filterByName(items: Seq[ApiRoute.EventItem]) = maybeName match {
+              def filterByName(items: Seq[EventItem]) = maybeName match {
                 case Some(name) => items.filter(_.name == name)
                 case None       => items
               }
 
-              def toItems(evs: List[(Address, (TransactionId, String, MarshalledData))]): List[ApiRoute.EventItem] =
+              def toItems(evs: List[(Address, (TransactionId, String, MarshalledData))]): List[EventItem] =
                 evs.zipWithIndex.map {
-                  case ((addr, (tid, name, d)), n) => ApiRoute.EventItem(n + offset, tid, addr, name, d)
+                  case ((addr, (tid, name, d)), n) => EventItem(n + offset, tid, addr, name, d)
                 }
 
               maybeTransaction match {
@@ -377,10 +376,4 @@ object ApiRoute {
       case _ ⇒ Unmatched
     }
   }
-
-  final case class EventItem(offset: Long,
-                             transactionId: TransactionId,
-                             address: Address,
-                             name: String,
-                             data: MarshalledData)
 }

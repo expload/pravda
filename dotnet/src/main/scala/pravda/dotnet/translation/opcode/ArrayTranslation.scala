@@ -21,7 +21,7 @@ import pravda.dotnet.parser.CIL._
 import pravda.dotnet.parser.PE
 import pravda.dotnet.parser.Signatures.{FieldSig, SigType}
 import pravda.dotnet.translation.data.{InnerTranslationError, MethodTranslationCtx, UnknownOpcode}
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 import scodec.bits.ByteOrdering
 

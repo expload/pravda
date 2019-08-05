@@ -1,10 +1,11 @@
 package pravda.node
 
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 import org.scalacheck.Prop._
 import org.scalacheck.{Gen, Properties}
-import pravda.vm.{Data, DataSpecification}
+import pravda.common.vm.Data
+import pravda.vm.asm.DataSpecification
 
 object DataJsonSpecification extends Properties("DataJson") {
 

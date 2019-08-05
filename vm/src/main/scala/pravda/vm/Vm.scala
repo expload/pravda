@@ -20,7 +20,8 @@ package pravda
 package vm
 
 import com.google.protobuf.ByteString
-import pravda.common.domain
+import pravda.common.data.blockchain._
+import pravda.common.vm.ExecutionResult
 
 trait Vm {
 
@@ -35,7 +36,7 @@ trait Vm {
   /**
     * Run a program inside spawned VM.
     */
-  def run(programAddress: domain.Address,
+  def run(programAddress: Address,
           environment: Environment,
           memory: Memory,
           wattCounter: WattCounter,

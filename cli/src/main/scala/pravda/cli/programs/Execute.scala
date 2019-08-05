@@ -24,7 +24,7 @@ import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
 import pravda.cli.programs.Broadcast.Wallet
 import pravda.node.client.{IoLanguage, NodeLanguage}
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 
 import scala.language.higherKinds

@@ -15,6 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data.serialization
+package pravda.common.serialization
 
 trait Transcoder[From, To] extends (From => To)

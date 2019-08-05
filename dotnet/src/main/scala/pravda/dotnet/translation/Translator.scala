@@ -23,6 +23,7 @@ import cats.instances.either._
 import cats.instances.option._
 import cats.syntax.traverse._
 import com.google.protobuf.ByteString
+import pravda.common.vm.Opcodes
 import pravda.dotnet.data.Method
 import pravda.dotnet.data.TablesData._
 import pravda.dotnet.parser.{CIL, Signatures}
@@ -32,7 +33,8 @@ import pravda.dotnet.translation.data._
 import pravda.dotnet.translation.jumps.{BranchTransformer, StackOffsetResolver}
 import pravda.dotnet.translation.opcode.{CallsTranslation, OpcodeTranslator, StdlibAsm}
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Meta, Opcodes}
+import pravda.common.vm.Opcodes
+import pravda.common.vm._
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer

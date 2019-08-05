@@ -6,11 +6,12 @@ import com.google.protobuf.ByteString
 import pravda.evm.abi.parse.AbiParser
 import pravda.evm.parse.Parser
 import pravda.evm.utils._
-import pravda.vm.Data.Primitive._
-import pravda.vm.{Data, VmSandbox}
-import pravda.common.domain.Address
-import pravda.vm.Data.Array.Int8Array
-import pravda.vm.Effect.{StorageRead, StorageWrite}
+import pravda.common.vm.Data.Primitive._
+import pravda.vm.VmSandbox
+import pravda.common.data.blockchain.Address
+import pravda.common.vm.Data.Array.Int8Array
+import pravda.common.vm.Effect.{StorageRead, StorageWrite}
+import pravda.common.vm.Data
 import utest._
 import pravda.common.bytes.hex._
 

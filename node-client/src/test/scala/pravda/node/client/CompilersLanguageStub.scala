@@ -2,7 +2,7 @@ package pravda.node.client
 
 import cats._
 import com.google.protobuf.ByteString
-import pravda.vm.Meta
+import pravda.common.vm.Meta
 import pravda.vm.asm.Operation
 
 import scala.language.higherKinds

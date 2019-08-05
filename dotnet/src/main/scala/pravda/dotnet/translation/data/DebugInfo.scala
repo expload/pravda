@@ -17,9 +17,9 @@
 
 package pravda.dotnet.translation.data
 
+import pravda.common.vm.Meta
 import pravda.dotnet.data.Heaps
 import pravda.dotnet.data.TablesData.MethodDebugInformationData
-import pravda.vm.Meta
 
 object DebugInfo {
 

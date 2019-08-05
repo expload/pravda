@@ -18,8 +18,9 @@
 package pravda.vm.standard
 import java.nio.charset.StandardCharsets
 
-import pravda.common.crypto
+import pravda.common.cryptography
 import pravda.vm._
+import pravda.common.vm._
 
 object ValidateEd25519Signature extends FunctionDefinition {
 
@@ -43,7 +44,7 @@ object ValidateEd25519Signature extends FunctionDefinition {
       case _                          => throw ThrowableVmError(Error.WrongType)
     }
     val pubKey = operations.bytes(memory.pop())
-    val result = crypto.verify(pubKey.toByteArray, message, signature.toByteArray)
+    val result = cryptography.verify(pubKey.toByteArray, message, signature.toByteArray)
     wattCounter.cpuUsage((signature.size() + message.length + pubKey.size) * WattCounter.CpuArithmetic)
     memory.push(Data.Primitive.Bool(result))
   }

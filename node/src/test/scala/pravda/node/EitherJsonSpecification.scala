@@ -2,7 +2,7 @@ package pravda.node
 
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Gen, Properties}
-import pravda.node.data.serialization._
+import pravda.common.serialization._
 import pravda.node.data.serialization.json._
 
 object EitherJsonSpecification extends Properties("EitherJson") {

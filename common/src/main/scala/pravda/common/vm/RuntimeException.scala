@@ -15,6 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.vm
+package pravda.common.vm
 
-object json extends TethysInstances
+import pravda.common.data.blockchain.Address
+
+final case class RuntimeException(error: Error,
+                                  finalState: FinalState,
+                                  callStack: Seq[(Option[Address], Seq[Int])],
+                                  lastPosition: Int)

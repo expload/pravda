@@ -30,20 +30,21 @@ import korolev.execution._
 import korolev.server.KorolevServiceConfig
 import korolev.state.StateStorage
 import korolev.state.javaSerialization._
-import pravda.common.domain.{Address, NativeCoin, PrivateKey}
-import pravda.common.{bytes => byteUtils}
+import pravda.common.data.blockchain._
+import pravda.common.{cryptography, bytes => byteUtils}
 import pravda.node.clients.AbciClient
-import pravda.node.data.blockchain.Transaction.UnsignedTransaction
-import pravda.node.data.blockchain.TransactionData
-import pravda.node.data.common.TransactionId
-import pravda.node.data.cryptography
+import pravda.common.data.blockchain.Transaction.UnsignedTransaction
+import pravda.common.data.blockchain.TransactionData
+import pravda.common.data.blockchain.TransactionId
+import pravda.common.serialization._
 import pravda.node.data.serialization._
-import pravda.node.data.serialization.protobuf._
+import pravda.common.serialization.protobuf._
+import pravda.common.vm.{Data, Effect, MarshalledData}
 import pravda.node.db.DB
 import pravda.node.persistence.{FileStore, PureDbPath}
 import pravda.node.utils
-import pravda.vm
-import pravda.vm.{Data, MarshalledData}
+import pravda.common.vm
+import pravda.common.vm.{Data, MarshalledData}
 import pravda.vm.asm.{Operation, PravdaAssembler}
 
 import scala.concurrent.Future
@@ -503,7 +504,7 @@ class GuiRoute(abciClient: AbciClient, effectsDb: DB)(implicit system: ActorSyst
 
 object GuiRoute {
 
-  final case class Transaction(id: TransactionId, from: Address, effects: List[vm.Effect], disassembledProgram: String)
+  final case class Transaction(id: TransactionId, from: Address, effects: List[Effect], disassembledProgram: String)
 
   final case class Block(height: Long, transactions: List[Transaction])
 

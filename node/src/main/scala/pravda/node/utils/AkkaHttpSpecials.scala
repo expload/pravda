@@ -24,10 +24,15 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
-import pravda.node.data.serialization._
+import pravda.common.serialization._
+import pravda.common.serialization.json._
+import pravda.node.data.domain.Wallet
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import akka.http.scaladsl.marshalling.PredefinedToResponseMarshallers
+import pravda.common.cryptography
+import pravda.common.serialization.Transcoder
 
 object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
 

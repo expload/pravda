@@ -1,4 +1,4 @@
-package pravda.vm
+package pravda.vm.asm
 
 import java.nio.ByteBuffer
 
@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Prop.{BooleanOperators, forAll}
 import org.scalacheck.{Properties, _}
+import pravda.common.vm.Data
 
 import scala.annotation.strictfp
 import scala.collection.mutable
@@ -13,8 +14,8 @@ import scala.collection.mutable
 @strictfp object DataSpecification extends Properties("Data") {
 
   import Data._
-  import Primitive._
   import Array._
+  import Primitive._
 
   def genPrimitive[T, P, A](gen: Gen[T], p: T => P, a: mutable.Buffer[T] => A): (Gen[P], Gen[A]) =
     (gen.map(p), Gen.containerOf[mutable.Buffer, T](gen).map(a))

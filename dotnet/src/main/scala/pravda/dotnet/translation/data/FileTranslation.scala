@@ -17,7 +17,8 @@
 
 package pravda.dotnet.translation.data
 
-import pravda.vm.{Meta, asm}
+import pravda.common.vm.Meta
+import pravda.vm.asm
 
 /**
   * Translation of one CIL opcode

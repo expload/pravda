@@ -17,10 +17,11 @@
 
 package pravda.evm.translate.opcode
 
+import pravda.common.vm.Opcodes
 import pravda.evm.EVM
 import pravda.evm.translate.Translator.Converted
 import pravda.vm.asm
-import pravda.vm._
+import pravda.common.vm._
 import pravda.vm.asm.Operation
 import pravda.evm.utils._
 

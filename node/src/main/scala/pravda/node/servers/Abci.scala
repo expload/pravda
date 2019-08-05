@@ -21,22 +21,27 @@ package servers
 
 import com.google.protobuf.ByteString
 import com.tendermint.abci._
-import pravda.common.domain._
-import pravda.common.{bytes => byteUtils}
+import pravda.common.data.blockchain._
+import pravda.common.{cryptography, bytes => byteUtils}
 import pravda.node.clients.AbciClient
-import pravda.node.data.blockchain.Transaction
-import pravda.node.data.blockchain.Transaction.{AuthorizedTransaction, SignedTransaction}
-import pravda.node.data.common._
-import pravda.node.data.cryptography
-import pravda.node.data.serialization._
+import pravda.common.data.blockchain._
+import pravda.common.data.blockchain.ApplicationStateInfo
+import pravda.common.data.blockchain.Transaction._
+import pravda.common.serialization._
+import pravda.common.serialization.json._
 import pravda.node.data.serialization.protobuf._
+import pravda.common.vm.{Data, Effect, ExecutionResult, MarshalledData, RuntimeException}
 import pravda.node.db.{DB, Operation}
 import pravda.node.persistence.BlockChainStore.balanceEntry
 import pravda.node.persistence.{FileStore, _}
 import pravda.vm
 import pravda.vm.impl.VmImpl
 import pravda.vm.{Environment, ProgramContext, Storage, _}
+import pravda.common.vm.Error
 import zhukov.Marshaller
+import zhukov._
+import zhukov.derivation._
+import zhukov.Default.auto._
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -229,12 +234,6 @@ class Abci(applicationStateDb: DB,
 
 object Abci {
 
-  final case class TransactionResult(
-      transactionId: TransactionId,
-      executionResult: ExecutionResult,
-      effects: Seq[Effect]
-  )
-
   sealed abstract class TransactionValidationException(message: String) extends Exception(message)
 
   final case class TransactionUnauthorizedException()
@@ -249,58 +248,6 @@ object Abci {
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
   final val TxStatusError = 2
-
-  final case class StoredProgram(code: ByteString, `sealed`: Boolean)
-
-  sealed trait TransactionEffects {
-    def num: Long
-    def transactionId: TransactionId
-    // A height of the block that the transaction was committed in
-    def blockHeight: Long
-    def blockTimestamp: Long
-    def identifier: String
-  }
-
-  object TransactionEffects {
-    final case class Transfers(num: Long,
-                               blockHeight: Long,
-                               blockTimestamp: Long,
-                               transactionId: TransactionId,
-                               transfers: Seq[Effect.Transfer])
-        extends TransactionEffects {
-      override val identifier = Transfers.identifier
-    }
-
-    object Transfers {
-      lazy val identifier = "Transfers"
-    }
-
-    final case class ProgramEvents(num: Long,
-                                   blockHeight: Long,
-                                   blockTimestamp: Long,
-                                   transactionId: TransactionId,
-                                   events: Seq[Effect.Event])
-        extends TransactionEffects {
-      override val identifier = ProgramEvents.identifier
-    }
-
-    object ProgramEvents {
-      lazy val identifier = "ProgramEvents"
-    }
-
-    final case class AllEffects(num: Long,
-                                blockHeight: Long,
-                                blockTimestamp: Long,
-                                transactionId: TransactionId,
-                                effects: Seq[Effect])
-        extends TransactionEffects {
-      override val identifier = AllEffects.identifier
-    }
-
-    object AllEffects {
-      lazy val identifier = "AllEffects"
-    }
-  }
 
   final case class AdditionalDataForAddress(transfersLastTransactionNumber: Long = 1L,
                                             eventsLastTransactionNumber: Long = 1L,

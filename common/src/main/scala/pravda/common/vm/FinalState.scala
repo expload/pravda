@@ -15,10 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data.serialization
+package pravda.common.vm
 
-final class TranscodingDsl[From](val value: From) extends AnyVal {
+final case class FinalState(
+    spentWatts: Long,
+    refundWatts: Long,
+    totalWatts: Long,
+    stack: Seq[Data],
+    heap: Seq[Data]
+)
 
-  def to[To](implicit transcoder: Transcoder[From, To]): To =
-    transcoder(value)
+object FinalState {
+  final val Empty = FinalState(
+    spentWatts = 0,
+    refundWatts = 0,
+    totalWatts = 0,
+    stack = Nil,
+    heap = Nil
+  )
 }

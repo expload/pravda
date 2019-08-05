@@ -17,21 +17,21 @@
 
 package pravda.vm.asm
 
-import pravda.vm.Data.Primitive
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.Data.Primitive
+import pravda.common.vm.{Data, Opcodes}
 
 sealed trait Operation
 
 object Operation {
 
-  import Opcodes._
+  import pravda.common.vm.Opcodes._
 
   // Virtual operations (which aren't included to bytecode)
   case object Nop                         extends Operation
   final case class Comment(value: String) extends Operation
   final case class Label(name: String)    extends Operation
 
-  final case class Meta(meta: pravda.vm.Meta)        extends Operation
+  final case class Meta(meta: pravda.common.vm.Meta) extends Operation
   final case class Push(d: Data.Primitive)           extends Operation
   final case class New(d: Data)                      extends Operation
   final case class Jump(label: Option[String])       extends Operation

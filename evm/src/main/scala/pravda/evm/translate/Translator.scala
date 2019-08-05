@@ -27,7 +27,8 @@ import pravda.evm.abi.parse.AbiParser.AbiObject
 import pravda.evm.disasm.{Blocks, JumpTargetRecognizer, StackSizePredictor}
 import pravda.evm.translate.opcode._
 import pravda.vm.asm.Operation
-import pravda.vm.{Data, Opcodes, asm}
+import pravda.common.vm.{Data, Opcodes}
+import pravda.vm.asm
 
 object Translator {
 

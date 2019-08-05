@@ -17,10 +17,12 @@
 
 package pravda.vm.operations
 
-import pravda.vm.Data._
-import pravda.vm.Error.WrongType
+import pravda.common.vm
+import pravda.common.vm.Opcodes
+import pravda.common.vm.Data._
+import pravda.common.vm.Error.WrongType
 import pravda.vm.operations.annotation.OpcodeImplementation
-import pravda.vm.{Memory, Opcodes, ThrowableVmError, WattCounter}
+import pravda.vm.{Memory, ThrowableVmError, WattCounter}
 
 final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 
@@ -39,7 +41,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
   }
 
   @OpcodeImplementation(
-    opcode = pravda.vm.Opcodes.SLICE,
+    opcode = Opcodes.SLICE,
     description =
       "Takes start index, end index and item from the stack. Makes slice of item and puts result to the stack."
   )
@@ -57,7 +59,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
   }
 
   @OpcodeImplementation(
-    opcode = pravda.vm.Opcodes.CONCAT,
+    opcode = vm.Opcodes.CONCAT,
     description = "Takes two items from stack. Concatenates them and put result to stack."
   )
   def concat(): Unit = {

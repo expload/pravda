@@ -2,10 +2,11 @@ package pravda.vm
 
 import com.google.protobuf.ByteString
 import pravda.common.bytes
-import pravda.common.domain.{Address, NativeCoin}
-import pravda.vm
-import pravda.vm.Data.Primitive
-import pravda.vm.Error.DataError
+import pravda.common.data.blockchain.{Address, NativeCoin}
+import pravda.common.vm.{Data, Effect, Error, FinalState, MarshalledData, RuntimeException}
+import pravda.common.vm
+import pravda.common.vm.Data.Primitive
+import pravda.common.vm.Error.DataError
 import pravda.vm.impl.{MemoryImpl, VmImpl, WattCounterImpl}
 
 import scala.collection.mutable
@@ -14,7 +15,7 @@ import scala.util.Try
 
 object VmSandbox {
 
-  class EnvironmentSandbox(effects: mutable.Buffer[vm.Effect],
+  class EnvironmentSandbox(effects: mutable.Buffer[Effect],
                            initStorages: Map[Address, Map[Primitive, Data]],
                            initBalances: Seq[(Address, Primitive.Int64)],
                            initPrograms: Seq[(Address, Primitive.Bytes)],
@@ -77,7 +78,7 @@ object VmSandbox {
     def updateValidator(validator: Address, power: Long): Unit = ()
   }
 
-  class StorageSandbox(address: Address, effects: mutable.Buffer[vm.Effect], initStorage: Seq[(Data.Primitive, Data)])
+  class StorageSandbox(address: Address, effects: mutable.Buffer[Effect], initStorage: Seq[(Data.Primitive, Data)])
       extends Storage {
 
     val storageItems: mutable.Map[Data.Primitive, Data] = mutable.Map(initStorage: _*)
@@ -139,13 +140,13 @@ object VmSandbox {
   final case class Expectations(`watts-spent`: Long,
                                 stack: Seq[Primitive] = Nil,
                                 heap: Map[Primitive.Ref, Data] = Map.empty,
-                                effects: Seq[vm.Effect] = Nil,
-                                error: Option[vm.Error] = None)
+                                effects: Seq[Effect] = Nil,
+                                error: Option[Error] = None)
 
   final case class ExpectationsWithoutWatts(stack: Seq[Primitive] = Nil,
                                             heap: Map[Primitive.Ref, Data] = Map.empty,
-                                            effects: Seq[vm.Effect] = Nil,
-                                            error: Option[vm.Error] = None)
+                                            effects: Seq[Effect] = Nil,
+                                            error: Option[Error] = None)
 
   object ExpectationsWithoutWatts {
 
@@ -172,7 +173,7 @@ object VmSandbox {
       Address @@ ByteString.copyFrom((1 to 32).map(_.toByte).toArray)
     }
 
-    val effects = mutable.Buffer[vm.Effect]()
+    val effects = mutable.Buffer[Effect]()
     val environment: Environment = new VmSandbox.EnvironmentSandbox(
       effects,
       input.`program-storage`,

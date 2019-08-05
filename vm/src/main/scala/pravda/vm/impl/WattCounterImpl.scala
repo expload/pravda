@@ -17,7 +17,7 @@
 
 package pravda.vm.impl
 
-import pravda.vm.Error.OutOfWatts
+import pravda.common.vm.Error.OutOfWatts
 import pravda.vm.{ThrowableVmError, WattCounter}
 
 final class WattCounterImpl(val limit: Long) extends WattCounter {

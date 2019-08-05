@@ -21,7 +21,7 @@ import pravda.evm.EVM
 import pravda.evm.EVM._
 import pravda.evm.abi.parse.AbiParser.AbiFunction
 import pravda.evm.translate.Translator.Converted
-import pravda.vm.{Data, Opcodes}
+import pravda.common.vm.{Data, Opcodes}
 import pravda.vm.asm.Operation
 
 object FunctionSelectorTranslator {

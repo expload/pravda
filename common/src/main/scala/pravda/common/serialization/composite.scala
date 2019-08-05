@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pravda.node.data.serialization
+package pravda.common.serialization
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets

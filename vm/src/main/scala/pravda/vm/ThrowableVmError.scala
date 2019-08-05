@@ -17,4 +17,6 @@
 
 package pravda.vm
 
+import pravda.common.vm.Error
+
 final case class ThrowableVmError(error: Error) extends Exception(error.toString)

@@ -17,7 +17,7 @@
 
 package pravda.cli
 
-import pravda.common.domain.NativeCoin
+import pravda.common.data.blockchain.NativeCoin
 
 sealed trait PravdaConfig
 

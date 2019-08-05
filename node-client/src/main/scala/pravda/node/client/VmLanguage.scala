@@ -18,7 +18,7 @@
 package pravda.node.client
 
 import com.google.protobuf.ByteString
-import pravda.vm.ExecutionResult
+import pravda.common.vm.ExecutionResult
 
 import scala.language.higherKinds
 

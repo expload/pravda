@@ -17,11 +17,11 @@
 
 package pravda.node
 
-import pravda.node.servers.Abci.TransactionResult
-import pravda.vm.Data
+import pravda.common.data.blockchain._
 
 import scala.concurrent.Future
 import com.google.protobuf.timestamp
+import pravda.common.vm.Data
 
 package object utils {
 

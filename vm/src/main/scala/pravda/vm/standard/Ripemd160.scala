@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets
 import com.google.protobuf.ByteString
 import pravda.common.contrib.ripemd160
 import pravda.vm._
+import pravda.common.vm._
 
 object Ripemd160 extends FunctionDefinition {
 

@@ -3,10 +3,10 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
+import pravda.common.vm.Meta
 import pravda.node.client._
-import pravda.node.data.common.TransactionId
-import pravda.node.servers.Abci.TransactionResult
-import pravda.vm.{FinalState, Meta}
+import pravda.common.data.blockchain._
+import pravda.common.vm._
 import pravda.vm.asm.Operation
 import utest._
 

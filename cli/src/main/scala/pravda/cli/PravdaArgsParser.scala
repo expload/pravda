@@ -21,7 +21,7 @@ import java.io.File
 
 import pravda.cli.PravdaConfig.{CompileMode, CodegenMode, DefaultValues}
 import pravda.common.bytes
-import pravda.common.domain.NativeCoin
+import pravda.common.data.blockchain.NativeCoin
 import pravda.yopt._
 
 object PravdaArgsParser extends CommandLine[PravdaConfig] {

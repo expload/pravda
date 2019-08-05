@@ -17,7 +17,11 @@
 
 package pravda.node.persistence
 
+import pravda.common.data.blockchain.{Address, NativeCoin}
 import pravda.node.db.DB
+import pravda.node.persistence.implicits._
+import pravda.common.serialization.protobuf._
+import pravda.common.serialization.composite._
 
 object BlockChainStore {
 

@@ -17,11 +17,11 @@
 
 package pravda.dotnet.translation.opcode
 
+import pravda.common.vm.Opcodes
 import pravda.dotnet.parser.CIL
 import pravda.vm.asm
 import pravda.dotnet.translation.data._
 import pravda.vm.asm.Operation._
-import pravda.vm.Opcodes
 
 import scala.annotation.tailrec
 

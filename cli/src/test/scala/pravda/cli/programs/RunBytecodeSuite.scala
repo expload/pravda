@@ -3,9 +3,10 @@ package pravda.cli.programs
 import cats.Id
 import com.google.protobuf.ByteString
 import pravda.cli.PravdaConfig
+import pravda.common.vm.FinalState
 import pravda.node.client._
 import pravda.vm.impl.MemoryImpl
-import pravda.vm.{Data, ExecutionResult, FinalState}
+import pravda.common.vm.{Data, ExecutionResult}
 import utest._
 
 import scala.collection.mutable
