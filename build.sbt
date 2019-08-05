@@ -222,7 +222,6 @@ lazy val node = (project in file("node"))
       // Marshalling
       tethys,
       akkaStreamUnixDomainSocket,
-      shapeless,
       zhukov
     ),
     dependencyOverrides += "org.scala-lan" %% "scala-compiler" % "2.12.6",

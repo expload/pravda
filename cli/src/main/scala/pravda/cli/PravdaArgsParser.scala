@@ -109,10 +109,17 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             opt[File]("storage")
-              .text("Storage name")
+              .text("Path to application state database")
               .action {
                 case (file, config: PravdaConfig.RunBytecode) =>
-                  config.copy(storage = Some(file.getAbsolutePath))
+                  config.copy(appStateDbPath = Some(file.getAbsolutePath))
+                case (_, otherwise) => otherwise
+              },
+            opt[File]("effectsDb")
+              .text("Path to effects database")
+              .action {
+                case (file, config: PravdaConfig.RunBytecode) =>
+                  config.copy(effectsDbPath = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[Unit]("meta-from-ipfs")

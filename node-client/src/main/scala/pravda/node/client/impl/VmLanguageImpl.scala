@@ -30,11 +30,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 final class VmLanguageImpl(implicit executionContext: ExecutionContext) extends VmLanguage[Future] {
 
-  def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): Future[ExecutionResult] =
+  def run(program: ByteString,
+          executor: ByteString,
+          appStateDbPath: String,
+          effectsDbPath: String,
+          wattLimit: Long): Future[ExecutionResult] =
     Future {
 
       val executorAddress = Address @@ executor
-      val envProvider = new servers.Abci.BlockDependentEnvironment(DB(storagePath, None), None)
+      val envProvider =
+        new servers.Abci.BlockDependentEnvironment(DB(appStateDbPath, None), DB(effectsDbPath, None), None)
       val env = envProvider.transactionEnvironment(executorAddress, TransactionId.forEncodedTransaction(program))
       val vm = new VmImpl()
       val result = vm.spawn(program, env, wattLimit)

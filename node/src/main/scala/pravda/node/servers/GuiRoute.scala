@@ -40,7 +40,7 @@ import pravda.node.data.cryptography
 import pravda.node.data.serialization._
 import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
-import pravda.node.persistence.FileStore
+import pravda.node.persistence.{FileStore, PureDbPath}
 import pravda.node.utils
 import pravda.vm
 import pravda.vm.{Data, MarshalledData}
@@ -49,11 +49,12 @@ import pravda.vm.asm.{Operation, PravdaAssembler}
 import scala.concurrent.Future
 import scala.util.Random
 
-class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, materializer: ActorMaterializer) {
+class GuiRoute(abciClient: AbciClient, effectsDb: DB)(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
   import GuiRoute._
   import globalContext._
   import symbolDsl._
+  private lazy val blockEffectsPath = new PureDbPath(effectsDb, "effects")
 
   private def effectsTable(table: List[Map[String, Node]]): Node = {
     'table ('class /= "table is-striped is-hoverable is-fullwidth",
@@ -424,10 +425,13 @@ class GuiRoute(abciClient: AbciClient, db: DB)(implicit system: ActorSystem, mat
   )
 
   private def loadBlock(height: Long) = {
-    val key = s"effects:${byteUtils.bytes2hex(byteUtils.longToBytes(height))}"
+    val suffix = byteUtils.bytes2hex(byteUtils.longToBytes(height))
     for {
-      blockInfo <- OptionT(db.get(byteUtils.stringToBytes(key))).map(r =>
-        transcode(Protobuf @@ r.bytes).to[Tuple1[Map[TransactionId, Seq[vm.Effect]]]]._1)
+      blockInfo <- OptionT(
+        Future(
+          blockEffectsPath
+            .getRawBytes(suffix)
+            .map(bytes => transcode(Protobuf @@ bytes).to[Tuple1[Map[TransactionId, Seq[vm.Effect]]]]._1)))
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {

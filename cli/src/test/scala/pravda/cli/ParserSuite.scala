@@ -26,14 +26,14 @@ object ParserSuite extends TestSuite {
     "run" - {
       "-i a.out" - assert {
         PravdaArgsParser.parse(List("run", "-i", "a.out"), PravdaConfig.Nope) match {
-          case Ok(RunBytecode(_, Some(file), _, _, _)) => file.endsWith("a.out")
-          case _                                       => false
+          case Ok(RunBytecode(_, _, Some(file), _, _, _)) => file.endsWith("a.out")
+          case _                                          => false
         }
       }
       "--storage db" - assert {
         PravdaArgsParser.parse(List("run", "--storage", "db"), PravdaConfig.Nope) match {
-          case Ok(RunBytecode(Some(file), _, _, _, _)) => file.endsWith("db")
-          case _                                       => false
+          case Ok(RunBytecode(Some(file), _, _, _, _, _)) => file.endsWith("db")
+          case _                                          => false
         }
       }
       "--executor <address>" - assert {

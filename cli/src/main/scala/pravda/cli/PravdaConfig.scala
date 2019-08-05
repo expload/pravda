@@ -93,7 +93,8 @@ object PravdaConfig {
                            ipfsNode: String = DefaultValues.Broadcast.IPFS_NODE)
       extends PravdaConfig
 
-  final case class RunBytecode(storage: Option[String] = None,
+  final case class RunBytecode(appStateDbPath: Option[String] = None,
+                               effectsDbPath: Option[String] = None,
                                input: Option[String] = None,
                                executor: String = DefaultExecutor,
                                metaFromIpfs: Boolean = false,

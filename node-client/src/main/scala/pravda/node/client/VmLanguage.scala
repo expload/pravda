@@ -24,5 +24,9 @@ import scala.language.higherKinds
 
 trait VmLanguage[F[_]] {
 
-  def run(program: ByteString, executor: ByteString, storagePath: String, wattLimit: Long): F[ExecutionResult]
+  def run(program: ByteString,
+          executor: ByteString,
+          appStateDbPath: String,
+          effectsDbPath: String,
+          wattLimit: Long): F[ExecutionResult]
 }

@@ -42,7 +42,7 @@ import pravda.node.data.serialization.composite._
 import pravda.node.data.serialization.protobuf._
 import pravda.node.db.DB
 import pravda.node.persistence.BlockChainStore._
-import pravda.node.persistence.Entry
+import pravda.node.persistence.PureDbPath
 import pravda.node.servers.Abci.{TransactionEffects, TransactionResult}
 import pravda.node.servers.ApiRoute.AddressPathMatcher
 import pravda.vm.impl.VmImpl
@@ -56,7 +56,8 @@ import scala.util.{Failure, Random, Success, Try}
 /**
   * @param abci Direct access to transaction processing. Required by dry-run
   */
-class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionContext: ExecutionContext) {
+class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, abci: Abci)(
+    implicit executionContext: ExecutionContext) {
 
   import pravda.node.utils.AkkaHttpSpecials._
   import pravda.node.persistence.implicits._
@@ -75,12 +76,13 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
   val longUnmarshaller: Unmarshaller[String, Long] =
     Unmarshaller.strict(s => s.toLong)
 
-  val balances: Entry[Address, NativeCoin] = balanceEntry(db)
-  val eventsByAddress = eventsByAddressEntry(db)
-  val events = eventsEntry(db)
-  val txIdIndex = txIdIndexEntry(db)
-  val transferEffectsByAddress = transferEffectsEntry(db)
-  val transactionsByAddress = transactionsEntry(db)
+  val balances = new PureDbPath(applicationStateDb, "balance")
+  val events = eventsEntry(applicationStateDb)
+
+  val txIdIndex = txIdIndexEntry(effectsDb)
+  val eventsByAddress = eventsByAddressEntry(effectsDb)
+  val transferEffectsByAddress = transferEffectsEntry(effectsDb)
+  val transactionsByAddress = transactionsEntry(effectsDb)
 
   def bodyToTransactionData(body: HttpEntity.Strict): TransactionData = {
     body.contentType.mediaType match {
@@ -108,7 +110,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
              'wattPayerSignature.as(hexUnmarshaller).?)) {
             (from, maybeSignature, maybeNonce, wattLimit, wattPrice, wattPayer, wattPayerSignature) =>
               extractStrictEntity(1.second) { body =>
-                val env = new node.servers.Abci.BlockDependentEnvironment(db, None)
+                val env = new node.servers.Abci.BlockDependentEnvironment(applicationStateDb, effectsDb, None)
                 val program = bodyToTransactionData(body)
                 val nonce = maybeNonce.getOrElse(Random.nextInt())
                 val verificationResult = maybeSignature match {
@@ -155,7 +157,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
         path("execute") {
           parameters('from.as(hexUnmarshaller)) { from =>
             extractStrictEntity(1.second) { body =>
-              val bde = new node.servers.Abci.BlockDependentEnvironment(db, None)
+              val bde = new node.servers.Abci.BlockDependentEnvironment(applicationStateDb, effectsDb, None)
               val program = bodyToTransactionData(body)
               val wattLimit = Long.MaxValue
               val transactionId = TransactionId.Empty
@@ -219,8 +221,7 @@ class ApiRoute(abciClient: AbciClient, db: DB, abci: Abci)(implicit executionCon
         get {
           path("balance") {
             parameters('address.as(hexUnmarshaller)) { address =>
-              val f = balances
-                .get(Address @@ address)
+              val f = Future(balances.getAs[NativeCoin](bytes.byteString2hex(address)))
                 .map(
                   _.getOrElse(NativeCoin @@ 0L)
                 )

@@ -35,10 +35,6 @@ object utils {
     hash(hash(key) ++ hash(value))
   }
 
-  def hashPair(key: String, value: String): Array[Byte] = {
-    hash(hash(key) ++ hash(value))
-  }
-
   def xor(arr1: Array[Byte], arr2: Array[Byte]): Array[Byte] = {
     arr1.zip(arr2).map {
       case (el1, el2) =>

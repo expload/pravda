@@ -19,24 +19,15 @@ package pravda.node.utils
 
 import java.nio.charset.StandardCharsets
 
-import akka.http.scaladsl.marshalling.{Marshaller, Marshalling, ToEntityMarshaller}
+import akka.http.scaladsl.marshalling.{Marshaller, Marshalling, PredefinedToResponseMarshallers, ToEntityMarshaller}
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{BasicHttpCredentials, HttpChallenges}
-import akka.http.scaladsl.server.Directives.{AuthenticationResult, authenticateOrRejectWithChallenge}
-import akka.http.scaladsl.server.directives.BasicDirectives.extractExecutionContext
-import akka.http.scaladsl.server.directives.{AuthenticationDirective, AuthenticationResult}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import pravda.node.data.serialization._
-import pravda.node.data.domain.Wallet
-import pravda.node.data.cryptography
-import pravda.node.persistence.NodeStore
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import akka.http.scaladsl.marshalling.PredefinedToResponseMarshallers
-import pravda.common.domain.PrivateKey
 
 object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
 
@@ -67,28 +58,6 @@ object AkkaHttpSpecials extends PredefinedToResponseMarshallers {
         val contentType = JsonContentTypeHeader
         val entity = HttpEntity.Strict(contentType, data)
         List(Marshalling.Opaque(() => entity))
-      }
-    }
-
-  final case class OpenedWallet(wallet: Wallet, privateKey: PrivateKey)
-
-  /** Custom directive for wallet decryption */
-  def authenticateWalletAsync(realm: String)(implicit nodeStore: NodeStore): AuthenticationDirective[OpenedWallet] =
-    extractExecutionContext.flatMap { implicit ec =>
-      lazy val failure = AuthenticationResult.failWithChallenge(HttpChallenges.basic(realm))
-      authenticateOrRejectWithChallenge[BasicHttpCredentials, OpenedWallet] { maybeCredentials =>
-        maybeCredentials.fold(Future.successful[AuthenticationResult[OpenedWallet]](failure)) { credentials =>
-          nodeStore.getWallet(credentials.username) map { maybeWallet =>
-            maybeWallet
-              .flatMap { wallet =>
-                cryptography.decryptPrivateKey(wallet.privateKey, credentials.password) map { privateKey =>
-                  OpenedWallet(wallet, privateKey)
-                }
-              }
-              .map(AuthenticationResult.success)
-              .getOrElse(failure)
-          }
-        }
       }
     }
 }
