@@ -56,14 +56,14 @@ steps:
     - find . -iname "*.zip" | grep ".zip"
   when:
     event: tag
-- name: build-sign-msi
-  image: gcr.io/time-coin/alpine-curl:0.1
-  commands:
-    - export MSI_SERVICE_URI="http://35.246.239.138:8080/pravda-upload-win"
-    - for zip_file in /workdir/code/win-installer/*.zip; do curl -F zip=@$zip_file "$MSI_SERVICE_URI?version=$DRONE_TAG" -o $${zip_file%.zip}.msi; done
-    - cd /workdir/code/win-installer && find . -iname "*.msi" | grep ".msi"
-  when:
-    event: tag
+#- name: build-sign-msi
+#  image: gcr.io/time-coin/alpine-curl:0.1
+#  commands:
+#    - export MSI_SERVICE_URI="http://35.246.239.138:8080/pravda-upload-win"
+#    - for zip_file in /workdir/code/win-installer/*.zip; do curl -F zip=@$zip_file "$MSI_SERVICE_URI?version=$DRONE_TAG" -o $${zip_file%.zip}.msi; done
+#    - cd /workdir/code/win-installer && find . -iname "*.msi" | grep ".msi"
+#  when:
+#    event: tag
 - name: publish-to-bintray
   image: gcr.io/time-coin/sbt:latest
   volumes:
