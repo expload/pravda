@@ -12,7 +12,7 @@ git.gitTagToVersionNumber := { tag: String =>
   else None
 }
 
-val `tendermint-version` = "0.26.4"
+val `tendermint-version` = "0.32.2"
 
 lazy val envDockerUsername = sys.env.get("docker_username")
 
@@ -221,7 +221,7 @@ lazy val node = (project in file("node"))
             targetFile.getParentFile.mkdirs()
           }
           val url =
-            s"https://github.com/tendermint/tendermint/releases/download/v$version/tendermint_${version}_$ghSuffix.zip"
+            s"https://github.com/tendermint/tendermint/releases/download/v$version/tendermint_v${version}_$ghSuffix.zip"
           sLog.value.info(s"downloading $url")
           val dir = Files.createTempDirectory("tmsbt").toFile
           val unzipped = IO.unzipURL(new URL(url), dir)
