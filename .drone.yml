@@ -84,12 +84,12 @@ steps:
     event: tag
 - name: publish-github-releases
   image: plugins/github-release
-  files:
-    - /workdir/code/win-installer/*.msi
-    - /workdir/code/cli/target/universal/*.tgz
   settings:
     api_key:
       from_secret: github_release_api_key
+    files:
+      - /workdir/code/win-installer/*.msi
+      - /workdir/code/cli/target/universal/*.tgz
   when:
     event: tag
 - name: publish-docker-hub
