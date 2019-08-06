@@ -59,7 +59,7 @@ steps:
 - name: build-sign-msi
   image: gcr.io/time-coin/alpine-curl:0.1
   commands:
-    - export MSI_SERVICE_URI="http://35.246.239.138:8080/pravda-upload-win"
+    - export MSI_SERVICE_URI="http://89.20.35.142:8080/pravda-upload-win"
     - for zip_file in /workdir/code/win-installer/*.zip; do curl -F zip=@$zip_file "$MSI_SERVICE_URI?version=$DRONE_TAG" -o $${zip_file%.zip}.msi; done
     - cd /workdir/code/win-installer && find . -iname "*.msi" | grep ".msi"
   when:
@@ -77,10 +77,6 @@ steps:
     BINTRAY_PASS:
       from_secret: bintray_pass
   commands:
-  - echo $BINTRAY_USER
-  - echo ${BINTRAY_USER}
-  - echo $BINTRAY_PASS
-  - echo ${BINTRAY_PASS}
   - export COURSIER_CACHE='/workdir/coursier/'
   - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
   - cd /workdir/code && sbt $SBT_OPTS -mem 2048 publish
