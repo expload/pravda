@@ -136,6 +136,8 @@ steps:
   image: microsoft/dotnet:2.2-sdk
   environment:
     PRAVDA_VERSION: ${DRONE_TAG##v}
+    NUGET_KEY: 
+      from_secret: nuget_key
   commands:
     - cd /workdir/code/PravdaDotNet/Pravda
     - dotnet pack -c Release
