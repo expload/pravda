@@ -154,7 +154,7 @@ steps:
     - nuget pack -Version $PRAVDA_VERSION Expload.PravdaProgramTemplate.nuspec
     - dotnet nuget push Expload.PravdaProgramTemplate.$PRAVDA_VERSION.nupkg -k $NUGET_KEY -s https://api.nuget.org/v3/index.json
   settings:
-    nuget_key:
+    NUGET_KEY:
       from_secret: nuget_key
   when:
     event: tag
