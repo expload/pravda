@@ -20,18 +20,18 @@ steps:
   pull: false
   commands:
     - echo -n `git describe --tags | sed -e "s/^v//"`",latest" > .tags
-#- name: tests
-#  image: gcr.io/time-coin/sbt:latest
-#  pull: true
-#  volumes:
-#  - name: sbt-cache
-#    path: /workdir/sbt
-#  - name: coursier-cache
-#    path: /workdir/coursier
-#  commands:
-#    - export COURSIER_CACHE='/workdir/coursier/'
-#    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
-#    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
+- name: tests
+  image: gcr.io/time-coin/sbt:latest
+  pull: true
+  volumes:
+  - name: sbt-cache
+    path: /workdir/sbt
+  - name: coursier-cache
+    path: /workdir/coursier
+  commands:
+    - export COURSIER_CACHE='/workdir/coursier/'
+    - export SBT_OPTS='-Dsbt.global.base=/workdir/sbt/ -Dsbt.ivy.home=/workdir/ivy/ -Divy.home=/workdir/ivy/'
+    - cd /workdir/code && sbt $SBT_OPTS -mem 2048 headerCheck scalafmtCheck test:scalafmtCheck test "gen-doc/run --check"
 - name: package-zip
   image: gcr.io/time-coin/sbt:latest
   volumes:
