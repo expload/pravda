@@ -151,6 +151,8 @@ steps:
   image: chicker/nuget:0.8
   environment:
     PRAVDA_VERSION: ${DRONE_TAG##v}
+    NUGET_KEY:
+      from_secret: nuget_key
   commands:
     - cd /workdir/code/PravdaProgramTemplate
     - nuget pack -Version $PRAVDA_VERSION Expload.PravdaProgramTemplate.nuspec
