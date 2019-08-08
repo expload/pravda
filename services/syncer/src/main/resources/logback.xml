@@ -1,0 +1,57 @@
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{dd.MM.yyyy HH:mm:ss.SSS}] [%thread]
+                %highlight(%-5level) %cyan(%logger{15}): %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="sentry" class="io.sentry.logback.SentryAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+    </appender>
+
+    <logger name="ch.qos.logback" level="error" additivity="false">
+        <appender name="cliout" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%cyan(CLI) %highlight(%-5marker): %msg</pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <logger name="org.flywaydb.core" level="warn" additivity="false">
+        <appender name="cliout" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>[%d{dd.MM.yyyy HH:mm:ss.SSS}] [%thread]
+                    %highlight(%-5level) %cyan(%logger{15}): %msg%n
+                </pattern>
+            </encoder>
+        </appender>
+    </logger>
+
+    <logger name="akka.actor.CoordinatedShutdown" level="WARN" />
+    <logger name="akka.actor.RepointableActorRef" level="WARN" />
+    <logger name="akka.event.slf4j.Slf4jLogger" level="WARN"/>
+    <logger name="akka.stream.impl.io.InputStreamPublisher" level="WARN"/>
+    <logger name="akka.io" level="WARN" />
+    <logger name="akka.http" level="WARN"/>
+    <logger name="akka.http.impl.engine.client.PoolGateway" level="WARN" />
+    <logger name="com.typesafe.sslconfig.akka" level="WARN"/>
+    <logger name="com.typesafe.sslconfig.ssl" level="WARN"/>
+    <logger name="scalikejdbc.StatementExecutor" level="WARN"/>
+    <logger name="scalikejdbc.ConnectionPool" level="WARN"/>
+    <logger name="org.flywaydb" level="WARN"/>
+    <logger name="org.zeroturnaround.zip.ZipUtil" level="WARN"/>
+    <logger name="io.sentry" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    <logger name="io.grpc.netty.NettyClientHandler" level="WARN"/>
+
+    <root level="trace">
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="sentry"/>
+    </root>
+</configuration>
