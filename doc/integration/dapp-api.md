@@ -211,10 +211,12 @@ If there is no current user, an implementation of the Standard should return `No
 {
     "address": "<hex formatted string of program's address>",
     "method": "<name of the method>",
+    "description": "<information about what will be happened if the user signs that transaction>"
     "args": [ <list of arguments> ]
 }
 ```
 
+The field "description" is optional and can be omitted.
 Arguments should be properly encoded according to their [JSON representation](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
 
 ### Response
