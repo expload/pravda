@@ -31,7 +31,7 @@ import pravda.common.vm.{Data, Opcodes}
 /** Translator that handles calling of different kinds of methods */
 case object CallsTranslation extends OneToManyTranslator {
 
-  private val mappingsMethods = Set("get_Item", "GetOrDefault", "ContainsKey", "set_Item")
+  private val mappingsMethods = Set("get_Item", "GetOrDefault", "ContainsKey", "set_Item", "Remove")
 
   def detectMapping(sig: Signature): Boolean = {
     sig match {
@@ -330,6 +330,11 @@ case object CallsTranslation extends OneToManyTranslator {
                       Operation(Opcodes.POP)
                     )
                 )
+              case "Remove" =>
+                Right(
+                  cast(Data.Type.Bytes) ++ List(Operation(Opcodes.SWAP),
+                                                Operation(Opcodes.CONCAT),
+                                                Operation(Opcodes.SDROP)))
               case _ => Left(UnknownOpcode)
             }
           } else {

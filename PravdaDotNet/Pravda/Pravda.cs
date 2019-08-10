@@ -79,6 +79,11 @@ namespace Expload.Pravda
                 return defaultValue;
             }
         }
+
+        public void Remove(K key)
+        {
+            mapping.Remove(key);
+        }
     }
 
     public static class Info {
