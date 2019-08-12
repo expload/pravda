@@ -248,9 +248,9 @@ class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, ab
                 case None       => items
               }
 
-              def toItems(evs: List[(Address, (TransactionId, String, MarshalledData))]): List[EventItem] =
+              def toItems(evs: List[(Address, (TransactionId, Long, String, MarshalledData))]): List[EventItem] =
                 evs.zipWithIndex.map {
-                  case ((addr, (tid, name, d)), n) => EventItem(n + offset, tid, addr, name, d)
+                  case ((addr, (tid, timestamp, name, d)), n) => EventItem(n + offset, tid, timestamp, addr, name, d)
                 }
 
               maybeTransaction match {
@@ -262,7 +262,8 @@ class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, ab
                     evs <- Future.sequence(forTx.map {
                       case (addr, offs) if maybeAddress.contains(addr) =>
                         Future {
-                          val eOpt = events.getAs[(TransactionId, String, MarshalledData)](eventKeyOffset(addr, offs))
+                          val eOpt =
+                            events.getAs[(TransactionId, Long, String, MarshalledData)](eventKeyOffset(addr, offs))
                           eOpt.map(e => (addr, e))
                         }
                       case _ => Future.successful(None)
@@ -275,9 +276,10 @@ class ApiRoute(abciClient: AbciClient, applicationStateDb: DB, effectsDb: DB, ab
                 case None =>
                   maybeAddress match {
                     case Some(address) =>
-                      val res = events.startsWith[(TransactionId, String, MarshalledData)](eventKey(Address @@ address),
-                                                                                           offset,
-                                                                                           count)
+                      val res =
+                        events.startsWith[(TransactionId, Long, String, MarshalledData)](eventKey(Address @@ address),
+                                                                                         offset,
+                                                                                         count)
                       onSuccess(res) { evs =>
                         complete(filterByName(toItems(evs.map(e => (Address @@ address, e)))))
                       }

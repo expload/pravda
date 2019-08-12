@@ -432,7 +432,7 @@ class GuiRoute(abciClient: AbciClient, effectsDb: DB)(implicit system: ActorSyst
         Future(
           blockEffectsPath
             .getRawBytes(suffix)
-            .map(bytes => transcode(Protobuf @@ bytes).to[Tuple1[Map[TransactionId, Seq[vm.Effect]]]]._1)))
+            .map(bytes => transcode(Protobuf @@ bytes).to[Tuple1[Map[TransactionId, TransactionResultInfo]]]._1)))
       eventuallyTransaction = blockInfo.keys.map(tid => abciClient.readTransaction(tid).map(tx => tid -> tx))
       transactions <- OptionT.liftF(Future.sequence(eventuallyTransaction))
     } yield {
@@ -441,7 +441,7 @@ class GuiRoute(abciClient: AbciClient, effectsDb: DB)(implicit system: ActorSyst
         transactions.toList.map {
           case (id, transaction) =>
             val asm = programToAsm(transaction.program)
-            Transaction(id, transaction.from, blockInfo(id).toList, asm)
+            Transaction(id, transaction.from, blockInfo(id).effects.toList, asm)
         }
       )
     }
