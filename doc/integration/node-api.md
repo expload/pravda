@@ -27,7 +27,8 @@ The list of events' offsets, `transactionId`s, addresses, names and datas:
 [
     {
         "offset": 0,
-        "transactionId": "0123456789abcdef", 
+        "transactionId": "0123456789abcdef",
+        "timestamp": <unix-timestamp (long) like 1565618724247>,
         "address" : "<address of the program emited event>",
         "name": "event-name",
         "data": "<some data from the first event>"                
@@ -35,6 +36,7 @@ The list of events' offsets, `transactionId`s, addresses, names and datas:
     {
         "offset": 1,       
         "transactionId": "fedcba9876543210",
+        "timestamp": <unix-timestamp (long) like 1565618724247>,
         "address" : "<address of the program emited event>",
         "name": "another-name"
         "data": "<some data from the second event>"               
@@ -45,22 +47,22 @@ The list of events' offsets, `transactionId`s, addresses, names and datas:
 
 ### Examples
 ```
-curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0
+curl <api url>/api/public/events?program=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0
 ```
-will return all events for given address in chronological order
+will return all events for given program's address in chronological order
 
 ```
-curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent
+curl <api url>/api/public/events?program=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent
 ```
-will return all events for given address and name
+will return all events for given program's address and name
 
 ```
-curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10
+curl <api url>/api/public/events?program=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10
 ```
 will return all events starting from offset 10
 
 ```
-curl <api url>/api/public/events?address=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10&count=20
+curl <api url>/api/public/events?program=e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0&name=myevent&offset=10&count=20
 ```
 will return only first 20 events from offset 10
 
