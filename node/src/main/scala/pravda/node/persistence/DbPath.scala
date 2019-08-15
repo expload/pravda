@@ -83,7 +83,8 @@ class CachedDbPath(dbPath: DbPath,
 
   def remove(suffix: String): Option[Array[Byte]] = returningPrevious(suffix) {
     val key = mkKey(suffix)
-    dbCache.put(key, None)
+    dbCache.remove(key)
+    dbOperations += Operation.Delete(byteUtils.stringToBytes(key))
   }
 
   def startsWith[V: Unmarshaller: Marshaller](suffix: String, offset: Long, count: Long)(

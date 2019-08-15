@@ -57,6 +57,20 @@ namespace Expload.Pravda.Tests
         }
 
         [Fact]
+        public void MappingRemove()
+        {
+            var mapping = new Mapping<string, int>();
+            mapping.Remove("key1");
+            Assert.False(mapping.ContainsKey("key1"));
+
+            mapping["key1"] = 1;
+            Assert.True(mapping.ContainsKey("key1"));
+
+            mapping.Remove("key1");
+            Assert.False(mapping.ContainsKey("key1"));
+        }
+
+        [Fact]
         public void EventAdd()
         {
             Log.Event("event1", 1);
