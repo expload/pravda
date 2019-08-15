@@ -173,17 +173,28 @@ class Abci(applicationStateDb: DB,
     import pravda.node.data.serialization.json._
 
     val tid = TransactionId.forEncodedTransaction(encodedTransaction)
+
+    // Short-circuit return if the same transaction is already processed or included.
+    environmentProvider.getTxStatus(tid) match {
+      case TransactionState.New =>
+        environmentProvider.setTxStatus(tid, TransactionState.Proccessing)
+      case _ =>
+        return Future.successful(result(TxStatusError, TxAlreadyIncludedError))
+    }
+
     val `try` = Try(transcode(Protobuf @@ encodedTransaction.toByteArray).to[SignedTransaction])
       .flatMap(verifySignedTx(_, tid, environmentProvider))
 
     Future.successful {
       `try` match {
         case Success(executionResult) =>
+          environmentProvider.setTxStatus(tid, TransactionState.Approved)
           result(TxStatusOk, transcode(executionResult).to[Json])
         case Failure(e) =>
           val code =
             if (e.isInstanceOf[TransactionUnauthorizedException]) TxStatusUnauthorized
             else TxStatusError
+          environmentProvider.setTxStatus(tid, TransactionState.Declined)
           result(code, e.getMessage)
       }
     }
@@ -233,6 +244,15 @@ class Abci(applicationStateDb: DB,
 }
 
 object Abci {
+  sealed trait TransactionState extends Product with Serializable
+
+  object TransactionState {
+    case object New         extends TransactionState
+    case object Proccessing extends TransactionState
+    case object Committed   extends TransactionState
+    case object Approved    extends TransactionState
+    case object Declined    extends TransactionState
+  }
 
   sealed abstract class TransactionValidationException(message: String) extends Exception(message)
 
@@ -244,6 +264,8 @@ object Abci {
 
   final case class WrongWattLimitException()
       extends TransactionValidationException("Bad transaction parameter: wattLimit")
+
+  final val TxAlreadyIncludedError = "The same transaction is already processed or included in the blockchain"
 
   final val TxStatusOk = 0
   final val TxStatusUnauthorized = 1
@@ -260,6 +282,7 @@ object Abci {
     private val operations = mutable.Buffer.empty[Operation]
     private val effectsMap = mutable.Buffer.empty[(TransactionId, TransactionResultInfo)]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
+    private val txStatesCache = mutable.Map.empty[TransactionId, TransactionState]
 
     private val validatorUpdates = mutable.Map.empty[Address, Long]
 
@@ -269,6 +292,9 @@ object Abci {
     private lazy val blockBalancesPath =
       new CachedDbPath(new PureDbPath(applicationStateDb, "balance"), cache, operations)
     private lazy val eventsPath = new CachedDbPath(new PureDbPath(applicationStateDb, "events"), cache, operations)
+    // By this path, we store the fact that the transaction with such hash was included in the blockchain
+    private lazy val txIsAlreadyIncludedPath =
+      new CachedDbPath(new PureDbPath(applicationStateDb, "includedtxs"), cache, operations)
     // END
 
     private lazy val txIdIndexPath =
@@ -529,6 +555,21 @@ object Abci {
       }
     }
 
+    def getTxStatus(tid: TransactionId): TransactionState = {
+      def getTxStatusFromDb: TransactionState = {
+        val newState = txIsAlreadyIncludedPath
+          .getAs[Boolean](byteUtils.byteString2hex(tid))
+          .fold[TransactionState](TransactionState.New)(_ => TransactionState.Committed)
+        txStatesCache.update(tid, newState)
+        newState
+      }
+      txStatesCache.get(tid).fold(getTxStatusFromDb)(identity)
+    }
+
+    def setTxStatus(tid: TransactionId, newState: TransactionState): Unit = {
+      txStatesCache.update(tid, newState)
+    }
+
     def appendFee(coins: NativeCoin): Unit = {
       val newFees = NativeCoin @@ (fee + coins)
       fee = newFees
@@ -538,6 +579,7 @@ object Abci {
       operations.clear()
       effectsMap.clear()
       cache.clear()
+      txStatesCache.clear()
       validatorUpdates.clear()
       fee = NativeCoin.zero
     }
@@ -570,6 +612,10 @@ object Abci {
         accrue(address, share)
       }
       accrue(validators((height % validators.length).toInt), remainder)
+
+      txStatesCache.collect {
+        case (tid, TransactionState.Approved) => txIsAlreadyIncludedPath.put(byteUtils.byteString2hex(tid), true)
+      }
 
       if (effectsMap.nonEmpty) {
         val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, TransactionResultInfo]]
