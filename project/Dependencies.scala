@@ -4,6 +4,7 @@ object Dependencies {
   lazy val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.1.7"
   lazy val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.19"
   lazy val akkaStream = "com.typesafe.akka" %% "akka-stream" % "2.5.19"
+  lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
   lazy val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.14.0"
   lazy val catsCore = "org.typelevel" %% "cats-core" % "1.5.0"
   lazy val superTagged = "org.rudogma" %% "supertagged" % "1.4"

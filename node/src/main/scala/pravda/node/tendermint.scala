@@ -188,6 +188,9 @@ object tendermint {
            |laddr = "tcp://0.0.0.0:${config.tendermint.peerPort}"
            |[rpc]
            |laddr = "tcp://127.0.0.1:${config.tendermint.rpcPort}"
+           |[tx_index]
+           |indexer = "kv"
+           |index_all_tags = true
            |""".stripMargin
 
       writeFile(new File(configDir, "config.toml"))(tomlConfig)

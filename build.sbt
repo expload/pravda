@@ -295,6 +295,23 @@ lazy val `broadcaster` = (project in file("services/broadcaster"))
   .settings(normalizedName := "pravda-broadcaster")
   .dependsOn(`node-client`)
 
+lazy val `syncer` = (project in file("services/syncer"))
+  .enablePlugins(UniversalPlugin)
+  .enablePlugins(ClasspathJarPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      akkaHttp,
+      akkaStream,
+      logbackClassic,
+      pureConfig,
+      json4sNative
+    )
+  )
+  .settings(scalacheckOps: _*)
+  .settings(normalizedName := "pravda-syncer")
+  .dependsOn(`common`)
+
 lazy val cli = (project in file("cli"))
   .enablePlugins(ClasspathJarPlugin)
   .enablePlugins(BuildInfoPlugin)
