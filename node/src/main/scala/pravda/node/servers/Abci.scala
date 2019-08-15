@@ -258,7 +258,7 @@ object Abci {
 
     private var fee = NativeCoin.zero
     private val operations = mutable.Buffer.empty[Operation]
-    private val effectsMap = mutable.Buffer.empty[(TransactionId, mutable.Buffer[Effect])]
+    private val effectsMap = mutable.Buffer.empty[(TransactionId, TransactionResultInfo)]
     private val cache = mutable.Map.empty[String, Option[Array[Byte]]]
 
     private val validatorUpdates = mutable.Map.empty[Address, Long]
@@ -288,7 +288,7 @@ object Abci {
                                proposedHeight: Long = 0,
                                proposedBlockTimestamp: Long = 0): TransactionDependentEnvironment = {
       val effects = mutable.Buffer.empty[Effect]
-      effectsMap += (tid -> effects)
+      effectsMap += tid -> TransactionResultInfo(proposedBlockTimestamp, effects)
       new TransactionDependentEnvironment(executor, proposedHeight, proposedBlockTimestamp, tid, effects)
     }
 
@@ -572,7 +572,7 @@ object Abci {
       accrue(validators((height % validators.length).toInt), remainder)
 
       if (effectsMap.nonEmpty) {
-        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, Seq[Effect]]]
+        val data = effectsMap.toMap.asInstanceOf[Map[TransactionId, TransactionResultInfo]]
         blockEffectsPath.put(byteUtils.bytes2hex(byteUtils.longToBytes(height)), Tuple1(data))
         // TODO zhukov will probably support raw Maps without wrapper
       }
@@ -581,25 +581,24 @@ object Abci {
 
       effectsMap
         .flatMap {
-          case (tx, buffer) =>
-            buffer collect {
-              case event: Effect.Event =>
-                tx -> event
+          case (tx, trInfo) =>
+            trInfo.effects collect {
+              case event: Effect.Event => (tx, (trInfo.timestamp, event))
             }
         }
         .groupBy {
-          case (_, Effect.Event(address, _, _)) => address
+          case (_, (_, Effect.Event(address, _, _))) => address
         }
         .foreach {
           case (address, evs) =>
             val len = eventsPath.getAs[Long](eventKeyLength(address)).getOrElse(0L)
             evs.zipWithIndex.foreach {
-              case ((tx, Effect.Event(_, name, data)), i) =>
+              case ((tx, (timestamp, Effect.Event(_, name, data))), i) =>
                 txIndex.get(tx) match {
                   case Some(buf) => buf += ((address, len + i.toLong))
                   case None      => txIndex(tx) = mutable.Buffer((address, len + i.toLong))
                 }
-                eventsPath.put(eventKeyOffset(address, len + i.toLong), (tx, name, data))
+                eventsPath.put(eventKeyOffset(address, len + i.toLong), (tx, timestamp, name, data))
             }
             eventsPath.put(eventKeyLength(address), len + evs.length.toLong)
         }

@@ -24,6 +24,7 @@ import pravda.common.vm.{Effect, ExecutionResult, MarshalledData}
 import supertagged.TaggedType
 import pravda.common.bytes._
 
+import scala.collection.mutable
 import scala.util.Try
 
 object blockchain {
@@ -182,6 +183,8 @@ object blockchain {
 
   final case class StoredProgram(code: ByteString, `sealed`: Boolean)
 
+  final case class TransactionResultInfo(timestamp: Long, effects: mutable.Buffer[Effect])
+
   sealed trait TransactionEffects {
     def num: Long
     def transactionId: TransactionId
@@ -262,6 +265,7 @@ object blockchain {
 
   final case class EventItem(offset: Long,
                              transactionId: TransactionId,
+                             timestamp: Long,
                              address: Address,
                              name: String,
                              data: MarshalledData)

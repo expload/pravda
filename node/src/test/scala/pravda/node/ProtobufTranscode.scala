@@ -71,10 +71,13 @@ object ProtobufTranscode extends TestSuite {
       import pravda.node.data.serialization._
       import pravda.common.serialization.protobuf._
 
-      val eventData: (TransactionId, String, MarshalledData) =
-        (TransactionId @@ ByteString.copyFromUtf8("foo"), "bar", MarshalledData.Simple(Data.Primitive.Utf8("foobar")))
+      val eventData: (TransactionId, Long, String, MarshalledData) =
+        (TransactionId @@ ByteString.copyFromUtf8("foo"),
+         1565616891,
+         "bar",
+         MarshalledData.Simple(Data.Primitive.Utf8("foobar")))
       val protobuf = transcode(eventData).to[Protobuf]
-      transcode(protobuf).to[(TransactionId, String, MarshalledData)] ==> eventData
+      transcode(protobuf).to[(TransactionId, Long, String, MarshalledData)] ==> eventData
     }
 
     "transcode MarshalledData" - {

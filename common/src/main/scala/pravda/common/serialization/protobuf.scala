@@ -37,6 +37,8 @@ import zhukov._
 import zhukov.derivation._
 import zhukov.Default.auto._
 
+import scala.collection.mutable
+
 object protobuf extends ProtobufTranscoder with ZhukovInstances
 
 trait ProtobufTranscoder {
@@ -188,8 +190,9 @@ trait ZhukovInstances extends CommonZhukovInstances with VmZhukovInstances {
   implicit lazy val signedTransactionMarshaller: Marshaller[SignedTransaction] = marshaller
   implicit lazy val storedProgramMarshaller: Marshaller[StoredProgram] = marshaller
   implicit lazy val epkMarshaller: Marshaller[EncryptedPrivateKey] = marshaller
-  implicit lazy val eventDataMarshaller: Marshaller[(TransactionId, String, MarshalledData)] = marshaller
+  implicit lazy val eventDataMarshaller: Marshaller[(TransactionId, Long, String, MarshalledData)] = marshaller
   implicit lazy val txIdIndexDataMarshaller: Marshaller[(Address, Long)] = marshaller
+  implicit lazy val transactionResultInfoMarshaller: Marshaller[TransactionResultInfo] = marshaller
 
   implicit lazy val programEventsUnmarshaller: Unmarshaller[TransactionEffects.ProgramEvents] = unmarshaller
   implicit lazy val transactionAllEffectsUnmarshaller: Unmarshaller[TransactionEffects.AllEffects] = unmarshaller
@@ -197,8 +200,9 @@ trait ZhukovInstances extends CommonZhukovInstances with VmZhukovInstances {
   implicit lazy val signedTransactionUnmarshaller: Unmarshaller[SignedTransaction] = unmarshaller
   implicit lazy val storedProgramUnmarshaller: Unmarshaller[StoredProgram] = unmarshaller
   implicit lazy val epkUnmarshaller: Unmarshaller[EncryptedPrivateKey] = unmarshaller
-  implicit lazy val eventDataUnmarshaller: Unmarshaller[(TransactionId, String, MarshalledData)] = unmarshaller
+  implicit lazy val eventDataUnmarshaller: Unmarshaller[(TransactionId, Long, String, MarshalledData)] = unmarshaller
   implicit lazy val txIdIndexDataUnmarshaller: Unmarshaller[(Address, Long)] = unmarshaller
+  implicit lazy val transactionResultInfoUnmarshaller: Unmarshaller[TransactionResultInfo] = unmarshaller
 
   implicit lazy val programEventsSizeMeter: SizeMeter[TransactionEffects.ProgramEvents] = sizeMeter
   implicit lazy val transactionAllEffectsSizeMeter: SizeMeter[TransactionEffects.AllEffects] = sizeMeter
@@ -206,19 +210,22 @@ trait ZhukovInstances extends CommonZhukovInstances with VmZhukovInstances {
   implicit lazy val signedTransactionSizeMeter: SizeMeter[SignedTransaction] = sizeMeter
   implicit lazy val storedProgramSizeMeter: SizeMeter[StoredProgram] = sizeMeter
   implicit lazy val epkSizeMeter: SizeMeter[EncryptedPrivateKey] = sizeMeter
-  implicit lazy val eventDataSizeMeter: SizeMeter[(TransactionId, String, MarshalledData)] = sizeMeter
+  implicit lazy val eventDataSizeMeter: SizeMeter[(TransactionId, Long, String, MarshalledData)] = sizeMeter
   implicit lazy val txIdIndexDataSizeMeter: SizeMeter[(Address, Long)] = sizeMeter
+  implicit lazy val transactionResultInfoSizeMeter: SizeMeter[TransactionResultInfo] = sizeMeter
 
-  implicit lazy val (mtiseMarshaller: Marshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
-                     mtiseUnmarshaller: Unmarshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
-                     mtiseSizeMeter: SizeMeter[Tuple1[Map[TransactionId, Seq[Effect]]]]) = {
-    implicit lazy val tidToEffectMarshaller: Marshaller[(TransactionId, Seq[Effect])] = marshaller
-    implicit lazy val tidToEffectUnmarshaller: Unmarshaller[(TransactionId, Seq[Effect])] = unmarshaller
-    implicit lazy val tidToEffectSizeMeter: SizeMeter[(TransactionId, Seq[Effect])] = sizeMeter
+  implicit lazy val (mtiseMarshaller: Marshaller[Tuple1[Map[TransactionId, TransactionResultInfo]]],
+                     mtiseUnmarshaller: Unmarshaller[Tuple1[Map[TransactionId, TransactionResultInfo]]],
+                     mtiseSizeMeter: SizeMeter[Tuple1[Map[TransactionId, TransactionResultInfo]]]) = {
+    implicit val trInfoEmpty: Default[TransactionResultInfo] = Default(
+      TransactionResultInfo(0, mutable.Buffer.empty[Effect]))
+    implicit lazy val tidToEffectMarshaller: Marshaller[(TransactionId, TransactionResultInfo)] = marshaller
+    implicit lazy val tidToEffectUnmarshaller: Unmarshaller[(TransactionId, TransactionResultInfo)] = unmarshaller
+    implicit lazy val tidToEffectSizeMeter: SizeMeter[(TransactionId, TransactionResultInfo)] = sizeMeter
 
-    (marshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
-     unmarshaller[Tuple1[Map[TransactionId, Seq[Effect]]]],
-     sizeMeter[Tuple1[Map[TransactionId, Seq[Effect]]]])
+    (marshaller[Tuple1[Map[TransactionId, TransactionResultInfo]]],
+     unmarshaller[Tuple1[Map[TransactionId, TransactionResultInfo]]],
+     sizeMeter[Tuple1[Map[TransactionId, TransactionResultInfo]]])
   }
 }
 
