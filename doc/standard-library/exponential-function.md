@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Takes two items from the stack, raises the second number to a power of first number and pushes the result to the stack.
+Takes two items from the stack, raises the second number to the power of the first number and pushes the result to the stack.

@@ -28,7 +28,7 @@ object ExponentialFunction extends FunctionDefinition {
   val id = 0x03L
 
   val description =
-    "Takes two items from the stack, raises the second number to a power of first number and pushes the result to the stack."
+    "Takes two items from the stack, raises the second number to the power of the first number and pushes the result to the stack."
 
   val args: Seq[(String, Seq[Type])] = Seq(
     "x" -> Seq(Data.Type.Int8, Data.Type.Int16, Data.Type.Int32, Data.Type.Int64, Data.Type.Number, Data.Type.BigInt),

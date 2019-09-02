@@ -1,10 +1,10 @@
-# Internal data format  
+# Internal Data Format
 
-## String representation
+## String Representation
 
-Human-readable representation of `vm.Data`. Supported by assembler for PravdaVM.
- 
-### Primitive types
+Human-readable representation of `vm.Data`, that us supported by the PravdaVM assembler.
+
+### Primitive Types
 
 ```
 int8, int16, int32, int64
@@ -14,29 +14,29 @@ boolean,
 utf8, bytes
 ```
 
-1. All numbers encodes as `type(number)`. For example: `int16(500)` or `number(12.0)`. You can use decimal and hexadecimal way of writing for integers. Also you can write only a number and nearest type will be inferred automatically. For example: `4` will be `int8`, `-500` will be `int16`.
-2. Booleans encodes as `true` and `false`. 
-3. Refs encodes as `#0x0000`.
+1. All numbers encode as `type(number)`. For example: `int16(500)` or `number(12.0)`. You can use a decimal or a hexadecimal way of writing for integers. Also, you can write only a number and the nearest type will be inferred automatically. For example: `4` will be `int8`, `-500` will be `int16`.
+2. Booleans encode as `true` and `false`.
+3. Refs encode as `#0x0000`.
 4. UTF8 string encodes classically `"hello world"`.
-5. Byte strings encodes as `xAABBCCEE`.
+5. Byte strings encode as `xAABBCCEE`.
 
 ### Arrays
 
-Pravda arrays is homogeneous. It means you can't store `int8` and `int32` in same array (or course you can store references). Array encodes as `type[one, two, three]`. For example: `utf8["one", "two", three]`, or `uint8[1, 2, 3]`. Also you can move type to item declaration if it's convenient: `[int8(1), int8(2)]`.
+Pravda arrays are homogeneous. This means that you cannot store `int8` and `int32` in the same array (of course, you can store references). Array encodes as `type[one, two, three]`. For example: `utf8["one", "two", three]`, or `uint8[1, 2, 3]`. Also, you can move the type to item declaration, where this is convenient: `[int8(1), int8(2)]`.
 
 ## Structs
 
-Structs in pravda is tables where key and value are primitive. It's encodes as comma separated tuples or primitives. For example:
+Structs in Pravda are tables where the key and value are primitive. They encode as comma separated tuples or primitives. For example:
 
 ```
 {
   0: "nothing",
   x11EE: "teh bytes",
-  "nothing": 0 
+  "nothing": 0
 }
-```  
+```
 
-## Binary representation
+## Binary Representation
 
 ```
 length := 0b00<6 bits of data>
@@ -64,7 +64,7 @@ primitive_type := int8
                | int16
                | int32
                | int64
-               | bigint               
+               | bigint
                | double
                | boolean
                | ref
@@ -80,7 +80,7 @@ primitive := int8 bytes~1
            | int16 bytes~2
            | int32 bytes~4
            | int64 bytes~8
-           | bigint length bytes[&length]           
+           | bigint length bytes[&length]
            | double bytes~8 # strict IEEE-754 floating point number
            | ref byte[4] # ref is constant sized
            | boolean
@@ -92,23 +92,23 @@ data := primitive
       | struct length (primitive, primitive)[&length]
 ```
 
-### How to read this?
+### How to Read This?
 
-1. `smth[num]` means that we duplicate `smth` structure num times. `byte[8]` means 8 bytes,
+1. `smth[num]` means that we duplicate the `smth` structure num times. `byte[8]` means 8 bytes.
 2. `bytes~num` means that we expect `num` of `bytes` (which length is dynamic).
-3. `&length` refers to given `length` field and means an integer representation of that field.
-4. `(a, b)` means pair type, e.g. two values of a and b are written consecutively.
-5. `data(primitive_type)` means corresponding structure for `primitive` except type byte.
+3. `&length` refers to the given `length` field and means an integer representation of this field.
+4. `(a, b)` means a pair type, e.g. two values of a and b are written consecutively.
+5. `data(primitive_type)` means the corresponding structure for the `primitive`, except for the type byte.
 
-## Json representation
+## Json Representation
 
 ### Primitives
 
-All primitives encodes as JSON strings with prefix. It's easy to parse. Most of popular languages have `indexOf` and `substring` functions.  Type always situated before first dot, value after.
+All primitives encode as JSON strings with a prefix. They are easy to parse. Most of the popular languages have `indexOf` and `substring` functions.  The type always precedes the first dot, and the value follows after the dot.
 
 ```json
 "int8.-100"
-"int16.-100" 
+"int16.-100"
 "int32.-100"
 "int64.-100"
 "bigint.9999999999999"
@@ -122,7 +122,7 @@ All primitives encodes as JSON strings with prefix. It's easy to parse. Most of 
 
 ### Arrays
 
-Arrays corresponds to JSON arrays. First item contains type of primitive.
+Arrays correspond to JSON arrays. The first item contains the type of primitive.
 
 ```json
 ["int32", "100", "200", "300"]
@@ -130,7 +130,7 @@ Arrays corresponds to JSON arrays. First item contains type of primitive.
 
 ### Structs
 
-Structs corresponds to JSON objects.
+Structs correspond to JSON objects.
 
 ```json
 {

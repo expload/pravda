@@ -10,9 +10,9 @@ Run byte-code on Pravda VM
 
 |Option|Description|
 |----|----|
-|`-e`, `--executor`|Executor address HEX representation
-|`-i`, `--input`|Input file
-|`--storage`|Path to application state database
-|`--effectsDb`|Path to effects database
-|`--meta-from-ipfs`|Load metadata from IPFS if necessary. To configure the IPFS node address use "--ipfs-node" parameter.
-|`--ipfs-node`|Ipfs node (/ip4/127.0.0.1/tcp/5001 by default).
+|`-e`, `--executor`|The executor address HEX representation
+|`-i`, `--input`|An input file
+|`--storage`|A path to the application state database
+|`--effectsDb`|A path to the effects database
+|`--meta-from-ipfs`|Load the metadata from IPFS if necessary. To configure the IPFS node address, use "--ipfs-node" parameter.
+|`--ipfs-node`|An ipfs node (/ip4/127.0.0.1/tcp/5001 by default).

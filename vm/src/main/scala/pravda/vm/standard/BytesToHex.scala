@@ -28,7 +28,7 @@ object BytesToHex extends FunctionDefinition {
   val id = 0x05L
 
   val description =
-    "Takes bytes from stack, pushes hex string to the stack"
+    "Takes bytes from the stack, pushes the hex string to the stack"
 
   val args: Seq[(String, Seq[Type])] = Seq(
     "bytes" -> Seq(Data.Type.Bytes),

@@ -33,7 +33,7 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
 
   @OpcodeImplementation(
     opcode = Opcodes.POP,
-    description = "Removes first item from the stack."
+    description = "Removes the first item from the stack."
   )
   def pop(): Unit = {
     memory.pop()
@@ -56,7 +56,7 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
 
   @OpcodeImplementation(
     opcode = Opcodes.DUP,
-    description = "Duplicates first item of the stack."
+    description = "Duplicates the first item of the stack."
   )
   def dup(): Unit = {
     val x = memory.pop()
@@ -67,8 +67,8 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
 
   @OpcodeImplementation(
     opcode = Opcodes.DUPN,
-    description = "Duplicates `(n+1)`-th item of the stack " +
-      "where `n` is the first item in stack."
+    description = "Duplicates the `(n+1)`-th item of the stack " +
+      "where `n` is the first item in the stack."
   )
   def dupN(): Unit = {
     val n = integer(memory.pop())
@@ -79,7 +79,7 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
 
   @OpcodeImplementation(
     opcode = Opcodes.SWAP,
-    description = "Swaps first two items in the stack."
+    description = "Swaps the first two items in the stack."
   )
   def swap(): Unit = {
     val fsti = memory.length - 1
@@ -90,7 +90,7 @@ final class StackOperations(memory: Memory, program: ByteBuffer, wattCounter: Wa
   @OpcodeImplementation(
     opcode = Opcodes.SWAPN,
     description = "Swaps the second item of the stack with " +
-      "the `(n+1)`-th item of the stack where `n` is first item in the stack."
+      "the `(n+1)`-th item of the stack where `n` is the first item in the stack."
   )
   def swapN(): Unit = {
     val n = integer(memory.pop())

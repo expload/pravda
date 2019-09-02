@@ -29,7 +29,7 @@ object Ripemd160 extends FunctionDefinition {
   val id: Long = 0x02L
 
   val description: String =
-    "Calculate RIPEMD-160 hash for message. See https://homes.esat.kuleuven.be/~bosselae/ripemd160.html"
+    "Calculates RIPEMD-160 hash for the message. See https://homes.esat.kuleuven.be/~bosselae/ripemd160.html"
 
   val returns = Seq(Data.Type.Bytes)
 

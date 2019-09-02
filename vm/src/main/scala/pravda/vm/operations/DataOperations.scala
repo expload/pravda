@@ -30,7 +30,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = Opcodes.CAST,
-    description = "Casts primitive to another type."
+    description = "Casts the primitive to another type."
   )
   def cast(): Unit = {
     val `type` = integer(memory.pop())
@@ -43,7 +43,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
   @OpcodeImplementation(
     opcode = Opcodes.SLICE,
     description =
-      "Takes start index, end index and item from the stack. Makes slice of item and puts result to the stack."
+      "Takes the start index, end index and item from the stack. Makes a slice of item and puts the result to the stack."
   )
   def slice(): Unit = {
     val from = integer(memory.pop()).toInt
@@ -60,7 +60,7 @@ final class DataOperations(memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = vm.Opcodes.CONCAT,
-    description = "Takes two items from stack. Concatenates them and put result to stack."
+    description = "Takes two items from stack. Concatenates them and puts the result to the stack."
   )
   def concat(): Unit = {
     val data = (memory.pop(), memory.pop()) match {

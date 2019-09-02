@@ -39,17 +39,17 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
     head("pravda")
       .text(
         s"Pravda ${pravda.cli.BuildInfo.version.takeWhile(_ != '-')} Command Line Interface\n\n" +
-          "To get info about options for particular command you can use flag --help or -h after command." +
-          " For example, to get help about \"gen address\" command, type \"pravda gen address -h\"")
+          "To learn about the options for the particular command you can use the flag --help or -h after the command." +
+          " For example, to get help regarding the use of the \"gen address\" command, type \"pravda gen address -h\"")
       .mdText(s"Pravda Command Line Interface\n\n" +
-        "To get info about options for particular command you can use flag --help or -h after command." +
-        " For example, to get help about \"gen address\" command, type \"pravda gen address -h\"")
+        "To learn about the options for the particular command you can use the flag --help or -h after the command." +
+        " For example, to get help regarding the use of the \"gen address\" command, type \"pravda gen address -h\"")
       .children(
         cmd("gen")
           .text("Generate auxiliary data for Pravda.")
           .children(
             cmd("address")
-              .text("Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.")
+              .text("Generate the ed25519 key pair. It can be used as a regular wallet or a validator node identifier.")
               .action(_ => PravdaConfig.GenAddress())
               .children(
                 opt[File]('o', "output")
@@ -61,7 +61,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   }
               ),
             cmd("unity")
-              .text("Generate auxiliary code to call program's methods from Unity")
+              .text("Generate the auxiliary code to call the program's methods from Unity")
               .action(_ => PravdaConfig.Codegen(CodegenMode.Dotnet))
               .children(
                 opt[File]('i', "input")
@@ -91,7 +91,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
           .action(_ => PravdaConfig.RunBytecode())
           .children(
             opt[String]('e', "executor")
-              .text("Executor address HEX representation")
+              .text("The executor address HEX representation")
               .validate {
                 case s if bytes.isHex(s) && s.length == 64 => Right(())
                 case s                                     => Left(s"`$s` is not valid address. It should be 32 bytes hex string.")
@@ -102,35 +102,35 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             opt[File]('i', "input")
-              .text("Input file")
+              .text("An input file")
               .action {
                 case (file, config: PravdaConfig.RunBytecode) =>
                   config.copy(input = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[File]("storage")
-              .text("Path to application state database")
+              .text("A path to the application state database")
               .action {
                 case (file, config: PravdaConfig.RunBytecode) =>
                   config.copy(appStateDbPath = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[File]("effectsDb")
-              .text("Path to effects database")
+              .text("A path to the effects database")
               .action {
                 case (file, config: PravdaConfig.RunBytecode) =>
                   config.copy(effectsDbPath = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[Unit]("meta-from-ipfs")
-              .text("Load metadata from IPFS if necessary. To configure the IPFS node address use \"--ipfs-node\" parameter.")
+              .text("Load the metadata from IPFS if necessary. To configure the IPFS node address, use \"--ipfs-node\" parameter.")
               .action {
                 case ((), config: PravdaConfig.RunBytecode) =>
                   config.copy(metaFromIpfs = true)
                 case (_, otherwise) => otherwise
               },
             opt[String]("ipfs-node")
-              .text(s"Ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .text(s"An ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
               .action {
                 case (ipfsNode, config: PravdaConfig.RunBytecode) =>
                   config.copy(ipfsNode = ipfsNode)
@@ -142,14 +142,14 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
           .action(_ => PravdaConfig.Compile(CompileMode.Nope))
           .children(
             opt[Seq[File]]('i', "input")
-              .text("Input file")
+              .text("An input file")
               .action {
                 case (files, config: PravdaConfig.Compile) =>
                   config.copy(input = files.map(_.getAbsolutePath).toList)
                 case (_, otherwise) => otherwise
               },
             opt[File]('o', "output")
-              .text("Output file")
+              .text("An output file")
               .action {
                 case (file, config: PravdaConfig.Compile) =>
                   config.copy(output = Some(file.getAbsolutePath))
@@ -157,28 +157,28 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               },
             cmd("asm")
               .text(
-                "Assemble Pravda VM bytecode from text representation. " +
-                  "Input file is a Pravda assembly language text file. " +
-                  "Output is binary Pravda program. " +
+                "Assemble Pravda VM bytecode from the text representation. " +
+                  "The input file is a Pravda assembly language text file. " +
+                  "The output is a binary Pravda program. " +
                   "By default read from stdin and print to stdout.")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Asm)),
             cmd("disasm")
               .text(
-                "Disassemble Pravda VM bytecode to text presentation. " +
-                  "Input file is a Pravda executable binary. " +
-                  "Output is a text file with Pravda assembly code. " +
+                "Disassemble Pravda VM bytecode to the text presentation. " +
+                  "The input file is a Pravda executable binary. " +
+                  "The output is a text file with Pravda assembly code. " +
                   "By default read from stdin and print to stdout.")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Disasm)),
             cmd("dotnet")
               .text(
                 "Compile .exe produced by .NET compiler to Pravda VM bytecode. " +
-                  "Input file is a .NET PE (portable executable). " +
-                  "Output is binary Pravdaprogram. " +
+                  "The input file is a .NET PE (portable executable). " +
+                  "The output is a binary Pravda program. " +
                   "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.DotNet))
               .children(
                 opt[String]("main-class")
-                  .text("Full name of class that should be compile to Pravda program")
+                  .text("Full name of the class that should be compile to Pravda program")
                   .action {
                     case (s, config: PravdaConfig.Compile) =>
                       config.copy(mainClass = Some(s))
@@ -188,9 +188,9 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
             cmd("evm")
               .text(
                 "[THIS COMPILATION MODE IS EXPERIMENTAL]" +
-                  "Compile .bin produced by solc compiler to Pravda VM bytecode. " +
-                  "Input files are .bin contract and .abi. " +
-                  "Output is binary Pravda program. " +
+                  "Compile .bin produced by the solc compiler to Pravda VM bytecode. " +
+                  "The input files are .bin contract and .abi. " +
+                  "The output is a binary Pravda program. " +
                   "By default read from stdin and print to stdout")
               .action(_ => PravdaConfig.Compile(PravdaConfig.CompileMode.Evm)),
             opt[Unit]("meta-from-ipfs")
@@ -237,7 +237,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   }
               ),
             cmd("deploy")
-              .text("Deploy Pravda program to the blockchain.")
+              .text("Deploy the Pravda program on the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Deploy))
               .children(broadcastInput),
             cmd("call")
@@ -273,56 +273,56 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                   }
               ),
             cmd("seal")
-              .text("Seal existing Pravda program in the blockchain.")
+              .text("Seal the existing Pravda program in the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Seal))
               .children(broadcastInput),
             cmd("update")
-              .text("Update existing Pravda program in the blockchain.")
+              .text("Update existing the Pravda program in the blockchain.")
               .action(_ => PravdaConfig.Broadcast(PravdaConfig.Broadcast.Mode.Update))
               .children(broadcastInput),
             opt[Unit]("dry-run")
-              .text("Broadcast action without applying effects.")
+              .text("Broadcast an action without applying effects.")
               .action {
                 case (_, config: PravdaConfig.Broadcast) => config.copy(dryRun = true)
                 case (_, otherwise)                      => otherwise
               },
             opt[File]('w', "wallet")
-              .text("File with user wallet. You can obtain it using 'pravda gen address' command. Format: {\"address\": <public key>, \"privateKey\": <private key>}")
+              .text("A file with a user wallet. You can obtain it using the 'pravda gen address' command. The format is as follows: {\"address\": <public key>, \"privateKey\": <private key>}")
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(wallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[File]('p', "program-wallet")
-              .text("Wallet of program account")
+              .text("A wallet of the program account")
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(programWallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[File]("watt-payer-wallet")
-              .text("File with watt payer wallet. Format same as for wallet.")
+              .text("A file with a watt payer wallet. The format is the same as for the wallet.")
               .action {
                 case (file, config: PravdaConfig.Broadcast) =>
                   config.copy(wattPayerWallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[Long]('l', "limit")
-              .text(s"Watt limit (${DefaultValues.Broadcast.WATT_LIMIT} by default).")
+              .text(s"The watt limit (${DefaultValues.Broadcast.WATT_LIMIT} by default).")
               .action {
                 case (limit, config: PravdaConfig.Broadcast) =>
                   config.copy(wattLimit = limit)
                 case (_, otherwise) => otherwise
               },
             opt[Long]('P', "price")
-              .text(s"Watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).")
+              .text(s"The watt price (${DefaultValues.Broadcast.WATT_PRICE} by default).")
               .action {
                 case (price, config: PravdaConfig.Broadcast) =>
                   config.copy(wattPrice = NativeCoin @@ price)
                 case (_, otherwise) => otherwise
               },
             opt[String]('e', "endpoint")
-              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
+              .text(s"The node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
               .action {
                 case (endpoint, config: PravdaConfig.Broadcast) =>
                   config.copy(endpoint = endpoint)
@@ -336,7 +336,7 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             opt[String]("ipfs-node")
-              .text(s"Ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
+              .text(s"The ipfs node (${DefaultValues.Broadcast.IPFS_NODE} by default).")
               .action {
                 case (ipfsNode, config: PravdaConfig.Broadcast) =>
                   config.copy(ipfsNode = ipfsNode)
@@ -344,18 +344,18 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
               }
           ),
         cmd("execute")
-          .text("Executes program without side-effects. No watt-limit is required.")
+          .text("Executes a program without side-effects. No watt-limit is required.")
           .action(_ => PravdaConfig.Execute())
           .children(
             opt[File]('w', "wallet")
-              .text("File with user wallet. You can obtain it using 'pravda gen address' command. Format: {\"address\": <public key>, \"privateKey\": <private key>}")
+              .text("A file with a user wallet. You can obtain it using the 'pravda gen address' command. The format is as follows: {\"address\": <public key>, \"privateKey\": <private key>}")
               .action {
                 case (file, config: PravdaConfig.Execute) =>
                   config.copy(wallet = Some(file.getAbsolutePath))
                 case (_, otherwise) => otherwise
               },
             opt[String]('e', "endpoint")
-              .text(s"Node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
+              .text(s"The node endpoint (${DefaultValues.Broadcast.ENDPOINT} by default).")
               .action {
                 case (endpoint, config: PravdaConfig.Execute) =>
                   config.copy(endpoint = endpoint)
@@ -373,25 +373,25 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                 case (_, otherwise) => otherwise
               },
             cmd("init")
-              .text("Create data directory and configuration for a new node.")
+              .text("Create a data directory and configuration for the new node.")
               .action(_ => PravdaConfig.Node(PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local(None)), None))
               .children(
                 opt[Unit]("local")
-                  .text("Initialize local node with self-validation.")
+                  .text("Initialize the local node with self-validation.")
                   .action {
                     case (_, config: PravdaConfig.Node) =>
                       config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Local(None)))
                     case (_, otherwise) => otherwise
                   },
                 opt[Unit]("testnet")
-                  .text("Initialize node connected to official testnet.")
+                  .text("Initialize the node connected to the official testnet.")
                   .action {
                     case (_, config: PravdaConfig.Node) =>
                       config.copy(mode = PravdaConfig.Node.Mode.Init(PravdaConfig.Node.Network.Testnet))
                     case (_, otherwise) => otherwise
                   },
                 opt[String]("coin-distribution")
-                  .text("Initialize local node with addresses which have some amount of coins at initial state. JSON file. Format: [{\"address\":<public key in hex>,\"amount\":<number>}]")
+                  .text("Initialize the local node with the addresses that has a certain amount of coins at the initial state. JSON file. The format is as follows: [{\"address\":<public key in hex>,\"amount\":<number>}]")
                   .action {
                     case (coinDistribution,
                           config @ PravdaConfig

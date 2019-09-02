@@ -1,18 +1,18 @@
 # Broadcaster
 
-The service provides REST API to send transactions to the network. Dedicated service is required because Pravda Node API takes already compiled bytecode with signature. It means you can't send transaction without knowledge of transaction binary format. This service can take Pravda Assembler, compile it, sign with given `PRAVDA_BROADCAST_SK` and send to `PRAVDA_BROADCAST_ENPOINT` endpoint. It allows to send transactions from any programing language which supports HTTP.  
+The service provides REST API to send transactions to the network. The dedicated service is required because Pravda Node API takes the already compiled bytecode with signature. This means that you cannot send a transaction without knowing the transaction’s binary format. This service can take Pravda Assembler, compile it, sign with the given `PRAVDA_BROADCAST_SK` and send to the `PRAVDA_BROADCAST_ENPOINT` endpoint. It allows transactions to be sent from any programing language that supports HTTP.
 
 ### Install
 Requires environment variables:
 
-* `PRAVDA_BROADCAST_ENPOINT` - URL to broadcast transactions.
-* `PRAVDA_BROADCAST_PK` - public key of signer
-* `PRAVDA_BROADCAST_SK` - private key of signer
+* `PRAVDA_BROADCAST_ENPOINT` — URL to broadcast transactions
+* `PRAVDA_BROADCAST_PK` —  the signer’s public key
+* `PRAVDA_BROADCAST_SK` —  the signer’s private key
 
-Run on docker:
+Run on the docker:
 
 ```
-docker run \ 
+docker run \
   -p 127.0.0.1:5000:5000 \
   -e PRAVDA_BROADCAST_PK=<sender public key> \
   -e PRAVDA_BROADCAST_SK=<sender private key> \
@@ -34,11 +34,11 @@ curl --request POST \
   --data '<assembler or compiled bytecode>'
 ```
 
-### Call the method of the program
+### Call the Program Method
 
 #### Request
 
-The example of the full request string is provided below:
+An example of the full request string is provided below:
 
 ```
 curl --request POST \
@@ -79,7 +79,7 @@ The parameters `wattLimit`, `wattPrice` are optional and have the following defa
 }
 ```
 
-or with error
+or with an error
 
 ```
 {
@@ -108,3 +108,4 @@ or with error
   }, ...]
 }
 ```
+

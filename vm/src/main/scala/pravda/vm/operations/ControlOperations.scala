@@ -28,8 +28,8 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
 
   @OpcodeImplementation(
     opcode = Opcodes.JUMPI,
-    description = "If boolean value in head of stack is true then " +
-      "alters program execution counter to value of second item in the stack."
+    description = "If the boolean value in head of the stack is true, then " +
+      "alters the program execution counter to the value of the second item in the stack."
   )
   def jumpi(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic, CpuProgControl)
@@ -43,7 +43,7 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
 
   @OpcodeImplementation(
     opcode = Opcodes.JUMP,
-    description = "Alters program execution counter to value of first item of the stack."
+    description = "Alters the program execution counter to the value of the first item of the stack."
   )
   def jump(): Unit = {
     wattCounter.cpuUsage(CpuProgControl)
@@ -54,8 +54,8 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
 
   @OpcodeImplementation(
     opcode = Opcodes.CALL,
-    description = "Firstly, it pushes current program counter to the " +
-      "separate stack (so called 'call stack'). Then it alters program " +
+    description = "Firstly, it pushes current program counter to a " +
+      "separate stack (the so called 'call stack'). Then, it alters the program " +
       "execution counter to the value of the first item of the stack."
   )
   def call(): Unit = {
@@ -67,7 +67,7 @@ final class ControlOperations(program: ByteBuffer, memory: Memory, wattCounter: 
 
   @OpcodeImplementation(
     opcode = Opcodes.RET,
-    description = "Alters program execution counter to the " +
+    description = "Alters the program execution counter to the " +
       "value of the first item of the call stack (see CALL opcode)."
   )
   def ret(): Unit = {
