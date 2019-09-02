@@ -52,7 +52,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = CODE,
-    description = "Take address of a program. Pushes program bytecode to the stack"
+    description = "Take the address of a program. Pushes program bytecode to the stack"
   )
   def code(): Unit = {
     val programAddress = address(memory.pop())
@@ -70,7 +70,7 @@ final class SystemOperations(program: ByteBuffer,
     description = "Takes two words by which it is followed. " +
       "They are address `a` and the number of parameters `n`, " +
       "respectively. Then it executes the program with " +
-      "the address `a` and passes there only $n$ top elements " +
+      "the address `a` and only passes there $n$ top elements " +
       "of the stack."
   )
   def pcall(): Unit = {
@@ -91,7 +91,7 @@ final class SystemOperations(program: ByteBuffer,
       "They are address `a`, function `f` and the number of " +
       "parameters `n`, respectively. Then it executes the " +
       "function `f` of the library (which is a special form of program) " +
-      "with the address `a` and passes there only $n$ top elements " +
+      "with address `a` and only passes there $n$ top elements " +
       "of the stack."
   )
   def lcall(): Unit = {
@@ -107,7 +107,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = SCALL,
-    description = "Takes id of function from standard library and execute it."
+    description = "Takes id of the function from the standard library and executes it."
   )
   def scall(): Unit = {
     val id = integer(memory.pop())
@@ -120,8 +120,8 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PUPDATE,
-    description = "Takes address of an existing program, code and signature. " +
-      "Signature is computed from concatenation of old code and new code of the program"
+    description = "Takes the address of the existing program, code and signature. " +
+      "The signature is computed from the concatenation of an old code and a new code of the program"
   )
   def pupdate(): Unit = {
     val signature = bytes(memory.pop()).toByteArray
@@ -147,8 +147,8 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PCREATE,
-    description = "Takes address (pubKey), bytecode, and its ed25519 signature. " +
-      "If signature is valid and program didn't exist before on the specified address create new program."
+    description = "Takes the address (pubKey), bytecode, and its ed25519 signature. " +
+      "If the signature is valid and the program didn't exist before at the specified address, creates a new program."
   )
   def pcreate(): Unit = {
     val signature = bytes(memory.pop()).toByteArray
@@ -169,8 +169,8 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = SEAL,
-    description = "Takes the address of an existing program and signature of code with seal mark. " +
-      "Signature is computed from concatenation of 'Seal' word (in UTF8 encoding) and current code of program."
+    description = "Takes the address of the existing program and signature of code with a seal mark. " +
+      "The signature is computed from the concatenation of the 'Seal' word (in UTF8 encoding) and the current program code."
   )
   def seal(): Unit = {
     val signature = bytes(memory.pop()).toByteArray
@@ -194,7 +194,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PADDR,
-    description = "Gives current program address."
+    description = "Gives the current program address."
   )
   def paddr(): Unit = {
     maybeProgramAddress match {
@@ -208,7 +208,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = FROM,
-    description = "Gives current executor address."
+    description = "Gives the current executor address."
   )
   def from(): Unit = {
     val datum = address(env.executor)
@@ -218,17 +218,19 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = THROW,
-    description = "Takes string from stack and throws an error with description " +
-      "as given string that stops the program."
+    description = "Takes a string from the stack and throws an error with description " +
+      "as the given string that stops the program."
   )
   def `throw`(): Unit = {
     val message = utf8(memory.pop())
     throw ThrowableVmError(UserError(message))
   }
 
-  @OpcodeImplementation(opcode = EVENT,
-                        description = "Takes string and arbitrary data from stack, " +
-                          "create new event with name as given string and with given data.")
+  @OpcodeImplementation(
+    opcode = EVENT,
+    description = "Takes string and arbitrary data from the stack, " +
+      "create a new event with a name as the given string and with the given data."
+  )
   def event(): Unit = {
 
     def marshalData(data: Data): (Data, Map[Data.Primitive.Ref, Data]) = {
@@ -295,7 +297,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = HEIGHT,
-    description = "Gets current height of the blockchain and pushes it to the stack."
+    description = "Gets the current height of the blockchain and pushes it to the stack."
   )
   def chainHeight(): Unit = {
     val data = env.chainHeight
@@ -305,7 +307,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = HASH,
-    description = "Gets hash of the last block and pushes it to the stack."
+    description = "Gets the hash of the last block and pushes it to the stack."
   )
   def lastBlockHash(): Unit = {
     val data = env.lastBlockHash
@@ -315,7 +317,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = TIME,
-    description = "Gets timestamp of the last block and pushes it to the stack."
+    description = "Gets the timestamp of the last block and pushes it to the stack."
   )
   def lastBlockTime(): Unit = {
     val data = env.lastBlockTime
@@ -325,7 +327,8 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = PEXIST,
-    description = "Takes address (pubKey). Returns true if program with given address exists, otherwise false"
+    description =
+      "Takes the address (pubKey). Returns true if the program with the given address exists, otherwise false"
   )
   def pexist(): Unit = {
     val programAddress = address(memory.pop())
@@ -337,7 +340,7 @@ final class SystemOperations(program: ByteBuffer,
 
   @OpcodeImplementation(
     opcode = VUPDATE,
-    description = "Takes address (pubKey). Returns true if program with given address exists, otherwise false."
+    description = "Takes address (pubKey). Returns true if the program with the given address exists, otherwise false."
   )
   def vupdate(): Unit = {
     val power = integer(memory.pop())

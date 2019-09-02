@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Takes byte array, index and size from stack. Returns size bytes from given index in the given array.
+Takes the byte array, index and size from the stack. Returns size bytes from the given index in the given array.

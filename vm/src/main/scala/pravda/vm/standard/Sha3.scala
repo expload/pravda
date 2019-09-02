@@ -29,7 +29,7 @@ object Sha3 extends FunctionDefinition {
   val id: Long = 0x09L
 
   val description: String =
-    "Calculate Keccak-256 hash for message."
+    "Calculate the Keccak-256 hash for the message."
 
   val returns = Seq(Data.Type.Bytes)
 

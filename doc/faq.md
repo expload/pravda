@@ -1,10 +1,9 @@
 # Frequently Asked Questions
 
-> That connection between Pravda and Ethereum?
+> Is there any connection between Pravda and Ethereum?
 
-There is no connection. Pravda is independent project with its own virtual machine and consensus.
+There is no connection. Pravda is an independent project with its own virtual machine and consensus.
 
 > How can I mine your coins?
 
-You can't for now. Currently Pravda is blockchain with explicit authority. In future we are planning to move to truly decentralized way of consensus. It will happen after feature list stabilization.
-
+You cannot for now. Currently, Pravda is a blockchain with the explicit authority. In the future, we are planning to move to the genuinely decentralized consensus. It will happen after feature list stabilization.

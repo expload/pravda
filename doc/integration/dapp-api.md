@@ -1,34 +1,31 @@
 # DApp API Specification
 
-Pravda specifies unified API for DApps (Distributed Applications). 
+Pravda features a unified API for DApps (distributed applications).
 
-This API allows client to execute different action on the Pravda blockchain,
-such as run arbitrary code, call methods from existing programs,
-get balance by address, sign binary data and transfer money from one address to another.
+This API allows the client to execute different actions on the Pravda blockchain such as running the arbitrary code, calling methods from the existing programs, requesting the balance by address, signing binary data and transferring funds from one address to another.
 
 ## Login
 
-Before using API the user should be logged in app. User can sign up using its own public/private keys pair
-or it can use automatically generated keys pair.
+Before using the API, the user should log in the application. The user can sign using their own pair of public/private keys or a pair of automatically generated keys.
 
-If the user has not logged the `NoKeysError` will be returned for any API call.
+If the user has not logged in, a `NoKeysError` will be returned for an API call.
 
-To run the app use `bin/expload-desktop` from https://download.expload.com/expload-desktop/. 
+To run the application, use `bin/expload-desktop` from https://download.expload.com/expload-desktop/.
 
 ## API Endpoint
 
-API server can be found at `http://localhost:8087`.
+The API server can be found at `http://localhost:8087`.
 
-## Response format
+## Response Format
 
-The response should have one of the following status codes:
+The response should contain one of the following status codes:
 
-- 200 - if the request was valid and no errors have happened while the request processing
-- 400 - if the request was invalid
-- 500 - if the unhandled error was happened
-- 503 - if the request has not processed for a 30 seconds
+- 200 — a valid request without errors occurred while processing the request
+- 400 — an invalid request
+- 500 — an unhandled error
+- 503 — a request that has not been processed within 30 seconds
 
-The response for any call of the API method should have the content-type header being set to `application/json`.
+The response for any call of the API method should have a content-type header being set to `application/json`.
 
 The response should be a JSON object with the following structure:
 
@@ -40,7 +37,7 @@ The response should be a JSON object with the following structure:
 }
 ```
 
-If the `errorCode` field is empty then it means no errors have happened and the `data` field contains the result. Otherwise, the `errorCode` has a predefined error code and the `error` field contains error description.
+If the `errorCode` field is empty, this means that no errors have occurred and the `data` field contains the result. Otherwise, the `errorCode` will have a predefined error code and the `error` field will contain error description.
 
 For example, if the user has not logged into the app, the caller should receive a response like this:
 
@@ -54,28 +51,28 @@ For example, if the user has not logged into the app, the caller should receive 
 
 ## Errors
 
-Every API method may return error. If that happened the `errorCode` should not be empty.
+Any API method may return an error. If this is the case, the `errorCode` should not be empty.
 
 
-Basic error codes are:
+The basic error codes include:
 
-- `ActionNotConfirmedError` - means current user hasn't confirm the transaction
-- `NoKeysError` - means there is no current user, so there is no keys for signing transactions
-- `PravdaNodeHttpError` - means there is a connection problem with the Pravda Node.
-- `UserErrorPravdaVmError` - means there was an error (like user-defined exception or system exception) in some Program
-- `InsufficientFundsGameTokenProgramError` - means the user has not enough GameTokens
+- `ActionNotConfirmedError` — the current user hasn't confirmed the transaction
+- `NoKeysError` — there is no current user, therefore there are no keys for the signing of transactions
+- `PravdaNodeHttpError` — there is a connection problem with the Pravda Node.
+- `UserErrorPravdaVmError` — an error has occurred (such as a user-defined exception or a system exception) in a Program
+- `InsufficientFundsGameTokenProgramError` — the user’s funds are insufficient
 
-## JSON representation of the data
+## JSON Representation of Data
 
-If you want to handle values in JSON representation then consider the following
+If you want to handle values in JSON representation, you should consider the following
 [description of data representation in JSON format](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
 
 
-## Get current user address
+## Request Сurrent User Address
 
-You can get the _current user_ address. The _current user_ is the user who is able to sign a Pravda transaction by using its private key.
+You can get the _current user_ address. The _current user_ is the user who is able to sign Pravda transactions by using their private key.
 
-If there is no current user (for instance, if the user has not logged into app) an API implementation should return `NoKeysError` error.
+If there is no current user (for instance, if the user has not logged in to the application) the API implementation should return a `NoKeysError` error.
 
 ### Request
 
@@ -83,7 +80,7 @@ If there is no current user (for instance, if the user has not logged into app) 
 
 ### Response
 
-Hex formatted address of the current user as JSON string.
+A hex formatted address of the current user as a JSON string.
 
 ### Example
 
@@ -91,7 +88,7 @@ Hex formatted address of the current user as JSON string.
 curl <api url>/api/address
 ```
 
-should return: 
+should return:
 
 ```
 {
@@ -101,9 +98,9 @@ should return:
 }
 ```
 
-## Get balance by Pravda address
+## Request Balance by Pravda Address
 
-You can get balance of the Pravda user by its address. Blank address parameter indicates the current user`s address should be used.
+You can get the balance of the Pravda user by their address. A blank address parameter indicates that the current user`s address should be used.
 
 ### Request
 
@@ -111,7 +108,7 @@ You can get balance of the Pravda user by its address. Blank address parameter i
 
 ### Response
 
-Requsted user balance as integer value
+The requested user balance as an integer value
 
 ### Examples
 
@@ -119,8 +116,7 @@ Requsted user balance as integer value
 curl <api url>/api/balance
 ```
 
-will return balance of the current user. For instance, if the current user has 100 XCoins you will get
-the following result:
+will return the current user’s balance. For instance, if the current user has 100 XGold you will get the following result:
 
 ```
 {
@@ -130,11 +126,11 @@ the following result:
 }
 ```
 
-## Get username by Pravda address
+## Request Username by Pravda Address
 
-**Note** This is the specific feature for Expload Platform.
+**Note:** This is a specific feature for the Expload Platform.
 
-You can get username (nickname) of the Pravda user by its address.
+You can get the username (nickname) of the Pravda user by their address.
 
 ### Request
 
@@ -142,7 +138,7 @@ You can get username (nickname) of the Pravda user by its address.
 
 ### Response
 
-Username as string value
+The username as a string value
 
 ### Examples
 
@@ -150,7 +146,7 @@ Username as string value
 curl <api url>/api/username
 ```
 
-will return username, example:
+will return the username, for example:
 
 ```
 {
@@ -160,11 +156,11 @@ will return username, example:
 }
 ```
 
-## Get XGold's balance of the current user
+## Request the Current User’s XGold Balance
 
-**Note** This is the specific feature for Expload Platform.
+**Note** This is a specific feature for the Expload Platform.
 
-You can get the actual XGold's balance of the current logged user.
+You can get the actual XGold balance of the current logged-in user.
 
 ### Request
 
@@ -172,7 +168,7 @@ You can get the actual XGold's balance of the current logged user.
 
 ### Response
 
-Balance in miniXG (1 XGold = 100000000 miniXG) expressed in numeric as long type.
+The balance in miniXG (1 XGold = 100000000 miniXG) expressed in numeric values as a long type.
 
 ### Examples
 
@@ -180,7 +176,7 @@ Balance in miniXG (1 XGold = 100000000 miniXG) expressed in numeric as long type
 curl <api url>/api/balance/xgold
 ```
 
-will return balance, example:
+will return the balance, for example:
 
 ```
 {
@@ -190,18 +186,18 @@ will return balance, example:
 }
 ```
 
-## Call program method
+## Call Program Methods
 
-DApps API Specification introduces __method__ entity. This entity is similar to [Solidity](http://solidity.readthedocs.io/en/v0.4.24/) methods from Ethereum ecosystem.
+The DApps API Specification introduces a __method__ entity. This entity is similar to the [Solidity](http://solidity.readthedocs.io/en/v0.4.24/) methods from the Ethereum ecosystem.
 
-DApp API specification establishes REST API for calling methods of the program with a given address.
+The DApp API specification establishes REST API for the calling of program methods with a given address.
 
-An implementation of the Standard should ask the current user if they confirm this transaction or not.
-An implementation of the Standard should show the user the program address, program's method and arguments for the method.
-If this transaction is not confirmed, `ActionNotConfirmedError` error should be sent.
-Otherwise it should be signed with the current user private key and broadcasted to the Pravda blockchain.
+The implementation of the Standard should ask the current user if they confirm this transaction or not.
+The implementation of the Standard should show the user the program address, program method and arguments for the method.
+If the transaction is not confirmed, an `ActionNotConfirmedError` error should be sent.
+Otherwise, it should be signed with the current user private key and broadcasted to the Pravda blockchain.
 
-If there is no current user, an implementation of the Standard should return `NoKeysError` error.
+If there is no current user, the implementation of the Standard should return a `NoKeysError` error.
 
 ### Request
 
@@ -211,13 +207,11 @@ If there is no current user, an implementation of the Standard should return `No
 {
     "address": "<hex formatted string of program's address>",
     "method": "<name of the method>",
-    "description": "<information about what will be happened if the user signs that transaction>"
     "args": [ <list of arguments> ]
 }
 ```
 
-The field "description" is optional and can be omitted.
-Arguments should be properly encoded according to their [JSON representation](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
+The arguments should be properly encoded according to their [JSON representation](https://github.com/expload/pravda/blob/master/doc/ref/vm/data.md#json-representation).
 
 ### Response
 
@@ -246,18 +240,17 @@ Arguments should be properly encoded according to their [JSON representation](ht
 
 ### Examples
 
-For example if we want to call `BalanceOf` method for user with `0xABCDEF` address
-of some program with `0xe1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0` address we should pass:
+For example, if you want to call the `BalanceOf` method for the user with `0xABCDEF` address of a certain program with the `0xe1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0` address you should pass:
 
 ```
 curl -X POST -H "Content-Type: application/json" \
-  --data '{"address": "e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0", 
-           "method": "BalanceOf", 
+  --data '{"address": "e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0",
+           "method": "BalanceOf",
            "args": ["bytes.ABCDEF"] }'
   <api url>/api/program/method
 ```
 
-As result we will receive the response like that:
+As a result, you will receive a response like that:
 
 ```
 {
@@ -282,20 +275,19 @@ As result we will receive the response like that:
 }
 ```
 
-Balance is placed in `"data" \ "finalState" \ "stack"` field.
+The balance is placed in the `"data" \ "finalState" \ "stack"` field.
 
-### Test/read requests
+### Test/Read Requests
 
-Also you can call method without producing effects on blockchain. It may 
-be useful when you want to require some data from storage of a program. 
+Also, you can call a method without producing effects on the blockchain. This may be useful when you want to request certain data from the program’s storage.
 
 `POST api/program/method-test`
 
-Everything else is a same. 
+The subsequent part is the same.
 
-## Transfer money
+## Funds Transfer
 
-This method allows you to transfer XCoins from current user to any Pravda address
+This method allows you to transfer XGold from the current user to any Pravda address.
 
 ### Request
 
@@ -310,17 +302,16 @@ This method allows you to transfer XCoins from current user to any Pravda addres
 
 ### Examples
 
-The following command will transfer 100 coins from the current account to the account
-with address `e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0`
+The following command will cause 100XGold to be transferred from the current account to the account with the address `e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0`
 
 ```
 curl -X POST -H "Content-Type: application/json" --data '{ "to": "e1941077e00b3cf81a8275788334292d9b2e2f0002bd622444cb37fa5e4d08a0", "amount": 100 }' <api url>/api/transfer
 ```
 
 
-## Execute VM bytecode
+## Execute VM Bytecode
 
-This method allows you to execute arbitrary Pravda bytecode
+This method allows you to execute arbitrary Pravda bytecode.
 
 ### Request
 
@@ -357,7 +348,7 @@ This method allows you to execute arbitrary Pravda bytecode
   }
 }
 ```
-or with error
+or with an error
 
 ```
 {
@@ -369,9 +360,9 @@ or with error
 }
 ```
 
-## Sign binary data
+## Sign Binary Data
 
-This method allows you to sign arbitrary binary data
+This method allows you to sign arbitrary binary data.
 
 ### Request
 
@@ -389,26 +380,26 @@ This method allows you to sign arbitrary binary data
 {
   "error": "",
   "errorCode": "",
-  "data": { 
+  "data": {
     "signedData": "<hex formatted signed binary data>"
   }
 }
 ```
 
-## Check the user was authenticated
+## Check User Authentication
 
-This method aims to check the current user has access to its private key.
+This method allows you to check if the current user has access to their private key.
 
-A caller can send some arbitrary data and when the result (signature-like footprint.) will be returned, the caller can verify it. 
+The caller can send certain arbitrary data and when the result (signature-like footprint.) returns, the caller can verify it.
 
-The result (the value of `signedData` key) is composed from the following steps:
+The result (the value of the `signedData` key) is determined as follows:
 
 - Input binary data is preceded by the special constant string `EXPLOAD_NOT_AUTHORIZED_SIGNATURE`
-- The hash of the above data is calculated by using either `sha-256` or `ripemd-160` depending of the input `hash` parameter
-- The hash above **is signed by the user's private key**.
-- Resulting binary data are encdoded to hex-string
+- The hash of the above data is calculated by using either `sha-256` or `ripemd-160` depending on the input `hash` parameter
+- The hash above **is signed with the user's private key**.
+- Resulting binary data is encoded to a hex-string
 
-**Note**. The call of that method does not occur any user's interaction.
+**Note:**. The calling of this method does not involve interaction with any user.
 
 ### Request
 
@@ -421,7 +412,7 @@ The result (the value of `signedData` key) is composed from the following steps:
 }
 ```
 
-If the `hash` query parameter was omitted, `sha-256` hash function will be used by default.
+If the `hash` query parameter is omitted, the `sha-256` hash function will be used by default.
 
 ### Response
 
@@ -429,8 +420,10 @@ If the `hash` query parameter was omitted, `sha-256` hash function will be used 
 {
   "error": "",
   "errorCode": "",
-  "data": { 
+  "data": {
     "signedData": "<hex formatted data>"
   }
 }
 ```
+
+

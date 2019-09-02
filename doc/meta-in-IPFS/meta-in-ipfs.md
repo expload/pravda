@@ -1,37 +1,29 @@
-# Working with meta in IPFS
+# Working with Meta in IPFS
 
-You can extract [meta](../virtual-machine/meta.md) 
-from your file with Pravda bytecode and place it in the [IPFS](https://ipfs.io/).
-It can help to dramatically reduce size of data you are writing to the blockchain 
-and thus save your money. 
-Since meta doesn't affect the runtime behaviour of your program, 
-extracting it is safe and won't cause any problems even if the IPFS is not avaliable. 
+You can extract [meta](../virtual-machine/meta.md) from your file with Pravda bytecode and place it in the [IPFS](https://ipfs.io/). This can help you to significantly reduce the size of data you are writing to the blockchain and, accordingly, reduce your costs. Since meta doesn't affect the runtime behavior of your program, extracting it is safe and won't cause any problems even if the IPFS is unavailable.
 
-### Deploying Pravda program
+### Deploying Pravda Program
 
-Extracting of meta happens when you deploy your Pravda program to the blockchain:
+Extracting of meta occurs when you deploy your Pravda program to the blockchain:
 
 ```bash
 pravda broadcast deploy \
   -w <your-wallet> \
-  -p <program-wallet> \ 
-  -i <bytecode-of-your-program> \ 
+  -p <program-wallet> \
+  -i <bytecode-of-your-program> \
   --meta-to-ipfs \
   --ipfs-node "/ip4/127.0.0.1/tcp/5001"
 ```
 
-You should specify `--meta-to-ipfs` parameter to enable meta extracting 
-and `--ipfs-node` to select necessary IPFS node (by default it uses localhost). 
+You should specify the `--meta-to-ipfs` parameter to enable meta extracting and `--ipfs-node` to select the necessary IPFS node (by default it uses localhost).
 
-This command will extract _all_ meta from your bytecode and place it in the IPFS, 
-after that it will deploy program _without_ meta to the Pravda blockchain.
+This command will extract _all_ meta from your bytecode and place it in the IPFS, then it will deploy the program _without_ meta on the Pravda blockchain.
 
-You can also use `pravda broadcast update` to extract meta with the same CLI parameters. 
+You can also use `pravda broadcast update` to extract meta with the same CLI parameters.
 
-### Reading meta from IPFS
+### Reading Meta from IPFS
 
-If you need to read meta from IPFS, for example when you are disassembling bytecode, 
-you also use special CLI parameters:
+If you need to read meta from IPFS, for example, when disassembling the bytecode, you also use special CLI parameters:
 
 ```bash
 pravda compile disasm \
@@ -40,11 +32,8 @@ pravda compile disasm \
     --ipfs-node "/ip4/127.0.0.1/tcp/5001"
 ```
 
-This command will read IPFS hash of file with meta from the bytecode, 
-read this file from IPFS and disassemble bytecode with this new information.
+This command will read the IPFS hash of the file with meta from the bytecode, read this file from IPFS and disassemble the bytecode with this new information.
 
-### IPFS node
+### IPFS Node
 
-Hosting open IPFS is dangerous, 
-thus we suggest you to run your own IPFS node on your private host if you want to write meta to IPFS, 
-if you just want to read meta from IPFS you can use any open IPFS node (for example, ipfs.io).   
+Hosting an open IPFS is insecure, therefore we suggest that you run your own IPFS node on your private host if you want to write meta to IPFS. If you just want to read meta from IPFS, you can use any open IPFS node (for example, ipfs.io).

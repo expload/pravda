@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Calculate RIPEMD-160 hash for message. See https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
+Calculates RIPEMD-160 hash for the message. See https://homes.esat.kuleuven.be/~bosselae/ripemd160.html

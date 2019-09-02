@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Takes bytes from stack. Return expanded to 32 length bytes. 
+Takes bytes from the stack. Return expanded-to-32-length bytes. 

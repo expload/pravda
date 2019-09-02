@@ -34,7 +34,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = Opcodes.MOD,
-    description = "Makes '%' operation on two top items from stack. Pushes result to stack."
+    description = "Makes '%' operation on two top items from the stack. Pushes the result to the stack."
   )
   def mod(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
@@ -107,7 +107,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = Opcodes.ADD,
-    description = "Makes '+' operation on two top items from stack. Pushes result to stack."
+    description = "Makes '+' operation on two top items from the stack. Pushes the result to the stack."
   )
   def add(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
@@ -180,7 +180,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = Opcodes.DIV,
-    description = "Makes '/' operation on two top items from stack. Pushes result to stack."
+    description = "Makes '/' operation on two top items from the stack. Pushes the result to the stack."
   )
   def div(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)
@@ -253,7 +253,7 @@ final class ArithmeticOperations(memory: Memory, wattCounter: WattCounter) {
 
   @OpcodeImplementation(
     opcode = Opcodes.MUL,
-    description = "Makes '*' operation on two top items from stack. Pushes result to stack."
+    description = "Makes '*' operation on two top items from the stack. Pushes the result to the stack."
   )
   def mul(): Unit = {
     wattCounter.cpuUsage(CpuArithmetic)

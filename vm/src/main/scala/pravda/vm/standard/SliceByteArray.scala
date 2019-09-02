@@ -31,7 +31,7 @@ object SliceByteArray extends FunctionDefinition {
   val id = 0x06L
 
   val description =
-    "Takes byte array, index and size from stack. Returns size bytes from given index in the given array."
+    "Takes the byte array, index and size from the stack. Returns size bytes from the given index in the given array."
 
   val args: Seq[(String, Seq[Type])] = Seq(
     "size" -> Seq(Data.Type.BigInt),

@@ -30,7 +30,7 @@ object ExpandBytesEvm extends FunctionDefinition {
   val id = 0x08L
 
   val description =
-    "Takes bytes from stack. Return expanded to 32 length bytes. "
+    "Takes bytes from the stack. Return expanded-to-32-length bytes. "
 
   val args: Seq[(String, Seq[Type])] = Seq(
     "bytes" -> Seq(Data.Type.Bytes)

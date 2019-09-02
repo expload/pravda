@@ -26,7 +26,7 @@ object ValidateEd25519Signature extends FunctionDefinition {
 
   val id: Long = 0x01L
 
-  val description: String = "Validates message signed with Ed25519 algorithm. See https://ed25519.cr.yp.to"
+  val description: String = "Validates a message signed with the Ed25519 algorithm. See https://ed25519.cr.yp.to"
 
   val returns = Seq(Data.Type.Boolean)
 

@@ -37,7 +37,7 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   @OpcodeImplementation(
     opcode = SEXIST,
     description =
-      "Pops first item from stack, interprets it as key and checks existence of record correspond to the key in a storage of the program. "
+      "Pops the first item from the stack, interprets it as key and checks the existence of the record corresponding to the key in the program storage. "
   )
   def exists(): Unit = ifStorage { storage =>
     val key = memory.pop()
@@ -51,7 +51,7 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   @OpcodeImplementation(
     opcode = SDROP,
     description =
-      "Pops first item from stack, interprets it as key and removes corresponding record from a storage of the program. "
+      "Pops the first item from the stack, interprets it as key and removes the corresponding record from the program storage. "
   )
   def drop(): Unit = ifStorage { storage =>
     // TODO fomkin: consider to push removed value to the stack
@@ -65,8 +65,8 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   @OpcodeImplementation(
     opcode = SGET,
     description =
-      "Pops first item from stack, interprets it as key, retrieves corresponding" +
-        " record from a storage of the program and pushes the record to the " +
+      "Pops the first item from the stack, interprets it as key, retrieves the corresponding" +
+        " record from the program storage and pushes the record to the " +
         "stack. Otherwise throws an exception. "
   )
   def get(): Unit = ifStorage { storage =>
@@ -87,10 +87,10 @@ final class StorageOperations(memory: Memory, maybeStorage: Option[Storage], wat
   @OpcodeImplementation(
     opcode = SPUT,
     description =
-      "Pops first item from stack, interprets it as key. Pops second item from stack, " +
-        "interprets it as value. Puts (key -> value) record to program's storage. " +
-        "If value is a ref, correspondent value will be taken from heap. " +
-        "Referenced value shouldn't be RefArray and shouldn't be Struct with refs in " +
+      "Pops the first item from the stack, interprets it as key. Pops the second item from the stack, " +
+        "interprets it as value. Puts a (key -> value) record to program's storage. " +
+        "If value is a ref, the correspondent value will be taken from the heap. " +
+        "The referenced value shouldn't be RefArray and shouldn't be Struct with refs in the " +
         "field values."
   )
   def put(): Unit = ifStorage { storage =>

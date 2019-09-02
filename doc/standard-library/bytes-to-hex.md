@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Takes bytes from stack, pushes hex string to the stack
+Takes bytes from the stack, pushes the hex string to the stack

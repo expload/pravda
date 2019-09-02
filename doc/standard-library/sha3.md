@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Calculate Keccak-256 hash for message.
+Calculate the Keccak-256 hash for the message.

@@ -42,7 +42,7 @@ import scala.annotation.strictfp
   @OpcodeImplementation(
     opcode = NOT,
     description =
-      "Logical NOT (negation).Pops items from stack.If it's 'true' pushes 'false' to stack.Its it's 'false' pushes 'true' to stack."
+      "Logical NOT (negation).Pops items from the stack. If it is 'true' pushes 'false' to the stack. If it is 'false' pushes 'true' to the stack."
   )
   def not(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -63,7 +63,7 @@ import scala.annotation.strictfp
 
   @OpcodeImplementation(
     opcode = AND,
-    description = "Makes 'and' operation on two items from stack. Pushes result to stack."
+    description = "Makes 'and' operation on two items from the stack. Pushes the result to the stack."
   )
   def and(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -72,7 +72,7 @@ import scala.annotation.strictfp
 
   @OpcodeImplementation(
     opcode = OR,
-    description = "Makes 'or' operation on two items from stack. Pushes result to stack."
+    description = "Makes 'or' operation on two items from the stack. Pushes the result to the stack."
   )
   def or(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -81,7 +81,7 @@ import scala.annotation.strictfp
 
   @OpcodeImplementation(
     opcode = XOR,
-    description = "Makes 'xor' operation on two items from stack.Pushes result to stack."
+    description = "Makes 'xor' operation on two items from the stack. Pushes the result to the stack."
   )
   def xor(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -90,7 +90,8 @@ import scala.annotation.strictfp
 
   @OpcodeImplementation(
     opcode = EQ,
-    description = "Checks top stack item is equal to subsequent stack item. Pushes Bool result to stack."
+    description =
+      "Checks that the top stack item is equal to the subsequent stack item. Pushes the Bool result to the stack."
   )
   def eq(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -99,7 +100,8 @@ import scala.annotation.strictfp
 
   @OpcodeImplementation(
     opcode = GT,
-    description = "Checks top stack item is greater than subsequent stack item.Pushes Bool result to stack."
+    description =
+      "Checks that the top stack item is greater than the subsequent stack item. Pushes the Bool result to the stack."
   )
   def gt(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)
@@ -108,7 +110,8 @@ import scala.annotation.strictfp
 
   @OpcodeImplementation(
     opcode = LT,
-    description = "Checks top stack item is less than subsequent stack item. Pushes Bool result to stack."
+    description =
+      "Checks that the top stack item is less than the subsequent stack item. Pushes the Bool result to the stack."
   )
   def lt(): Unit = {
     wattCounter.cpuUsage(CpuSimpleArithmetic)

@@ -5,7 +5,7 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 ```pravda gen address --meta-from-ipfs --ipfs-node <string> --output <file>```
 
 ## Description
-Generate ed25519 key pair. It can be used as regular wallet or validator node identifier.
+Generate the ed25519 key pair. It can be used as a regular wallet or a validator node identifier.
 ## Options
 
 |Option|Description|

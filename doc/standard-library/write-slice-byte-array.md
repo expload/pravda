@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Takes byte array, index from stack, bytes to write. Writes given bytes from given index in the given array. Returns reference to array
+Takes the byte array, index from the stack, bytes to write. Writes the given bytes from the given index in the given array. Returns a reference to the array

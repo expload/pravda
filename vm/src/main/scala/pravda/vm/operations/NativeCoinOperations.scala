@@ -30,7 +30,7 @@ final class NativeCoinOperations(memory: Memory,
 
   @OpcodeImplementation(
     opcode = BALANCE,
-    description = "Takes address from stack, pushes native coin balance to the stack"
+    description = "Takes the address from the stack, pushes the native coin balance to the stack"
   )
   def balance(): Unit = {
     val addr = address(memory.pop())

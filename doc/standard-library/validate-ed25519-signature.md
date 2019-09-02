@@ -12,4 +12,4 @@ THIS FILE IS GENERATED. DO NOT EDIT MANUALLY!
 
 ### Description
 
-Validates message signed with Ed25519 algorithm. See https://ed25519.cr.yp.to
+Validates a message signed with the Ed25519 algorithm. See https://ed25519.cr.yp.to
