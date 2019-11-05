@@ -398,6 +398,25 @@ object PravdaArgsParser extends CommandLine[PravdaConfig] {
                             .Node(PravdaConfig.Node.Mode.Init(local: PravdaConfig.Node.Network.Local), _)) =>
                       config.copy(mode = PravdaConfig.Node.Mode.Init(local.copy(Some(coinDistribution))))
                     case (_, otherwise) => otherwise
+                  },
+                opt[Boolean]("create-empty-blocks")
+                  .text("If true, then a new empty block will be created even there were no committed transactions.")
+                  .action {
+                    case (createEmptyBlocks,
+                          config @ PravdaConfig
+                            .Node(PravdaConfig.Node.Mode.Init(local: PravdaConfig.Node.Network.Local), _)) =>
+                      config.copy(mode = PravdaConfig.Node.Mode.Init(local.copy(createEmptyBlocks = createEmptyBlocks)))
+                    case (_, otherwise) => otherwise
+                  },
+                opt[Int]("create-empty-blocks-interval")
+                  .text("The interval (in seconds) between creating a new empty blocks.")
+                  .action {
+                    case (createEmptyBlocksInterval,
+                          config @ PravdaConfig
+                            .Node(PravdaConfig.Node.Mode.Init(local: PravdaConfig.Node.Network.Local), _)) =>
+                      config.copy(mode =
+                        PravdaConfig.Node.Mode.Init(local.copy(createEmptyBlocksInterval = createEmptyBlocksInterval)))
+                    case (_, otherwise) => otherwise
                   }
               ),
             cmd("run")

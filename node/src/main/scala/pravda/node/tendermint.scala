@@ -181,7 +181,8 @@ object tendermint {
            |abci = "socket"
            |proxy_app = "$proxyAppAddr"
            |[consensus]
-           |create_empty_blocks = false
+           |create_empty_blocks = ${config.tendermint.createEmptyBlocks.toString}
+           |create_empty_blocks_interval = "${config.tendermint.createEmptyBlocksInterval.toString}s"
            |[p2p]
            |addr_book_strict = false
            |seeds="${config.seeds}"

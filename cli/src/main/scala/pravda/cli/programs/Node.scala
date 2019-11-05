@@ -42,7 +42,9 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                                 paymentWallet: Validator,
                                 validators: Seq[String],
                                 coinDistribution: Seq[CoinDistributionMember],
-                                seeds: Seq[(String, Int)]) =
+                                seeds: Seq[(String, Int)],
+                                createEmptyBlocks: Boolean,
+                                createEmptyBlocksInterval: Int) =
     s"""pravda {
        |  network-address-cache {
        |    ttl = 60
@@ -57,6 +59,8 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
        |    rpc-port = 46657
        |    proxy-app-port = 46658
        |    use-unix-domain-socket = false
+       |    create-empty-blocks = ${createEmptyBlocks.toString}
+       |    create-empty-blocks-interval = ${createEmptyBlocksInterval.toString}
        |  }
        |  data-directory = "${dataDir.replace("\\", "\\\\")}"
        |  coin-distribution = "${coinDistribution
@@ -123,7 +127,7 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         )
 
       config = network match {
-        case Network.Local(_) =>
+        case Network.Local(_, createEmptyBlocks, createEmptyBlocksInterval) =>
           applicationConfig(
             isValidator = true,
             chainId = "local",
@@ -131,7 +135,9 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
             paymentWallet = paymentWallet,
             coinDistribution = initialDistribution,
             validators = List(s"me:10:${bytes.byteString2hex(pub)}"),
-            seeds = Nil
+            seeds = Nil,
+            createEmptyBlocks = createEmptyBlocks,
+            createEmptyBlocksInterval = createEmptyBlocksInterval
           )
         case Network.Testnet =>
           val pkey = "c77f81ae0c37ea3742e16b5cf15563ca6cc063bc5e88ff55a74dc0e52bd7d632"
@@ -147,7 +153,10 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
                 NativeCoin @@ 1000000000L
               )
             ),
-            Seq("35.234.141.154" -> 30001)
+            Seq("35.234.141.154" -> 30001),
+            // For non-validator nodes these settings doesn't make sense.
+            createEmptyBlocks = false,
+            createEmptyBlocksInterval = 0
           )
       }
       _ <- EitherT[F, String, Unit](io.writeToFile(configPath, ByteString.copyFromUtf8(config)).map(Right.apply))
@@ -176,10 +185,10 @@ final class Node[F[_]: Monad](io: IoLanguage[F], random: RandomLanguage[F], node
         }
         _ <- EitherT[F, String, Unit] {
           config.mode match {
-            case Mode.Nope                              => Monad[F].pure(Left(s"[init|run] subcommand required."))
-            case Mode.Init(network @ Network.Local(cd)) => init(dataDir, network, cd)
-            case Mode.Init(network)                     => init(dataDir, network, None)
-            case Mode.Run                               => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
+            case Mode.Nope                                    => Monad[F].pure(Left(s"[init|run] subcommand required."))
+            case Mode.Init(network @ Network.Local(cd, _, _)) => init(dataDir, network, cd)
+            case Mode.Init(network)                           => init(dataDir, network, None)
+            case Mode.Run                                     => mkConfigPath(dataDir).flatMap(node.launch).map(Right.apply)
           }
         }
       } yield ()

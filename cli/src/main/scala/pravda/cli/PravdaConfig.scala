@@ -45,6 +45,11 @@ object PravdaConfig {
       val ENDPOINT = "http://localhost:8080/api/public"
       val IPFS_NODE = "/ip4/127.0.0.1/tcp/5001"
     }
+
+    object Node {
+      val createEmptyBlocks: Boolean = false
+      val createEmptyBlocksInterval: Int = 900 // 15 minutes
+    }
   }
 
   final case class GenAddress(output: Option[String] = None) extends PravdaConfig
@@ -106,7 +111,12 @@ object PravdaConfig {
     sealed trait Network
 
     object Network {
-      final case class Local(coinDistribution: Option[String]) extends Network
+      final case class Local(coinDistribution: Option[String],
+                             // If true, then a new empty block will be created even there were no committed transactions.
+                             createEmptyBlocks: Boolean = DefaultValues.Node.createEmptyBlocks,
+                             // The interval (in seconds) between creating a new empty blocks.
+                             createEmptyBlocksInterval: Int = DefaultValues.Node.createEmptyBlocksInterval)
+          extends Network
 
       case object Testnet extends Network
     }
