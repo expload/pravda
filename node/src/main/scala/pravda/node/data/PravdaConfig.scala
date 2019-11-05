@@ -65,6 +65,8 @@ object PravdaConfig {
       peerPort: Int,
       rpcPort: Int,
       proxyAppPort: Int,
-      useUnixDomainSocket: Boolean
+      useUnixDomainSocket: Boolean,
+      createEmptyBlocks: Boolean = false,
+      createEmptyBlocksInterval: Int = 900
   )
 }
